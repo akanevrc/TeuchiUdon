@@ -1,8 +1,6 @@
 {
-    "name": "akanevrc.TeuchiUdon.Editor",
-    "references": [
-        "GUID:59481dbe69d36154192f3831290bdc48"
-    ],
+    "name": "akanevrc.TeuchiUdon.Editor.Compiler",
+    "references": [],
     "includePlatforms": [
         "Editor"
     ],

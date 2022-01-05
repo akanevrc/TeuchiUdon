@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using UnityEditor;
 using UnityEngine;
+using akanevrc.TeuchiUdon.Editor.Compiler;
 
 namespace akanevrc.TeuchiUdon.Editor
 {

@@ -5,7 +5,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using UnityEngine;
 
-namespace akanevrc.TeuchiUdon.Editor
+namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     using static TeuchiUdonParser;
 
@@ -233,11 +233,11 @@ namespace akanevrc.TeuchiUdon.Editor
         private object Eval(ExprResult expr)
         {
             return
-                expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Value}" :
-                expr.Inner is EvalVarResult  evalVar  ? $"<evalVar>{evalVar.Identifier.Name}" :
-                expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(a => Eval(a)))})" :
-                expr.Inner is InfixResult    infix    ? $"<access>{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
-                expr.Inner is FuncResult     func     ? $"<func>{func.VarDecl.SingleDecl.Identifier.Name} -> {Eval(func.Expr)}" :
+                expr.Inner is LiteralResult  literal  ? $"{literal.Value}" :
+                expr.Inner is EvalVarResult  evalVar  ? $"{evalVar.Identifier.Name}" :
+                expr.Inner is EvalFuncResult evalFunc ? $"{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(a => Eval(a)))})" :
+                expr.Inner is InfixResult    infix    ? $"{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
+                expr.Inner is FuncResult     func     ? $"{func.VarDecl.SingleDecl.Identifier.Name} -> {Eval(func.Expr)}" :
                 "<expr>";
         }
 

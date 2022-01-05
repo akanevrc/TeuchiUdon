@@ -19,7 +19,7 @@
 // Ambiguous reference in cref attribute
 #pragma warning disable 419
 
-namespace akanevrc.TeuchiUdon.Editor {
+namespace akanevrc.TeuchiUdon.Editor.Compiler {
 
     #pragma warning disable 3021
 
@@ -1288,4 +1288,4 @@ public partial class TeuchiUdonLexer : TeuchiUdonBaseLexer {
 
 
 }
-} // namespace akanevrc.TeuchiUdon.Editor
+} // namespace akanevrc.TeuchiUdon.Editor.Compiler

@@ -1,6 +1,6 @@
 using Antlr4.Runtime;
 
-namespace akanevrc.TeuchiUdon.Editor
+namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonLogicalErrorHandler
     {

@@ -87,4 +87,4 @@ crashlytics-build.properties
 !/[Aa]ssets/packages.config
 
 !/[Aa]ssets/akanevrc/
-/[Aa]ssets/akanevrc/TeuchiUdon/Editor/.antlr/
+/[Aa]ssets/akanevrc/**/.antlr/

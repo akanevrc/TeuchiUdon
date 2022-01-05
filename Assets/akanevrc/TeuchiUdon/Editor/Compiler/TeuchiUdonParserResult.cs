@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 
-namespace akanevrc.TeuchiUdon.Editor
+namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonParserResult
     {
