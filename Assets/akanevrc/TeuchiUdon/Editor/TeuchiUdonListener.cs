@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
 using UnityEngine;
 
 namespace akanevrc.TeuchiUdon.Editor
@@ -38,52 +37,38 @@ namespace akanevrc.TeuchiUdon.Editor
         {
             var varDecl = context.varDecl().result;
             var expr    = context.expr   ().result;
-            context.result = new VarBindResult(varDecl.Identifiers[0], expr, vars);
-        }
-
-        public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
-        {
-            context.result = context.singleDecl().result;
+            context.result = new VarBindResult(varDecl.SingleDecl.Identifier, expr, vars);
         }
 
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
-            context.result = context.tupleDecl().result;
+            var varDecls = context.varDecl().Select(vd => vd.result);
+            context.result = new VarDeclResult(new TupleDeclResult(varDecls));
         }
 
-        public override void ExitSingleDecl([NotNull] SingleDeclContext context)
+        public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
         {
-            var identifier = context.identifier()[0].result;
-            context.result = new VarDeclResult(new IdentifierResult[] { identifier });
+            var identifier = context.identifier() .result;
+            var type       = context.qualified ()?.result;
+            context.result = new VarDeclResult(new SingleDeclResult(identifier, type));
         }
 
-        public override void ExitTupleDecl([NotNull] TupleDeclContext context)
+        public override void ExitQualified([NotNull] QualifiedContext context)
         {
-            var identifiers = context.varDecl().SelectMany(vd => vd.result.Identifiers);
-            context.result = new VarDeclResult(identifiers);
+            var identifiers = context.identifier().Select(id => id.result);
+            context.result = new QualifiedResult(identifiers);
         }
 
         public override void ExitIdentifier([NotNull] IdentifierContext context)
         {
-            var text = context.GetText().Replace("@", "");
-
             var token = context.IDENTIFIER().Symbol;
-            context.result = new IdentifierResult(token, text);
+            var name  = context.GetText().Replace("@", "");
+            context.result = new IdentifierResult(token, name);
         }
 
-        public override void ExitEvalVarExpr([NotNull] EvalVarExprContext context)
+        public override void ExitParensExpr([NotNull] ParensExprContext context)
         {
-            context.result = new ExprResult(context.evalVar().result);
-        }
-
-        public override void ExitEvalFuncExpr([NotNull] EvalFuncExprContext context)
-        {
-            context.result = new ExprResult(context.evalFunc().result);
-        }
-
-        public override void ExitFuncExpr([NotNull] FuncExprContext context)
-        {
-            context.result = new ExprResult(context.func().result);
+            context.result = context.expr().result;
         }
 
         public override void ExitLiteralExpr([NotNull] LiteralExprContext context)
@@ -91,23 +76,45 @@ namespace akanevrc.TeuchiUdon.Editor
             context.result = new ExprResult(context.literal().result);
         }
 
-        public override void ExitEvalVar([NotNull] EvalVarContext context)
+        public override void ExitEvalVarExpr([NotNull] EvalVarExprContext context)
         {
-            context.result = new EvalVarResult(context.identifier().result);
+            context.result = new ExprResult(new EvalVarResult(context.identifier().result));
         }
 
-        public override void ExitEvalFunc([NotNull] EvalFuncContext context)
+        public override void ExitEvalUnitFuncExpr([NotNull] EvalUnitFuncExprContext context)
         {
             var identifier = context.identifier().result;
-            var expr       = context.expr      ().result;
-            context.result = new EvalFuncResult(identifier, expr);
+            var args       = new ExprResult[0];
+            context.result = new ExprResult(new EvalFuncResult(identifier, args));
         }
 
-        public override void ExitFunc([NotNull] FuncContext context)
+        public override void ExitEvalSingleFuncExpr([NotNull] EvalSingleFuncExprContext context)
+        {
+            var identifier = context.identifier().result;
+            var args       = new ExprResult[] { context.expr().result };
+            context.result = new ExprResult(new EvalFuncResult(identifier, args));
+        }
+
+        public override void ExitEvalTupleFuncExpr([NotNull] EvalTupleFuncExprContext context)
+        {
+            var identifier = context.identifier().result;
+            var args       = context.expr().Select(e => e.result);
+            context.result = new ExprResult(new EvalFuncResult(identifier, args));
+        }
+
+        public override void ExitAccessExpr([NotNull] AccessExprContext context)
+        {
+            var op    = ".";
+            var expr1 = context.expr()[0].result;
+            var expr2 = context.expr()[1].result;
+            context.result = new ExprResult(new InfixResult(op, expr1, expr2));
+        }
+
+        public override void ExitFuncExpr([NotNull] FuncExprContext context)
         {
             var varDecl = context.varDecl().result;
             var expr    = context.expr   ().result;
-            context.result = new FuncResult(varDecl, expr, funcs);
+            context.result = new ExprResult(new FuncResult(varDecl, expr, funcs));
         }
 
         public override void ExitIntegerLiteral([NotNull] IntegerLiteralContext context)
@@ -142,8 +149,8 @@ namespace akanevrc.TeuchiUdon.Editor
                 basis = 8;
             }
 
-            var token      = context.INTEGER_LITERAL().Symbol;
-            var literal    = ToInteger(text.Substring(index, count), basis, type, token);
+            var token   = context.INTEGER_LITERAL().Symbol;
+            var literal = ToInteger(text.Substring(index, count), basis, type, token);
             context.result = new LiteralResult(token, literal, literals);
         }
 
@@ -172,8 +179,8 @@ namespace akanevrc.TeuchiUdon.Editor
                 type = typeof(uint);
             }
 
-            var token      = context.HEX_INTEGER_LITERAL().Symbol;
-            var literal    = ToInteger(text.Substring(index, count), basis, type, token);
+            var token   = context.HEX_INTEGER_LITERAL().Symbol;
+            var literal = ToInteger(text.Substring(index, count), basis, type, token);
             context.result = new LiteralResult(token, literal, literals);
         }
 
@@ -202,8 +209,8 @@ namespace akanevrc.TeuchiUdon.Editor
                 type = typeof(uint);
             }
 
-            var token      = context.BIN_INTEGER_LITERAL().Symbol;
-            var literal    = ToInteger(text.Substring(index, count), basis, type, token);
+            var token   = context.BIN_INTEGER_LITERAL().Symbol;
+            var literal = ToInteger(text.Substring(index, count), basis, type, token);
             context.result = new LiteralResult(token, literal, literals);
         }
 
@@ -226,10 +233,11 @@ namespace akanevrc.TeuchiUdon.Editor
         private object Eval(ExprResult expr)
         {
             return
-                expr.Inner is EvalVarResult  evalVar  ? evalVar.Identifier.Identifier :
-                expr.Inner is EvalFuncResult evalFunc ? $"{evalFunc.Identifier.Identifier} {Eval(evalFunc.Expr)}" :
-                expr.Inner is FuncResult     func     ? $"{func.VarDecl.Identifiers[0].Identifier} -> {Eval(func.Expr)}" :
-                expr.Inner is LiteralResult  literal  ? literal.Literal :
+                expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Value}" :
+                expr.Inner is EvalVarResult  evalVar  ? $"<evalVar>{evalVar.Identifier.Name}" :
+                expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(a => Eval(a)))})" :
+                expr.Inner is InfixResult    infix    ? $"<access>{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
+                expr.Inner is FuncResult     func     ? $"<func>{func.VarDecl.SingleDecl.Identifier.Name} -> {Eval(func.Expr)}" :
                 "<expr>";
         }
 

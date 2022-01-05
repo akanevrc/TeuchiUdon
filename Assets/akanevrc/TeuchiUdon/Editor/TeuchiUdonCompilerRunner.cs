@@ -11,7 +11,7 @@ namespace akanevrc.TeuchiUdon.Editor
         [MenuItem("Tools/Run Compile")]
         public static void RunCompile()
         {
-            CompileFromString("f = a -> a\nx = f 100");
+            CompileFromPath(@"Assets\akanevrc\TeuchiUdon\Test\TeuchiUdonTest.teuchi");
         }
 
         public static void CompileFromPath(string path)

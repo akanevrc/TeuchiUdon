@@ -12,8 +12,8 @@ options
 }
 
 target
-    : body EOF
-    | open body close end* EOF
+    : open body close end* EOF
+    | body EOF
     ;
 
 body
@@ -27,24 +27,18 @@ topBind
 
 varBind
     returns [VarBindResult result]
-    : varDecl '=' expr[0] end+
+    : varDecl '=' expr end+
     ;
 
 varDecl
     returns [VarDeclResult result]
-    : singleDecl #SingleVarDecl
-    | tupleDecl  #TupleVarDecl
+    : '(' (varDecl (',' varDecl)* ','?)? ')'                              #TupleVarDecl
+    | ('(' identifier (':' qualified)? ')' | identifier (':' qualified)?) #SingleVarDecl
     ;
 
-singleDecl
-    returns [VarDeclResult result]
-    : identifier (':' identifier)?
-    | '(' identifier (':' identifier)? ')'
-    ;
-
-tupleDecl
-    returns [VarDeclResult result]
-    : '(' (varDecl (',' varDecl)* ','?)? ')'
+qualified
+    returns [QualifiedResult result]
+    : identifier ('.' identifier)*
     ;
 
 identifier
@@ -52,27 +46,16 @@ identifier
     : IDENTIFIER
     ;
 
-expr[int priority]
+expr
     returns [ExprResult result]
-    : evalVar  #EvalVarExpr
-    | evalFunc #EvalFuncExpr
-    | func     #FuncExpr
-    | literal  #LiteralExpr
-    ;
-
-evalVar
-    returns [EvalVarResult result]
-    : identifier
-    ;
-
-evalFunc
-    returns [EvalFuncResult result]
-    : identifier expr[0]
-    ;
-
-func
-    returns [FuncResult result]
-    : varDecl '->' expr[0]
+    : '(' expr ')'                             #ParensExpr
+    | literal                                  #LiteralExpr
+    | identifier                               #EvalVarExpr
+    | identifier '(' ')'                       #EvalUnitFuncExpr
+    | identifier '(' expr ')'                  #EvalSingleFuncExpr
+    | identifier '(' expr (',' expr)* ','? ')' #EvalTupleFuncExpr
+    | expr '.' expr                            #AccessExpr
+    | varDecl '->' expr                        #FuncExpr
     ;
 
 literal

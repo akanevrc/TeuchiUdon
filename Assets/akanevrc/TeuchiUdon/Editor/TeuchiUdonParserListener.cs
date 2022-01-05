@@ -75,18 +75,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitVarBind([NotNull] TeuchiUdonParser.VarBindContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>SingleVarDecl</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterSingleVarDecl([NotNull] TeuchiUdonParser.SingleVarDeclContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>SingleVarDecl</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitSingleVarDecl([NotNull] TeuchiUdonParser.SingleVarDeclContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// </summary>
@@ -99,25 +87,27 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.singleDecl"/>.
+	/// Enter a parse tree produced by the <c>SingleVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterSingleDecl([NotNull] TeuchiUdonParser.SingleDeclContext context);
+	void EnterSingleVarDecl([NotNull] TeuchiUdonParser.SingleVarDeclContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.singleDecl"/>.
+	/// Exit a parse tree produced by the <c>SingleVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitSingleDecl([NotNull] TeuchiUdonParser.SingleDeclContext context);
+	void ExitSingleVarDecl([NotNull] TeuchiUdonParser.SingleVarDeclContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.tupleDecl"/>.
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterTupleDecl([NotNull] TeuchiUdonParser.TupleDeclContext context);
+	void EnterQualified([NotNull] TeuchiUdonParser.QualifiedContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.tupleDecl"/>.
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitTupleDecl([NotNull] TeuchiUdonParser.TupleDeclContext context);
+	void ExitQualified([NotNull] TeuchiUdonParser.QualifiedContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.identifier"/>.
 	/// </summary>
@@ -141,29 +131,53 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitEvalVarExpr([NotNull] TeuchiUdonParser.EvalVarExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>EvalFuncExpr</c>
+	/// Enter a parse tree produced by the <c>AccessExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterEvalFuncExpr([NotNull] TeuchiUdonParser.EvalFuncExprContext context);
+	void EnterAccessExpr([NotNull] TeuchiUdonParser.AccessExprContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>EvalFuncExpr</c>
+	/// Exit a parse tree produced by the <c>AccessExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitEvalFuncExpr([NotNull] TeuchiUdonParser.EvalFuncExprContext context);
+	void ExitAccessExpr([NotNull] TeuchiUdonParser.AccessExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>FuncExpr</c>
+	/// Enter a parse tree produced by the <c>EvalUnitFuncExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterFuncExpr([NotNull] TeuchiUdonParser.FuncExprContext context);
+	void EnterEvalUnitFuncExpr([NotNull] TeuchiUdonParser.EvalUnitFuncExprContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>FuncExpr</c>
+	/// Exit a parse tree produced by the <c>EvalUnitFuncExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitFuncExpr([NotNull] TeuchiUdonParser.FuncExprContext context);
+	void ExitEvalUnitFuncExpr([NotNull] TeuchiUdonParser.EvalUnitFuncExprContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>EvalTupleFuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterEvalTupleFuncExpr([NotNull] TeuchiUdonParser.EvalTupleFuncExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EvalTupleFuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitEvalTupleFuncExpr([NotNull] TeuchiUdonParser.EvalTupleFuncExprContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ParensExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterParensExpr([NotNull] TeuchiUdonParser.ParensExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ParensExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitParensExpr([NotNull] TeuchiUdonParser.ParensExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>LiteralExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
@@ -177,35 +191,29 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitLiteralExpr([NotNull] TeuchiUdonParser.LiteralExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.evalVar"/>.
+	/// Enter a parse tree produced by the <c>FuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterEvalVar([NotNull] TeuchiUdonParser.EvalVarContext context);
+	void EnterFuncExpr([NotNull] TeuchiUdonParser.FuncExprContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.evalVar"/>.
+	/// Exit a parse tree produced by the <c>FuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitEvalVar([NotNull] TeuchiUdonParser.EvalVarContext context);
+	void ExitFuncExpr([NotNull] TeuchiUdonParser.FuncExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.evalFunc"/>.
+	/// Enter a parse tree produced by the <c>EvalSingleFuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterEvalFunc([NotNull] TeuchiUdonParser.EvalFuncContext context);
+	void EnterEvalSingleFuncExpr([NotNull] TeuchiUdonParser.EvalSingleFuncExprContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.evalFunc"/>.
+	/// Exit a parse tree produced by the <c>EvalSingleFuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitEvalFunc([NotNull] TeuchiUdonParser.EvalFuncContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.func"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFunc([NotNull] TeuchiUdonParser.FuncContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.func"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFunc([NotNull] TeuchiUdonParser.FuncContext context);
+	void ExitEvalSingleFuncExpr([NotNull] TeuchiUdonParser.EvalSingleFuncExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>IntegerLiteral</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.
