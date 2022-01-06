@@ -1,0 +1,10 @@
+.data_start
+str:%SystemString,"ok"
+.data_end
+.code_start
+.export _start
+_start:
+PUSH,str
+EXTERN,"UnityEngineDebug.__Log__SystemObject__SystemVoid"
+JUMP,0xFFFFFFFC
+.code_end

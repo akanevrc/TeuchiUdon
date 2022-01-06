@@ -16,8 +16,6 @@ MonoBehaviour:
     type: 2}
   udonAssembly: '.data_start
 
-    .export str
-
     str:%SystemString,"ok"
 
     .data_end
