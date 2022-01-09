@@ -42,7 +42,7 @@ namespace akanevrc.TeuchiUdon.Editor
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
 
                 var logicalErrorHandler = new TeuchiUdonLogicalErrorHandler(parser);
-                var listener            = new TeuchiUdonListener(logicalErrorHandler);
+                var listener            = new TeuchiUdonListener(parser, logicalErrorHandler);
                 ParseTreeWalker.Default.Walk(listener, parser.target());
                 Debug.Log(outputWriter.ToString());
                 Debug.Log(errorWriter .ToString());

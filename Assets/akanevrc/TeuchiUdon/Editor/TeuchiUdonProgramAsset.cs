@@ -1,19 +1,22 @@
 using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
+using UnityEditor;
 using UnityEngine;
+using VRC.Udon;
+using VRC.Udon.ProgramSources;
 using VRC.Udon.Editor.ProgramSources;
 using akanevrc.TeuchiUdon.Editor.Compiler;
 
-namespace akanevrc.TeuchiUdon.Editor.VRC
+namespace akanevrc.TeuchiUdon.Editor
 {
-    public class TeuchiUdonProgramSource : UdonAssemblyProgramAsset
+    public class TeuchiUdonProgramAsset : UdonAssemblyProgramAsset
     {
         [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset...")]
         public static void SaveTeuchiUdonAsset()
         {
             var script  = UnityEditor.AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
-            var program = ScriptableObject.CreateInstance<TeuchiUdonProgramSource>();
+            var program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
             program.sourceScript = script;
             program.RefreshProgram();
             UnityEditor.AssetDatabase.CreateAsset(program, "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset");
@@ -41,7 +44,7 @@ namespace akanevrc.TeuchiUdon.Editor.VRC
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
 
                 var logicalErrorHandler = new TeuchiUdonLogicalErrorHandler(parser);
-                var listener            = new TeuchiUdonListener(logicalErrorHandler);
+                var listener            = new TeuchiUdonListener(parser, logicalErrorHandler);
                 ParseTreeWalker.Default.Walk(listener, parser.target());
 
                 var output = outputWriter.ToString();

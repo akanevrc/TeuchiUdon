@@ -16,8 +16,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class TopBindResult : TeuchiUdonParserResult
     {
-        public TopBindResult()
-            : base(null)
+        public TopBindResult(IToken token)
+            : base(token)
         {
         }
     }
@@ -27,8 +27,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IdentifierResult Identifier { get; }
         public ExprResult Expr { get; }
 
-        public VarBindResult(IdentifierResult identifier, ExprResult expr, Dictionary<string, VarBindResult> dic)
-            : base(identifier.Token)
+        public VarBindResult(IToken token, IdentifierResult identifier, ExprResult expr, Dictionary<string, VarBindResult> dic)
+            : base(token)
         {
             Identifier = identifier;
             Expr       = expr;
@@ -42,15 +42,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TupleDeclResult TupleDecl { get; }
         public SingleDeclResult SingleDecl { get; }
 
-        public VarDeclResult(TupleDeclResult tupleDecl)
-            : base(tupleDecl.Token)
+        public VarDeclResult(IToken token, TupleDeclResult tupleDecl)
+            : base(token)
         {
             TupleDecl  = tupleDecl;
             SingleDecl = null;
         }
 
-        public VarDeclResult(SingleDeclResult singleDecl)
-            : base(singleDecl.Token)
+        public VarDeclResult(IToken token, SingleDeclResult singleDecl)
+            : base(token)
         {
             TupleDecl  = null;
             SingleDecl = singleDecl;
@@ -61,8 +61,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public VarDeclResult[] Decls { get; }
 
-        public TupleDeclResult(IEnumerable<VarDeclResult> decls)
-            : base(decls.FirstOrDefault()?.Token)
+        public TupleDeclResult(IToken token, IEnumerable<VarDeclResult> decls)
+            : base(token)
         {
             Decls = decls.ToArray();
         }
@@ -73,8 +73,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IdentifierResult Identifier { get; }
         public QualifiedResult Type { get; }
 
-        public SingleDeclResult(IdentifierResult identifier, QualifiedResult type)
-            : base(identifier.Token)
+        public SingleDeclResult(IToken token, IdentifierResult identifier, QualifiedResult type)
+            : base(token)
         {
             Identifier = identifier;
             Type       = type;
@@ -85,8 +85,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public IdentifierResult[] Identifiers { get; }
 
-        public QualifiedResult(IEnumerable<IdentifierResult> identifiers)
-            : base(identifiers.FirstOrDefault()?.Token)
+        public QualifiedResult(IToken token, IEnumerable<IdentifierResult> identifiers)
+            : base(token)
         {
             Identifiers = identifiers.ToArray();
         }
@@ -107,10 +107,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public TeuchiUdonParserResult Inner { get; }
 
-        public ExprResult(TeuchiUdonParserResult inner)
-            : base(inner.Token)
+        public ExprResult(IToken token, TeuchiUdonParserResult inner)
+            : base(token)
         {
             Inner = inner;
+        }
+    }
+
+    public class ParensResult : TeuchiUdonParserResult
+    {
+        public ExprResult Expr { get; }
+
+        public ParensResult(IToken token, ExprResult expr)
+            : base(token)
+        {
+            Expr = expr;
         }
     }
 
@@ -118,12 +129,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public uint Address { get; }
         public object Value { get; }
+        public string Text { get; }
 
-        public LiteralResult(IToken token, object value, List<LiteralResult> list)
+        public LiteralResult(IToken token, object value, string text, List<LiteralResult> list)
             : base(token)
         {
             Address = (uint)list.Count;
             Value   = value;
+            Text    = text;
 
             list.Add(this);
         }
@@ -133,8 +146,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public IdentifierResult Identifier { get; }
 
-        public EvalVarResult(IdentifierResult identifier)
-            : base(identifier.Token)
+        public EvalVarResult(IToken token, IdentifierResult identifier)
+            : base(token)
         {
             Identifier = identifier;
         }
@@ -145,8 +158,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IdentifierResult Identifier { get; }
         public ExprResult[] Args { get; }
 
-        public EvalFuncResult(IdentifierResult identifier, IEnumerable<ExprResult> args)
-            : base(identifier.Token)
+        public EvalFuncResult(IToken token, IdentifierResult identifier, IEnumerable<ExprResult> args)
+            : base(token)
         {
             Identifier = identifier;
             Args       = args.ToArray();
@@ -159,8 +172,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult Expr1 { get; }
         public ExprResult Expr2 { get; }
 
-        public InfixResult(string op, ExprResult expr1, ExprResult expr2)
-            : base(expr1.Token)
+        public InfixResult(IToken token, string op, ExprResult expr1, ExprResult expr2)
+            : base(token)
         {
             Op    = op;
             Expr1 = expr1;
@@ -174,8 +187,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public FuncResult(VarDeclResult varDecl, ExprResult expr, List<FuncResult> list)
-            : base(varDecl.Token)
+        public FuncResult(IToken token, VarDeclResult varDecl, ExprResult expr, List<FuncResult> list)
+            : base(token)
         {
             Address = (uint)list.Count;
             VarDecl = varDecl;

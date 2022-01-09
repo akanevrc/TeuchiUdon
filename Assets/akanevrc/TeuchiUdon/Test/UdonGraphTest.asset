@@ -15,11 +15,16 @@ MonoBehaviour:
   serializedUdonProgramAsset: {fileID: 11400000, guid: 0d1b20c4bccaf344a8cdf9501a0a33e3,
     type: 2}
   udonAssembly: ".data_start\r\n\r\n    \r\n    __message_0: %SystemObject, null\r\n   
-    __String_0: %SystemString, null\r\n\r\n.data_end\r\n\r\n.code_start\r\n\r\n   
+    __instance_0: %SystemString, null\r\n    __value_0: %SystemChar, null\r\n   
+    __startIndex_0: %SystemInt32, null\r\n    __String_0: %SystemString, null\r\n   
+    __Char_0: %SystemChar, null\r\n    __Int32_0: %SystemInt32, null\r\n\r\n.data_end\r\n\r\n.code_start\r\n\r\n   
     .export _start\r\n    \r\n    _start:\r\n    \r\n        PUSH, __String_0\r\n       
-    PUSH, __message_0\r\n        COPY\r\n        PUSH, __message_0\r\n        EXTERN,
-    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP, 0xFFFFFFFC\r\n   
-    \r\n\r\n.code_end\r\n"
+    PUSH, __instance_0\r\n        COPY\r\n        PUSH, __Char_0\r\n        PUSH,
+    __value_0\r\n        COPY\r\n        PUSH, __Int32_0\r\n        PUSH, __startIndex_0\r\n       
+    COPY\r\n        PUSH, __instance_0\r\n        PUSH, __value_0\r\n        PUSH,
+    __startIndex_0\r\n        PUSH, __message_0\r\n        EXTERN, \"SystemString.__IndexOf__SystemChar_SystemInt32__SystemInt32\"\r\n       
+    PUSH, __message_0\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    JUMP, 0xFFFFFFFC\r\n    \r\n\r\n.code_end\r\n"
   assemblyError: 
   graphData:
     name: 
@@ -27,33 +32,66 @@ MonoBehaviour:
     nodes:
     - fullName: Event_Start
       uid: b0936ff5-79dd-4a11-a6bf-a76110c8170e
-      position: {x: 367, y: 261}
+      position: {x: 495.80008, y: 388.65002}
       nodeUIDs: []
       flowUIDs:
       - edd47a68-67a3-4232-9eeb-dc97c89c8768
       nodeValues: []
     - fullName: UnityEngineDebug.__Log__SystemObject__SystemVoid
       uid: edd47a68-67a3-4232-9eeb-dc97c89c8768
-      position: {x: 549, y: 278}
+      position: {x: 676.65015, y: 472.35004}
       nodeUIDs:
-      - a100cfce-8076-408e-93da-ce43b69ec411|0
+      - 1af8f1cc-b6d3-433e-b778-339cda5071e8|0
       flowUIDs: []
       nodeValues:
       - unityObjectValue: {fileID: 0}
         stringValue: 
     - fullName: Const_SystemString
       uid: a100cfce-8076-408e-93da-ce43b69ec411
-      position: {x: 296, y: 371.88}
+      position: {x: 187.15004, y: 413.35}
       nodeUIDs:
       - 
       flowUIDs: []
       nodeValues:
       - unityObjectValue: {fileID: 0}
         stringValue: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|ok
+    - fullName: Const_SystemInt32
+      uid: c65ebc92-4ab0-448e-8ca1-61685d192cb1
+      position: {x: 261.15002, y: 613.25006}
+      nodeUIDs:
+      - 
+      flowUIDs: []
+      nodeValues:
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|0
+    - fullName: SystemString.__IndexOf__SystemChar_SystemInt32__SystemInt32
+      uid: 1af8f1cc-b6d3-433e-b778-339cda5071e8
+      position: {x: 450.80005, y: 531.30005}
+      nodeUIDs:
+      - a100cfce-8076-408e-93da-ce43b69ec411|0
+      - 247a07ef-aa54-4f07-aa0b-f6562e6442dd|0
+      - c65ebc92-4ab0-448e-8ca1-61685d192cb1|0
+      flowUIDs: []
+      nodeValues:
+      - unityObjectValue: {fileID: 0}
+        stringValue: 
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.Char, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|0
+    - fullName: Const_SystemChar
+      uid: 247a07ef-aa54-4f07-aa0b-f6562e6442dd
+      position: {x: 266.65002, y: 504.79602}
+      nodeUIDs:
+      - 
+      flowUIDs: []
+      nodeValues:
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.Char, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|a
     updateOrder: 0
   graphElementData: []
   viewTransform:
-    position: {x: 2, y: 1}
-    scale: 1
+    position: {x: 64, y: -128}
+    scale: 0.8695652
   version: 1.0.0
   showAssembly: 1

@@ -75,6 +75,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitVarBind([NotNull] TeuchiUdonParser.VarBindContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>UnitVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterUnitVarDecl([NotNull] TeuchiUdonParser.UnitVarDeclContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>UnitVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitUnitVarDecl([NotNull] TeuchiUdonParser.UnitVarDeclContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// </summary>

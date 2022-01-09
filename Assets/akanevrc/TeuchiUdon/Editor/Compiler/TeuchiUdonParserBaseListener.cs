@@ -88,6 +88,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVarBind([NotNull] TeuchiUdonParser.VarBindContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>UnitVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterUnitVarDecl([NotNull] TeuchiUdonParser.UnitVarDeclContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>UnitVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitUnitVarDecl([NotNull] TeuchiUdonParser.UnitVarDeclContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// <para>The default implementation does nothing.</para>

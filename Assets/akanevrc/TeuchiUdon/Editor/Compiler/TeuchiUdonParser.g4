@@ -3,6 +3,7 @@ parser grammar TeuchiUdonParser;
 options
 {
     language=CSharp;
+    superClass=TeuchiUdonBaseParser;
     tokenVocab=TeuchiUdonLexer;
 }
 
@@ -32,7 +33,8 @@ varBind
 
 varDecl
     returns [VarDeclResult result]
-    : '(' (varDecl (',' varDecl)* ','?)? ')'                              #TupleVarDecl
+    : '(' ')'                                                             #UnitVarDecl
+    | '(' (varDecl (',' varDecl)* ','?)? ')'                              #TupleVarDecl
     | ('(' identifier (':' qualified)? ')' | identifier (':' qualified)?) #SingleVarDecl
     ;
 

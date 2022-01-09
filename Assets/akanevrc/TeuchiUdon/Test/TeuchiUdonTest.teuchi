@@ -1,2 +1,1 @@
-f = a -> a
-x = f(100, 200).m()
+_start = () -> UnityEngine.Debug.Log("Hello, TeuchiUdon!")

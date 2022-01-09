@@ -9,12 +9,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b317899009166d4296edafb5739b42e, type: 3}
+  m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: TeuchiUdonAsm
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: ea7af9fd64ade654b8e176d86dec1da6,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 122f0bd238021e346ae65211eefbaefa,
     type: 2}
-  udonAssembly: 
+  udonAssembly: '.data_start
+
+    literal[0]: %SystemString, "Hello, TeuchiUdon!"
+
+    .data_end
+
+    .code_start
+
+    .export
+    _start
+
+    _start:
+
+    PUSH, literal[0]
+
+    EXTERN, "UnityEngineDebug.__Log__SystemObject__SystemVoid"
+
+    JUMP,
+    0xFFFFFC
+
+    .code_end
+
+'
   assemblyError: 
   sourceScript: {fileID: 8645214851717060245, guid: be00773c46b949c428757f20442eb915,
     type: 3}
