@@ -18,20 +18,28 @@ MonoBehaviour:
 
     str:%SystemString,"ok"
 
+    jump:%SystemString,"_sub"
+
     .data_end
 
     .code_start
 
-    .export
-    _start
+    JUMP,_start
 
-    _start:
+    _sub:
 
     PUSH,str
 
     EXTERN,"UnityEngineDebug.__Log__SystemObject__SystemVoid"
 
     JUMP,0xFFFFFFFC
+
+    .export
+    _start
+
+    _start:
+
+    JUMP_INDIRECT,jump
 
     .code_end'
   assemblyError: 

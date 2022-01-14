@@ -18,24 +18,26 @@ target
     ;
 
 body
-    : (topBind)+
+    returns [BodyResult result]
+    : (topStatement)+
     ;
 
-topBind
-    returns [TopBindResult result]
-    : varBind
+topStatement
+    returns [TopStatementResult result]
+    : varBind #VarBindTopStatement
+    | expr    #ExprTopStatement
     ;
 
 varBind
     returns [VarBindResult result]
-    : varDecl '=' expr end+
+    : varDecl[true] '=' expr end+
     ;
 
-varDecl
+varDecl[bool isActual]
     returns [VarDeclResult result]
-    : '(' ')'                                                             #UnitVarDecl
-    | '(' (varDecl (',' varDecl)* ','?)? ')'                              #TupleVarDecl
-    | ('(' identifier (':' qualified)? ')' | identifier (':' qualified)?) #SingleVarDecl
+    : '(' ')'                                                                     #UnitVarDecl
+    | identifier (':' qualified)?                                                 #SingleVarDecl
+    | '(' identifier (':' qualified)? (',' identifier (':' qualified)?)* ','? ')' #TupleVarDecl
     ;
 
 qualified
@@ -49,7 +51,7 @@ identifier
     ;
 
 expr
-    returns [ExprResult result]
+    returns [ExprResult result, int tableIndex]
     : '(' expr ')'                             #ParensExpr
     | literal                                  #LiteralExpr
     | identifier                               #EvalVarExpr
@@ -57,7 +59,7 @@ expr
     | identifier '(' expr ')'                  #EvalSingleFuncExpr
     | identifier '(' expr (',' expr)* ','? ')' #EvalTupleFuncExpr
     | expr '.' expr                            #AccessExpr
-    | varDecl '->' expr                        #FuncExpr
+    | varDecl[false] '->' expr                        #FuncExpr
     ;
 
 literal

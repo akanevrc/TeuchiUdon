@@ -55,15 +55,29 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitBody([NotNull] TeuchiUdonParser.BodyContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.topBind"/>.
+	/// Enter a parse tree produced by the <c>VarBindTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterTopBind([NotNull] TeuchiUdonParser.TopBindContext context);
+	void EnterVarBindTopStatement([NotNull] TeuchiUdonParser.VarBindTopStatementContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.topBind"/>.
+	/// Exit a parse tree produced by the <c>VarBindTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitTopBind([NotNull] TeuchiUdonParser.TopBindContext context);
+	void ExitVarBindTopStatement([NotNull] TeuchiUdonParser.VarBindTopStatementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ExprTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ExprTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.varBind"/>.
 	/// </summary>
@@ -87,18 +101,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitUnitVarDecl([NotNull] TeuchiUdonParser.UnitVarDeclContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>TupleVarDecl</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>SingleVarDecl</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// </summary>
@@ -110,6 +112,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitSingleVarDecl([NotNull] TeuchiUdonParser.SingleVarDeclContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>TupleVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
 	/// </summary>

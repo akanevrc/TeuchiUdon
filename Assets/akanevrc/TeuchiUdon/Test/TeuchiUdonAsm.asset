@@ -14,29 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: 122f0bd238021e346ae65211eefbaefa,
     type: 2}
-  udonAssembly: '.data_start
-
-    literal[0]: %SystemString, "Hello, TeuchiUdon!"
-
-    .data_end
-
-    .code_start
-
-    .export
-    _start
-
-    _start:
-
-    PUSH, literal[0]
-
-    EXTERN, "UnityEngineDebug.__Log__SystemObject__SystemVoid"
-
-    JUMP,
-    0xFFFFFC
-
-    .code_end
-
-'
+  udonAssembly: ".data_start\r\n    literal[0]: %SystemString, \"Hello, TeuchiUdon!\"\r\n.data_end\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,
+    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n.code_end\r\n"
   assemblyError: 
   sourceScript: {fileID: 8645214851717060245, guid: be00773c46b949c428757f20442eb915,
     type: 3}

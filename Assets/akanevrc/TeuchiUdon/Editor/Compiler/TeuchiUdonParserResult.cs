@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonParserResult
+    public abstract class TeuchiUdonParserResult
     {
         public IToken Token { get; }
 
@@ -12,83 +13,137 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Token = token;
         }
+
+        public virtual IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return new TeuchiUdonAssembly[0];
+        }
+
+        public virtual IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return new TeuchiUdonAssembly[0];
+        }
     }
 
-    public class TopBindResult : TeuchiUdonParserResult
+    public class BodyResult : TeuchiUdonParserResult
     {
-        public TopBindResult(IToken token)
+        public TopStatementResult[] TopStatements { get; }
+
+        public BodyResult(IToken token, IEnumerable<TopStatementResult> topStatements)
             : base(token)
         {
+            TopStatements = topStatements.ToArray();
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return TopStatements.SelectMany(x => x.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return TopStatements.SelectMany(x => x.GetAssemblyCodePart());
+        }
+    }
+
+    public class TopStatementResult : TeuchiUdonParserResult
+    {
+        public TeuchiUdonParserResult Statement { get; }
+
+        public TopStatementResult(IToken token, TeuchiUdonParserResult statement)
+            : base(token)
+        {
+            Statement = statement;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Statement.GetAssemblyDataPart();
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Statement.GetAssemblyCodePart();
         }
     }
 
     public class VarBindResult : TeuchiUdonParserResult
     {
-        public IdentifierResult Identifier { get; }
+        public TeuchiUdonVar Var { get; }
+        public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public VarBindResult(IToken token, IdentifierResult identifier, ExprResult expr, Dictionary<string, VarBindResult> dic)
+        public VarBindResult(IToken token, VarDeclResult varDecl, TeuchiUdonType type, ExprResult expr)
             : base(token)
         {
-            Identifier = identifier;
-            Expr       = expr;
+            Var     = new TeuchiUdonVar(varDecl.Vars[0].Qualifier, varDecl.Vars[0].Name, type, expr);
+            VarDecl = varDecl;
+            Expr    = expr;
 
-            dic.Add(identifier.Name, this);
+            TeuchiUdonTables.Instance.Vars[Var] = Var;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return VarDecl.GetAssemblyDataPart().Concat(Expr.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Expr.GetAssemblyCodePart();
         }
     }
 
     public class VarDeclResult : TeuchiUdonParserResult
     {
-        public TupleDeclResult TupleDecl { get; }
-        public SingleDeclResult SingleDecl { get; }
+        public TeuchiUdonVar[] Vars { get; }
+        public TeuchiUdonType[] Types { get; }
+        public IdentifierResult[] Identifiers { get; }
+        public QualifiedResult[] Qualifieds { get; }
 
-        public VarDeclResult(IToken token, TupleDeclResult tupleDecl)
+        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<IdentifierResult> identifiers, IEnumerable<QualifiedResult> qualifieds)
             : base(token)
         {
-            TupleDecl  = tupleDecl;
-            SingleDecl = null;
+            Types       = qualifieds .Select(x => x.Type).ToArray();
+            Vars        = identifiers.Zip(Types, (i, t) => (i, t)).Select(x => new TeuchiUdonVar(qualifier, x.i.Name, x.t)).ToArray();
+            Identifiers = identifiers.ToArray();
+            Qualifieds  = qualifieds .ToArray();
+
+            foreach (var v in Vars)
+            {
+                TeuchiUdonTables.Instance.Vars.Add(v, v);
+            }
         }
 
-        public VarDeclResult(IToken token, SingleDeclResult singleDecl)
-            : base(token)
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
         {
-            TupleDecl  = null;
-            SingleDecl = singleDecl;
-        }
-    }
-
-    public class TupleDeclResult : TeuchiUdonParserResult
-    {
-        public VarDeclResult[] Decls { get; }
-
-        public TupleDeclResult(IToken token, IEnumerable<VarDeclResult> decls)
-            : base(token)
-        {
-            Decls = decls.ToArray();
-        }
-    }
-
-    public class SingleDeclResult : TeuchiUdonParserResult
-    {
-        public IdentifierResult Identifier { get; }
-        public QualifiedResult Type { get; }
-
-        public SingleDeclResult(IToken token, IdentifierResult identifier, QualifiedResult type)
-            : base(token)
-        {
-            Identifier = identifier;
-            Type       = type;
+            return Vars.SelectMany(x => x.Type.TypeNameEquals(TeuchiUdonType.Func) ?
+            new TeuchiUdonAssembly[0] :
+            new TeuchiUdonAssembly[]
+            {
+                new Assembly_EXPORT_DATA(x.GetUdonName()),
+                new Assembly_DECL_DATA
+                (
+                    x.GetUdonName(),
+                    x.Type,
+                    x.Expr.Inner is LiteralResult literal ?
+                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_VALUE(literal.Text) :
+                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_NULL ()
+                )
+            });
         }
     }
 
     public class QualifiedResult : TeuchiUdonParserResult
     {
         public IdentifierResult[] Identifiers { get; }
+        public TeuchiUdonType Type { get; }
 
-        public QualifiedResult(IToken token, IEnumerable<IdentifierResult> identifiers)
+        public QualifiedResult(IToken token, IEnumerable<IdentifierResult> identifiers, TeuchiUdonType type)
             : base(token)
         {
             Identifiers = identifiers.ToArray();
+            Type        = type;
         }
     }
 
@@ -105,96 +160,304 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class ExprResult : TeuchiUdonParserResult
     {
-        public TeuchiUdonParserResult Inner { get; }
+        public TypedResult Inner { get; }
 
-        public ExprResult(IToken token, TeuchiUdonParserResult inner)
+        public ExprResult(IToken token, TypedResult inner)
             : base(token)
         {
             Inner = inner;
         }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Inner.GetAssemblyDataPart();
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Inner.GetAssemblyCodePart();
+        }
     }
 
-    public class ParensResult : TeuchiUdonParserResult
+    public abstract class TypedResult : TeuchiUdonParserResult
+    {
+        public TeuchiUdonType Type { get; }
+
+        public TypedResult(IToken token, TeuchiUdonType type)
+            : base(token)
+        {
+            Type = type;
+        }
+    }
+
+    public class BottomResult : TypedResult
+    {
+        public BottomResult(IToken token)
+            : base(token, TeuchiUdonType.Bottom)
+        {
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            throw new InvalidOperationException("bottom detected");
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            throw new InvalidOperationException("bottom detected");
+        }
+    }
+
+    public class ParensResult : TypedResult
     {
         public ExprResult Expr { get; }
 
         public ParensResult(IToken token, ExprResult expr)
-            : base(token)
+            : base(token, expr.Inner.Type)
         {
             Expr = expr;
         }
-    }
 
-    public class LiteralResult : TeuchiUdonParserResult
-    {
-        public uint Address { get; }
-        public object Value { get; }
-        public string Text { get; }
-
-        public LiteralResult(IToken token, object value, string text, List<LiteralResult> list)
-            : base(token)
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
         {
-            Address = (uint)list.Count;
-            Value   = value;
-            Text    = text;
+            return Expr.GetAssemblyDataPart();
+        }
 
-            list.Add(this);
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Expr.GetAssemblyCodePart();
         }
     }
 
-    public class EvalVarResult : TeuchiUdonParserResult
+    public class LiteralResult : TypedResult
     {
+        public int Index { get; }
+        public object Value { get; }
+        public string Text { get; }
+
+        public LiteralResult(IToken token, TeuchiUdonType type, int index, object value, string text)
+            : base(token, type)
+        {
+            Index = index;
+            Value = value;
+            Text  = text;
+
+            TeuchiUdonTables.Instance.Literals.Add(index, this);
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_DECL_DATA(TeuchiUdonTables.GetLiteralName(Index), Type, new AssemblyLiteral_VALUE(Text))
+            };
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_PUSH(new AssemblyAddress_LABEL(TeuchiUdonTables.GetLiteralName(Index)))
+            };
+        }
+    }
+
+    public class EvalVarResult : TypedResult
+    {
+        public TeuchiUdonVar Var { get; }
         public IdentifierResult Identifier { get; }
 
-        public EvalVarResult(IToken token, IdentifierResult identifier)
-            : base(token)
+        public EvalVarResult(IToken token, TeuchiUdonType type, TeuchiUdonVar v, IdentifierResult identifier)
+            : base(token, type)
         {
+            Var        = v;
+            Identifier = identifier;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_PUSH(new AssemblyAddress_LABEL(Var.GetUdonName()))
+            };
+        }
+    }
+
+    public class EvalTypeResult : TypedResult
+    {
+        public TeuchiUdonType InnerType { get; }
+        public IdentifierResult Identifier { get; }
+
+        public EvalTypeResult(IToken token, TeuchiUdonType type, TeuchiUdonType innerType, IdentifierResult identifier)
+            : base(token, type)
+        {
+            InnerType  = innerType;
             Identifier = identifier;
         }
     }
 
-    public class EvalFuncResult : TeuchiUdonParserResult
+    public class EvalQualifierResult : TypedResult
+    {
+        public TeuchiUdonQualifier Qualifier { get; }
+        public IdentifierResult Identifier { get; }
+
+        public EvalQualifierResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, IdentifierResult identifier)
+            : base(token, type)
+        {
+            Qualifier  = qualifier;
+            Identifier = identifier;
+        }
+    }
+
+    public class EvalFuncResult : TypedResult
     {
         public IdentifierResult Identifier { get; }
         public ExprResult[] Args { get; }
 
-        public EvalFuncResult(IToken token, IdentifierResult identifier, IEnumerable<ExprResult> args)
-            : base(token)
+        public EvalFuncResult(IToken token, TeuchiUdonType type, IdentifierResult identifier, IEnumerable<ExprResult> args)
+            : base(token, type)
         {
             Identifier = identifier;
             Args       = args.ToArray();
         }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Args.SelectMany(x => x.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    public class InfixResult : TeuchiUdonParserResult
+    public class EvalMethodResult : TypedResult
+    {
+        public TeuchiUdonMethod Method { get; }
+        public IdentifierResult Identifier { get; }
+        public ExprResult[] Args { get; }
+
+        public EvalMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod method, IdentifierResult identifier, IEnumerable<ExprResult> args)
+            : base(token, type)
+        {
+            Method     = method;
+            Identifier = identifier;
+            Args       = args.ToArray();
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Args.SelectMany(x => x.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Args.SelectMany(x => x.GetAssemblyCodePart()).Concat(new TeuchiUdonAssembly[]
+            {
+                new Assembly_EXTERN(Method)
+            });
+        }
+    }
+
+    public abstract class EvalCandidateResult : TypedResult
+    {
+        public IdentifierResult Identifier { get; }
+
+        public EvalCandidateResult(IToken token, IdentifierResult identifier)
+            : base(token, TeuchiUdonType.Bottom)
+        {
+            Identifier = identifier;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            throw new InvalidOperationException("candidate detected");
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            throw new InvalidOperationException("candidate detected");
+        }
+    }
+
+    public class EvalQualifierCandidateResult : EvalCandidateResult
+    {
+        public EvalQualifierCandidateResult(IToken token, IdentifierResult identifier)
+            : base(token, identifier)
+        {
+        }
+    }
+
+    public class EvalMethodCandidateResult : EvalCandidateResult
+    {
+        public ExprResult[] Args { get; }
+
+        public EvalMethodCandidateResult(IToken token, IdentifierResult identifier, IEnumerable<ExprResult> args)
+            : base(token, identifier)
+        {
+            Args = args.ToArray();
+        }
+    }
+
+    public class InfixResult : TypedResult
     {
         public string Op { get; }
         public ExprResult Expr1 { get; }
         public ExprResult Expr2 { get; }
 
-        public InfixResult(IToken token, string op, ExprResult expr1, ExprResult expr2)
-            : base(token)
+        public InfixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr1, ExprResult expr2)
+            : base(token, type)
         {
             Op    = op;
             Expr1 = expr1;
             Expr2 = expr2;
         }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Expr1.GetAssemblyDataPart().Concat(Expr2.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Expr1.GetAssemblyCodePart().Concat(Expr2.GetAssemblyCodePart());
+        }
     }
 
-    public class FuncResult : TeuchiUdonParserResult
+    public class FuncResult : TypedResult
     {
-        public uint Address { get; }
+        public string TmpName { get; }
+        public int Index { get; }
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public FuncResult(IToken token, VarDeclResult varDecl, ExprResult expr, List<FuncResult> list)
-            : base(token)
+        public FuncResult(IToken token, TeuchiUdonType type, string tmpName, int index, VarDeclResult varDecl, ExprResult expr)
+            : base(token, type)
         {
-            Address = (uint)list.Count;
+            TmpName = tmpName;
+            Index   = index;
             VarDecl = varDecl;
             Expr    = expr;
 
-            list.Add(this);
+            TeuchiUdonTables.Instance.Funcs.Add(index, this);
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return VarDecl.GetAssemblyDataPart().Concat(Expr.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_EXPORT_CODE(TmpName),
+                new Assembly_LABEL      (TmpName),
+                new Assembly_INDENT     (1)
+            }
+            .Concat(Expr.GetAssemblyCodePart())
+            .Concat(new TeuchiUdonAssembly[] { new Assembly_INDENT(-1) });
         }
     }
 }

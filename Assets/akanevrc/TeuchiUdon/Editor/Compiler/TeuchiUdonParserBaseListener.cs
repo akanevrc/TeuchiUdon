@@ -64,17 +64,33 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBody([NotNull] TeuchiUdonParser.BodyContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.topBind"/>.
+	/// Enter a parse tree produced by the <c>VarBindTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterTopBind([NotNull] TeuchiUdonParser.TopBindContext context) { }
+	public virtual void EnterVarBindTopStatement([NotNull] TeuchiUdonParser.VarBindTopStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.topBind"/>.
+	/// Exit a parse tree produced by the <c>VarBindTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitTopBind([NotNull] TeuchiUdonParser.TopBindContext context) { }
+	public virtual void ExitVarBindTopStatement([NotNull] TeuchiUdonParser.VarBindTopStatementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ExprTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ExprTopStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.topStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.varBind"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -102,20 +118,6 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitUnitVarDecl([NotNull] TeuchiUdonParser.UnitVarDeclContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>TupleVarDecl</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>SingleVarDecl</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -129,6 +131,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitSingleVarDecl([NotNull] TeuchiUdonParser.SingleVarDeclContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>TupleVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>TupleVarDecl</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varDecl"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
 	/// <para>The default implementation does nothing.</para>

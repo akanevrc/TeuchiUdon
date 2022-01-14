@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
-using UnityEngine;
-using VRC.Udon.Editor;
-using VRC.Udon.Graph;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
@@ -16,9 +12,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         private TeuchiUdonParser Parser { get; }
         private TeuchiUdonLogicalErrorHandler LogicalErrorHandler { get; }
-        private Dictionary<string, VarBindResult> vars { get; } = new Dictionary<string, VarBindResult>();
-        private List<FuncResult> funcs { get; } = new List<FuncResult>();
-        private List<LiteralResult> literals { get; } = new List<LiteralResult>();
 
         public TeuchiUdonListener(TeuchiUdonParser parser, TeuchiUdonLogicalErrorHandler logicalErrorHandler)
         {
@@ -26,148 +19,100 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             LogicalErrorHandler = logicalErrorHandler;
         }
 
+        public override void EnterTarget([NotNull] TargetContext context)
+        {
+            TeuchiUdonTables        .Instance.Init();
+            TeuchiUdonQualifierStack.Instance.Init();
+            TeuchiUdonAssemblyWriter.Instance.Init();
+        }
+
         public override void ExitTarget([NotNull] TargetContext context)
         {
-            var typeToUdon    = new Dictionary<string, string>();
-            var methodToUdon  = new Dictionary<string, Dictionary<string, Dictionary<int, List<UdonNodeDefinition>>>>();
-            var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
-            foreach (var topReg in topRegistries)
-            {
-                foreach (var reg in topReg.Value)
-                {
-                    foreach (var def in reg.Value.GetNodeDefinitions())
-                    {
-                        if (def.type == null) continue;
+            var body = context.body().result;
+            TeuchiUdonAssemblyWriter.Instance.PushDataBlock(body.GetAssemblyDataPart());
+            TeuchiUdonAssemblyWriter.Instance.PushCodeBlock(body.GetAssemblyCodePart());
+            TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
 
-                        var typeFullName     = def.type.FullName;
-                        var splittedFullName = def.fullName.Split(new string[] { "." }, StringSplitOptions.None);
+            // Parser.Output.WriteLine(".data_start");
 
-                        if (splittedFullName.Length == 2)
-                        {
-                            var udonTypeName   = splittedFullName[0];
-                            var splittedMethod = splittedFullName[1].Split(new string[] { "__" }, StringSplitOptions.None);
+            // for (var i = 0; i < TeuchiUdonTables.Instance.Literals.Count; i++)
+            // {
+            //     if (TeuchiUdonTables.Instance.Literals[i].Value is int)
+            //     {
+            //         Parser.Output.WriteLine($"{TeuchiUdonTables.GetLiteralName(i)}: %SystemInt32, {TeuchiUdonTables.Instance.Literals[i].Text}");
+            //     }
+            //     else if (TeuchiUdonTables.Instance.Literals[i].Value is string)
+            //     {
+            //         Parser.Output.WriteLine($"{TeuchiUdonTables.GetLiteralName(i)}: %SystemString, {TeuchiUdonTables.Instance.Literals[i].Text}");
+            //     }
+            // }
 
-                            if (!typeToUdon.ContainsKey(typeFullName))
-                            {
-                                typeToUdon.Add(typeFullName, udonTypeName);
-                            }
+            // Parser.Output.WriteLine(".data_end");
 
-                            if (splittedMethod.Length == 4)
-                            {
-                                if (!methodToUdon.ContainsKey(typeFullName))
-                                {
-                                    methodToUdon.Add(typeFullName, new Dictionary<string, Dictionary<int, List<UdonNodeDefinition>>>());
-                                }
+            // Parser.Output.WriteLine(".code_start");
 
-                                var methodToUdonType = methodToUdon[typeFullName];
-                                var methodName       = splittedMethod[1];
-
-                                if (!methodToUdonType.ContainsKey(methodName))
-                                {
-                                    methodToUdonType.Add(methodName, new Dictionary<int, List<UdonNodeDefinition>>());
-                                }
-
-                                var methodToUdonMethod = methodToUdonType[methodName];
-                                var methodArgs         = splittedMethod[2].Split(new string[] { "_" }, StringSplitOptions.None);
-                                var methodArgCount     = methodArgs.Length == 1 && methodArgs[0] == "SystemVoid" ? 0 : methodArgs.Length;
-
-                                if (!methodToUdonMethod.ContainsKey(methodArgCount))
-                                {
-                                    methodToUdonMethod.Add(methodArgCount, new List<UdonNodeDefinition>());
-                                }
-                                
-                                methodToUdonMethod[methodArgCount].Add(def);
-                            }
-                        }
-                    }
-                }
-            }
-
-            Parser.Output.WriteLine(".data_start");
-
-            for (var i = 0; i < literals.Count; i++)
-            {
-                if (literals[i].Value is int)
-                {
-                    Parser.Output.WriteLine($"literal[{i}]: %SystemInt32, {literals[i].Text}");
-                }
-                else if (literals[i].Value is string)
-                {
-                    Parser.Output.WriteLine($"literal[{i}]: %SystemString, {literals[i].Text}");
-                }
-            }
-
-            Parser.Output.WriteLine(".data_end");
-
-            Parser.Output.WriteLine(".code_start");
-
-            foreach (var (id, v) in vars.Select(x => (x.Key, x.Value)))
-            {
-                if (v.Expr.Inner is FuncResult func)
-                {
-                    Parser.Output.WriteLine($".export {id}");
-                    Parser.Output.WriteLine($"{id}:");
+            // foreach (var (id, v) in TeuchiUdonTables.Instance.Vars.Select(x => (x.Key, x.Value)))
+            // {
+            //     if (v.Expr.Inner is FuncResult func)
+            //     {
+            //         Parser.Output.WriteLine($".export {id}");
+            //         Parser.Output.WriteLine($"{id}:");
                     
-                    if (func.Expr.Inner is InfixResult lastInfix && lastInfix.Op == "." && lastInfix.Expr2.Inner is EvalFuncResult evalFunc)
-                    {
-                        var expr    = lastInfix.Expr1;
-                        var typeIds = new Stack<string>();
+            //         if (func.Expr.Inner is InfixResult lastInfix && lastInfix.Op == "." && lastInfix.Expr2.Inner is EvalFuncResult evalFunc)
+            //         {
+            //             var expr      = lastInfix.Expr1;
+            //             var typeNames = new Stack<string>();
 
-                        while (expr.Inner is InfixResult infix && infix.Op == "." && infix.Expr2.Inner is EvalVarResult evalVar)
-                        {
-                            expr = infix.Expr1;
-                            typeIds.Push(evalVar.Identifier.Name);
-                        }
+            //             while (expr.Inner is InfixResult infix && infix.Op == "." && infix.Expr2.Inner is EvalVarResult evalVar)
+            //             {
+            //                 expr = infix.Expr1;
+            //                 typeNames.Push(evalVar.Identifier.Name);
+            //             }
 
-                        if (expr.Inner is EvalVarResult firstEvalVar)
-                        {
-                            typeIds.Push(firstEvalVar.Identifier.Name);
-                            var typeId   = string.Join(".", typeIds);
-                            var methodId = evalFunc.Identifier.Name;
-                            var argCount = evalFunc.Args.Length;
+            //             if (expr.Inner is EvalVarResult firstEvalVar)
+            //             {
+            //                 typeNames.Push(firstEvalVar.Identifier.Name);
+            //                 var qual       = new TeuchiUdonQualifier(typeNames.Take(typeNames.Count - 1));
+            //                 var type       = new TeuchiUdonType(qual, typeNames.Last());
+            //                 var methodName = evalFunc.Identifier.Name;
+            //                 var argTypes   = evalFunc.Args.Select(x => x.Inner.Type);
+            //                 var m          = new TeuchiUdonMethod(type, methodName, argTypes);
 
-                            if
-                            (
-                                methodToUdon.ContainsKey(typeId) &&
-                                methodToUdon[typeId].ContainsKey(evalFunc.Identifier.Name) &&
-                                methodToUdon[typeId][methodId].ContainsKey(argCount)
-                            )
-                            {
-                                var defs = methodToUdon[typeId][methodId][argCount];
+            //                 if (TeuchiUdonTables.Instance.Methods.ContainsKey(m))
+            //                 {
+            //                     var method = TeuchiUdonTables.Instance.Methods[m];
 
-                                if (defs.Count == 1)
-                                {
-                                    foreach (var arg in evalFunc.Args)
-                                    {
-                                        Parser.Output.WriteLine($"PUSH, literal[{((LiteralResult)arg.Inner).Address}]");
-                                    }
-                                    Parser.Output.WriteLine($"EXTERN, \"{defs[0].fullName}\"");
-                                }
-                                else
-                                {
-                                    LogicalErrorHandler.ReportError(v.Expr.Token, $"{typeId}.{methodId}({argCount} args) conflicts");
-                                }
-                            }
-                            else
-                            {
-                                LogicalErrorHandler.ReportError(v.Expr.Token, $"{typeId}.{methodId}({argCount} args) cannot be found");
-                            }
-                        }
-                        else
-                        {
-                            LogicalErrorHandler.ReportError(expr.Inner.Token, $"{expr.Inner.GetType().Name} is not supported");
-                        }
-                    }
-                    else
-                    {
-                        LogicalErrorHandler.ReportError(v.Expr.Inner.Token, $"{v.Expr.Inner.GetType().Name} is not supported");
-                    }
+            //                     foreach (var arg in evalFunc.Args)
+            //                     {
+            //                         Parser.Output.WriteLine($"PUSH, {TeuchiUdonTables.GetLiteralName(((LiteralResult)arg.Inner).Index)}");
+            //                     }
+            //                     Parser.Output.WriteLine($"EXTERN, \"{method.UdonName}\"");
+            //                 }
+            //                 else
+            //                 {
+            //                     LogicalErrorHandler.ReportError(v.Expr.Token, $"'{type}.{m}' cannot be found");
+            //                 }
+            //             }
+            //             else
+            //             {
+            //                 LogicalErrorHandler.ReportError(expr.Inner.Token, $"'{expr.Inner.GetType().Name}' is not supported");
+            //             }
+            //         }
+            //         else
+            //         {
+            //             LogicalErrorHandler.ReportError(v.Expr.Inner.Token, $"'{v.Expr.Inner.GetType().Name}' is not supported");
+            //         }
 
-                    Parser.Output.WriteLine($"JUMP, 0xFFFFFC");
-                }
-            }
+            //         Parser.Output.WriteLine($"JUMP, 0xFFFFFC");
+            //     }
+            // }
 
-            Parser.Output.WriteLine(".code_end");
+            // Parser.Output.WriteLine(".code_end");
+        }
+
+        public override void EnterBody([NotNull] BodyContext context)
+        {
+            TeuchiUdonQualifierStack.Instance.Push(TeuchiUdonQualifier.Top);
         }
 
         public override void ExitBody([NotNull] BodyContext context)
@@ -176,108 +121,636 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             // {
             //     Debug.Log($"{id} = {Eval(result.Expr)}");
             // }
+
+            var topStatements = context.topStatement().Select(x => x.result).ToArray();
+            context.result    = new BodyResult(topStatements[0].Token, topStatements);
         }
 
-        public override void ExitTopBind([NotNull] TopBindContext context)
+        public override void ExitVarBindTopStatement([NotNull] VarBindTopStatementContext context)
         {
+            var varBind    = context.varBind().result;
+            context.result = new TopStatementResult(varBind.Token, varBind);
+        }
+
+        public override void ExitExprTopStatement([NotNull] ExprTopStatementContext context)
+        {
+            var expr       = context.expr().result;
+            context.result = new TopStatementResult(expr.Token, expr);
+        }
+
+        public override void EnterVarBind([NotNull] VarBindContext context)
+        {
+            TeuchiUdonQualifierStack.Instance.PushName(((SingleVarDeclContext)context.varDecl()).identifier().GetText());
         }
 
         public override void ExitVarBind([NotNull] VarBindContext context)
         {
+            TeuchiUdonQualifierStack.Instance.Pop();
+
             var varDecl    = context.varDecl().result;
             var expr       = context.expr   ().result;
-            context.result = new VarBindResult(varDecl.Token, varDecl.SingleDecl.Identifier, expr, vars);
+            var type       = expr.Inner.Type;
+
+            varDecl.Vars[0].SetExpr(expr);
+
+            if (varDecl.Types[0] != TeuchiUdonType.Bottom && !varDecl.Types[0].IsAssignableFrom(type))
+            {
+                LogicalErrorHandler.ReportError(varDecl.Token, $"type of '{varDecl.Vars[0].Name}' is not compatible");
+            }
+            
+            context.result = new VarBindResult(varDecl.Token, varDecl, type, expr);
         }
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
         {
-            var tupleDecl  = new TupleDeclResult(context.OPEN_PARENS().Symbol, new VarDeclResult[0]);
-            context.result = new VarDeclResult(tupleDecl.Token, tupleDecl);
-        }
+            var oldQual = (TeuchiUdonQualifier)null;
+            if (context.isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
 
-        public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
-        {
-            var varDecls   = context.varDecl().Select(vd => vd.result);
-            var tupleDecl  = new TupleDeclResult(context.OPEN_PARENS().Symbol, varDecls);
-            context.result = new VarDeclResult(tupleDecl.Token, tupleDecl);
+            var token       = context.OPEN_PARENS().Symbol;
+            var qualifier   = TeuchiUdonQualifierStack.Instance.Peek();
+            var identifiers = new IdentifierResult[0];
+            var qualifieds  = new QualifiedResult [0];
+            context.result  = new VarDeclResult(token, qualifier, identifiers, qualifieds);
+
+            if (context.isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
         }
 
         public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
         {
-            var identifier = context.identifier() .result;
-            var type       = context.qualified ()?.result;
-            var token      = context.OPEN_PARENS()?.Symbol ?? identifier.Token;
-            var singleDecl = new SingleDeclResult(token, identifier, type);
-            context.result = new VarDeclResult(token, singleDecl);
+            var oldQual = (TeuchiUdonQualifier)null;
+            if (context.isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
+
+            var token       = context.identifier().result.Token;
+            var qualifier   = TeuchiUdonQualifierStack.Instance.Peek();
+            var identifiers = new IdentifierResult[] { context.identifier().result };
+            var qualifieds  = new QualifiedResult[]
+            {
+                context.qualified()?.result ?? new QualifiedResult(token, new IdentifierResult[0], TeuchiUdonType.Bottom)
+            };
+            context.result  = new VarDeclResult(token, qualifier, identifiers, qualifieds);
+
+            if (context.isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
+        }
+
+        public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
+        {
+            var oldQual = (TeuchiUdonQualifier)null;
+            if (context.isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
+
+            var token       = context.OPEN_PARENS().Symbol;
+            var qualifier   = TeuchiUdonQualifierStack.Instance.Peek();
+            var identifiers = context.identifier().Select(x => x .result);
+            var qualifieds  = context.qualified ().Select(x => x?.result ?? new QualifiedResult(token, new IdentifierResult[0], TeuchiUdonType.Bottom));
+            context.result = new VarDeclResult(token, qualifier, identifiers, qualifieds);
+
+            if (context.isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
         }
 
         public override void ExitQualified([NotNull] QualifiedContext context)
         {
-            var identifiers = context.identifier().Select(id => id.result);
-            context.result  = new QualifiedResult(identifiers.First().Token, identifiers);
+            var identifiers = context.identifier().Select(x => x.result).ToArray();
+            var token       = identifiers[0].Token;
+            var qual        = new TeuchiUdonQualifier(identifiers.Take(identifiers.Length - 1).Select(x => x.Name));
+            var t           = new TeuchiUdonType(qual, identifiers[identifiers.Length - 1].Name);
+            var type        = (TeuchiUdonType)null;
+            if (TeuchiUdonTables.Instance.Types.ContainsKey(t))
+            {
+                type = TeuchiUdonTables.Instance.Types[t];
+            }
+            else
+            {
+                LogicalErrorHandler.ReportError(token, $"'{t}' is not defined");
+                type = TeuchiUdonType.Bottom;
+            }
+
+            context.result = new QualifiedResult(token, identifiers, type);
         }
 
         public override void ExitIdentifier([NotNull] IdentifierContext context)
         {
+            var token      = context.IDENTIFIER().Symbol;
             var name       = context.GetText().Replace("@", "");
-            context.result = new IdentifierResult(context.IDENTIFIER().Symbol, name);
+            context.result = new IdentifierResult(token, name);
         }
 
         public override void ExitParensExpr([NotNull] ParensExprContext context)
         {
-            var parens     = new ParensResult(context.OPEN_PARENS().Symbol, context.expr().result);
+            var token      = context.OPEN_PARENS().Symbol;
+            var expr       = context.expr().result;
+            var type       = expr.Inner.Type;
+            var parens     = new ParensResult(token, expr);
             context.result = new ExprResult(parens.Token, parens);
+        }
+
+        public override void EnterLiteralExpr([NotNull] LiteralExprContext context)
+        {
+            var index          = TeuchiUdonTables.Instance.GetLiteralIndex();
+            context.tableIndex = index;
+            TeuchiUdonQualifierStack.Instance.PushName(TeuchiUdonTables.GetLiteralName(index));
         }
 
         public override void ExitLiteralExpr([NotNull] LiteralExprContext context)
         {
-            context.result = new ExprResult(context.literal().result.Token, context.literal().result);
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var literal = context.literal().result;
+            var type    = literal.Type;
+            context.result = new ExprResult(literal.Token, literal);
         }
 
         public override void ExitEvalVarExpr([NotNull] EvalVarExprContext context)
         {
-            var evalVar    = new EvalVarResult(context.identifier().result.Token, context.identifier().result);
+            var identifier = context.identifier().result;
+            var evalVar = (TypedResult)null;
+
+            if (context.Parent is AccessExprContext)
+            {
+                evalVar = new EvalQualifierCandidateResult(identifier.Token, identifier);
+            }
+            else
+            {
+                var qual = TeuchiUdonQualifierStack.Instance.Peek();
+                var qv   = new TeuchiUdonVar(qual, identifier.Name);
+                if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                {
+                    var v    = TeuchiUdonTables.Instance.Vars[qv];
+                    var type = v.Expr.Inner.Type;
+                    evalVar  = new EvalVarResult(identifier.Token, type, v, identifier);
+                }
+                else
+                {
+                    LogicalErrorHandler.ReportError(identifier.Token, $"'{identifier.Name}' is not defined");
+                    evalVar = new BottomResult(identifier.Token);
+                }
+            }
+
             context.result = new ExprResult(evalVar.Token, evalVar);
+
+            // var identifier = context.identifier().result;
+
+            // var type    = (TeuchiUdonType)null;
+            // var evalVar = (TypedResult)   null;
+            // do
+            // {
+            //     if (!(context.Parent is AccessExprContext))
+            //     {
+            //         TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //     }
+
+            //     var qual = TeuchiUdonQualifierStack.Instance.Peek();
+            //     var v    = new TeuchiUdonVar(qual, identifier.Name);
+            //     if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+            //     {
+            //         TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //         type    = TeuchiUdonTables.Instance.Vars[v].Expr.Inner.Type;
+            //         evalVar = new EvalVarResult(identifier.Token, type, v, identifier);
+            //         break;
+            //     }
+
+            //     var t = new TeuchiUdonType(qual, identifier.Name);
+            //     if (TeuchiUdonTables.Instance.Types.ContainsKey(t))
+            //     {
+            //         TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //         type    = TeuchiUdonType.Type.Apply(new object[] { t });
+            //         evalVar = new EvalTypeResult(identifier.Token, type, t, identifier);
+            //         break;
+            //     }
+
+            //     var ts  = TeuchiUdonTypeStack.Instance.Peek();
+            //     var tst = ts.TypeNameEquals(TeuchiUdonType.Type) ? (TeuchiUdonType)ts.Args[0] : ts;
+            //     var tsm = new TeuchiUdonMethod(tst, TeuchiUdonTables.GetGetterName(identifier.Name), ts, new TeuchiUdonType[0]);
+            //     if (TeuchiUdonTables.Instance.Methods.ContainsKey(tsm))
+            //     {
+            //         throw new NotImplementedException();
+            //         //break;
+            //     }
+
+            //     if (ts.TypeNameEquals(TeuchiUdonType.Type))
+            //     {
+            //         var tssq = tst.Qualifier.Append(tst.Name);
+            //         var tsst = new TeuchiUdonType(tssq, identifier.Name);
+            //         if (TeuchiUdonTables.Instance.Types.ContainsKey(tsst))
+            //         {
+            //             throw new NotImplementedException();
+            //             //break;
+            //         }
+            //     }
+                
+            //     var appended = qual.Append(identifier.Name);
+            //     if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(appended))
+            //     {
+            //         TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //         TeuchiUdonQualifierStack.Instance.Push(appended, true);
+            //         type    = TeuchiUdonType.Qual.Apply(new object[] { appended });
+            //         evalVar = new EvalQualifierResult(identifier.Token, type, appended, identifier);
+            //         break;
+            //     }
+                
+            //     var newQual = new TeuchiUdonQualifier(new string[] { identifier.Name });
+            //     if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(newQual))
+            //     {
+            //         TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //         TeuchiUdonQualifierStack.Instance.Push(newQual, true);
+            //         type    = TeuchiUdonType.Qual.Apply(new object[] { newQual });
+            //         evalVar = new EvalQualifierResult(identifier.Token, type, newQual, identifier);
+            //         break;
+            //     }
+
+            //     LogicalErrorHandler.ReportError(identifier.Token, $"'{identifier.Name}' is not defined");
+            //     TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //     type    = TeuchiUdonType.Bottom;
+            //     evalVar = new BottomResult(identifier.Token);
+            // } while (false);
+
+            // TeuchiUdonTypeStack.Instance.PopIfTransient();
+            // TeuchiUdonTypeStack.Instance.Push(type, true);
+
+            // context.result = new ExprResult(evalVar.Token, evalVar);
         }
 
         public override void ExitEvalUnitFuncExpr([NotNull] EvalUnitFuncExprContext context)
         {
             var identifier = context.identifier().result;
             var args       = new ExprResult[0];
-            var evalFunc   = new EvalFuncResult(identifier.Token, identifier, args);
-            context.result = new ExprResult(evalFunc.Token, evalFunc);
+            var parent     = context.Parent;
+            context.result = ExitEvalFuncExpr(identifier, args, parent);
         }
 
         public override void ExitEvalSingleFuncExpr([NotNull] EvalSingleFuncExprContext context)
         {
             var identifier = context.identifier().result;
-            var args       = new ExprResult[] { context.expr().result };
-            var evalFunc   = new EvalFuncResult(identifier.Token, identifier, args);
-            context.result = new ExprResult(evalFunc.Token, evalFunc);
+            var args       = new ExprResult    [] { context.expr().result };
+            var parent     = context.Parent;
+            context.result = ExitEvalFuncExpr(identifier, args, parent);
         }
 
         public override void ExitEvalTupleFuncExpr([NotNull] EvalTupleFuncExprContext context)
         {
             var identifier = context.identifier().result;
-            var args       = context.expr().Select(e => e.result);
-            var evalFunc   = new EvalFuncResult(identifier.Token, identifier, args);
-            context.result = new ExprResult(evalFunc.Token, evalFunc);
+            var args       = context.expr().Select(x => x.result).ToArray();
+            var parent     = context.Parent;
+            context.result = ExitEvalFuncExpr(identifier, args, parent);
+        }
+
+        private ExprResult ExitEvalFuncExpr
+        (
+            IdentifierResult identifier,
+            IEnumerable<ExprResult> args,
+            RuleContext parent
+        )
+        {
+            var evalFunc = (TypedResult)null;
+
+            if (parent is AccessExprContext)
+            {
+                evalFunc = new EvalMethodCandidateResult(identifier.Token, identifier, args);
+            }
+            else
+            {
+                var qual = TeuchiUdonQualifierStack.Instance.Peek();
+                var qv   = new TeuchiUdonVar(qual, identifier.Name);
+                if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                {
+                    var v            = TeuchiUdonTables.Instance.Vars[qv];
+                    var type         = v.Expr.Inner.Type;
+                    var unitArgTypes = args.Any() ? args.Select(x => x.Inner.Type) : new TeuchiUdonType[] { TeuchiUdonType.Unit };
+                    if (type == TeuchiUdonType.Func.Apply(unitArgTypes))
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else
+                    {
+                        if (type.TypeNameEquals(TeuchiUdonType.Func))
+                        {
+                            LogicalErrorHandler.ReportError(identifier.Token, $"arguments of '{identifier.Name}' is not compatible");
+                        }
+                        else
+                        {
+                            LogicalErrorHandler.ReportError(identifier.Token, $"'{identifier.Name}' is not a function");
+                        }
+                        evalFunc = new BottomResult(identifier.Token);
+                    }
+                }
+            }
+
+            return new ExprResult(evalFunc.Token, evalFunc);
+
+            // var type     = (TeuchiUdonType)null;
+            // var evalFunc = (TypedResult)   null;
+            // do
+            // {
+            //     if (!(parent is AccessExprContext))
+            //     {
+            //         TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            //     }
+
+            //     var qual = TeuchiUdonQualifierStack.Instance.Peek();
+            //     var v    = new TeuchiUdonVar(qual, identifier.Name);
+            //     if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+            //     {
+            //         var varType      = TeuchiUdonTables.Instance.Vars[v].Expr.Inner.Type;
+            //         var unitArgTypes = inArgs.Any() ? inArgTypes : new TeuchiUdonType[] { TeuchiUdonType.Unit };
+            //         if (varType == TeuchiUdonType.Func.Apply(unitArgTypes))
+            //         {
+            //             throw new NotImplementedException();
+            //             //break;
+            //         }
+
+            //         if (varType.TypeNameEquals(TeuchiUdonType.Func))
+            //         {
+            //             LogicalErrorHandler.ReportError(identifier.Token, $"arguments of '{identifier.Name}' is not compatible");
+            //         }
+            //         else
+            //         {
+            //             LogicalErrorHandler.ReportError(identifier.Token, $"'{identifier.Name}' is not a function");
+            //         }
+            //         break;
+            //     }
+
+            //     var instance = TeuchiUdonTypeStack.Instance.Peek();
+            //     var t        = instance.TypeNameEquals(TeuchiUdonType.Type) ? (TeuchiUdonType)instance.Args[0] : instance;
+            //     var method   = new TeuchiUdonMethod(t, identifier.Name, instance, inArgTypes);
+            //     if (TeuchiUdonTables.Instance.Methods.ContainsKey(method))
+            //     {
+            //         var outTypes = TeuchiUdonTables.Instance.Methods[method].OutTypes;
+            //         type         = outTypes.Length == 0 ? TeuchiUdonType.Void : outTypes[0];
+            //         evalFunc     = new EvalMethodResult(identifier.Token, type, method, identifier, inArgs);
+            //         break;
+            //     }
+
+            //     LogicalErrorHandler.ReportError(identifier.Token, $"'{identifier.Name}' is not defined");
+            //     type     = TeuchiUdonType.Bottom;
+            //     evalFunc = new BottomResult(identifier.Token);
+            // } while (false);
+
+            // TeuchiUdonQualifierStack.Instance.PopIfTransient();
+            // TeuchiUdonTypeStack     .Instance.PopIfTransient();
+            // TeuchiUdonTypeStack     .Instance.Push(type, true);
+
+            // return new ExprResult(evalFunc.Token, evalFunc);
         }
 
         public override void ExitAccessExpr([NotNull] AccessExprContext context)
         {
-            var op         = ".";
-            var expr1      = context.expr()[0].result;
-            var expr2      = context.expr()[1].result;
-            var infix      = new InfixResult(expr1.Token, op, expr1, expr2);
+            var op    = ".";
+            var expr1 = context.expr()[0].result;
+            var expr2 = context.expr()[1].result;
+
+            if (expr1.Inner is EvalQualifierCandidateResult qualCandidate1)
+            {
+                var eval = (TypedResult)null;
+                do
+                {
+                    var qual = TeuchiUdonQualifierStack.Instance.Peek();
+                    var qt   = new TeuchiUdonType(qual, qualCandidate1.Identifier.Name);
+                    if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
+                    {
+                        var type  = TeuchiUdonTables.Instance.Types[qt];
+                        var outer = TeuchiUdonType.Type.Apply(new object[] { type });
+                        eval      = new EvalTypeResult(qualCandidate1.Token, outer, type, qualCandidate1.Identifier);
+                        break;
+                    }
+                    
+                    var newQual = new TeuchiUdonQualifier(new string[] { qualCandidate1.Identifier.Name });
+                    if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(newQual))
+                    {
+                        var q    = TeuchiUdonTables.Instance.Qualifiers[newQual];
+                        var type = TeuchiUdonType.Qual.Apply(new object[] { q });
+                        eval     = new EvalQualifierResult(qualCandidate1.Token, type, q, qualCandidate1.Identifier);
+                        break;
+                    }
+
+                    LogicalErrorHandler.ReportError(qualCandidate1.Token, $"'{qualCandidate1.Identifier.Name}' is not defined");
+                    eval = new BottomResult(qualCandidate1.Token);
+                } while (false);
+
+                expr1 = new ExprResult(eval.Token, eval);
+            }
+            else if (expr1.Inner is EvalMethodCandidateResult methodCandidate1)
+            {
+                var eval = (TypedResult)null;
+
+                var qual = TeuchiUdonQualifierStack.Instance.Peek();
+                var qv   = new TeuchiUdonVar(qual, methodCandidate1.Identifier.Name);
+                if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                {
+                    var v            = TeuchiUdonTables.Instance.Vars[qv];
+                    var type         = v.Expr.Inner.Type;
+                    var unitArgTypes = methodCandidate1.Args.Any() ?
+                        methodCandidate1.Args.Select(x => x.Inner.Type) :
+                        new TeuchiUdonType[] { TeuchiUdonType.Unit };
+                    if (type == TeuchiUdonType.Func.Apply(unitArgTypes))
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else
+                    {
+                        if (type.TypeNameEquals(TeuchiUdonType.Func))
+                        {
+                            LogicalErrorHandler.ReportError(methodCandidate1.Token, $"arguments of '{methodCandidate1.Identifier.Name}' is not compatible");
+                        }
+                        else
+                        {
+                            LogicalErrorHandler.ReportError(methodCandidate1.Token, $"'{methodCandidate1.Identifier.Name}' is not a function");
+                        }
+                        eval = new BottomResult(methodCandidate1.Token);
+                    }
+                }
+
+                expr1 = new ExprResult(eval.Token, eval);
+            }
+
+            var type1 = expr1.Inner.Type;
+
+            if (expr2.Inner is EvalQualifierCandidateResult qualCandidate2)
+            {
+                var eval = (TypedResult)null;
+                do
+                {
+                    if (type1.TypeNameEquals(TeuchiUdonType.Qual))
+                    {
+                        var qual = (TeuchiUdonQualifier)type1.Args[0];
+                        var qv   = new TeuchiUdonVar(qual, qualCandidate2.Identifier.Name);
+                        if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                        {
+                            var v    = TeuchiUdonTables.Instance.Vars[qv];
+                            var type = v.Expr.Inner.Type;
+                            eval     = new EvalVarResult(qualCandidate2.Token, type, v, qualCandidate2.Identifier);
+                            break;
+                        }
+
+                        var qt = new TeuchiUdonType(qual, qualCandidate2.Identifier.Name);
+                        if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
+                        {
+                            var type  = TeuchiUdonTables.Instance.Types[qt];
+                            var outer = TeuchiUdonType.Type.Apply(new object[] { type });
+                            eval      = new EvalTypeResult(qualCandidate2.Token, outer, type, qualCandidate2.Identifier);
+                            break;
+                        }
+
+                        var appended = qual.Append(qualCandidate2.Identifier.Name);
+                        if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(appended))
+                        {
+                            var q    = TeuchiUdonTables.Instance.Qualifiers[appended];
+                            var type = TeuchiUdonType.Qual.Apply(new object[] { q });
+                            eval     = new EvalQualifierResult(qualCandidate2.Token, type, q, qualCandidate2.Identifier);
+                            break;
+                        }
+                    }
+                    else if (type1.TypeNameEquals(TeuchiUdonType.Type))
+                    {
+                        var t  = (TeuchiUdonType)type1.Args[0];
+                        var q  = t.Qualifier.Append(t.Name);
+                        var qt = new TeuchiUdonType(q, qualCandidate2.Identifier.Name);
+                        if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
+                        {
+                            var type  = TeuchiUdonTables.Instance.Types[qt];
+                            var outer = TeuchiUdonType.Type.Apply(new object[] { type });
+                            eval      = new EvalTypeResult(qualCandidate2.Token, outer, type, qualCandidate2.Identifier);
+                            break;
+                        }
+
+                        var qm = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetGetterName(qualCandidate2.Identifier.Name), new TeuchiUdonType[0]);
+                        var m  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+                        if (m.Length == 1)
+                        {
+                            throw new NotImplementedException();
+                            //break;
+                        }
+                        else if (m.Length >= 2)
+                        {
+                            LogicalErrorHandler.ReportError(qualCandidate2.Token, $"arguments of method '{qualCandidate2.Identifier.Name}' is nondeterministic");
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        var qm = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetGetterName(qualCandidate2.Identifier.Name), new TeuchiUdonType[0]);
+                        var m  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+                        if (m.Length == 1)
+                        {
+                            throw new NotImplementedException();
+                            //break;
+                        }
+                        else if (m.Length >= 2)
+                        {
+                            LogicalErrorHandler.ReportError(qualCandidate2.Token, $"arguments of method '{qualCandidate2.Identifier.Name}' is nondeterministic");
+                            break;
+                        }
+                    }
+
+                    LogicalErrorHandler.ReportError(qualCandidate2.Token, $"'{qualCandidate2.Identifier.Name}' is not defined");
+                    eval = new BottomResult(qualCandidate2.Token);
+                } while (false);
+
+                expr2 = new ExprResult(eval.Token, eval);
+            }
+            else if (expr2.Inner is EvalMethodCandidateResult methodCandidate2)
+            {
+                var eval = (TypedResult)null;
+                do
+                {
+                    if (type1.TypeNameEquals(TeuchiUdonType.Qual))
+                    {
+                    }
+                    else if (type1.TypeNameEquals(TeuchiUdonType.Type))
+                    {
+                        var argTypes = methodCandidate2.Args.Select(x => x.Inner.Type);
+                        var qm       = new TeuchiUdonMethod(type1, methodCandidate2.Identifier.Name, argTypes);
+                        var m        = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+                        if (m.Length == 1)
+                        {
+                            var type = m[0].OutTypes.Length == 0 ? TeuchiUdonType.Void : m[0].OutTypes[0];
+                            eval     = new EvalMethodResult(methodCandidate2.Token, type, m[0], methodCandidate2.Identifier, methodCandidate2.Args);
+                            break;
+                        }
+                        else if (m.Length >= 2)
+                        {
+                            LogicalErrorHandler.ReportError(methodCandidate2.Token, $"arguments of method '{methodCandidate2.Identifier.Name}' is nondeterministic");
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        var argTypes = methodCandidate2.Args.Select(x => x.Inner.Type);
+                        var qm       = new TeuchiUdonMethod(type1, methodCandidate2.Identifier.Name, argTypes);
+                        var m        = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+                        if (m.Length == 1)
+                        {
+                            var type = m[0].OutTypes.Length == 0 ? TeuchiUdonType.Void : m[0].OutTypes[0];
+                            eval     = new EvalMethodResult(methodCandidate2.Token, type, m[0], methodCandidate2.Identifier, methodCandidate2.Args);
+                            break;
+                        }
+                        else if (m.Length >= 2)
+                        {
+                            LogicalErrorHandler.ReportError(methodCandidate2.Token, $"arguments of method '{methodCandidate2.Identifier.Name}' is nondeterministic");
+                            break;
+                        }
+                    }
+
+                    LogicalErrorHandler.ReportError(methodCandidate2.Token, $"'{methodCandidate2.Identifier.Name}' is not defined");
+                    eval = new BottomResult(methodCandidate2.Token);
+                } while (false);
+
+                expr2 = new ExprResult(eval.Token, eval);
+            }
+            else
+            {
+                LogicalErrorHandler.ReportError(expr1.Token, $"invalid '.' operator");
+            }
+
+            var infix = new InfixResult(expr1.Token, expr2.Inner.Type, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
+
+            // var op    = ".";
+            // var expr1 = context.expr()[0].result;
+            // var expr2 = context.expr()[1].result;
+            // var type  = expr2.Inner.Type;
+
+            // TeuchiUdonTypeStack.Instance.PopIfTransient();
+            // TeuchiUdonTypeStack.Instance.Push(type, true);
+
+            // var infix = new InfixResult(expr1.Token, type, op, expr1, expr2);
+
+            // if
+            // (
+            //     !(
+            //         expr2.Inner is EvalVarResult       ||
+            //         expr2.Inner is EvalTypeResult      ||
+            //         expr2.Inner is EvalQualifierResult ||
+            //         expr2.Inner is EvalFuncResult      ||
+            //         expr2.Inner is EvalMethodResult
+            //     )
+            // )
+            // {
+            //     LogicalErrorHandler.ReportError(infix.Token, $"invalid '.' operator");
+            // }
+
+            // context.result = new ExprResult(infix.Token, infix);
+        }
+
+        public override void EnterFuncExpr([NotNull] FuncExprContext context)
+        {
+            var index          = TeuchiUdonTables.Instance.GetFuncIndex();
+            context.tableIndex = index;
+            TeuchiUdonQualifierStack.Instance.PushName(TeuchiUdonTables.GetFuncName(index));
         }
 
         public override void ExitFuncExpr([NotNull] FuncExprContext context)
         {
+            TeuchiUdonQualifierStack.Instance.Pop();
+
             var varDecl = context.varDecl().result;
             var expr    = context.expr   ().result;
-            var func    = new FuncResult(varDecl.Token, varDecl, expr, funcs);
+            var type    = TeuchiUdonType.Func.Apply(varDecl.Types);
+
+            if (!(context.Parent is VarBindContext varBind))
+            {
+                throw new NotImplementedException();
+            }
+
+            var index      = context.tableIndex;
+            var func       = new FuncResult(varDecl.Token, type, varBind.varDecl().result.Vars[0].Name, index, varDecl, expr);
             context.result = new ExprResult(func.Token, func);
         }
 
@@ -288,22 +761,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var index = 0;
             var count = text.Length;
             var basis = 10;
-            var type  = typeof(int);
+            var type  = TeuchiUdonType.Int;
 
             if (text.EndsWith("ul") || text.EndsWith("lu"))
             {
                 count -= 2;
-                type   = typeof(ulong);
+                type   = TeuchiUdonType.ULong;
             }
             else if (text.EndsWith("l"))
             {
                 count--;
-                type = typeof(long);
+                type = TeuchiUdonType.Long;
             }
             else if (text.EndsWith("u"))
             {
                 count--;
-                type = typeof(uint);
+                type = TeuchiUdonType.UInt;
             }
 
             if (count >= 2 && text.StartsWith("0"))
@@ -314,8 +787,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var token      = context.INTEGER_LITERAL().Symbol;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToIntegerValue(text.Substring(index, count), basis, type, token);
-            context.result = new LiteralResult(token, value, text, literals);
+            context.result = new LiteralResult(token, type, tableIndex, value, text);
         }
 
         public override void ExitHexIntegerLiteral([NotNull] HexIntegerLiteralContext context)
@@ -325,27 +799,28 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var index = 2;
             var count = text.Length - 2;
             var basis = 16;
-            var type  = typeof(int);
+            var type  = TeuchiUdonType.Int;
 
             if (text.EndsWith("ul") || text.EndsWith("lu"))
             {
                 count -= 2;
-                type   = typeof(ulong);
+                type   = TeuchiUdonType.ULong;
             }
             else if (text.EndsWith("l"))
             {
                 count--;
-                type = typeof(long);
+                type = TeuchiUdonType.Long;
             }
             else if (text.EndsWith("u"))
             {
                 count--;
-                type = typeof(uint);
+                type = TeuchiUdonType.UInt;
             }
 
             var token      = context.HEX_INTEGER_LITERAL().Symbol;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToIntegerValue(text.Substring(index, count), basis, type, token);
-            context.result = new LiteralResult(token, value, text, literals);
+            context.result = new LiteralResult(token, type, tableIndex, value, text);
         }
 
         public override void ExitBinIntegerLiteral([NotNull] BinIntegerLiteralContext context)
@@ -355,27 +830,28 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var index = 2;
             var count = text.Length - 2;
             var basis = 2;
-            var type  = typeof(int);
+            var type  = TeuchiUdonType.Int;
 
             if (text.EndsWith("ul") || text.EndsWith("lu"))
             {
                 count -= 2;
-                type   = typeof(ulong);
+                type   = TeuchiUdonType.ULong;
             }
             else if (text.EndsWith("l"))
             {
                 count--;
-                type = typeof(long);
+                type = TeuchiUdonType.Long;
             }
             else if (text.EndsWith("u"))
             {
                 count--;
-                type = typeof(uint);
+                type = TeuchiUdonType.UInt;
             }
 
             var token      = context.BIN_INTEGER_LITERAL().Symbol;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToIntegerValue(text.Substring(index, count), basis, type, token);
-            context.result = new LiteralResult(token, value, text, literals);
+            context.result = new LiteralResult(token, type, tableIndex, value, text);
         }
 
         public override void ExitRealLiteral([NotNull] RealLiteralContext context)
@@ -390,16 +866,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var text       = context.GetText();
             var token      = context.REGULAR_STRING().Symbol;
+            var type       = TeuchiUdonType.String;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToRegularStringValue(text.Substring(1, text.Length - 2));
-            context.result = new LiteralResult(token, value, text, literals);
+            context.result = new LiteralResult(token, type, tableIndex, value, text);
         }
 
         public override void ExitVervatiumString([NotNull] VervatiumStringContext context)
         {
             var text       = context.GetText();
             var token      = context.VERBATIUM_STRING().Symbol;
+            var type       = TeuchiUdonType.String;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToVervatiumStringValue(text.Substring(2, text.Length - 3));
-            context.result = new LiteralResult(token, value, text, literals);
+            context.result = new LiteralResult(token, type, tableIndex, value, text);
         }
 
         private object Eval(ExprResult expr)
@@ -407,18 +887,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Value}" :
                 expr.Inner is EvalVarResult  evalVar  ? $"<evalVar>{evalVar.Identifier.Name}" :
-                expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(a => Eval(a)))})" :
+                expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(x => Eval(x)))})" :
                 expr.Inner is InfixResult    infix    ? $"<infix>{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
-                expr.Inner is FuncResult     func     ?
-                    func.VarDecl.SingleDecl == null ?
-                        $"<func>({string.Join(", ", func.VarDecl.TupleDecl.Decls.Select(x => x.SingleDecl.Identifier.Name))}) -> {Eval(func.Expr)}" :
-                        $"<func>{func.VarDecl.SingleDecl.Identifier.Name} -> {Eval(func.Expr)}" :
+                expr.Inner is FuncResult     func     ? $"<func>({string.Join(", ", func.VarDecl.Identifiers.Select(x => x.Name))}) -> {Eval(func.Expr)}" :
                 "<expr>";
         }
 
-        private object ToIntegerValue(string text, int basis, Type type, IToken token)
+        private object ToIntegerValue(string text, int basis, TeuchiUdonType type, IToken token)
         {
-            if (type == typeof(int))
+            if (type == TeuchiUdonType.Int)
             {
                 try
                 {
@@ -430,7 +907,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return null;
                 }
             }
-            else if (type == typeof(uint))
+            else if (type == TeuchiUdonType.UInt)
             {
                 try
                 {
@@ -442,7 +919,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return null;
                 }
             }
-            else if (type == typeof(long))
+            else if (type == TeuchiUdonType.Long)
             {
                 try
                 {
@@ -454,7 +931,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return null;
                 }
             }
-            else if (type == typeof(ulong))
+            else if (type == TeuchiUdonType.ULong)
             {
                 try
                 {
