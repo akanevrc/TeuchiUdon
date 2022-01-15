@@ -22,28 +22,36 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
 
+        private bool IsInitialized { get; set; } = false;
+
         protected TeuchiUdonTables()
         {
         }
 
         public void Init()
         {
-            Qualifiers    = new Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier>();
-            Types         = new Dictionary<TeuchiUdonType, TeuchiUdonType>();
-            UdonTypes     = new Dictionary<string, TeuchiUdonType>();
-            Methods       = new Dictionary<TeuchiUdonMethod, TeuchiUdonMethod>();
-            TypeToMethods = new Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>();
-            Vars          = new Dictionary<TeuchiUdonVar, TeuchiUdonVar>();
-            Literals      = new Dictionary<int, LiteralResult>();
-            Funcs         = new Dictionary<int, FuncResult>();
+            if (!IsInitialized)
+            {
+                Qualifiers    = new Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier>();
+                Types         = new Dictionary<TeuchiUdonType, TeuchiUdonType>();
+                UdonTypes     = new Dictionary<string, TeuchiUdonType>();
+                Methods       = new Dictionary<TeuchiUdonMethod, TeuchiUdonMethod>();
+                TypeToMethods = new Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>();
+
+                InitInternalTypes();
+                InitExternalTypes();
+                InitQualifiers();
+                InitMethods();
+
+                IsInitialized = true;
+            }
+
+            Vars     = new Dictionary<TeuchiUdonVar, TeuchiUdonVar>();
+            Literals = new Dictionary<int, LiteralResult>();
+            Funcs    = new Dictionary<int, FuncResult>();
 
             LiteralCounter = 0;
             FuncCounter    = 0;
-
-            InitInternalTypes();
-            InitExternalTypes();
-            InitQualifiers();
-            InitMethods();
         }
 
         private void InitInternalTypes()
