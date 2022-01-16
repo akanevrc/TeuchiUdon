@@ -21,13 +21,9 @@ BYTE_ORDER_MARK : '\u00EF\u00BB\u00BF';
 SINGLE_LINE_COMMENT    : '//' InputCharacter*       -> channel(COMMENTS_CHANNEL);
 OPEN_DELIMITED_COMMENT : '{/' { commentLevel = 1; } -> pushMode(DELIMITED_COMMENT);
 
-NEWLINE : (NewLine)+    { this.ProcessNewlineToken(); };
-WS      : (Whitespace)+ { this.ProcessWsToken();      };
-TAB     : (Tab)+        { this.ProcessTabToken();     };
-
-V_END   : '#;' -> channel(HIDDEN);
-V_OPEN  : '#{' -> channel(HIDDEN);
-V_CLOSE : '#}' -> channel(HIDDEN);
+NEWLINE : (NewLine)+    -> channel(HIDDEN);
+WS      : (Whitespace)+ -> channel(HIDDEN);
+TAB     : (Tab)+        -> channel(HIDDEN);
 
 BASE      : 'base'     ;
 CATCH     : 'catch'    ;

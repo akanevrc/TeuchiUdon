@@ -193,6 +193,30 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitEvalTupleFuncExpr([NotNull] TeuchiUdonParser.EvalTupleFuncExprContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>ValueBlockExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterValueBlockExpr([NotNull] TeuchiUdonParser.ValueBlockExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ValueBlockExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitValueBlockExpr([NotNull] TeuchiUdonParser.ValueBlockExprContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>UnitBlockExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterUnitBlockExpr([NotNull] TeuchiUdonParser.UnitBlockExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>UnitBlockExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitUnitBlockExpr([NotNull] TeuchiUdonParser.UnitBlockExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>ParensExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -354,15 +378,5 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitEnd([NotNull] TeuchiUdonParser.EndContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.newline"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterNewline([NotNull] TeuchiUdonParser.NewlineContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.newline"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitNewline([NotNull] TeuchiUdonParser.NewlineContext context);
 }
 } // namespace akanevrc.TeuchiUdon.Editor.Compiler

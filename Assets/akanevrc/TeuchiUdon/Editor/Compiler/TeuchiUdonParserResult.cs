@@ -111,7 +111,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             foreach (var v in Vars)
             {
-                TeuchiUdonTables.Instance.Vars.Add(v, v);
+                if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"{v.Name} conflicts with another variable");
+                }
+                else
+                {
+                    TeuchiUdonTables.Instance.Vars.Add(v, v);
+                }
             }
         }
 
@@ -208,12 +215,35 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class BlockResult : TypedResult
+    {
+        public TeuchiUdonBlock Block { get; }
+        public ExprResult[] Exprs { get; }
+
+        public BlockResult(IToken token, TeuchiUdonType type, int index, IEnumerable<ExprResult> exprs)
+            : base(token, type)
+        {
+            Block = new TeuchiUdonBlock(index);
+            Exprs = exprs.ToArray();
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Exprs.SelectMany(x => x.GetAssemblyDataPart());
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Exprs.SelectMany(x => x.GetAssemblyCodePart());
+        }
+    }
+
     public class ParensResult : TypedResult
     {
         public ExprResult Expr { get; }
 
-        public ParensResult(IToken token, ExprResult expr)
-            : base(token, expr.Inner.Type)
+        public ParensResult(IToken token, TeuchiUdonType type, ExprResult expr)
+            : base(token, type)
         {
             Expr = expr;
         }
@@ -238,7 +268,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Literal = new TeuchiUdonLiteral(index, text, type, value);
 
-            TeuchiUdonTables.Instance.Literals.Add(Literal, Literal);
+            if (TeuchiUdonTables.Instance.Literals.ContainsKey(Literal))
+            {
+                Literal = TeuchiUdonTables.Instance.Literals[Literal];
+            }
+            else
+            {
+                TeuchiUdonTables.Instance.Literals.Add(Literal, Literal);
+            }
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
@@ -434,7 +471,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             VarDecl = varDecl;
             Expr    = expr;
 
-            TeuchiUdonTables.Instance.Funcs.Add(index, this);
+            if (TeuchiUdonTables.Instance.Funcs.ContainsKey(Func))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"{Func.Name} conflicts with another function");
+            }
+            else
+            {
+                TeuchiUdonTables.Instance.Funcs.Add(Func, Func);
+            }
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()

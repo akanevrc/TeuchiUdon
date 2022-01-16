@@ -7,23 +7,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public static TeuchiUdonAssemblyWriter Instance { get; } = new TeuchiUdonAssemblyWriter();
 
-        private List<TeuchiUdonAssembly> DataBlock { get; set; }
-        private List<TeuchiUdonAssembly> CodeBlock { get; set; }
+        private List<TeuchiUdonAssembly> DataPart { get; set; }
+        private List<TeuchiUdonAssembly> CodePart { get; set; }
 
         public void Init()
         {
-            DataBlock = new List<TeuchiUdonAssembly>();
-            CodeBlock = new List<TeuchiUdonAssembly>();
+            DataPart = new List<TeuchiUdonAssembly>();
+            CodePart = new List<TeuchiUdonAssembly>();
         }
 
-        public void PushDataBlock(IEnumerable<TeuchiUdonAssembly> assemblies)
+        public void PushDataPart(IEnumerable<TeuchiUdonAssembly> assemblies)
         {
-            DataBlock.AddRange(assemblies);
+            DataPart.AddRange(assemblies);
         }
 
-        public void PushCodeBlock(IEnumerable<TeuchiUdonAssembly> assemblies)
+        public void PushCodePart(IEnumerable<TeuchiUdonAssembly> assemblies)
         {
-            CodeBlock.AddRange(assemblies);
+            CodePart.AddRange(assemblies);
         }
 
         public void WriteAll(TextWriter writer)
@@ -32,7 +32,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             WriteOne(writer, new Assembly_DATA_START() , ref indent);
             WriteOne(writer, new Assembly_INDENT    (1), ref indent);
-            foreach (var asm in DataBlock)
+            foreach (var asm in DataPart)
             {
                 WriteOne(writer, asm, ref indent);
             }
@@ -41,7 +41,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             WriteOne(writer, new Assembly_CODE_START() , ref indent);
             WriteOne(writer, new Assembly_INDENT    (1), ref indent);
-            foreach (var asm in CodeBlock)
+            foreach (var asm in CodePart)
             {
                 WriteOne(writer, asm, ref indent);
             }

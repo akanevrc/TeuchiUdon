@@ -17,10 +17,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
-        public Dictionary<int, FuncResult> Funcs { get; private set; }
+        public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
 
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
+        private int BlockCounter { get; set; }
 
         private bool IsInitialized { get; set; } = false;
 
@@ -46,9 +47,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 IsInitialized = true;
             }
 
-            Vars     = new Dictionary<TeuchiUdonVar, TeuchiUdonVar>();
+            Vars     = new Dictionary<TeuchiUdonVar    , TeuchiUdonVar>();
             Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
-            Funcs    = new Dictionary<int, FuncResult>();
+            Funcs    = new Dictionary<TeuchiUdonFunc   , TeuchiUdonFunc>();
 
             LiteralCounter = 0;
             FuncCounter    = 0;
@@ -278,6 +279,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int GetFuncIndex()
         {
             return FuncCounter++;
+        }
+
+        public int GetBlockIndex()
+        {
+            return BlockCounter++;
         }
 
         public static string GetUdonTypeName(Type type)

@@ -42,9 +42,13 @@ namespace akanevrc.TeuchiUdon.Editor
                 var lexer       = new TeuchiUdonLexer(inputStream, outputWriter, errorWriter);
                 var tokenStream = new CommonTokenStream(lexer);
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
+                var listener    = new TeuchiUdonListener(parser);
 
-                var logicalErrorHandler = new TeuchiUdonLogicalErrorHandler(parser);
-                var listener            = new TeuchiUdonListener(parser, logicalErrorHandler);
+                TeuchiUdonLogicalErrorHandler.Instance.Init(parser);
+                TeuchiUdonTables             .Instance.Init();
+                TeuchiUdonQualifierStack     .Instance.Init();
+                TeuchiUdonAssemblyWriter     .Instance.Init();
+
                 ParseTreeWalker.Default.Walk(listener, parser.target());
 
                 var output = outputWriter.ToString();

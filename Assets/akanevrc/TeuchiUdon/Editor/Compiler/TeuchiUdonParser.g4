@@ -13,31 +13,31 @@ options
 }
 
 target
-    : open body close end* EOF
+    : open body close end EOF
     | body EOF
     ;
 
 body
     returns [BodyResult result]
-    : (topStatement)+
+    : topStatement+
     ;
 
 topStatement
     returns [TopStatementResult result]
-    : varBind #VarBindTopStatement
-    | expr    #ExprTopStatement
+    : varBind end #VarBindTopStatement
+    | expr    end #ExprTopStatement
     ;
 
 varBind
     returns [VarBindResult result]
-    : varDecl[true] '=' expr end+
+    : varDecl[true] '=' expr
     ;
 
 varDecl[bool isActual]
     returns [VarDeclResult result]
-    : '(' ')'                                                                     #UnitVarDecl
-    | identifier (':' qualified)?                                                 #SingleVarDecl
-    | '(' identifier (':' qualified)? (',' identifier (':' qualified)?)* ','? ')' #TupleVarDecl
+    : '(' ')'                                                                #UnitVarDecl
+    | identifier (':' qualified)?                                            #SingleVarDecl
+    | '(' identifier (':' qualified)? (',' identifier (':' qualified)?)* ')' #TupleVarDecl
     ;
 
 qualified
@@ -52,14 +52,16 @@ identifier
 
 expr
     returns [ExprResult result, int tableIndex]
-    : '(' expr ')'                             #ParensExpr
-    | literal                                  #LiteralExpr
-    | identifier                               #EvalVarExpr
-    | identifier '(' ')'                       #EvalUnitFuncExpr
-    | identifier '(' expr ')'                  #EvalSingleFuncExpr
-    | identifier '(' expr (',' expr)* ','? ')' #EvalTupleFuncExpr
-    | expr '.' expr                            #AccessExpr
-    | varDecl[false] '->' expr                        #FuncExpr
+    : open (expr end)* close              #UnitBlockExpr
+    | open (expr end)* expr close         #ValueBlockExpr
+    | '(' expr ')'                        #ParensExpr
+    | literal                             #LiteralExpr
+    | identifier                          #EvalVarExpr
+    | identifier '(' ')'                  #EvalUnitFuncExpr
+    | identifier '(' expr ')'             #EvalSingleFuncExpr
+    | identifier '(' expr (',' expr)* ')' #EvalTupleFuncExpr
+    | expr '.' expr                       #AccessExpr
+    | varDecl[false] '->' expr            #FuncExpr
     ;
 
 literal
@@ -73,10 +75,9 @@ literal
     | VERBATIUM_STRING    #VervatiumString
     ;
 
-open    : OPEN_BRACE  | V_OPEN ;
-close   : CLOSE_BRACE | V_CLOSE;
-end     : SEMICOLON   | V_END  ;
-newline : NEWLINE;
+open  : OPEN_BRACE;
+close : CLOSE_BRACE;
+end   : SEMICOLON;
 
 // target
 //     : module_decl semicolon? EOF
