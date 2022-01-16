@@ -92,7 +92,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Qualifier}.{Name}{(Args.Length == 0 ? "" : $"<{string.Join(", ", Args.Select(x => x.ToString()))}>")}";
+            return $"{Qualifier.QualifiedName(Name)}{(Args.Length == 0 ? "" : $"<{string.Join(", ", Args.Select(x => x.ToString()))}>")}";
         }
 
         public bool TypeNameEquals(TeuchiUdonType obj)

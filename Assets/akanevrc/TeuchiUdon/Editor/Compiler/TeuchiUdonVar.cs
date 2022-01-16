@@ -67,7 +67,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Qualifier}.{Name}";
+            return $"{Qualifier.QualifiedName(Name)}";
         }
 
         public string GetUdonName()

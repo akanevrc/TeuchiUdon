@@ -53,6 +53,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return string.Join(".", Logical);
         }
 
+        public string QualifiedName(string name)
+        {
+            return string.Join(".", Logical.Concat(new string[] { name }));
+        }
+
         public TeuchiUdonQualifier Append(string logical)
         {
             var l = logical == null ? Logical : Logical.Concat(new string[] { logical });

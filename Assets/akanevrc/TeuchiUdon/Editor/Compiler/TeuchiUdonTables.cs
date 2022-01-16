@@ -16,7 +16,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
-        public Dictionary<int, LiteralResult> Literals { get; private set; }
+        public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<int, FuncResult> Funcs { get; private set; }
 
         private int LiteralCounter { get; set; }
@@ -47,7 +47,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             Vars     = new Dictionary<TeuchiUdonVar, TeuchiUdonVar>();
-            Literals = new Dictionary<int, LiteralResult>();
+            Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
             Funcs    = new Dictionary<int, FuncResult>();
 
             LiteralCounter = 0;
@@ -286,16 +286,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var name = type.FullName.Replace(".", "");
             return name;
-        }
-
-        public static string GetLiteralName(int index)
-        {
-            return $"literal[{index}]";
-        }
-
-        public static string GetFuncName(int index)
-        {
-            return $"func[{index}]";
         }
 
         public static string GetGetterName(string name)

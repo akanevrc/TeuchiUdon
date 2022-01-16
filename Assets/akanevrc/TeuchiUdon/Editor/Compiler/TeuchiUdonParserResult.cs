@@ -127,7 +127,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     x.GetUdonName(),
                     x.Type,
                     x.Expr.Inner is LiteralResult literal ?
-                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_VALUE(literal.Text) :
+                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_VALUE(literal.Literal.Text) :
                         (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_NULL ()
                 )
             });
@@ -231,25 +231,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class LiteralResult : TypedResult
     {
-        public int Index { get; }
-        public object Value { get; }
-        public string Text { get; }
+        public TeuchiUdonLiteral Literal { get; }
 
-        public LiteralResult(IToken token, TeuchiUdonType type, int index, object value, string text)
+        public LiteralResult(IToken token, TeuchiUdonType type, int index, string text, object value)
             : base(token, type)
         {
-            Index = index;
-            Value = value;
-            Text  = text;
+            Literal = new TeuchiUdonLiteral(index, text, type, value);
 
-            TeuchiUdonTables.Instance.Literals.Add(index, this);
+            TeuchiUdonTables.Instance.Literals.Add(Literal, Literal);
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
         {
             return new TeuchiUdonAssembly[]
             {
-                new Assembly_DECL_DATA(TeuchiUdonTables.GetLiteralName(Index), Type, new AssemblyLiteral_VALUE(Text))
+                new Assembly_DECL_DATA(Literal.GetUdonName(), Type, new AssemblyLiteral_VALUE(Literal.Text))
             };
         }
 
@@ -257,7 +253,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new TeuchiUdonAssembly[]
             {
-                new Assembly_PUSH(new AssemblyAddress_LABEL(TeuchiUdonTables.GetLiteralName(Index)))
+                new Assembly_PUSH(new AssemblyAddress_LABEL(Literal.GetUdonName()))
             };
         }
     }
@@ -427,16 +423,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class FuncResult : TypedResult
     {
-        public string TmpName { get; }
-        public int Index { get; }
+        public TeuchiUdonFunc Func { get; }
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public FuncResult(IToken token, TeuchiUdonType type, string tmpName, int index, VarDeclResult varDecl, ExprResult expr)
+        public FuncResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, string name, VarDeclResult varDecl, ExprResult expr)
             : base(token, type)
         {
-            TmpName = tmpName;
-            Index   = index;
+            Func    = new TeuchiUdonFunc(index, qualifier, name, varDecl.Vars, expr);
             VarDecl = varDecl;
             Expr    = expr;
 
@@ -452,8 +446,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new TeuchiUdonAssembly[]
             {
-                new Assembly_EXPORT_CODE(TmpName),
-                new Assembly_LABEL      (TmpName),
+                new Assembly_EXPORT_CODE(Func.Name),
+                new Assembly_LABEL      (Func.Name),
                 new Assembly_INDENT     (1)
             }
             .Concat(Expr.GetAssemblyCodePart())

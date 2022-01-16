@@ -170,7 +170,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var index          = TeuchiUdonTables.Instance.GetLiteralIndex();
             context.tableIndex = index;
-            TeuchiUdonQualifierStack.Instance.PushName(TeuchiUdonTables.GetLiteralName(index));
+            TeuchiUdonQualifierStack.Instance.PushName(new TeuchiUdonLiteral(index).GetUdonName());
         }
 
         public override void ExitLiteralExpr([NotNull] LiteralExprContext context)
@@ -496,7 +496,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var index          = TeuchiUdonTables.Instance.GetFuncIndex();
             context.tableIndex = index;
-            TeuchiUdonQualifierStack.Instance.PushName(TeuchiUdonTables.GetFuncName(index));
+            TeuchiUdonQualifierStack.Instance.PushName(new TeuchiUdonFunc(index).GetUdonName());
         }
 
         public override void ExitFuncExpr([NotNull] FuncExprContext context)
@@ -513,7 +513,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var index      = context.tableIndex;
-            var func       = new FuncResult(varDecl.Token, type, varBind.varDecl().result.Vars[0].Name, index, varDecl, expr);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var name       = varBind.varDecl().result.Vars[0].Name;
+            var func       = new FuncResult(varDecl.Token, type, index, qual, name, varDecl, expr);
             context.result = new ExprResult(func.Token, func);
         }
 
@@ -552,7 +554,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var token      = context.INTEGER_LITERAL().Symbol;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToIntegerValue(text.Substring(index, count), basis, type, token);
-            context.result = new LiteralResult(token, type, tableIndex, value, text);
+            context.result = new LiteralResult(token, type, tableIndex, text, value);
         }
 
         public override void ExitHexIntegerLiteral([NotNull] HexIntegerLiteralContext context)
@@ -583,7 +585,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var token      = context.HEX_INTEGER_LITERAL().Symbol;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToIntegerValue(text.Substring(index, count), basis, type, token);
-            context.result = new LiteralResult(token, type, tableIndex, value, text);
+            context.result = new LiteralResult(token, type, tableIndex, text, value);
         }
 
         public override void ExitBinIntegerLiteral([NotNull] BinIntegerLiteralContext context)
@@ -614,7 +616,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var token      = context.BIN_INTEGER_LITERAL().Symbol;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToIntegerValue(text.Substring(index, count), basis, type, token);
-            context.result = new LiteralResult(token, type, tableIndex, value, text);
+            context.result = new LiteralResult(token, type, tableIndex, text, value);
         }
 
         public override void ExitRealLiteral([NotNull] RealLiteralContext context)
@@ -632,7 +634,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var type       = TeuchiUdonType.String;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToRegularStringValue(text.Substring(1, text.Length - 2));
-            context.result = new LiteralResult(token, type, tableIndex, value, text);
+            context.result = new LiteralResult(token, type, tableIndex, text, value);
         }
 
         public override void ExitVervatiumString([NotNull] VervatiumStringContext context)
@@ -642,13 +644,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var type       = TeuchiUdonType.String;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToVervatiumStringValue(text.Substring(2, text.Length - 3));
-            context.result = new LiteralResult(token, type, tableIndex, value, text);
+            context.result = new LiteralResult(token, type, tableIndex, text, value);
         }
 
         private object Eval(ExprResult expr)
         {
             return
-                expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Value}" :
+                expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Literal.Value}" :
                 expr.Inner is EvalVarResult  evalVar  ? $"<evalVar>{evalVar.Identifier.Name}" :
                 expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(x => Eval(x)))})" :
                 expr.Inner is InfixResult    infix    ? $"<infix>{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
