@@ -6,26 +6,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonQualifier : IEquatable<TeuchiUdonQualifier>
     {
-        public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(new string[0], new string[0]);
+        public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(new TeuchiUdonScope[0], new TeuchiUdonScope[0]);
 
-        public string[] Logical { get; }
-        public string[] Real { get; }
+        public TeuchiUdonScope[] Logical { get; }
+        public TeuchiUdonScope[] Real { get; }
 
-        public TeuchiUdonQualifier(IEnumerable<string> logical)
+        public TeuchiUdonQualifier(IEnumerable<TeuchiUdonScope> logical)
+            : this(logical, null)
         {
-            Logical = logical.ToArray();
-            Real    = null;
         }
 
-        public TeuchiUdonQualifier(IEnumerable<string> logical, IEnumerable<string> real)
+        public TeuchiUdonQualifier(IEnumerable<TeuchiUdonScope> logical, IEnumerable<TeuchiUdonScope> real)
         {
-            Logical = logical.ToArray();
-            Real    = real   .ToArray();
+            Logical = logical?.ToArray();
+            Real    = real   ?.ToArray();
         }
 
         public bool Equals(TeuchiUdonQualifier obj)
         {
-            return Logical.SequenceEqual(obj.Logical);
+            return !object.ReferenceEquals(obj, null) && Logical.SequenceEqual(obj.Logical);
         }
 
         public override bool Equals(object obj)
@@ -40,35 +39,48 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static bool operator ==(TeuchiUdonQualifier obj1, TeuchiUdonQualifier obj2)
         {
-            return obj1.Equals(obj2);
+            return
+                 object.ReferenceEquals(obj1, null) &&
+                 object.ReferenceEquals(obj2, null) ||
+                !object.ReferenceEquals(obj1, null) &&
+                !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
         public static bool operator !=(TeuchiUdonQualifier obj1, TeuchiUdonQualifier obj2)
         {
-            return !obj1.Equals(obj2);
+            return !(obj1 == obj2);
         }
 
         public override string ToString()
         {
-            return string.Join(".", Logical);
+            return string.Join<TeuchiUdonScope>(".", Logical);
         }
 
-        public string QualifiedName(string name)
+        public string QualifyText(string separator, string text)
         {
-            return string.Join(".", Logical.Concat(new string[] { name }));
+            return string.Join(separator, Logical.Select(x => x.ToString()).Concat(new string[] { text }));
         }
 
-        public TeuchiUdonQualifier Append(string logical)
+        public TeuchiUdonQualifier Append(TeuchiUdonScope logical)
         {
-            var l = logical == null ? Logical : Logical.Concat(new string[] { logical });
+            var l = logical == null ? Logical : Logical.Concat(new TeuchiUdonScope[] { logical });
             return new TeuchiUdonQualifier(l);
         }
 
-        public TeuchiUdonQualifier Append(string logical, string real)
+        public TeuchiUdonQualifier Append(TeuchiUdonScope logical, TeuchiUdonScope real)
         {
-            var l = logical == null ? Logical : Logical.Concat(new string[] { logical });
-            var r = real    == null ? Real    : Real   .Concat(new string[] { real    });
+            var l = logical == null ? Logical : Logical.Concat(new TeuchiUdonScope[] { logical });
+            var r = real    == null ? Real    : Real   .Concat(new TeuchiUdonScope[] { real    });
             return new TeuchiUdonQualifier(l, r);
+        }
+
+        public TeuchiUdonScope LastScope(TeuchiUdonScopeMode mode)
+        {
+            foreach (var scope in Logical.Reverse())
+            {
+                if (scope.Mode == mode) return scope;
+            }
+            return null;
         }
     }
 }

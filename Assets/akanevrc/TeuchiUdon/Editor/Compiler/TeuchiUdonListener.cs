@@ -20,7 +20,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitTarget([NotNull] TargetContext context)
         {
             var body = context.body().result;
-            TeuchiUdonAssemblyWriter.Instance.PushDataPart(body.GetAssemblyDataPart());
+            TeuchiUdonAssemblyWriter.Instance.PushDataPart(TeuchiUdonTables.Instance.GetAssemblyDataPart());
             TeuchiUdonAssemblyWriter.Instance.PushCodePart(body.GetAssemblyCodePart());
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
         }
@@ -55,7 +55,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void EnterVarBind([NotNull] VarBindContext context)
         {
-            TeuchiUdonQualifierStack.Instance.PushName(((SingleVarDeclContext)context.varDecl()).identifier().GetText());
+            var scope = new TeuchiUdonScope(((SingleVarDeclContext)context.varDecl()).identifier().GetText(), TeuchiUdonScopeMode.Var);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitVarBind([NotNull] VarBindContext context)
@@ -121,7 +122,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitQualified([NotNull] QualifiedContext context)
         {
             var identifiers = context.identifier().Select(x => x.result).ToArray();
-            var qual        = new TeuchiUdonQualifier(identifiers.Take(identifiers.Length - 1).Select(x => x.Name));
+            var qual        = new TeuchiUdonQualifier(identifiers.Take(identifiers.Length - 1).Select(x => new TeuchiUdonScope(x.Name, TeuchiUdonScopeMode.Type)));
             var t           = new TeuchiUdonType(qual, identifiers[identifiers.Length - 1].Name);
             var type        = (TeuchiUdonType)null;
             if (TeuchiUdonTables.Instance.Types.ContainsKey(t))
@@ -143,19 +144,67 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new IdentifierResult(context.Start, name);
         }
 
+        public override void ExitReturnUnitStatement([NotNull] ReturnUnitStatementContext context)
+        {
+            var value      = new ExprResult(context.Start, new UnitResult(context.Start));
+            context.result = ExitReturnStatement(context.Start, value);
+        }
+
+        public override void ExitReturnValueStatement([NotNull] ReturnValueStatementContext context)
+        {
+            var value      = context.expr().result;
+            context.result = ExitReturnStatement(context.Start, value);
+        }
+
+        private JumpResult ExitReturnStatement(IToken token, ExprResult value)
+        {
+            var scope = TeuchiUdonQualifierStack.Instance.Peek().LastScope(TeuchiUdonScopeMode.Func);
+            if (scope == null)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no func exists for return");
+            }
+
+            var label = scope == null ? TeuchiUdonLabel.InvalidLabel : ((TeuchiUdonFunc)scope.Label).ReturnAddress;
+            return new JumpResult(token, value, label);
+        }
+
+        public override void ExitContinueUnitStatement([NotNull] ContinueUnitStatementContext context)
+        {
+        }
+
+        public override void ExitContinueValueStatement([NotNull] ContinueValueStatementContext context)
+        {
+        }
+
+        public override void ExitBreakUnitStatement([NotNull] BreakUnitStatementContext context)
+        {
+        }
+
+        public override void ExitBreakValueStatement([NotNull] BreakValueStatementContext context)
+        {
+        }
+
+        public override void ExitExprStatement([NotNull] ExprStatementContext context)
+        {
+            context.result = context.expr().result;
+        }
+
         public override void EnterUnitBlockExpr([NotNull] UnitBlockExprContext context)
         {
             var index          = TeuchiUdonTables.Instance.GetBlockIndex();
             context.tableIndex = index;
-            TeuchiUdonQualifierStack.Instance.PushName(new TeuchiUdonBlock(index).GetUdonName());
+            var scope          = new TeuchiUdonScope(new TeuchiUdonBlock(index), TeuchiUdonScopeMode.Block);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitUnitBlockExpr([NotNull] UnitBlockExprContext context)
         {
-            var exprs      = context.expr().Select(x => x.result);
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var statements = context.statement().Select(x => x.result);
             var type       = TeuchiUdonType.Unit;
             var index      = context.tableIndex;
-            var parens     = new BlockResult(context.Start, type, index, exprs);
+            var parens     = new BlockResult(context.Start, type, index, statements);
             context.result = new ExprResult(parens.Token, parens);
         }
 
@@ -163,15 +212,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var index          = TeuchiUdonTables.Instance.GetBlockIndex();
             context.tableIndex = index;
-            TeuchiUdonQualifierStack.Instance.PushName(new TeuchiUdonBlock(index).GetUdonName());
+            var scope          = new TeuchiUdonScope(new TeuchiUdonBlock(index), TeuchiUdonScopeMode.Block);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitValueBlockExpr([NotNull] ValueBlockExprContext context)
         {
-            var exprs      = context.expr().Select(x => x.result);
-            var type       = exprs.Last().Inner.Type;
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var statements = context.statement().Select(x => x.result);
+            var type       = context.expr().result.Inner.Type;
             var index      = context.tableIndex;
-            var parens     = new BlockResult(context.Start, type, index, exprs);
+            var parens     = new BlockResult(context.Start, type, index, statements);
             context.result = new ExprResult(parens.Token, parens);
         }
 
@@ -187,7 +239,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var index          = TeuchiUdonTables.Instance.GetLiteralIndex();
             context.tableIndex = index;
-            TeuchiUdonQualifierStack.Instance.PushName(new TeuchiUdonLiteral(index).GetUdonName());
+            var scope          = new TeuchiUdonScope(new TeuchiUdonLiteral(index), TeuchiUdonScopeMode.Literal);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitLiteralExpr([NotNull] LiteralExprContext context)
@@ -238,7 +291,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitEvalSingleFuncExpr([NotNull] EvalSingleFuncExprContext context)
         {
             var identifier = context.identifier().result;
-            var args       = new ExprResult    [] { context.expr().result };
+            var args       = new ExprResult[] { context.expr().result };
             var parent     = context.Parent;
             context.result = ExitEvalFuncExpr(context.Start, identifier, args, parent);
         }
@@ -311,7 +364,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         break;
                     }
                     
-                    var newQual = new TeuchiUdonQualifier(new string[] { qualCandidate1.Identifier.Name });
+                    var scopes  = new TeuchiUdonScope[] { new TeuchiUdonScope(new TextLabel(qualCandidate1.Identifier.Name)) };
+                    var newQual = new TeuchiUdonQualifier(scopes);
                     if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(newQual))
                     {
                         var q    = TeuchiUdonTables.Instance.Qualifiers[newQual];
@@ -388,7 +442,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             break;
                         }
 
-                        var appended = qual.Append(qualCandidate2.Identifier.Name);
+                        var scope    = new TeuchiUdonScope(new TextLabel(qualCandidate2.Identifier.Name));
+                        var appended = qual.Append(scope);
                         if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(appended))
                         {
                             var q    = TeuchiUdonTables.Instance.Qualifiers[appended];
@@ -400,7 +455,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     else if (type1.TypeNameEquals(TeuchiUdonType.Type))
                     {
                         var t  = (TeuchiUdonType)type1.Args[0];
-                        var q  = t.Qualifier.Append(t.Name);
+                        var s  = new TeuchiUdonScope(new TextLabel(t.Name));
+                        var q  = t.Qualifier.Append(s);
                         var qt = new TeuchiUdonType(q, qualCandidate2.Identifier.Name);
                         if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
                         {
@@ -507,7 +563,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var index          = TeuchiUdonTables.Instance.GetFuncIndex();
             context.tableIndex = index;
-            TeuchiUdonQualifierStack.Instance.PushName(new TeuchiUdonFunc(index).GetUdonName());
+            var scope          = new TeuchiUdonScope(new TeuchiUdonFunc(index), TeuchiUdonScopeMode.Func);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitFuncExpr([NotNull] FuncExprContext context)

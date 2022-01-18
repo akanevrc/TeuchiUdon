@@ -2,18 +2,20 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonBlock : IEquatable<TeuchiUdonBlock>
+    public class TeuchiUdonBlock : ITeuchiUdonLabel, IEquatable<TeuchiUdonBlock>
     {
         public int Index { get; }
+        public ITeuchiUdonLabel EndLabel { get; }
 
         public TeuchiUdonBlock(int index)
         {
-            Index = index;
+            Index    = index;
+            EndLabel = new TextLabel(GetLabel());
         }
 
         public bool Equals(TeuchiUdonBlock obj)
         {
-            return Index == obj.Index;
+            return !object.ReferenceEquals(obj, null) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
@@ -28,20 +30,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static bool operator ==(TeuchiUdonBlock obj1, TeuchiUdonBlock obj2)
         {
-            return obj1.Equals(obj2);
+            return
+                 object.ReferenceEquals(obj1, null) &&
+                 object.ReferenceEquals(obj2, null) ||
+                !object.ReferenceEquals(obj1, null) &&
+                !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
         public static bool operator !=(TeuchiUdonBlock obj1, TeuchiUdonBlock obj2)
         {
-            return !obj1.Equals(obj2);
+            return !(obj1 == obj2);
         }
 
-        public override string ToString()
-        {
-            return $"block[{Index}]";
-        }
-
-        public string GetUdonName()
+        public string GetLabel()
         {
             return $"block[{Index}]";
         }

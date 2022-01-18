@@ -1,9 +1,8 @@
 using System;
-using System.Linq;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonVar : IEquatable<TeuchiUdonVar>
+    public class TeuchiUdonVar : ITeuchiUdonLabel, IEquatable<TeuchiUdonVar>
     {
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
@@ -11,19 +10,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult Expr { get; private set; }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name)
+            : this(qualifier, name, null, null)
         {
-            Qualifier = qualifier;
-            Name      = name;
-            Type      = null;
-            Expr      = null;
         }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type)
+            : this(qualifier, name, type, null)
         {
-            Qualifier = qualifier;
-            Name      = name;
-            Type      = type;
-            Expr      = null;
         }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, ExprResult expr)
@@ -42,7 +35,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonVar obj)
         {
-            return Qualifier == obj.Qualifier && Name == obj.Name;
+            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Name == obj.Name;
         }
 
         public override bool Equals(object obj)
@@ -57,22 +50,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static bool operator ==(TeuchiUdonVar obj1, TeuchiUdonVar obj2)
         {
-            return obj1.Equals(obj2);
+            return
+                 object.ReferenceEquals(obj1, null) &&
+                 object.ReferenceEquals(obj2, null) ||
+                !object.ReferenceEquals(obj1, null) &&
+                !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
         public static bool operator !=(TeuchiUdonVar obj1, TeuchiUdonVar obj2)
         {
-            return !obj1.Equals(obj2);
+            return !(obj1 == obj2);
         }
 
         public override string ToString()
         {
-            return $"{Qualifier.QualifiedName(Name)}";
+            return $"{Qualifier.QualifyText(".", Name)}";
         }
 
-        public string GetUdonName()
+        public string GetLabel()
         {
-            return $"var[{string.Join(">", Qualifier.Logical.Concat(new string[] { Name }))}]";
+            return $"var[{Qualifier.QualifyText(">", Name)}]";
         }
     }
 }

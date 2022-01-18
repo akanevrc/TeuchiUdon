@@ -13,19 +13,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonType[] AllArgTypes { get; }
         public string UdonName { get; }
 
-        public TeuchiUdonMethod
-        (
-            TeuchiUdonType type,
-            string name,
-            IEnumerable<TeuchiUdonType> inTypes
-        )
+        public TeuchiUdonMethod(TeuchiUdonType type, string name, IEnumerable<TeuchiUdonType> inTypes)
+            : this(type, name, inTypes, null, null, null)
         {
-            Type         = type;
-            Name         = name;
-            InTypes      = inTypes.ToArray();
-            OutTypes     = null;
-            AllArgTypes  = null;
-            UdonName     = null;
         }
 
         public TeuchiUdonMethod
@@ -40,15 +30,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Type         = type;
             Name         = name;
-            InTypes      = inTypes    .ToArray();
-            OutTypes     = outTypes   .ToArray();
-            AllArgTypes  = allArgTypes.ToArray();
+            InTypes      = inTypes    ?.ToArray();
+            OutTypes     = outTypes   ?.ToArray();
+            AllArgTypes  = allArgTypes?.ToArray();
             UdonName     = udonName;
         }
 
         public bool Equals(TeuchiUdonMethod obj)
         {
-            return Type == obj.Type && Name == obj.Name && InTypes.SequenceEqual(obj.InTypes);
+            return !object.ReferenceEquals(obj, null) && Type == obj.Type && Name == obj.Name && InTypes.SequenceEqual(obj.InTypes);
         }
 
         public override bool Equals(object obj)
@@ -63,12 +53,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static bool operator ==(TeuchiUdonMethod obj1, TeuchiUdonMethod obj2)
         {
-            return obj1.Equals(obj2);
+            return
+                 object.ReferenceEquals(obj1, null) &&
+                 object.ReferenceEquals(obj2, null) ||
+                !object.ReferenceEquals(obj1, null) &&
+                !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
         public static bool operator !=(TeuchiUdonMethod obj1, TeuchiUdonMethod obj2)
         {
-            return !obj1.Equals(obj2);
+            return !(obj1 == obj2);
         }
 
         public override string ToString()

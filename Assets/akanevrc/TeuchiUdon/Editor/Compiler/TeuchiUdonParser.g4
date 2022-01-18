@@ -50,10 +50,21 @@ identifier
     : IDENTIFIER
     ;
 
+statement
+    returns [StatementResult result]
+    : 'return'        #ReturnUnitStatement
+    | 'return'   expr #ReturnValueStatement
+    | 'continue'      #ContinueUnitStatement
+    | 'continue' expr #ContinueValueStatement
+    | 'break'         #BreakUnitStatement
+    | 'break'    expr #BreakValueStatement
+    | expr            #ExprStatement
+    ;
+
 expr
     returns [ExprResult result, int tableIndex]
-    : open (expr end)* close              #UnitBlockExpr
-    | open (expr end)* expr close         #ValueBlockExpr
+    : open (statement end)* close         #UnitBlockExpr
+    | open (statement end)* expr close    #ValueBlockExpr
     | '(' expr ')'                        #ParensExpr
     | literal                             #LiteralExpr
     | identifier                          #EvalVarExpr

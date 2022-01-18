@@ -2,7 +2,7 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonLiteral : IEquatable<TeuchiUdonLiteral>
+    public class TeuchiUdonLiteral : ITeuchiUdonLabel, IEquatable<TeuchiUdonLiteral>
     {
         public int Index { get; }
         public string Text { get; }
@@ -10,19 +10,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public object Value { get; }
 
         public TeuchiUdonLiteral(int index)
+            : this(index, null, null, null)
         {
-            Index = index;
-            Text  = null;
-            Type  = null;
-            Value = null;
         }
 
         public TeuchiUdonLiteral(string text)
+            : this(-1, text, null, null)
         {
-            Index = -1;
-            Text  = text;
-            Type  = null;
-            Value = null;
         }
 
         public TeuchiUdonLiteral(int index, string text, TeuchiUdonType type, object value)
@@ -35,7 +29,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonLiteral obj)
         {
-            return Text == obj.Text;
+            return !object.ReferenceEquals(obj, null) && Text == obj.Text;
         }
 
         public override bool Equals(object obj)
@@ -50,12 +44,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static bool operator ==(TeuchiUdonLiteral obj1, TeuchiUdonLiteral obj2)
         {
-            return obj1.Equals(obj2);
+            return
+                 object.ReferenceEquals(obj1, null) &&
+                 object.ReferenceEquals(obj2, null) ||
+                !object.ReferenceEquals(obj1, null) &&
+                !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
         public static bool operator !=(TeuchiUdonLiteral obj1, TeuchiUdonLiteral obj2)
         {
-            return !obj1.Equals(obj2);
+            return !(obj1 == obj2);
         }
 
         public override string ToString()
@@ -63,7 +61,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Text;
         }
 
-        public string GetUdonName()
+        public string GetLabel()
         {
             return $"literal[{Index}]";
         }

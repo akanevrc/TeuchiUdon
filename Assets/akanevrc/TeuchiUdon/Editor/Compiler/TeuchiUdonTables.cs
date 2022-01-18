@@ -12,7 +12,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier> Qualifiers { get; private set; }
         public Dictionary<TeuchiUdonType, TeuchiUdonType> Types { get; private set; }
-        public Dictionary<string, TeuchiUdonType> UdonTypes { get; private set; }
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
@@ -35,7 +34,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 Qualifiers    = new Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier>();
                 Types         = new Dictionary<TeuchiUdonType, TeuchiUdonType>();
-                UdonTypes     = new Dictionary<string, TeuchiUdonType>();
                 Methods       = new Dictionary<TeuchiUdonMethod, TeuchiUdonMethod>();
                 TypeToMethods = new Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>();
 
@@ -72,15 +70,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.ULong,
                 TeuchiUdonType.String,
                 TeuchiUdonType.UObject,
-                TeuchiUdonType.List,
-                TeuchiUdonType.T,
-                TeuchiUdonType.TArray
+                TeuchiUdonType.List
             };
 
             foreach (var t in types)
             {
                 Types.Add(t, t);
-                if (!UdonTypes.ContainsKey(t.UdonName)) UdonTypes.Add(t.UdonName, t);
             }
         }
 
@@ -97,11 +92,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                         var udonTypeName = GetUdonTypeName(def.type);
                         var typeNames    = def.type.FullName.Split(new string[] { "." }, StringSplitOptions.None);
-                        var qualNames    = typeNames.Take(typeNames.Length - 1);
+                        var qualNames    = typeNames.Take(typeNames.Length - 1).Select(x => new TeuchiUdonScope(x, TeuchiUdonScopeMode.Type)).ToArray();
                         var typeName     = typeNames.Last().Replace("[]", "");
                         var realType     = def.type.IsArray ? def.type.GetElementType() : def.type;
                         var qual         = new TeuchiUdonQualifier(qualNames, qualNames);
-                        var type         = new TeuchiUdonType(qual, typeName, realType, udonTypeName);
+                        var type         = new TeuchiUdonType(qual, typeName, udonTypeName, udonTypeName, realType);
 
                         if (def.type.IsArray)
                         {
@@ -113,30 +108,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             Types.Add(type, type);
                         }
 
-                        if (!UdonTypes.ContainsKey(udonTypeName))
-                        {
-                            UdonTypes.Add(udonTypeName, type);
-                        }
-
                         var paramTypes         = def.parameters.Select(x => x.type).ToArray();
                         var paramUdonTypeNames = paramTypes.Select(x => GetUdonTypeName(x)).ToArray();
                         var paramTypeNamess    = paramTypes.Select(x => x.FullName.Split(new string[] { "." }, StringSplitOptions.None).ToArray());
-                        var paramQualNamess    = paramTypeNamess.Select(x => x.Take(x.Length - 1));
+                        var paramQualNamess    = paramTypeNamess.Select(x => x.Take(x.Length - 1).Select(y => new TeuchiUdonScope(y, TeuchiUdonScopeMode.Type)).ToArray());
                         var paramTypeNames     = paramTypeNamess.Select(x => x.Last()).ToArray();
                         var paramQuals         = paramQualNamess.Select(x => new TeuchiUdonQualifier(x, x)).ToArray();
                         
                         for (var i = 0; i < paramTypeNames.Length; i++)
                         {
-                            var methodParamType = new TeuchiUdonType(paramQuals[i], paramTypeNames[i], paramTypes[i], paramUdonTypeNames[i]);
+                            var methodParamType = new TeuchiUdonType(paramQuals[i], paramTypeNames[i], paramUdonTypeNames[i], paramUdonTypeNames[i], paramTypes[i]);
 
                             if (!Types.ContainsKey(methodParamType))
                             {
                                 Types.Add(methodParamType, methodParamType);
-                            }
-
-                            if (!UdonTypes.ContainsKey(paramUdonTypeNames[i]))
-                            {
-                                UdonTypes.Add(paramUdonTypeNames[i], methodParamType);
                             }
                         }
                     }
@@ -146,7 +131,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private void InitQualifiers()
         {
-            foreach (var t in Types.Keys)
+            foreach (var t in Types.Values)
             {
                 for (var i = 1; i <= t.Qualifier.Logical.Length; i++)
                 {
@@ -170,10 +155,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                         var udonTypeName = GetUdonTypeName(def.type);
                         var typeNames    = def.type.FullName.Split(new string[] { "." }, StringSplitOptions.None);
-                        var qualNames    = typeNames.Take(typeNames.Length - 1);
+                        var qualNames    = typeNames.Take(typeNames.Length - 1).Select(x => new TeuchiUdonScope(x, TeuchiUdonScopeMode.Type)).ToArray();
                         var typeName     = typeNames.Last();
                         var qual         = new TeuchiUdonQualifier(qualNames, qualNames);
-                        var type         = new TeuchiUdonType(qual, typeName, def.type, udonTypeName);
+                        var type         = new TeuchiUdonType(qual, typeName, udonTypeName, udonTypeName, def.type);
                         var methodNames  = def.name.Split(new string[] { " " }, StringSplitOptions.None);
                         var methodName   = methodNames[methodNames.Length - 1];
                         var instanceDef = def.parameters
@@ -219,7 +204,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private TeuchiUdonType GetTeuchiUdonType(Type type)
         {
             var names = type.FullName.Split(new string[] { "." }, StringSplitOptions.None);
-            var qual  = new TeuchiUdonQualifier(names.Take(names.Length - 1));
+            var qual  = new TeuchiUdonQualifier(names.Take(names.Length - 1).Select(x => new TeuchiUdonScope(x, TeuchiUdonScopeMode.Type)));
             var t     = new TeuchiUdonType(qual, names.Last());
             return Types[t];
         }
@@ -302,6 +287,30 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static string GetSetterName(string name)
         {
             return $"set_{name}";
+        }
+
+        public IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            return Vars.Values.SelectMany(x => x.Type.TypeNameEquals(TeuchiUdonType.Func) ?
+            new TeuchiUdonAssembly[0] :
+            new TeuchiUdonAssembly[]
+            {
+                new Assembly_EXPORT_DATA(x),
+                new Assembly_DECL_DATA
+                (
+                    x,
+                    x.Type,
+                    x.Expr.Inner is LiteralResult literal ?
+                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_VALUE(literal.Literal.Text) :
+                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_NULL ()
+                )
+            })
+            .Concat(Literals.Values.SelectMany(x =>
+            new TeuchiUdonAssembly[]
+            {
+                new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_VALUE(x.Text))
+            }
+            ));
         }
     }
 }

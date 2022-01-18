@@ -22,14 +22,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Qualifiers.Push(qualifier);
         }
 
-        public void PushName(string name)
+        public void PushScope(TeuchiUdonScope scope)
         {
-            Qualifiers.Push(Qualifiers.Peek().Append(name, name));
+            Qualifiers.Push(Qualifiers.Peek().Append(scope, scope));
         }
 
-        public void PushNewName(string name)
+        public void PushNewScope(TeuchiUdonScope scope)
         {
-            Qualifiers.Push(TeuchiUdonQualifier.Top.Append(name, name));
+            Qualifiers.Push(TeuchiUdonQualifier.Top.Append(scope, scope));
         }
 
         public TeuchiUdonQualifier Pop()

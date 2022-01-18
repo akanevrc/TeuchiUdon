@@ -14,11 +14,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Token = token;
         }
 
-        public virtual IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return new TeuchiUdonAssembly[0];
-        }
-
         public virtual IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return new TeuchiUdonAssembly[0];
@@ -35,11 +30,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TopStatements = topStatements.ToArray();
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return TopStatements.SelectMany(x => x.GetAssemblyDataPart());
-        }
-
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return TopStatements.SelectMany(x => x.GetAssemblyCodePart());
@@ -54,11 +44,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token)
         {
             Statement = statement;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Statement.GetAssemblyDataPart();
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -81,11 +66,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr    = expr;
 
             TeuchiUdonTables.Instance.Vars[Var] = Var;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return VarDecl.GetAssemblyDataPart().Concat(Expr.GetAssemblyDataPart());
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -121,24 +101,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
         }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Vars.SelectMany(x => x.Type.TypeNameEquals(TeuchiUdonType.Func) ?
-            new TeuchiUdonAssembly[0] :
-            new TeuchiUdonAssembly[]
-            {
-                new Assembly_EXPORT_DATA(x.GetUdonName()),
-                new Assembly_DECL_DATA
-                (
-                    x.GetUdonName(),
-                    x.Type,
-                    x.Expr.Inner is LiteralResult literal ?
-                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_VALUE(literal.Literal.Text) :
-                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_NULL ()
-                )
-            });
-        }
     }
 
     public class QualifiedResult : TeuchiUdonParserResult
@@ -165,7 +127,37 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class ExprResult : TeuchiUdonParserResult
+    public abstract class StatementResult : TeuchiUdonParserResult
+    {
+        public StatementResult(IToken token)
+            : base(token)
+        {
+        }
+    }
+
+    public class JumpResult : StatementResult
+    {
+        public ExprResult Value { get; }
+        public ITeuchiUdonLabel Label { get; }
+
+        public JumpResult(IToken token, ExprResult value, ITeuchiUdonLabel label)
+            : base(token)
+        {
+            Value = value;
+            Label = label;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Value.GetAssemblyCodePart()
+            .Concat(new TeuchiUdonAssembly[]
+            {
+                new Assembly_JUMP_INDIRECT(new AssemblyAddress_LABEL(Label))
+            });
+        }
+    }
+
+    public class ExprResult : StatementResult
     {
         public TypedResult Inner { get; }
 
@@ -173,11 +165,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token)
         {
             Inner = inner;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Inner.GetAssemblyDataPart();
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -204,37 +191,56 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            throw new InvalidOperationException("bottom detected");
-        }
-
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             throw new InvalidOperationException("bottom detected");
         }
     }
 
-    public class BlockResult : TypedResult
+    public class UnitResult : TypedResult
     {
-        public TeuchiUdonBlock Block { get; }
-        public ExprResult[] Exprs { get; }
+        public TeuchiUdonLiteral Literal { get; }
 
-        public BlockResult(IToken token, TeuchiUdonType type, int index, IEnumerable<ExprResult> exprs)
-            : base(token, type)
+        public UnitResult(IToken token)
+            : base(token, TeuchiUdonType.Unit)
         {
-            Block = new TeuchiUdonBlock(index);
-            Exprs = exprs.ToArray();
-        }
+            var literal = new TeuchiUdonLiteral("0");
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Exprs.SelectMany(x => x.GetAssemblyDataPart());
+            if (TeuchiUdonTables.Instance.Literals.ContainsKey(literal))
+            {
+                Literal = TeuchiUdonTables.Instance.Literals[literal];
+            }
+            else
+            {
+                Literal = new TeuchiUdonLiteral(TeuchiUdonTables.Instance.GetLiteralIndex(), "0", Type, 0);
+                TeuchiUdonTables.Instance.Literals.Add(Literal, Literal);
+            }
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return Exprs.SelectMany(x => x.GetAssemblyCodePart());
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_PUSH(new AssemblyAddress_LABEL(Literal))
+            };
+        }
+    }
+
+    public class BlockResult : TypedResult
+    {
+        public TeuchiUdonBlock Block { get; }
+        public StatementResult[] Statements { get; }
+
+        public BlockResult(IToken token, TeuchiUdonType type, int index, IEnumerable<StatementResult> statements)
+            : base(token, type)
+        {
+            Block = new TeuchiUdonBlock(index);
+            Statements = statements.ToArray();
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Statements.SelectMany(x => x.GetAssemblyCodePart());
         }
     }
 
@@ -246,11 +252,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type)
         {
             Expr = expr;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Expr.GetAssemblyDataPart();
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -278,19 +279,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_DECL_DATA(Literal.GetUdonName(), Type, new AssemblyLiteral_VALUE(Literal.Text))
-            };
-        }
-
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return new TeuchiUdonAssembly[]
             {
-                new Assembly_PUSH(new AssemblyAddress_LABEL(Literal.GetUdonName()))
+                new Assembly_PUSH(new AssemblyAddress_LABEL(Literal))
             };
         }
     }
@@ -311,7 +304,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new TeuchiUdonAssembly[]
             {
-                new Assembly_PUSH(new AssemblyAddress_LABEL(Var.GetUdonName()))
+                new Assembly_PUSH(new AssemblyAddress_LABEL(Var))
             };
         }
     }
@@ -354,11 +347,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Args       = args.ToArray();
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Args.SelectMany(x => x.GetAssemblyDataPart());
-        }
-
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             throw new NotImplementedException();
@@ -379,11 +367,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Args       = args.ToArray();
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Args.SelectMany(x => x.GetAssemblyDataPart());
-        }
-
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return Args.SelectMany(x => x.GetAssemblyCodePart()).Concat(new TeuchiUdonAssembly[]
@@ -401,11 +384,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, TeuchiUdonType.Bottom)
         {
             Identifier = identifier;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            throw new InvalidOperationException("candidate detected");
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -447,11 +425,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr2 = expr2;
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return Expr1.GetAssemblyDataPart().Concat(Expr2.GetAssemblyDataPart());
-        }
-
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return Expr1.GetAssemblyCodePart().Concat(Expr2.GetAssemblyCodePart());
@@ -479,11 +452,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 TeuchiUdonTables.Instance.Funcs.Add(Func, Func);
             }
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            return VarDecl.GetAssemblyDataPart().Concat(Expr.GetAssemblyDataPart());
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()

@@ -88,16 +88,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class AssemblyAddress_LABEL : TeuchiUdonAssemblyAddress
     {
-        public string Label { get; }
+        public ITeuchiUdonLabel Label { get; }
 
-        public AssemblyAddress_LABEL(string label)
+        public AssemblyAddress_LABEL(ITeuchiUdonLabel label)
         {
             Label = label;
         }
 
         public override string ToString()
         {
-            return Label;
+            return Label.GetLabel();
         }
     }
 
@@ -355,9 +355,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class Assembly_EXPORT_DATA : TeuchiUdonAssembly
     {
-        public string Data { get; }
+        public ITeuchiUdonLabel Data { get; }
 
-        public Assembly_EXPORT_DATA(string data)
+        public Assembly_EXPORT_DATA(ITeuchiUdonLabel data)
             : base(TeuchiUdonAssemblyInstruction.EXPORT_DATA)
         {
             Data = data;
@@ -365,16 +365,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $".export {Data}";
+            return $".export {Data.GetLabel()}";
         }
     }
 
     public class Assembly_SYNC_DATA : TeuchiUdonAssembly
     {
-        public string Data { get; }
+        public ITeuchiUdonLabel Data { get; }
         public TeuchiUdonAssemblySyncMode SyncMode { get; }
 
-        public Assembly_SYNC_DATA(string data, TeuchiUdonAssemblySyncMode syncMode)
+        public Assembly_SYNC_DATA(ITeuchiUdonLabel data, TeuchiUdonAssemblySyncMode syncMode)
             : base(TeuchiUdonAssemblyInstruction.SYNC_DATA)
         {
             Data     = data;
@@ -383,17 +383,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $".sync {Data}, {SyncMode}";
+            return $".sync {Data.GetLabel()}, {SyncMode}";
         }
     }
 
     public class Assembly_DECL_DATA : TeuchiUdonAssembly
     {
-        public string Data { get; }
+        public ITeuchiUdonLabel Data { get; }
         public TeuchiUdonType Type { get; }
         public TeuchiUdonAssemblyLiteral Literal { get; }
 
-        public Assembly_DECL_DATA(string data, TeuchiUdonType type, TeuchiUdonAssemblyLiteral literal)
+        public Assembly_DECL_DATA(ITeuchiUdonLabel data, TeuchiUdonType type, TeuchiUdonAssemblyLiteral literal)
             : base(TeuchiUdonAssemblyInstruction.DECL_DATA)
         {
             Data    = data;
@@ -403,15 +403,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Data}: %{Type.UdonName}, {Literal}";
+            return $"{Data.GetLabel()}: %{Type.GetRealName()}, {Literal}";
         }
     }
 
     public class Assembly_EXPORT_CODE : TeuchiUdonAssembly
     {
-        public string Code { get; }
+        public ITeuchiUdonLabel Code { get; }
 
-        public Assembly_EXPORT_CODE(string code)
+        public Assembly_EXPORT_CODE(ITeuchiUdonLabel code)
             : base(TeuchiUdonAssemblyInstruction.EXPORT_CODE)
         {
             Code = code;
@@ -419,15 +419,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $".export {Code}";
+            return $".export {Code.GetLabel()}";
         }
     }
 
     public class Assembly_LABEL : TeuchiUdonAssembly
     {
-        public string Label { get; }
+        public ITeuchiUdonLabel Label { get; }
 
-        public Assembly_LABEL(string label)
+        public Assembly_LABEL(ITeuchiUdonLabel label)
             : base(TeuchiUdonAssemblyInstruction.LABEL)
         {
             Label = label;
@@ -435,7 +435,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Label}:";
+            return $"{Label.GetLabel()}:";
         }
     }
 }
