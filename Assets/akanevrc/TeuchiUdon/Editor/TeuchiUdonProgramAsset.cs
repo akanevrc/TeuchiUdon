@@ -15,11 +15,21 @@ namespace akanevrc.TeuchiUdon.Editor
         [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset...")]
         public static void SaveTeuchiUdonAsset()
         {
-            var script  = UnityEditor.AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
-            var program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-            program.sourceScript = script;
-            program.RefreshProgram();
-            UnityEditor.AssetDatabase.CreateAsset(program, "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset");
+            var script    = UnityEditor.AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
+            var assetPath = "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset";
+            var program   = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
+            if (program == null)
+            {
+                program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
+                program.sourceScript = script;
+                program.RefreshProgram();
+                UnityEditor.AssetDatabase.CreateAsset(program, assetPath);
+            }
+            else
+            {
+                program.sourceScript = script;
+                program.RefreshProgram();
+            }
             UnityEditor.AssetDatabase.Refresh();
         }
 

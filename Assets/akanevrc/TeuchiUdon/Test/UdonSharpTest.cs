@@ -1,19 +1,28 @@
-﻿using UdonSharp;
-using UnityEditor;
+﻿using System;
+using UdonSharp;
 using UnityEngine;
-using VRC.SDKBase;
-using VRC.Udon;
 
 public class UdonSharpTest : UdonSharpBehaviour
 {
-    public int _start = 100;
-
     void Start()
     {
-        var arr = new int[10];
-        foreach (var i in arr)
+        Test();
+    }
+
+    void Update()
+    {
+        Test();
+    }
+
+    void Test()
+    {
+        var startTick = DateTime.Now.Ticks;
+        var total = 0;
+        for (var i = 0; i < 1000; i++)
         {
-            Debug.Log(i);
+            total += i;
         }
+        var endTick = DateTime.Now.Ticks;
+        Debug.Log(endTick - startTick);
     }
 }
