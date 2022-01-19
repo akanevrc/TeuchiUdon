@@ -9,7 +9,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         For,
         Func,
         If,
-        LetInBind,
+        Let,
         Literal,
         Type,
         Var,

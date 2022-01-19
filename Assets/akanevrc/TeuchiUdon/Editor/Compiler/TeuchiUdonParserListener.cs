@@ -217,6 +217,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitBreakValueStatement([NotNull] TeuchiUdonParser.BreakValueStatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>LetBindStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterLetBindStatement([NotNull] TeuchiUdonParser.LetBindStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>LetBindStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitLetBindStatement([NotNull] TeuchiUdonParser.LetBindStatementContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>ExprStatement</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.statement"/>.
 	/// </summary>
@@ -444,35 +456,5 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitVervatiumString([NotNull] TeuchiUdonParser.VervatiumStringContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.open"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterOpen([NotNull] TeuchiUdonParser.OpenContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.open"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitOpen([NotNull] TeuchiUdonParser.OpenContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.close"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterClose([NotNull] TeuchiUdonParser.CloseContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.close"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitClose([NotNull] TeuchiUdonParser.CloseContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.end"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterEnd([NotNull] TeuchiUdonParser.EndContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.end"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitEnd([NotNull] TeuchiUdonParser.EndContext context);
 }
 } // namespace akanevrc.TeuchiUdon.Editor.Compiler

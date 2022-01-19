@@ -21,7 +21,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
         private int BlockCounter { get; set; }
-        private int LetInBindCounter { get; set; }
+        private int LetCounter { get; set; }
 
         private bool IsInitialized { get; set; } = false;
 
@@ -50,10 +50,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
             Funcs    = new Dictionary<TeuchiUdonFunc   , TeuchiUdonFunc>();
 
-            LiteralCounter   = 0;
-            FuncCounter      = 0;
-            BlockCounter     = 0;
-            LetInBindCounter = 0;
+            LiteralCounter = 0;
+            FuncCounter    = 0;
+            BlockCounter   = 0;
+            LetCounter     = 0;
         }
 
         private void InitInternalTypes()
@@ -274,9 +274,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return BlockCounter++;
         }
 
-        public int GetLetInBindIndex()
+        public int GetLetIndex()
         {
-            return LetInBindCounter++;
+            return LetCounter++;
         }
 
         public static string GetUdonTypeName(Type type)

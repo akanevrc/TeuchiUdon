@@ -2,23 +2,23 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonLetInBind : ITeuchiUdonLabel, IEquatable<TeuchiUdonLetInBind>
+    public class TeuchiUdonLet : ITeuchiUdonLabel, IEquatable<TeuchiUdonLet>
     {
         public int Index { get; }
 
-        public TeuchiUdonLetInBind(int index)
+        public TeuchiUdonLet(int index)
         {
             Index = index;
         }
 
-        public bool Equals(TeuchiUdonLetInBind obj)
+        public bool Equals(TeuchiUdonLet obj)
         {
             return !object.ReferenceEquals(obj, null) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is TeuchiUdonLetInBind letinbind ? Equals(letinbind) : base.Equals(obj);
+            return obj is TeuchiUdonLet let ? Equals(let) : base.Equals(obj);
         }
 
         public override int GetHashCode()
@@ -26,7 +26,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Index.GetHashCode();
         }
 
-        public static bool operator ==(TeuchiUdonLetInBind obj1, TeuchiUdonLetInBind obj2)
+        public static bool operator ==(TeuchiUdonLet obj1, TeuchiUdonLet obj2)
         {
             return
                  object.ReferenceEquals(obj1, null) &&
@@ -35,14 +35,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
-        public static bool operator !=(TeuchiUdonLetInBind obj1, TeuchiUdonLetInBind obj2)
+        public static bool operator !=(TeuchiUdonLet obj1, TeuchiUdonLet obj2)
         {
             return !(obj1 == obj2);
         }
 
         public string GetLabel()
         {
-            return $"letinbind[{Index}]";
+            return $"let[{Index}]";
         }
     }
 }

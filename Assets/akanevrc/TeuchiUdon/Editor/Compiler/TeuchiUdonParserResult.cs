@@ -158,6 +158,28 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class LetBindResult : StatementResult
+    {
+        public VarBindResult VarBind { get; }
+
+        public LetBindResult(IToken token, VarBindResult varBind)
+            : base(token)
+        {
+            VarBind = varBind;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return
+                VarBind.Expr.GetAssemblyCodePart()
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_LABEL(VarBind.Var)),
+                    new Assembly_COPY()
+                });
+        }
+    }
+
     public class ExprResult : StatementResult
     {
         public TypedResult Inner { get; }
@@ -242,31 +264,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return Statements.SelectMany(x => x.GetAssemblyCodePart());
-        }
-    }
-
-    public class LetInBindResult : TypedResult
-    {
-        public VarBindResult VarBind { get; }
-        public ExprResult Expr { get; }
-
-        public LetInBindResult(IToken token, TeuchiUdonType type, VarBindResult varBind, ExprResult expr)
-            : base(token, type)
-        {
-            VarBind = varBind;
-            Expr    = expr;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                VarBind.Expr.GetAssemblyCodePart()
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_LABEL(VarBind.Var)),
-                    new Assembly_COPY()
-                })
-                .Concat(Expr.GetAssemblyCodePart());
         }
     }
 
@@ -491,6 +488,33 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 .Concat(Expr.GetAssemblyCodePart())
                 .Concat(new TeuchiUdonAssembly[] { new Assembly_INDENT(-1) });
+        }
+    }
+
+    public class LetInBindResult : TypedResult
+    {
+        public TeuchiUdonLet Let { get; }
+        public VarBindResult VarBind { get; }
+        public ExprResult Expr { get; }
+
+        public LetInBindResult(IToken token, TeuchiUdonType type, int index, VarBindResult varBind, ExprResult expr)
+            : base(token, type)
+        {
+            Let     = new TeuchiUdonLet(index);
+            VarBind = varBind;
+            Expr    = expr;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return
+                VarBind.Expr.GetAssemblyCodePart()
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_LABEL(VarBind.Var)),
+                    new Assembly_COPY()
+                })
+                .Concat(Expr.GetAssemblyCodePart());
         }
     }
 }

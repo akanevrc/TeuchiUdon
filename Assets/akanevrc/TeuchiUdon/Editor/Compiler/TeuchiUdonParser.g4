@@ -13,7 +13,7 @@ options
 }
 
 target
-    : open body close end EOF
+    : '{' body '}' ';' EOF
     | body EOF
     ;
 
@@ -24,8 +24,8 @@ body
 
 topStatement
     returns [TopStatementResult result]
-    : varBind end #VarBindTopStatement
-    | expr    end #ExprTopStatement
+    : varBind ';' #VarBindTopStatement
+    | expr    ';' #ExprTopStatement
     ;
 
 varBind
@@ -51,20 +51,21 @@ identifier
     ;
 
 statement
-    returns [StatementResult result]
+    returns [StatementResult result, int tableIndex]
     : 'return'        #ReturnUnitStatement
     | 'return'   expr #ReturnValueStatement
     | 'continue'      #ContinueUnitStatement
     | 'continue' expr #ContinueValueStatement
     | 'break'         #BreakUnitStatement
     | 'break'    expr #BreakValueStatement
+    | 'let' varBind   #LetBindStatement
     | expr            #ExprStatement
     ;
 
 expr
     returns [ExprResult result, int tableIndex]
-    : open (statement end)* close         #UnitBlockExpr
-    | open (statement end)* expr close    #ValueBlockExpr
+    : '{' (statement ';')* '}'            #UnitBlockExpr
+    | '{' (statement ';')* expr '}'       #ValueBlockExpr
     | '(' expr ')'                        #ParensExpr
     | literal                             #LiteralExpr
     | identifier                          #EvalVarExpr
@@ -86,10 +87,6 @@ literal
     | REGULAR_STRING      #RegularString
     | VERBATIUM_STRING    #VervatiumString
     ;
-
-open  : OPEN_BRACE;
-close : CLOSE_BRACE;
-end   : SEMICOLON;
 
 // target
 //     : module_decl semicolon? EOF

@@ -254,6 +254,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBreakValueStatement([NotNull] TeuchiUdonParser.BreakValueStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>LetBindStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterLetBindStatement([NotNull] TeuchiUdonParser.LetBindStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>LetBindStatement</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitLetBindStatement([NotNull] TeuchiUdonParser.LetBindStatementContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>ExprStatement</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.statement"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -519,42 +533,6 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVervatiumString([NotNull] TeuchiUdonParser.VervatiumStringContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.open"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterOpen([NotNull] TeuchiUdonParser.OpenContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.open"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitOpen([NotNull] TeuchiUdonParser.OpenContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.close"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterClose([NotNull] TeuchiUdonParser.CloseContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.close"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitClose([NotNull] TeuchiUdonParser.CloseContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.end"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterEnd([NotNull] TeuchiUdonParser.EndContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.end"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitEnd([NotNull] TeuchiUdonParser.EndContext context) { }
 
 	/// <inheritdoc/>
 	/// <remarks>The default implementation does nothing.</remarks>

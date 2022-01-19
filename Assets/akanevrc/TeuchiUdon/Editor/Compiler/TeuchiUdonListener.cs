@@ -176,6 +176,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
+        public override void ExitLetBindStatement([NotNull] LetBindStatementContext context)
+        {
+            var varBind    = context.varBind().result;
+            context.result = new LetBindResult(context.Start, varBind);
+        }
+
         public override void ExitExprStatement([NotNull] ExprStatementContext context)
         {
             context.result = context.expr().result;
@@ -217,24 +223,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var index      = context.tableIndex;
             var block      = new BlockResult(context.Start, type, index, statements);
             context.result = new ExprResult(block.Token, block);
-        }
-
-        public override void EnterLetInBindExpr([NotNull] LetInBindExprContext context)
-        {
-            var index          = TeuchiUdonTables.Instance.GetLetInBindIndex();
-            context.tableIndex = index;
-            var scope          = new TeuchiUdonScope(new TeuchiUdonLetInBind(index), TeuchiUdonScopeMode.LetInBind);
-            TeuchiUdonQualifierStack.Instance.PushScope(scope);
-        }
-
-        public override void ExitLetInBindExpr([NotNull] LetInBindExprContext context)
-        {
-            TeuchiUdonQualifierStack.Instance.Pop();
-
-            var varBind    = context.varBind().result;
-            var expr       = context.expr   ().result;
-            var letInBind  = new LetInBindResult(context.Start, expr.Inner.Type, varBind, expr);
-            context.result = new ExprResult(letInBind.Token, letInBind);
         }
 
         public override void ExitParensExpr([NotNull] ParensExprContext context)
@@ -595,6 +583,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var name       = varBind.varDecl().result.Vars[0].Name;
             var func       = new FuncResult(context.Start, type, index, qual, name, varDecl, expr);
             context.result = new ExprResult(func.Token, func);
+        }
+
+        public override void EnterLetInBindExpr([NotNull] LetInBindExprContext context)
+        {
+            var index          = TeuchiUdonTables.Instance.GetLetIndex();
+            context.tableIndex = index;
+            var scope          = new TeuchiUdonScope(new TeuchiUdonLet(index), TeuchiUdonScopeMode.Let);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
+        }
+
+        public override void ExitLetInBindExpr([NotNull] LetInBindExprContext context)
+        {
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var index      = context.tableIndex;
+            var varBind    = context.varBind().result;
+            var expr       = context.expr   ().result;
+            var letInBind  = new LetInBindResult(context.Start, expr.Inner.Type, index, varBind, expr);
+            context.result = new ExprResult(letInBind.Token, letInBind);
         }
 
         public override void ExitIntegerLiteral([NotNull] IntegerLiteralContext context)
