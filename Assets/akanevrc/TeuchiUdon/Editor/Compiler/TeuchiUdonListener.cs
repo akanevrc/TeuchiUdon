@@ -63,11 +63,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             TeuchiUdonQualifierStack.Instance.Pop();
 
-            var varDecl    = context.varDecl().result;
-            var expr       = context.expr   ().result;
-            var type       = expr.Inner.Type;
-
-            varDecl.Vars[0].SetExpr(expr);
+            var varDecl = context.varDecl().result;
+            var expr    = context.expr   ().result;
+            var type    = expr.Inner.Type;
 
             if (varDecl.Types[0] != TeuchiUdonType.Bottom && !varDecl.Types[0].IsAssignableFrom(type))
             {
@@ -79,44 +77,38 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
         {
-            var oldQual = (TeuchiUdonQualifier)null;
-            if (context.isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
-
-            var qualifier   = TeuchiUdonQualifierStack.Instance.Peek();
             var identifiers = new IdentifierResult[0];
             var qualifieds  = new QualifiedResult [0];
-            context.result  = new VarDeclResult(context.Start, qualifier, identifiers, qualifieds);
-
-            if (context.isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
+            context.result  = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
         }
 
         public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
         {
-            var oldQual = (TeuchiUdonQualifier)null;
-            if (context.isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
-
-            var qualifier   = TeuchiUdonQualifierStack.Instance.Peek();
             var identifiers = new IdentifierResult[] { context.identifier().result };
             var qualifieds  = new QualifiedResult[]
             {
                 context.qualified()?.result ?? new QualifiedResult(context.Start, new IdentifierResult[0], TeuchiUdonType.Bottom)
             };
-            context.result  = new VarDeclResult(context.Start, qualifier, identifiers, qualifieds);
-
-            if (context.isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
+            context.result = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
         }
 
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
-            var oldQual = (TeuchiUdonQualifier)null;
-            if (context.isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
-
-            var qualifier   = TeuchiUdonQualifierStack.Instance.Peek();
             var identifiers = context.identifier().Select(x => x .result);
             var qualifieds  = context.qualified ().Select(x => x?.result ?? new QualifiedResult(context.Start, new IdentifierResult[0], TeuchiUdonType.Bottom));
-            context.result = new VarDeclResult(context.Start, qualifier, identifiers, qualifieds);
+            context.result = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
+        }
 
-            if (context.isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
+        private VarDeclResult ExitVarDecl(IToken token, IEnumerable<IdentifierResult> identifiers, IEnumerable<QualifiedResult> qualifieds, bool isActual)
+        {
+            var oldQual = (TeuchiUdonQualifier)null;
+            if (isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
+
+            var qualifier = TeuchiUdonQualifierStack.Instance.Peek();
+
+            if (isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
+
+            return new VarDeclResult(token, qualifier, identifiers, qualifieds);
         }
 
         public override void ExitQualified([NotNull] QualifiedContext context)
@@ -204,8 +196,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var statements = context.statement().Select(x => x.result);
             var type       = TeuchiUdonType.Unit;
             var index      = context.tableIndex;
-            var parens     = new BlockResult(context.Start, type, index, statements);
-            context.result = new ExprResult(parens.Token, parens);
+            var block      = new BlockResult(context.Start, type, index, statements);
+            context.result = new ExprResult(block.Token, block);
         }
 
         public override void EnterValueBlockExpr([NotNull] ValueBlockExprContext context)
@@ -223,8 +215,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var statements = context.statement().Select(x => x.result);
             var type       = context.expr().result.Inner.Type;
             var index      = context.tableIndex;
-            var parens     = new BlockResult(context.Start, type, index, statements);
-            context.result = new ExprResult(parens.Token, parens);
+            var block      = new BlockResult(context.Start, type, index, statements);
+            context.result = new ExprResult(block.Token, block);
+        }
+
+        public override void EnterLetInBindExpr([NotNull] LetInBindExprContext context)
+        {
+            var index          = TeuchiUdonTables.Instance.GetLetInBindIndex();
+            context.tableIndex = index;
+            var scope          = new TeuchiUdonScope(new TeuchiUdonLetInBind(index), TeuchiUdonScopeMode.LetInBind);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
+        }
+
+        public override void ExitLetInBindExpr([NotNull] LetInBindExprContext context)
+        {
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var varBind    = context.varBind().result;
+            var expr       = context.expr   ().result;
+            var letInBind  = new LetInBindResult(context.Start, expr.Inner.Type, varBind, expr);
+            context.result = new ExprResult(letInBind.Token, letInBind);
         }
 
         public override void ExitParensExpr([NotNull] ParensExprContext context)

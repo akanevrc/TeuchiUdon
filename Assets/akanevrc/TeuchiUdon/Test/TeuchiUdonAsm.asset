@@ -14,10 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: a57cad70f2f722142b784df70001f7e6,
     type: 2}
-  udonAssembly: ".data_start\r\n    literal[0]: %SystemString, \"Hello, world!\"\r\n   
+  udonAssembly: ".data_start\r\n    .export var[_start>func[0]>block[0]>letinbind[0]>hello]\r\n   
+    var[_start>func[0]>block[0]>letinbind[0]>hello]: %SystemString, null\r\n    .export
+    var[_start>func[0]>block[0]>letinbind[1]>hello]\r\n    var[_start>func[0]>block[0]>letinbind[1]>hello]:
+    %SystemString, null\r\n    literal[0]: %SystemString, \"Hello, world!\"\r\n   
     literal[1]: %SystemString, \"Hello, TeuchiUdon!\"\r\n.data_end\r\n.code_start\r\n   
-    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,
-    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH, literal[1]\r\n       
+    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, var[_start>func[0]>block[0]>letinbind[0]>hello]\r\n       
+    COPY\r\n        PUSH, var[_start>func[0]>block[0]>letinbind[0]>hello]\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH,
+    literal[1]\r\n        PUSH, var[_start>func[0]>block[0]>letinbind[1]>hello]\r\n       
+    COPY\r\n        PUSH, var[_start>func[0]>block[0]>letinbind[1]>hello]\r\n       
     EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n.code_end\r\n"
   assemblyError: 
   sourceScript: {fileID: 8645214851717060245, guid: be00773c46b949c428757f20442eb915,

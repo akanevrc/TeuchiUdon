@@ -73,6 +73,7 @@ expr
     | identifier '(' expr (',' expr)* ')' #EvalTupleFuncExpr
     | expr '.' expr                       #AccessExpr
     | varDecl[false] '->' expr            #FuncExpr
+    | 'let' varBind 'in' expr             #LetInBindExpr
     ;
 
 literal

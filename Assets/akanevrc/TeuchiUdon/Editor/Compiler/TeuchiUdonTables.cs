@@ -21,6 +21,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
         private int BlockCounter { get; set; }
+        private int LetInBindCounter { get; set; }
 
         private bool IsInitialized { get; set; } = false;
 
@@ -49,8 +50,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
             Funcs    = new Dictionary<TeuchiUdonFunc   , TeuchiUdonFunc>();
 
-            LiteralCounter = 0;
-            FuncCounter    = 0;
+            LiteralCounter   = 0;
+            FuncCounter      = 0;
+            BlockCounter     = 0;
+            LetInBindCounter = 0;
         }
 
         private void InitInternalTypes()
@@ -271,6 +274,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return BlockCounter++;
         }
 
+        public int GetLetInBindIndex()
+        {
+            return LetInBindCounter++;
+        }
+
         public static string GetUdonTypeName(Type type)
         {
             if (type.IsArray) return "_list";
@@ -296,14 +304,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             new TeuchiUdonAssembly[]
             {
                 new Assembly_EXPORT_DATA(x),
-                new Assembly_DECL_DATA
-                (
-                    x,
-                    x.Type,
-                    x.Expr.Inner is LiteralResult literal ?
-                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_VALUE(literal.Literal.Text) :
-                        (TeuchiUdonAssemblyLiteral)new AssemblyLiteral_NULL ()
-                )
+                new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
             })
             .Concat(Literals.Values.SelectMany(x =>
             new TeuchiUdonAssembly[]

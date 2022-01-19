@@ -1,4 +1,4 @@
 _start = () -> {
-    UnityEngine.Debug.Log("Hello, world!");
-    UnityEngine.Debug.Log("Hello, TeuchiUdon!");
+    let hello = "Hello, world!"      in UnityEngine.Debug.Log(hello);
+    let hello = "Hello, TeuchiUdon!" in UnityEngine.Debug.Log(hello);
 };
