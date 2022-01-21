@@ -8,29 +8,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
-        public TextLabel Name { get; }
+        public string Name { get; }
+        public TeuchiUdonType Type { get; }
         public TeuchiUdonVar[] Vars { get; }
         public ExprResult Expr { get; }
         public TextLabel ReturnAddress { get; }
 
-        public TeuchiUdonFunc(int index)
-            : this(index, null, null, null, null)
+        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier)
+            : this(index, qualifier, null, null, null, null)
         {
         }
 
         public TeuchiUdonFunc(TeuchiUdonQualifier qualifier, string name)
-            : this(-1, qualifier, name, null, null)
+            : this(-1, qualifier, name, null, null, null)
         {
         }
 
-        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, string name, IEnumerable<TeuchiUdonVar> vars, ExprResult expr)
+        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr)
         {
             Index         = index;
             Qualifier     = qualifier;
-            Name          = new TextLabel(name);
+            Name          = name;
+            Type          = type;
             Vars          = vars?.ToArray();
             Expr          = expr;
-            ReturnAddress = new TextLabel($"{GetLabel()}>return");
+            ReturnAddress = new TextLabel(qualifier, $"{GetLabel()}>return");
         }
 
         public bool Equals(TeuchiUdonFunc obj)
@@ -64,12 +66,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Qualifier.QualifyText(".", Name.ToString())}({string.Join(", ", Vars.Select(x => x.Type))})";
+            return $"{Qualifier.Qualify(".", Name.ToString())}({string.Join(", ", Vars.Select(x => x.Type))})";
         }
 
         public string GetLabel()
         {
             return $"func[{Index}]";
+        }
+
+        public string GetFullLabel()
+        {
+            return $"func[{Qualifier.Qualify(">", Index.ToString())}]";
         }
     }
 }

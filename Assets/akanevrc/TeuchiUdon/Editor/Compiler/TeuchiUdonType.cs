@@ -84,7 +84,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Qualifier.QualifyText(".", Name)}{(Args.Length == 0 ? "" : $"<{string.Join(", ", Args.Select(x => x.ToString()))}>")}";
+            return $"{Qualifier.Qualify(".", Name)}{(Args.Length == 0 ? "" : $"({string.Join(", ", Args.Select(x => x.ToString()))})")}";
         }
 
         public string GetRealName()
@@ -100,12 +100,46 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool IsAssignableFrom(TeuchiUdonType obj)
         {
-            return obj != null && RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType);
+            return
+                obj != null && RealType != null &&
+                (
+                    obj.TypeNameEquals(TeuchiUdonType.Bottom) ||
+                    obj.RealType != null && RealType.IsAssignableFrom(obj.RealType)
+                );
         }
 
         public TeuchiUdonType Apply(IEnumerable<object> args)
         {
             return new TeuchiUdonType(Qualifier, Name, args, LogicalName, RealName, RealType);
+        }
+
+        public TeuchiUdonQualifier GetArgAsQual()
+        {
+            return (TeuchiUdonQualifier)Args[0];
+        }
+
+        public TeuchiUdonType GetArgAsType()
+        {
+            return (TeuchiUdonType)Args[0];
+        }
+
+        public TeuchiUdonType GetArgAsFuncReturnType()
+        {
+            return (TeuchiUdonType)Args[Args.Length - 1];
+        }
+
+        public bool IsAssignableFromFunc(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!TypeNameEquals(TeuchiUdonType.Func) || !obj.TypeNameEquals(TeuchiUdonType.Func)) return false;
+            if (Args.Length == 0 || obj.Args.Length == 0) return false;
+
+            var argTypes      =     Args.Take(    Args.Length - 1).Cast<TeuchiUdonType>();
+            var objArgTypes   = obj.Args.Take(obj.Args.Length - 1).Cast<TeuchiUdonType>();
+            var returnType    = (TeuchiUdonType)    Args.Last();
+            var objReturnType = (TeuchiUdonType)obj.Args.Last();
+
+            return argTypes.Zip(objArgTypes, (a, o) => (a, o)).All(x => x.a.IsAssignableFrom(x.o)) && objReturnType.IsAssignableFrom(returnType);
         }
     }
 }

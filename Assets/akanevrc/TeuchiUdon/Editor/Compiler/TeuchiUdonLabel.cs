@@ -5,6 +5,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public interface ITeuchiUdonLabel
     {
         string GetLabel();
+        string GetFullLabel();
     }
 
     public static class TeuchiUdonLabel
@@ -14,16 +15,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class TextLabel : ITeuchiUdonLabel, IEquatable<TextLabel>
     {
+        public TeuchiUdonQualifier Qualifier { get; }
         public string Text { get; }
 
         public TextLabel(string text)
+            : this(TeuchiUdonQualifier.Top, text)
         {
-            Text = text;
+        }
+
+        public TextLabel(TeuchiUdonQualifier qualifier, string text)
+        {
+            Qualifier = qualifier;
+            Text      = text;
         }
 
         public bool Equals(TextLabel obj)
         {
-            return !object.ReferenceEquals(obj, null) && Text == obj.Text;
+            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Text == obj.Text;
         }
 
         public override bool Equals(object obj)
@@ -53,6 +61,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public string GetLabel()
         {
             return Text;
+        }
+
+        public string GetFullLabel()
+        {
+            return Qualifier.Qualify(">", Text);
         }
     }
 }

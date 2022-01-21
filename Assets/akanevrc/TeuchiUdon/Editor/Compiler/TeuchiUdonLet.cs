@@ -5,10 +5,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TeuchiUdonLet : ITeuchiUdonLabel, IEquatable<TeuchiUdonLet>
     {
         public int Index { get; }
+        public TeuchiUdonQualifier Qualifier { get; }
 
-        public TeuchiUdonLet(int index)
+        public TeuchiUdonLet(int index, TeuchiUdonQualifier qualifier)
         {
-            Index = index;
+            Index     = index;
+            Qualifier = qualifier;
         }
 
         public bool Equals(TeuchiUdonLet obj)
@@ -43,6 +45,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public string GetLabel()
         {
             return $"let[{Index}]";
+        }
+
+        public string GetFullLabel()
+        {
+            return $"let[{Qualifier.Qualify(">", Index.ToString())}]";
         }
     }
 }

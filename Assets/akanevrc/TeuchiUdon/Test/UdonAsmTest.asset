@@ -24,8 +24,6 @@ MonoBehaviour:
 
     .code_start
 
-    JUMP,_start
-
     _sub:
 
     PUSH,str

@@ -58,12 +58,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Qualifier.QualifyText(".", Name)}";
+            return Qualifier.Qualify(".", Name);
         }
 
         public string GetLabel()
         {
-            return $"var[{Qualifier.QualifyText(">", Name)}]";
+            return $"var[{Name}]";
+        }
+
+        public string GetFullLabel()
+        {
+            return $"var[{Qualifier.Qualify(">", Name)}]";
         }
     }
 }

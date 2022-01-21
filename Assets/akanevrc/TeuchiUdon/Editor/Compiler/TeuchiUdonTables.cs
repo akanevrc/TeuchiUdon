@@ -21,6 +21,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
         private int BlockCounter { get; set; }
+        private int EvalFuncCounter { get; set; }
         private int LetCounter { get; set; }
 
         private bool IsInitialized { get; set; } = false;
@@ -50,10 +51,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
             Funcs    = new Dictionary<TeuchiUdonFunc   , TeuchiUdonFunc>();
 
-            LiteralCounter = 0;
-            FuncCounter    = 0;
-            BlockCounter   = 0;
-            LetCounter     = 0;
+            LiteralCounter  = 0;
+            FuncCounter     = 0;
+            BlockCounter    = 0;
+            EvalFuncCounter = 0;
+            LetCounter      = 0;
         }
 
         private void InitInternalTypes()
@@ -274,6 +276,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return BlockCounter++;
         }
 
+        public int GetEvalFuncIndex()
+        {
+            return EvalFuncCounter++;
+        }
+
         public int GetLetIndex()
         {
             return LetCounter++;
@@ -299,19 +306,67 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
         {
-            return Vars.Values.SelectMany(x => x.Type.TypeNameEquals(TeuchiUdonType.Func) ?
-            new TeuchiUdonAssembly[0] :
-            new TeuchiUdonAssembly[]
-            {
-                new Assembly_EXPORT_DATA(x),
-                new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
-            })
-            .Concat(Literals.Values.SelectMany(x =>
-            new TeuchiUdonAssembly[]
-            {
-                new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_VALUE(x.Text))
-            }
-            ));
+            return
+                Vars.Values.SelectMany(x => x.Name == "_start" ?
+                new TeuchiUdonAssembly[0] :
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                })
+                .Concat(Literals.Values.SelectMany(x =>
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_RAW(x.Text))
+                }))
+                .Concat(Funcs.Values.SelectMany(x =>
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_DECL_DATA(x.ReturnAddress, x.Type, new AssemblyLiteral_NULL())
+                }));
+        }
+
+        public IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return
+                Funcs.Values.Count == 0 ? new TeuchiUdonAssembly[0] :
+                Funcs.Values.Select(x =>
+                (x.Name == "_start" ?
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_EXPORT_CODE(new TextLabel("_start")),
+                        new Assembly_LABEL      (new TextLabel("_start")),
+                        new Assembly_INDENT(1)
+                    } :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_LABEL (x),
+                        new Assembly_INDENT(1),
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x.ReturnAddress)),
+                        new Assembly_COPY()
+                    }
+                    .Concat(x.Vars.Reverse().SelectMany(y =>
+                        new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(y)),
+                            new Assembly_COPY()
+                        }))
+                )
+                .Concat(x.Expr.GetAssemblyCodePart())
+                .Concat(x.Name == "_start" ?
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP(new AssemblyAddress_NUMBER(0xFFFFFFFC)),
+                        new Assembly_INDENT(-1)
+                    } :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(x.ReturnAddress)),
+                        new Assembly_INDENT(-1)
+                    }
+                ))
+                .Aggregate((acc, x) => acc
+                    .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
+                    .Concat(x));
         }
     }
 }

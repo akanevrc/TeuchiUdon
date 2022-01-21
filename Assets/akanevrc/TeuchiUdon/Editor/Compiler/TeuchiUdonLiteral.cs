@@ -65,5 +65,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return $"literal[{Index}]";
         }
+
+        public string GetFullLabel()
+        {
+            return $"literal[{Index}]";
+        }
     }
 }

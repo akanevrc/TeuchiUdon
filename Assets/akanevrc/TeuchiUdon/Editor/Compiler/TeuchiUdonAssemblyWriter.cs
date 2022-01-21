@@ -9,6 +9,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private List<TeuchiUdonAssembly> DataPart { get; set; }
         private List<TeuchiUdonAssembly> CodePart { get; set; }
+        private Dictionary<ITeuchiUdonLabel, uint> DataAddresses { get; set; }
+        private Dictionary<ITeuchiUdonLabel, uint> CodeAddresses { get; set; }
+        private uint DataAddress { get; set; }
+        private uint CodeAddress { get; set; }
 
         public void Init()
         {
@@ -26,6 +30,43 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             CodePart.AddRange(assemblies);
         }
 
+        public void Prepare()
+        {
+            DataAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
+            CodeAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
+            DataAddress   = 0;
+            CodeAddress   = 0;
+
+            foreach (var asm in CodePart)
+            {
+                if (asm is Assembly_LABEL label && !CodeAddresses.ContainsKey(label.Label))
+                {
+                    CodeAddresses.Add(label.Label, CodeAddress);
+                }
+                CodeAddress += asm.Size;
+            }
+
+            foreach (var asm in CodePart)
+            {
+                if (asm is Assembly_UnaryDataAddress dataAddress && dataAddress.Address is AssemblyAddress_INDIRECT_LABEL indirect)
+                {
+                    PushDataPart(new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(indirect.Address, TeuchiUdonType.UInt, new AssemblyLiteral_ADDRESS(CodeAddresses[indirect.Address.Label]))
+                    });
+                }
+            }
+
+            foreach (var asm in DataPart)
+            {
+                if (asm is Assembly_DECL_DATA declData && !DataAddresses.ContainsKey(declData.Data))
+                {
+                    DataAddresses.Add(declData.Data, DataAddress);
+                }
+                DataAddress += asm.Size;
+            }
+        }
+
         public void WriteAll(TextWriter writer)
         {
             var indent = 0;
@@ -38,6 +79,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             WriteOne(writer, new Assembly_INDENT  (-1), ref indent);
             WriteOne(writer, new Assembly_DATA_END()  , ref indent);
+
+            WriteOne(writer, new Assembly_NEW_LINE()  , ref indent);
 
             WriteOne(writer, new Assembly_CODE_START() , ref indent);
             WriteOne(writer, new Assembly_INDENT    (1), ref indent);
