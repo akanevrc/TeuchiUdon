@@ -66,7 +66,7 @@ expr
     returns [ExprResult result, int tableIndex]
     : '{' (statement ';')* '}'            #UnitBlockExpr
     | '{' (statement ';')* expr '}'       #ValueBlockExpr
-    | '(' expr ')'                        #ParensExpr
+    | '(' expr ')'                        #ParenExpr
     | literal                             #LiteralExpr
     | identifier                          #EvalVarExpr
     | identifier '(' ')'                  #EvalUnitFuncExpr

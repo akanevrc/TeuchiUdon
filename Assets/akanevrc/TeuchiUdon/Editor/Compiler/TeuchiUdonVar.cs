@@ -7,24 +7,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
         public TeuchiUdonType Type { get; }
-        public ExprResult Expr { get; }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name)
-            : this(qualifier, name, null, null)
+            : this(qualifier, name, null)
         {
         }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type)
-            : this(qualifier, name, type, null)
-        {
-        }
-
-        public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, ExprResult expr)
         {
             Qualifier = qualifier;
             Name      = name;
             Type      = type;
-            Expr      = expr;
         }
 
         public bool Equals(TeuchiUdonVar obj)

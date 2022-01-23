@@ -54,18 +54,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class VarBindResult : TeuchiUdonParserResult
     {
-        public TeuchiUdonVar Var { get; }
+        public TeuchiUdonVar[] Vars { get; }
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public VarBindResult(IToken token, VarDeclResult varDecl, TeuchiUdonType type, ExprResult expr)
+        public VarBindResult(IToken token, IEnumerable<TeuchiUdonVar> vars, VarDeclResult varDecl, ExprResult expr)
             : base(token)
         {
-            Var     = new TeuchiUdonVar(varDecl.Vars[0].Qualifier, varDecl.Vars[0].Name, type, expr);
+            Vars    = vars.ToArray();
             VarDecl = varDecl;
             Expr    = expr;
 
-            TeuchiUdonTables.Instance.Vars[Var] = Var;
+            foreach (var v in Vars)
+            {
+                TeuchiUdonTables.Instance.Vars[v] = v;
+            }
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -172,11 +175,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(new TeuchiUdonAssembly[]
+                .Concat(VarBind.Vars.SelectMany(x => new TeuchiUdonAssembly[]
                 {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(VarBind.Var)),
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
                     new Assembly_COPY()
-                });
+                }));
         }
     }
 
@@ -216,36 +219,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            throw new InvalidOperationException("bottom detected");
+            TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"bottom detected");
+            return new TeuchiUdonAssembly[0];
         }
     }
 
     public class UnitResult : TypedResult
     {
-        public TeuchiUdonLiteral Literal { get; }
-
         public UnitResult(IToken token)
             : base(token, TeuchiUdonType.Unit)
         {
-            var literal = new TeuchiUdonLiteral("0");
-
-            if (TeuchiUdonTables.Instance.Literals.ContainsKey(literal))
-            {
-                Literal = TeuchiUdonTables.Instance.Literals[literal];
-            }
-            else
-            {
-                Literal = new TeuchiUdonLiteral(TeuchiUdonTables.Instance.GetLiteralIndex(), "0", Type, 0);
-                TeuchiUdonTables.Instance.Literals.Add(Literal, Literal);
-            }
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literal))
-            };
         }
     }
 
@@ -269,11 +252,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class ParensResult : TypedResult
+    public class ParenResult : TypedResult
     {
         public ExprResult Expr { get; }
 
-        public ParensResult(IToken token, TeuchiUdonType type, ExprResult expr)
+        public ParenResult(IToken token, TeuchiUdonType type, ExprResult expr)
             : base(token, type)
         {
             Expr = expr;
@@ -425,7 +408,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IdentifierResult Identifier { get; }
 
         public EvalCandidateResult(IToken token, IdentifierResult identifier)
-            : base(token, TeuchiUdonType.Bottom)
+            : base(token, TeuchiUdonType.Unknown)
         {
             Identifier = identifier;
         }
@@ -525,11 +508,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(new TeuchiUdonAssembly[]
+                .Concat(VarBind.Vars.SelectMany(x => new TeuchiUdonAssembly[]
                 {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(VarBind.Var)),
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
                     new Assembly_COPY()
-                })
+                }))
                 .Concat(Expr.GetAssemblyCodePart());
         }
     }

@@ -14,6 +14,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private uint DataAddress { get; set; }
         private uint CodeAddress { get; set; }
 
+        protected TeuchiUdonAssemblyWriter()
+        {
+        }
+        
         public void Init()
         {
             DataPart = new List<TeuchiUdonAssembly>();

@@ -62,10 +62,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var types = new TeuchiUdonType[]
             {
+                TeuchiUdonType.Unknown,
+                TeuchiUdonType.Any,
                 TeuchiUdonType.Bottom,
                 TeuchiUdonType.Qual,
                 TeuchiUdonType.Type,
-                TeuchiUdonType.Void,
                 TeuchiUdonType.Unit,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Object,
@@ -105,7 +106,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                         if (def.type.IsArray)
                         {
-                            type = TeuchiUdonType.List.Apply(new object[] { type });
+                            type = TeuchiUdonType.List.ApplyArgAsList(type);
                         }
 
                         if (!Types.ContainsKey(type))
@@ -168,7 +169,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var methodName   = methodNames[methodNames.Length - 1];
                         var instanceDef = def.parameters
                             .FirstOrDefault(x => x.parameterType == UdonNodeParameter.ParameterType.IN && x.name == "instance");
-                        var instanceType = instanceDef == null ? TeuchiUdonType.Type.Apply(new TeuchiUdonType[] { type }) : GetTeuchiUdonType(instanceDef.type);
+                        var instanceType = instanceDef == null ? TeuchiUdonType.Type.ApplyArgAsType(type) : GetTeuchiUdonType(instanceDef.type);
                         var inTypes = def.parameters
                             .Where(x => x.parameterType == UdonNodeParameter.ParameterType.IN || x.parameterType == UdonNodeParameter.ParameterType.IN_OUT)
                             .Select(x => GetTeuchiUdonType(x.type)).ToArray();

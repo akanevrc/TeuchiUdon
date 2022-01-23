@@ -8,6 +8,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private Parser Parser { get; set; }
 
+        protected TeuchiUdonLogicalErrorHandler()
+        {
+        }
+
         public void Init(Parser parser)
         {
             Parser = parser;

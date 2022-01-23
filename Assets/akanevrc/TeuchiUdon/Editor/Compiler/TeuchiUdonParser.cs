@@ -49,7 +49,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		UNCHECKED=44, WHERE=45, WILDCARD=46, YIELD=47, IDENTIFIER=48, LITERAL_ACCESS=49, 
 		INTEGER_LITERAL=50, HEX_INTEGER_LITERAL=51, BIN_INTEGER_LITERAL=52, REAL_LITERAL=53, 
 		CHARACTER_LITERAL=54, REGULAR_STRING=55, VERBATIUM_STRING=56, OPEN_BRACE=57, 
-		CLOSE_BRACE=58, OPEN_BRACKET=59, CLOSE_BRACKET=60, OPEN_PARENS=61, CLOSE_PARENS=62, 
+		CLOSE_BRACE=58, OPEN_BRACKET=59, CLOSE_BRACKET=60, OPEN_PAREN=61, CLOSE_PAREN=62, 
 		DOT=63, COMMA=64, COLON=65, SEMICOLON=66, PLUS=67, MINUS=68, STAR=69, 
 		DIV=70, PERCENT=71, AMP=72, BITWISE_OR=73, CARET=74, BANG=75, TILDE=76, 
 		ASSIGNMENT=77, LT=78, GT=79, INTERR=80, OP_COALESCING=81, OP_INC=82, OP_DEC=83, 
@@ -93,7 +93,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		"UNCHECKED", "WHERE", "WILDCARD", "YIELD", "IDENTIFIER", "LITERAL_ACCESS", 
 		"INTEGER_LITERAL", "HEX_INTEGER_LITERAL", "BIN_INTEGER_LITERAL", "REAL_LITERAL", 
 		"CHARACTER_LITERAL", "REGULAR_STRING", "VERBATIUM_STRING", "OPEN_BRACE", 
-		"CLOSE_BRACE", "OPEN_BRACKET", "CLOSE_BRACKET", "OPEN_PARENS", "CLOSE_PARENS", 
+		"CLOSE_BRACE", "OPEN_BRACKET", "CLOSE_BRACKET", "OPEN_PAREN", "CLOSE_PAREN", 
 		"DOT", "COMMA", "COLON", "SEMICOLON", "PLUS", "MINUS", "STAR", "DIV", 
 		"PERCENT", "AMP", "BITWISE_OR", "CARET", "BANG", "TILDE", "ASSIGNMENT", 
 		"LT", "GT", "INTERR", "OP_COALESCING", "OP_INC", "OP_DEC", "OP_AND", "OP_OR", 
@@ -252,7 +252,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 34;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LET) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PARENS))) != 0) );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LET) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PAREN))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -427,8 +427,8 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		}
 	}
 	public partial class UnitVarDeclContext : VarDeclContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PARENS() { return GetToken(TeuchiUdonParser.OPEN_PARENS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PARENS() { return GetToken(TeuchiUdonParser.CLOSE_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
 		public UnitVarDeclContext(VarDeclContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -442,14 +442,14 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		}
 	}
 	public partial class TupleVarDeclContext : VarDeclContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PARENS() { return GetToken(TeuchiUdonParser.OPEN_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
 			return GetRuleContexts<IdentifierContext>();
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
 			return GetRuleContext<IdentifierContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PARENS() { return GetToken(TeuchiUdonParser.CLOSE_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COLON() { return GetTokens(TeuchiUdonParser.COLON); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COLON(int i) {
 			return GetToken(TeuchiUdonParser.COLON, i);
@@ -511,9 +511,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 48;
-				Match(OPEN_PARENS);
+				Match(OPEN_PAREN);
 				State = 49;
-				Match(CLOSE_PARENS);
+				Match(CLOSE_PAREN);
 				}
 				break;
 			case 2:
@@ -541,7 +541,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				EnterOuterAlt(_localctx, 3);
 				{
 				State = 55;
-				Match(OPEN_PARENS);
+				Match(OPEN_PAREN);
 				State = 56;
 				identifier();
 				State = 59;
@@ -585,7 +585,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					_la = TokenStream.LA(1);
 				}
 				State = 72;
-				Match(CLOSE_PARENS);
+				Match(CLOSE_PAREN);
 				}
 				break;
 			}
@@ -1003,8 +1003,8 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
 			return GetRuleContext<IdentifierContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PARENS() { return GetToken(TeuchiUdonParser.OPEN_PARENS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PARENS() { return GetToken(TeuchiUdonParser.CLOSE_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
 		public EvalUnitFuncExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -1021,14 +1021,14 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
 			return GetRuleContext<IdentifierContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PARENS() { return GetToken(TeuchiUdonParser.OPEN_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
 			return GetRuleContexts<ExprContext>();
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
 			return GetRuleContext<ExprContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PARENS() { return GetToken(TeuchiUdonParser.CLOSE_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(TeuchiUdonParser.COMMA); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
 			return GetToken(TeuchiUdonParser.COMMA, i);
@@ -1098,24 +1098,6 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitUnitBlockExpr(this);
 		}
 	}
-	public partial class ParensExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PARENS() { return GetToken(TeuchiUdonParser.OPEN_PARENS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
-			return GetRuleContext<ExprContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PARENS() { return GetToken(TeuchiUdonParser.CLOSE_PARENS, 0); }
-		public ParensExprContext(ExprContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterParensExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitParensExpr(this);
-		}
-	}
 	public partial class LiteralExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public LiteralContext literal() {
 			return GetRuleContext<LiteralContext>(0);
@@ -1153,6 +1135,24 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitLetInBindExpr(this);
 		}
 	}
+	public partial class ParenExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
+		public ParenExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterParenExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitParenExpr(this);
+		}
+	}
 	public partial class FuncExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
 			return GetRuleContext<VarDeclContext>(0);
@@ -1177,11 +1177,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
 			return GetRuleContext<IdentifierContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PARENS() { return GetToken(TeuchiUdonParser.OPEN_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
 			return GetRuleContext<ExprContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PARENS() { return GetToken(TeuchiUdonParser.CLOSE_PARENS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
 		public EvalSingleFuncExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -1226,7 +1226,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 107;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BREAK) | (1L << CONTINUE) | (1L << LET) | (1L << RETURN) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PARENS))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BREAK) | (1L << CONTINUE) | (1L << LET) | (1L << RETURN) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PAREN))) != 0)) {
 					{
 					{
 					State = 102;
@@ -1276,15 +1276,15 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				break;
 			case 3:
 				{
-				_localctx = new ParensExprContext(_localctx);
+				_localctx = new ParenExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 123;
-				Match(OPEN_PARENS);
+				Match(OPEN_PAREN);
 				State = 124;
 				expr(0);
 				State = 125;
-				Match(CLOSE_PARENS);
+				Match(CLOSE_PAREN);
 				}
 				break;
 			case 4:
@@ -1313,9 +1313,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 129;
 				identifier();
 				State = 130;
-				Match(OPEN_PARENS);
+				Match(OPEN_PAREN);
 				State = 131;
-				Match(CLOSE_PARENS);
+				Match(CLOSE_PAREN);
 				}
 				break;
 			case 7:
@@ -1326,11 +1326,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 133;
 				identifier();
 				State = 134;
-				Match(OPEN_PARENS);
+				Match(OPEN_PAREN);
 				State = 135;
 				expr(0);
 				State = 136;
-				Match(CLOSE_PARENS);
+				Match(CLOSE_PAREN);
 				}
 				break;
 			case 8:
@@ -1341,7 +1341,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 138;
 				identifier();
 				State = 139;
-				Match(OPEN_PARENS);
+				Match(OPEN_PAREN);
 				State = 140;
 				expr(0);
 				State = 145;
@@ -1361,7 +1361,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					_la = TokenStream.LA(1);
 				}
 				State = 148;
-				Match(CLOSE_PARENS);
+				Match(CLOSE_PAREN);
 				}
 				break;
 			case 9:

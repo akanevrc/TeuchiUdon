@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonQualifier : IEquatable<TeuchiUdonQualifier>
+    public class TeuchiUdonQualifier : ITeuchiUdonTypeArg, IEquatable<TeuchiUdonQualifier>
     {
         public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(new TeuchiUdonScope[0], new TeuchiUdonScope[0]);
 

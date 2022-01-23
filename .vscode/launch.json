@@ -7,7 +7,7 @@
         {
             "name": "Unity Editor",
             "type": "unity",
-            "path": "TeuchiUdon/Library/EditorInstance.json",
+            "path": "Library/EditorInstance.json",
             "request": "launch"
         },
         {
