@@ -8,27 +8,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
-        public string Name { get; }
         public TeuchiUdonType Type { get; }
         public TeuchiUdonVar[] Vars { get; }
         public ExprResult Expr { get; }
         public TextLabel ReturnAddress { get; }
 
         public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier)
-            : this(index, qualifier, null, null, null, null)
+            : this(index, qualifier, null, null, null)
         {
         }
 
-        public TeuchiUdonFunc(TeuchiUdonQualifier qualifier, string name)
-            : this(-1, qualifier, name, null, null, null)
-        {
-        }
-
-        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr)
+        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr)
         {
             Index         = index;
             Qualifier     = qualifier;
-            Name          = name;
             Type          = type;
             Vars          = vars?.ToArray();
             Expr          = expr;
@@ -37,7 +30,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonFunc obj)
         {
-            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Name == obj.Name;
+            return !object.ReferenceEquals(obj, null) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
@@ -47,7 +40,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override int GetHashCode()
         {
-            return Name.GetHashCode();
+            return Index.GetHashCode();
         }
 
         public static bool operator ==(TeuchiUdonFunc obj1, TeuchiUdonFunc obj2)
@@ -66,7 +59,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override string ToString()
         {
-            return $"{Qualifier.Qualify(".", Name.ToString())}({string.Join(", ", Vars.Select(x => x.Type))})";
+            return Qualifier.Qualify(".", $"func[{Index}]({string.Join(", ", Vars.Select(x => x.Type))})");
         }
 
         public string GetLabel()

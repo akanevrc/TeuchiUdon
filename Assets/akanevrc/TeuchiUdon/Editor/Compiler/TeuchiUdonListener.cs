@@ -19,9 +19,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitTarget([NotNull] TargetContext context)
         {
-            var body = context.body().result;
             TeuchiUdonAssemblyWriter.Instance.PushDataPart(TeuchiUdonTables.Instance.GetAssemblyDataPart());
-            TeuchiUdonAssemblyWriter.Instance.PushCodePart(TeuchiUdonTables.Instance.GetAssemblyCodePart());
+            TeuchiUdonAssemblyWriter.Instance.PushCodePart(TeuchiUdonTables.Instance.GetAssemblyCodePart(), context.body().result.GetAssemblyCodePart());
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
         }
@@ -44,14 +43,144 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitVarBindTopStatement([NotNull] VarBindTopStatementContext context)
         {
-            var varBind    = context.varBind().result;
-            context.result = new TopStatementResult(context.Start, varBind);
+            var varBind              = context.varBind().result;
+            var attrs                = context.varAttr().Select(x => x.result);
+            var (init, export, sync) = ExtractFromVarAttrs(attrs);
+
+            if (varBind.Vars.Length == 1 && varBind.Vars[0].Type.TypeNameEquals(TeuchiUdonType.Func))
+            {
+                if (init != null)
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @init");
+                }
+                if (sync != SyncMode.Disable)
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @sync, @linear, or @smooth");
+                }
+            }
+            else
+            {
+                if (init == null)
+                {
+                    init = "_start";
+                }
+            }
+
+            context.result = new TopBindResult(context.Start, varBind, init, export, sync);
+        }
+
+        private (string init, bool export, SyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
+        {
+            var init   = (string)null;
+            var export = false;
+            var sync   = SyncMode.Disable;
+
+            foreach (var attr in attrs)
+            {
+                if (attr is InitVarAttrResult initAttr)
+                {
+                    if (init == null)
+                    {
+                        init = initAttr.Identifier.Name;
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(initAttr.Token, $"multiple @init detected");
+                    }
+                }
+                else if (attr is ExportVarAttrResult exportAttr)
+                {
+                    if (!export)
+                    {
+                        export = true;
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(exportAttr.Token, $"multiple @export detected");
+                    }
+                }
+                else if (attr is SyncVarAttrResult syncAttr)
+                {
+                    if (sync == SyncMode.Disable)
+                    {
+                        sync = syncAttr.Mode;
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(syncAttr.Token, $"multiple @sync, @linear, or @smooth detected");
+                    }
+                }
+            }
+
+            return (init, export, sync);
         }
 
         public override void ExitExprTopStatement([NotNull] ExprTopStatementContext context)
         {
-            var expr       = context.expr().result;
-            context.result = new TopStatementResult(context.Start, expr);
+            var expr  = context.expr().result;
+            var attrs = context.exprAttr().Select(x => x.result);
+            var init  = ExtractFromExprAttrs(attrs);
+
+            if (init == null)
+            {
+                init = "_start";
+            }
+
+            context.result = new TopExprResult(context.Start, expr, init);
+        }
+
+        private string ExtractFromExprAttrs(IEnumerable<ExprAttrResult> attrs)
+        {
+            var init = (string)null;
+
+            foreach (var attr in attrs)
+            {
+                if (attr is InitExprAttrResult initAttr)
+                {
+                    if (init == null)
+                    {
+                        init = initAttr.Identifier.Name;
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(initAttr.Token, $"multiple @init detected");
+                    }
+                }
+            }
+
+            return init;
+        }
+
+        public override void ExitInitVarAttr([NotNull] InitVarAttrContext context)
+        {
+            var identifier = context.identifier().result;
+            context.result = new InitVarAttrResult(context.Start, identifier);
+        }
+
+        public override void ExitExportVarAttr([NotNull] ExportVarAttrContext context)
+        {
+            context.result = new ExportVarAttrResult(context.Start);
+        }
+
+        public override void ExitSyncVarAttr([NotNull] SyncVarAttrContext context)
+        {
+            context.result = new SyncVarAttrResult(context.Start, SyncMode.Sync);
+        }
+
+        public override void ExitLinearVarAttr([NotNull] LinearVarAttrContext context)
+        {
+            context.result = new SyncVarAttrResult(context.Start, SyncMode.Linear);
+        }
+
+        public override void ExitSmoothVarAttr([NotNull] SmoothVarAttrContext context)
+        {
+            context.result = new SyncVarAttrResult(context.Start, SyncMode.Smooth);
+        }
+
+        public override void ExitInitExprAttr([NotNull] InitExprAttrContext context)
+        {
+            var identifier = context.identifier().result;
+            context.result = new InitExprAttrResult(context.Start, identifier);
         }
 
         public override void EnterVarBind([NotNull] VarBindContext context)
@@ -656,8 +785,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var index      = context.tableIndex;
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var name       = varBind.varDecl().result.Vars[0].Name;
-            var func       = new FuncResult(context.Start, type, index, qual, name, varDecl, expr);
+            var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr);
             context.result = new ExprResult(func.Token, func);
         }
 

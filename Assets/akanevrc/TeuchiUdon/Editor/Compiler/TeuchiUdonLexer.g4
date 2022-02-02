@@ -64,10 +64,15 @@ TYPE      : 'type'     ;
 TYPEOF    : 'typeof'   ;
 UNCHECKED : 'unchecked';
 WHERE     : 'where'    ;
-WILDCARD  : '_'        ;
 YIELD     : 'yield'    ;
 
-IDENTIFIER : '@'? IdentifierOrKeyword;
+INIT   : '@init'  ;
+EXPORT : '@export';
+SYNC   : '@sync'  ;
+LINEAR : '@linear';
+SMOOTH : '@smooth';
+
+IDENTIFIER : IdentifierOrKeyword;
 
 LITERAL_ACCESS      : [0-9] ('_'* [0-9])* IntegerTypeSuffix? '.' '@'? IdentifierOrKeyword;
 INTEGER_LITERAL     : [0-9] ('_'* [0-9])* IntegerTypeSuffix?;
@@ -102,6 +107,7 @@ TILDE                     : '~'  ;
 ASSIGNMENT                : '='  ;
 LT                        : '<'  ;
 GT                        : '>'  ;
+WILDCARD                  : '_'  ;
 INTERR                    : '?'  ;
 OP_COALESCING             : '??' ;
 OP_INC                    : '++' ;

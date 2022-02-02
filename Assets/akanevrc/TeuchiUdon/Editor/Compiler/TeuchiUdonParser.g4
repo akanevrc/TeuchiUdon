@@ -24,8 +24,22 @@ body
 
 topStatement
     returns [TopStatementResult result]
-    : varBind ';' #VarBindTopStatement
-    | expr    ';' #ExprTopStatement
+    : varAttr * varBind ';' #VarBindTopStatement
+    | exprAttr* expr    ';' #ExprTopStatement
+    ;
+
+varAttr
+    returns [VarAttrResult result]
+    : '@init' '(' identifier ')' #InitVarAttr
+    | '@export'                  #ExportVarAttr
+    | '@sync'                    #SyncVarAttr
+    | '@linear'                  #LinearVarAttr
+    | '@smooth'                  #SmoothVarAttr
+    ;
+
+exprAttr
+    returns [ExprAttrResult result]
+    : '@init' '(' identifier ')' #InitExprAttr
     ;
 
 varBind

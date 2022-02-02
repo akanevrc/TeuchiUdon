@@ -32,23 +32,165 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return TopStatements.SelectMany(x => x.GetAssemblyCodePart());
+            var topFuncs = TopStatements
+                .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.TypeNameEquals(TeuchiUdonType.Func))
+                .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].Name, x: (TopBindResult)x));
+            var topStats = TopStatements
+                .Select(x => x is TopBindResult topBind ? (name: topBind.Init, x) : x is TopExprResult topExpr ? (name: topExpr.Init, x) : (name: null, x))
+                .Where(x => x.name != null);
+
+            var topFuncStats = new Dictionary<string, List<TopStatementResult>>();
+            foreach (var func in topFuncs)
+            {
+                if (func.name == "_start" || func.x.Export)
+                {
+                    topFuncStats.Add(func.name, new List<TopStatementResult>());
+                    topFuncStats[func.name].Add(func.x);
+                }
+            }
+            foreach (var stat in topStats)
+            {
+                if (topFuncStats.ContainsKey(stat.name))
+                {
+                    topFuncStats[stat.name].Add(stat.x);
+                }
+            }
+
+            return
+                topFuncStats.Count == 0 ? new TeuchiUdonAssembly[0] :
+                topFuncStats.Select(x =>
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_EXPORT_CODE(new TextLabel(x.Key)),
+                        new Assembly_LABEL      (new TextLabel(x.Key)),
+                        new Assembly_INDENT(1)
+                    }
+                .Concat(x.Value.SelectMany(y => y.GetAssemblyCodePart()))
+                .Concat(TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)) ?
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(new TextLabel($"topcall[{x.Key}]"))),
+                        new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)])),
+                        new Assembly_LABEL(new TextLabel($"topcall[{x.Key}]")),
+                        new Assembly_JUMP(new AssemblyAddress_NUMBER(0xFFFFFFFC)),
+                        new Assembly_INDENT(-1)
+                    } :
+                    new TeuchiUdonAssembly[0]
+                ))
+                .Aggregate((acc, x) => acc
+                    .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
+                    .Concat(x));
         }
     }
 
-    public class TopStatementResult : TeuchiUdonParserResult
+    public abstract class TopStatementResult : TeuchiUdonParserResult
     {
-        public TeuchiUdonParserResult Statement { get; }
-
-        public TopStatementResult(IToken token, TeuchiUdonParserResult statement)
+        public TopStatementResult(IToken token)
             : base(token)
         {
-            Statement = statement;
+        }
+    }
+
+    public class TopBindResult : TopStatementResult
+    {
+        public VarBindResult VarBind { get; }
+        public string Init { get; }
+        public bool Export { get; }
+        public SyncMode Sync { get; }
+
+        public TopBindResult(IToken token, VarBindResult varBind, string init, bool export, SyncMode sync)
+            : base(token)
+        {
+            VarBind = varBind;
+            Init    = init;
+            Export  = export;
+            Sync    = sync;
         }
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return Statement.GetAssemblyCodePart();
+            return
+                VarBind.Expr.GetAssemblyCodePart()
+                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                    new Assembly_COPY()
+                }));
+        }
+    }
+
+    public class TopExprResult : TopStatementResult
+    {
+        public ExprResult Expr { get; }
+        public string Init { get; }
+
+        public TopExprResult(IToken token, ExprResult expr, string init)
+            : base(token)
+        {
+            Expr = expr;
+            Init = init;
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return Expr.GetAssemblyCodePart();
+        }
+    }
+
+    public abstract class VarAttrResult : TeuchiUdonParserResult
+    {
+        public VarAttrResult(IToken token)
+            : base(token)
+        {
+        }
+    }
+
+    public class InitVarAttrResult : VarAttrResult
+    {
+        public IdentifierResult Identifier { get; }
+
+        public InitVarAttrResult(IToken token, IdentifierResult identifier)
+            : base(token)
+        {
+            Identifier = identifier;
+        }
+    }
+
+    public class ExportVarAttrResult : VarAttrResult
+    {
+        public ExportVarAttrResult(IToken token)
+            : base(token)
+        {
+        }
+    }
+
+    public class SyncVarAttrResult : VarAttrResult
+    {
+        public SyncMode Mode { get; }
+
+        public SyncVarAttrResult(IToken token, SyncMode mode)
+            : base(token)
+        {
+            Mode = mode;
+        }
+    }
+
+    public abstract class ExprAttrResult : TeuchiUdonParserResult
+    {
+        public ExprAttrResult(IToken token)
+            : base(token)
+        {
+        }
+    }
+
+    public class InitExprAttrResult : ExprAttrResult
+    {
+        public IdentifierResult Identifier { get; }
+
+        public InitExprAttrResult(IToken token, IdentifierResult identifier)
+            : base(token)
+        {
+            Identifier = identifier;
         }
     }
 
@@ -69,11 +211,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 TeuchiUdonTables.Instance.Vars[v] = v;
             }
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return Expr.GetAssemblyCodePart();
         }
     }
 
@@ -175,7 +312,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.SelectMany(x => new TeuchiUdonAssembly[]
+                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
                 {
                     new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
                     new Assembly_COPY()
@@ -464,16 +601,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public FuncResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, string name, VarDeclResult varDecl, ExprResult expr)
+        public FuncResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, VarDeclResult varDecl, ExprResult expr)
             : base(token, type)
         {
-            Func    = new TeuchiUdonFunc(index, qualifier, name, type, varDecl.Vars, expr);
+            Func    = new TeuchiUdonFunc(index, qualifier, type, varDecl.Vars, expr);
             VarDecl = varDecl;
             Expr    = expr;
 
             if (TeuchiUdonTables.Instance.Funcs.ContainsKey(Func))
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"{Func.Name} conflicts with another function");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"{Func} conflicts with another function");
             }
             else
             {
@@ -508,7 +645,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.SelectMany(x => new TeuchiUdonAssembly[]
+                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
                 {
                     new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
                     new Assembly_COPY()

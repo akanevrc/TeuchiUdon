@@ -20,18 +20,30 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         
         public void Init()
         {
-            DataPart = new List<TeuchiUdonAssembly>();
-            CodePart = new List<TeuchiUdonAssembly>();
+            DataPart      = new List<TeuchiUdonAssembly>();
+            CodePart      = new List<TeuchiUdonAssembly>();
+            DataAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
+            CodeAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
+            DataAddress   = 0;
+            CodeAddress   = 0;
         }
 
-        public void PushDataPart(IEnumerable<TeuchiUdonAssembly> assemblies)
+        public void PushDataPart(params IEnumerable<TeuchiUdonAssembly>[] assembliess)
         {
-            DataPart.AddRange(assemblies);
+            foreach (var asms in assembliess)
+            {
+                DataPart.AddRange(asms);
+            }
         }
 
-        public void PushCodePart(IEnumerable<TeuchiUdonAssembly> assemblies)
+        public void PushCodePart(params IEnumerable<TeuchiUdonAssembly>[] assembliess)
         {
-            CodePart.AddRange(assemblies);
+            if (assembliess.Length >= 1) CodePart.AddRange(assembliess[0]);
+            for (var i = 1; i < assembliess.Length; i++)
+            {
+                CodePart.Add(new Assembly_NEW_LINE());
+                CodePart.AddRange(assembliess[i]);
+            }
         }
 
         public void Prepare()

@@ -79,6 +79,78 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>InitVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterInitVarAttr([NotNull] TeuchiUdonParser.InitVarAttrContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>InitVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitInitVarAttr([NotNull] TeuchiUdonParser.InitVarAttrContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ExportVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ExportVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SyncVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSyncVarAttr([NotNull] TeuchiUdonParser.SyncVarAttrContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SyncVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSyncVarAttr([NotNull] TeuchiUdonParser.SyncVarAttrContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>LinearVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterLinearVarAttr([NotNull] TeuchiUdonParser.LinearVarAttrContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>LinearVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitLinearVarAttr([NotNull] TeuchiUdonParser.LinearVarAttrContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SmoothVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSmoothVarAttr([NotNull] TeuchiUdonParser.SmoothVarAttrContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SmoothVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSmoothVarAttr([NotNull] TeuchiUdonParser.SmoothVarAttrContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>InitExprAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.exprAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterInitExprAttr([NotNull] TeuchiUdonParser.InitExprAttrContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>InitExprAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.exprAttr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitInitExprAttr([NotNull] TeuchiUdonParser.InitExprAttrContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.varBind"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

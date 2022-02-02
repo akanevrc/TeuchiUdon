@@ -46,26 +46,27 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		IF=21, IN=22, IS=23, LET=24, MODULE=25, NAMEOF=26, NAMESPACE=27, NEW=28, 
 		NEWTYPE=29, OF=30, OUT=31, PRIVATE=32, PROTECTED=33, PUBLIC=34, REF=35, 
 		RETURN=36, SIZEOF=37, THEN=38, THIS=39, THROW=40, TRY=41, TYPE=42, TYPEOF=43, 
-		UNCHECKED=44, WHERE=45, WILDCARD=46, YIELD=47, IDENTIFIER=48, LITERAL_ACCESS=49, 
-		INTEGER_LITERAL=50, HEX_INTEGER_LITERAL=51, BIN_INTEGER_LITERAL=52, REAL_LITERAL=53, 
-		CHARACTER_LITERAL=54, REGULAR_STRING=55, VERBATIUM_STRING=56, OPEN_BRACE=57, 
-		CLOSE_BRACE=58, OPEN_BRACKET=59, CLOSE_BRACKET=60, OPEN_PAREN=61, CLOSE_PAREN=62, 
-		DOT=63, COMMA=64, COLON=65, SEMICOLON=66, PLUS=67, MINUS=68, STAR=69, 
-		DIV=70, PERCENT=71, AMP=72, BITWISE_OR=73, CARET=74, BANG=75, TILDE=76, 
-		ASSIGNMENT=77, LT=78, GT=79, INTERR=80, OP_COALESCING=81, OP_INC=82, OP_DEC=83, 
-		OP_AND=84, OP_OR=85, OP_PTR=86, OP_EQ=87, OP_NE=88, OP_LE=89, OP_GE=90, 
-		OP_ADD_ASSIGNMENT=91, OP_SUB_ASSIGNMENT=92, OP_MULT_ASSIGNMENT=93, OP_DIV_ASSIGNMENT=94, 
-		OP_MOD_ASSIGNMENT=95, OP_AND_ASSIGNMENT=96, OP_OR_ASSIGNMENT=97, OP_XOR_ASSIGNMENT=98, 
-		OP_LEFT_SHIFT=99, OP_RIGHT_SHIFT=100, OP_LEFT_SHIFT_ASSIGNMENT=101, OP_RIGHT_SHIFT_ASSIGNMENT=102, 
-		OP_COALESCING_ASSIGNMENT=103, OP_RANGE=104, OP_LEFT_PIPELINE=105, OP_RIGHT_PIPELINE=106, 
-		OPEN_DELIMITED_COMMENT_INSIDE=107, CLOSE_DELIMITED_COMMENT_INSIDE=108;
+		UNCHECKED=44, WHERE=45, YIELD=46, INIT=47, EXPORT=48, SYNC=49, LINEAR=50, 
+		SMOOTH=51, IDENTIFIER=52, LITERAL_ACCESS=53, INTEGER_LITERAL=54, HEX_INTEGER_LITERAL=55, 
+		BIN_INTEGER_LITERAL=56, REAL_LITERAL=57, CHARACTER_LITERAL=58, REGULAR_STRING=59, 
+		VERBATIUM_STRING=60, OPEN_BRACE=61, CLOSE_BRACE=62, OPEN_BRACKET=63, CLOSE_BRACKET=64, 
+		OPEN_PAREN=65, CLOSE_PAREN=66, DOT=67, COMMA=68, COLON=69, SEMICOLON=70, 
+		PLUS=71, MINUS=72, STAR=73, DIV=74, PERCENT=75, AMP=76, BITWISE_OR=77, 
+		CARET=78, BANG=79, TILDE=80, ASSIGNMENT=81, LT=82, GT=83, WILDCARD=84, 
+		INTERR=85, OP_COALESCING=86, OP_INC=87, OP_DEC=88, OP_AND=89, OP_OR=90, 
+		OP_PTR=91, OP_EQ=92, OP_NE=93, OP_LE=94, OP_GE=95, OP_ADD_ASSIGNMENT=96, 
+		OP_SUB_ASSIGNMENT=97, OP_MULT_ASSIGNMENT=98, OP_DIV_ASSIGNMENT=99, OP_MOD_ASSIGNMENT=100, 
+		OP_AND_ASSIGNMENT=101, OP_OR_ASSIGNMENT=102, OP_XOR_ASSIGNMENT=103, OP_LEFT_SHIFT=104, 
+		OP_RIGHT_SHIFT=105, OP_LEFT_SHIFT_ASSIGNMENT=106, OP_RIGHT_SHIFT_ASSIGNMENT=107, 
+		OP_COALESCING_ASSIGNMENT=108, OP_RANGE=109, OP_LEFT_PIPELINE=110, OP_RIGHT_PIPELINE=111, 
+		OPEN_DELIMITED_COMMENT_INSIDE=112, CLOSE_DELIMITED_COMMENT_INSIDE=113;
 	public const int
-		RULE_target = 0, RULE_body = 1, RULE_topStatement = 2, RULE_varBind = 3, 
-		RULE_varDecl = 4, RULE_qualified = 5, RULE_identifier = 6, RULE_statement = 7, 
-		RULE_expr = 8, RULE_literal = 9;
+		RULE_target = 0, RULE_body = 1, RULE_topStatement = 2, RULE_varAttr = 3, 
+		RULE_exprAttr = 4, RULE_varBind = 5, RULE_varDecl = 6, RULE_qualified = 7, 
+		RULE_identifier = 8, RULE_statement = 9, RULE_expr = 10, RULE_literal = 11;
 	public static readonly string[] ruleNames = {
-		"target", "body", "topStatement", "varBind", "varDecl", "qualified", "identifier", 
-		"statement", "expr", "literal"
+		"target", "body", "topStatement", "varAttr", "exprAttr", "varBind", "varDecl", 
+		"qualified", "identifier", "statement", "expr", "literal"
 	};
 
 	private static readonly string[] _LiteralNames = {
@@ -75,13 +76,14 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		"'is'", "'let'", "'module'", "'nameof'", "'namespace'", "'new'", "'newtype'", 
 		"'of'", "'out'", "'private'", "'protected'", "'public'", "'ref'", "'return'", 
 		"'sizeof'", "'then'", "'this'", "'throw'", "'try'", "'type'", "'typeof'", 
-		"'unchecked'", "'where'", "'_'", "'yield'", null, null, null, null, null, 
-		null, null, null, null, "'{'", "'}'", "'['", "']'", "'('", "')'", "'.'", 
-		"','", "':'", "';'", "'+'", "'-'", "'*'", "'/'", "'%'", "'&'", "'|'", 
-		"'^'", "'!'", "'~'", "'='", "'<'", "'>'", "'?'", "'??'", "'++'", "'--'", 
-		"'&&'", "'||'", "'->'", "'=='", "'!='", "'<='", "'>='", "'+='", "'-='", 
-		"'*='", "'/='", "'%='", "'&='", "'|='", "'^='", "'<<'", "'>>'", "'<<='", 
-		"'>>='", "'??='", "'..'", "'<|'", "'|>'", "'{/'", "'/}'"
+		"'unchecked'", "'where'", "'yield'", "'@init'", "'@export'", "'@sync'", 
+		"'@linear'", "'@smooth'", null, null, null, null, null, null, null, null, 
+		null, "'{'", "'}'", "'['", "']'", "'('", "')'", "'.'", "','", "':'", "';'", 
+		"'+'", "'-'", "'*'", "'/'", "'%'", "'&'", "'|'", "'^'", "'!'", "'~'", 
+		"'='", "'<'", "'>'", "'_'", "'?'", "'??'", "'++'", "'--'", "'&&'", "'||'", 
+		"'->'", "'=='", "'!='", "'<='", "'>='", "'+='", "'-='", "'*='", "'/='", 
+		"'%='", "'&='", "'|='", "'^='", "'<<'", "'>>'", "'<<='", "'>>='", "'??='", 
+		"'..'", "'<|'", "'|>'", "'{/'", "'/}'"
 	};
 	private static readonly string[] _SymbolicNames = {
 		null, "BYTE_ORDER_MARK", "SINGLE_LINE_COMMENT", "OPEN_DELIMITED_COMMENT", 
@@ -90,19 +92,19 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		"INTERNAL", "IF", "IN", "IS", "LET", "MODULE", "NAMEOF", "NAMESPACE", 
 		"NEW", "NEWTYPE", "OF", "OUT", "PRIVATE", "PROTECTED", "PUBLIC", "REF", 
 		"RETURN", "SIZEOF", "THEN", "THIS", "THROW", "TRY", "TYPE", "TYPEOF", 
-		"UNCHECKED", "WHERE", "WILDCARD", "YIELD", "IDENTIFIER", "LITERAL_ACCESS", 
-		"INTEGER_LITERAL", "HEX_INTEGER_LITERAL", "BIN_INTEGER_LITERAL", "REAL_LITERAL", 
-		"CHARACTER_LITERAL", "REGULAR_STRING", "VERBATIUM_STRING", "OPEN_BRACE", 
-		"CLOSE_BRACE", "OPEN_BRACKET", "CLOSE_BRACKET", "OPEN_PAREN", "CLOSE_PAREN", 
-		"DOT", "COMMA", "COLON", "SEMICOLON", "PLUS", "MINUS", "STAR", "DIV", 
-		"PERCENT", "AMP", "BITWISE_OR", "CARET", "BANG", "TILDE", "ASSIGNMENT", 
-		"LT", "GT", "INTERR", "OP_COALESCING", "OP_INC", "OP_DEC", "OP_AND", "OP_OR", 
-		"OP_PTR", "OP_EQ", "OP_NE", "OP_LE", "OP_GE", "OP_ADD_ASSIGNMENT", "OP_SUB_ASSIGNMENT", 
-		"OP_MULT_ASSIGNMENT", "OP_DIV_ASSIGNMENT", "OP_MOD_ASSIGNMENT", "OP_AND_ASSIGNMENT", 
-		"OP_OR_ASSIGNMENT", "OP_XOR_ASSIGNMENT", "OP_LEFT_SHIFT", "OP_RIGHT_SHIFT", 
-		"OP_LEFT_SHIFT_ASSIGNMENT", "OP_RIGHT_SHIFT_ASSIGNMENT", "OP_COALESCING_ASSIGNMENT", 
-		"OP_RANGE", "OP_LEFT_PIPELINE", "OP_RIGHT_PIPELINE", "OPEN_DELIMITED_COMMENT_INSIDE", 
-		"CLOSE_DELIMITED_COMMENT_INSIDE"
+		"UNCHECKED", "WHERE", "YIELD", "INIT", "EXPORT", "SYNC", "LINEAR", "SMOOTH", 
+		"IDENTIFIER", "LITERAL_ACCESS", "INTEGER_LITERAL", "HEX_INTEGER_LITERAL", 
+		"BIN_INTEGER_LITERAL", "REAL_LITERAL", "CHARACTER_LITERAL", "REGULAR_STRING", 
+		"VERBATIUM_STRING", "OPEN_BRACE", "CLOSE_BRACE", "OPEN_BRACKET", "CLOSE_BRACKET", 
+		"OPEN_PAREN", "CLOSE_PAREN", "DOT", "COMMA", "COLON", "SEMICOLON", "PLUS", 
+		"MINUS", "STAR", "DIV", "PERCENT", "AMP", "BITWISE_OR", "CARET", "BANG", 
+		"TILDE", "ASSIGNMENT", "LT", "GT", "WILDCARD", "INTERR", "OP_COALESCING", 
+		"OP_INC", "OP_DEC", "OP_AND", "OP_OR", "OP_PTR", "OP_EQ", "OP_NE", "OP_LE", 
+		"OP_GE", "OP_ADD_ASSIGNMENT", "OP_SUB_ASSIGNMENT", "OP_MULT_ASSIGNMENT", 
+		"OP_DIV_ASSIGNMENT", "OP_MOD_ASSIGNMENT", "OP_AND_ASSIGNMENT", "OP_OR_ASSIGNMENT", 
+		"OP_XOR_ASSIGNMENT", "OP_LEFT_SHIFT", "OP_RIGHT_SHIFT", "OP_LEFT_SHIFT_ASSIGNMENT", 
+		"OP_RIGHT_SHIFT_ASSIGNMENT", "OP_COALESCING_ASSIGNMENT", "OP_RANGE", "OP_LEFT_PIPELINE", 
+		"OP_RIGHT_PIPELINE", "OPEN_DELIMITED_COMMENT_INSIDE", "CLOSE_DELIMITED_COMMENT_INSIDE"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -166,30 +168,30 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		TargetContext _localctx = new TargetContext(Context, State);
 		EnterRule(_localctx, 0, RULE_target);
 		try {
-			State = 29;
+			State = 33;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,0,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 20;
-				Match(OPEN_BRACE);
-				State = 21;
-				body();
-				State = 22;
-				Match(CLOSE_BRACE);
-				State = 23;
-				Match(SEMICOLON);
 				State = 24;
+				Match(OPEN_BRACE);
+				State = 25;
+				body();
+				State = 26;
+				Match(CLOSE_BRACE);
+				State = 27;
+				Match(SEMICOLON);
+				State = 28;
 				Match(Eof);
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 26;
+				State = 30;
 				body();
-				State = 27;
+				State = 31;
 				Match(Eof);
 				}
 				break;
@@ -239,20 +241,20 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 32;
+			State = 36;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			do {
 				{
 				{
-				State = 31;
+				State = 35;
 				topStatement();
 				}
 				}
-				State = 34;
+				State = 38;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LET) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PAREN))) != 0) );
+			} while ( ((((_la - 24)) & ~0x3f) == 0 && ((1L << (_la - 24)) & ((1L << (LET - 24)) | (1L << (INIT - 24)) | (1L << (EXPORT - 24)) | (1L << (SYNC - 24)) | (1L << (LINEAR - 24)) | (1L << (SMOOTH - 24)) | (1L << (IDENTIFIER - 24)) | (1L << (INTEGER_LITERAL - 24)) | (1L << (HEX_INTEGER_LITERAL - 24)) | (1L << (BIN_INTEGER_LITERAL - 24)) | (1L << (REAL_LITERAL - 24)) | (1L << (CHARACTER_LITERAL - 24)) | (1L << (REGULAR_STRING - 24)) | (1L << (VERBATIUM_STRING - 24)) | (1L << (OPEN_BRACE - 24)) | (1L << (OPEN_PAREN - 24)))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -285,6 +287,12 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			return GetRuleContext<VarBindContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON() { return GetToken(TeuchiUdonParser.SEMICOLON, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public VarAttrContext[] varAttr() {
+			return GetRuleContexts<VarAttrContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public VarAttrContext varAttr(int i) {
+			return GetRuleContext<VarAttrContext>(i);
+		}
 		public VarBindTopStatementContext(TopStatementContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -302,6 +310,12 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			return GetRuleContext<ExprContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON() { return GetToken(TeuchiUdonParser.SEMICOLON, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprAttrContext[] exprAttr() {
+			return GetRuleContexts<ExprAttrContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprAttrContext exprAttr(int i) {
+			return GetRuleContext<ExprAttrContext>(i);
+		}
 		public ExprTopStatementContext(TopStatementContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -319,17 +333,32 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	public TopStatementContext topStatement() {
 		TopStatementContext _localctx = new TopStatementContext(Context, State);
 		EnterRule(_localctx, 4, RULE_topStatement);
+		int _la;
 		try {
-			State = 42;
+			State = 58;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,2,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,4,Context) ) {
 			case 1:
 				_localctx = new VarBindTopStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 36;
+				State = 43;
+				ErrorHandler.Sync(this);
+				_la = TokenStream.LA(1);
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INIT) | (1L << EXPORT) | (1L << SYNC) | (1L << LINEAR) | (1L << SMOOTH))) != 0)) {
+					{
+					{
+					State = 40;
+					varAttr();
+					}
+					}
+					State = 45;
+					ErrorHandler.Sync(this);
+					_la = TokenStream.LA(1);
+				}
+				State = 46;
 				varBind();
-				State = 37;
+				State = 47;
 				Match(SEMICOLON);
 				}
 				break;
@@ -337,12 +366,248 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ExprTopStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 39;
+				State = 52;
+				ErrorHandler.Sync(this);
+				_la = TokenStream.LA(1);
+				while (_la==INIT) {
+					{
+					{
+					State = 49;
+					exprAttr();
+					}
+					}
+					State = 54;
+					ErrorHandler.Sync(this);
+					_la = TokenStream.LA(1);
+				}
+				State = 55;
 				expr(0);
-				State = 40;
+				State = 56;
 				Match(SEMICOLON);
 				}
 				break;
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class VarAttrContext : ParserRuleContext {
+		public VarAttrResult result;
+		public VarAttrContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_varAttr; } }
+	 
+		public VarAttrContext() { }
+		public virtual void CopyFrom(VarAttrContext context) {
+			base.CopyFrom(context);
+			this.result = context.result;
+		}
+	}
+	public partial class SyncVarAttrContext : VarAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SYNC() { return GetToken(TeuchiUdonParser.SYNC, 0); }
+		public SyncVarAttrContext(VarAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterSyncVarAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitSyncVarAttr(this);
+		}
+	}
+	public partial class ExportVarAttrContext : VarAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EXPORT() { return GetToken(TeuchiUdonParser.EXPORT, 0); }
+		public ExportVarAttrContext(VarAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterExportVarAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitExportVarAttr(this);
+		}
+	}
+	public partial class SmoothVarAttrContext : VarAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SMOOTH() { return GetToken(TeuchiUdonParser.SMOOTH, 0); }
+		public SmoothVarAttrContext(VarAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterSmoothVarAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitSmoothVarAttr(this);
+		}
+	}
+	public partial class InitVarAttrContext : VarAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INIT() { return GetToken(TeuchiUdonParser.INIT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
+			return GetRuleContext<IdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
+		public InitVarAttrContext(VarAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterInitVarAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitInitVarAttr(this);
+		}
+	}
+	public partial class LinearVarAttrContext : VarAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LINEAR() { return GetToken(TeuchiUdonParser.LINEAR, 0); }
+		public LinearVarAttrContext(VarAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterLinearVarAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitLinearVarAttr(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public VarAttrContext varAttr() {
+		VarAttrContext _localctx = new VarAttrContext(Context, State);
+		EnterRule(_localctx, 6, RULE_varAttr);
+		try {
+			State = 69;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case INIT:
+				_localctx = new InitVarAttrContext(_localctx);
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 60;
+				Match(INIT);
+				State = 61;
+				Match(OPEN_PAREN);
+				State = 62;
+				identifier();
+				State = 63;
+				Match(CLOSE_PAREN);
+				}
+				break;
+			case EXPORT:
+				_localctx = new ExportVarAttrContext(_localctx);
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 65;
+				Match(EXPORT);
+				}
+				break;
+			case SYNC:
+				_localctx = new SyncVarAttrContext(_localctx);
+				EnterOuterAlt(_localctx, 3);
+				{
+				State = 66;
+				Match(SYNC);
+				}
+				break;
+			case LINEAR:
+				_localctx = new LinearVarAttrContext(_localctx);
+				EnterOuterAlt(_localctx, 4);
+				{
+				State = 67;
+				Match(LINEAR);
+				}
+				break;
+			case SMOOTH:
+				_localctx = new SmoothVarAttrContext(_localctx);
+				EnterOuterAlt(_localctx, 5);
+				{
+				State = 68;
+				Match(SMOOTH);
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class ExprAttrContext : ParserRuleContext {
+		public ExprAttrResult result;
+		public ExprAttrContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_exprAttr; } }
+	 
+		public ExprAttrContext() { }
+		public virtual void CopyFrom(ExprAttrContext context) {
+			base.CopyFrom(context);
+			this.result = context.result;
+		}
+	}
+	public partial class InitExprAttrContext : ExprAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INIT() { return GetToken(TeuchiUdonParser.INIT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
+			return GetRuleContext<IdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
+		public InitExprAttrContext(ExprAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterInitExprAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitInitExprAttr(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public ExprAttrContext exprAttr() {
+		ExprAttrContext _localctx = new ExprAttrContext(Context, State);
+		EnterRule(_localctx, 8, RULE_exprAttr);
+		try {
+			_localctx = new InitExprAttrContext(_localctx);
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 71;
+			Match(INIT);
+			State = 72;
+			Match(OPEN_PAREN);
+			State = 73;
+			identifier();
+			State = 74;
+			Match(CLOSE_PAREN);
 			}
 		}
 		catch (RecognitionException re) {
@@ -385,15 +650,15 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public VarBindContext varBind() {
 		VarBindContext _localctx = new VarBindContext(Context, State);
-		EnterRule(_localctx, 6, RULE_varBind);
+		EnterRule(_localctx, 10, RULE_varBind);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 44;
+			State = 76;
 			varDecl(true);
-			State = 45;
+			State = 77;
 			Match(ASSIGNMENT);
-			State = 46;
+			State = 78;
 			expr(0);
 			}
 		}
@@ -500,19 +765,19 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public VarDeclContext varDecl(bool isActual) {
 		VarDeclContext _localctx = new VarDeclContext(Context, State, isActual);
-		EnterRule(_localctx, 8, RULE_varDecl);
+		EnterRule(_localctx, 12, RULE_varDecl);
 		int _la;
 		try {
-			State = 74;
+			State = 106;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,7,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,10,Context) ) {
 			case 1:
 				_localctx = new UnitVarDeclContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 48;
+				State = 80;
 				Match(OPEN_PAREN);
-				State = 49;
+				State = 81;
 				Match(CLOSE_PAREN);
 				}
 				break;
@@ -520,16 +785,16 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new SingleVarDeclContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 50;
+				State = 82;
 				identifier();
-				State = 53;
+				State = 85;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 				if (_la==COLON) {
 					{
-					State = 51;
+					State = 83;
 					Match(COLON);
-					State = 52;
+					State = 84;
 					qualified();
 					}
 				}
@@ -540,51 +805,51 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new TupleVarDeclContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 55;
+				State = 87;
 				Match(OPEN_PAREN);
-				State = 56;
+				State = 88;
 				identifier();
-				State = 59;
+				State = 91;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 				if (_la==COLON) {
 					{
-					State = 57;
+					State = 89;
 					Match(COLON);
-					State = 58;
+					State = 90;
 					qualified();
 					}
 				}
 
-				State = 69;
+				State = 101;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 				while (_la==COMMA) {
 					{
 					{
-					State = 61;
+					State = 93;
 					Match(COMMA);
-					State = 62;
+					State = 94;
 					identifier();
-					State = 65;
+					State = 97;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
 					if (_la==COLON) {
 						{
-						State = 63;
+						State = 95;
 						Match(COLON);
-						State = 64;
+						State = 96;
 						qualified();
 						}
 					}
 
 					}
 					}
-					State = 71;
+					State = 103;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
 				}
-				State = 72;
+				State = 104;
 				Match(CLOSE_PAREN);
 				}
 				break;
@@ -633,26 +898,26 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public QualifiedContext qualified() {
 		QualifiedContext _localctx = new QualifiedContext(Context, State);
-		EnterRule(_localctx, 10, RULE_qualified);
+		EnterRule(_localctx, 14, RULE_qualified);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 76;
+			State = 108;
 			identifier();
-			State = 81;
+			State = 113;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==DOT) {
 				{
 				{
-				State = 77;
+				State = 109;
 				Match(DOT);
-				State = 78;
+				State = 110;
 				identifier();
 				}
 				}
-				State = 83;
+				State = 115;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -692,11 +957,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public IdentifierContext identifier() {
 		IdentifierContext _localctx = new IdentifierContext(Context, State);
-		EnterRule(_localctx, 12, RULE_identifier);
+		EnterRule(_localctx, 16, RULE_identifier);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 84;
+			State = 116;
 			Match(IDENTIFIER);
 			}
 		}
@@ -857,16 +1122,16 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public StatementContext statement() {
 		StatementContext _localctx = new StatementContext(Context, State);
-		EnterRule(_localctx, 14, RULE_statement);
+		EnterRule(_localctx, 18, RULE_statement);
 		try {
-			State = 98;
+			State = 130;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,9,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,12,Context) ) {
 			case 1:
 				_localctx = new ReturnUnitStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 86;
+				State = 118;
 				Match(RETURN);
 				}
 				break;
@@ -874,9 +1139,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ReturnValueStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 87;
+				State = 119;
 				Match(RETURN);
-				State = 88;
+				State = 120;
 				expr(0);
 				}
 				break;
@@ -884,7 +1149,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ContinueUnitStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 89;
+				State = 121;
 				Match(CONTINUE);
 				}
 				break;
@@ -892,9 +1157,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ContinueValueStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 90;
+				State = 122;
 				Match(CONTINUE);
-				State = 91;
+				State = 123;
 				expr(0);
 				}
 				break;
@@ -902,7 +1167,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new BreakUnitStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 92;
+				State = 124;
 				Match(BREAK);
 				}
 				break;
@@ -910,9 +1175,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new BreakValueStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 6);
 				{
-				State = 93;
+				State = 125;
 				Match(BREAK);
-				State = 94;
+				State = 126;
 				expr(0);
 				}
 				break;
@@ -920,9 +1185,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new LetBindStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 7);
 				{
-				State = 95;
+				State = 127;
 				Match(LET);
-				State = 96;
+				State = 128;
 				varBind();
 				}
 				break;
@@ -930,7 +1195,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ExprStatementContext(_localctx);
 				EnterOuterAlt(_localctx, 8);
 				{
-				State = 97;
+				State = 129;
 				expr(0);
 				}
 				break;
@@ -1205,41 +1470,41 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		int _parentState = State;
 		ExprContext _localctx = new ExprContext(Context, _parentState);
 		ExprContext _prevctx = _localctx;
-		int _startState = 16;
-		EnterRecursionRule(_localctx, 16, RULE_expr, _p);
+		int _startState = 20;
+		EnterRecursionRule(_localctx, 20, RULE_expr, _p);
 		int _la;
 		try {
 			int _alt;
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 159;
+			State = 191;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,13,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,16,Context) ) {
 			case 1:
 				{
 				_localctx = new UnitBlockExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 
-				State = 101;
+				State = 133;
 				Match(OPEN_BRACE);
-				State = 107;
+				State = 139;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BREAK) | (1L << CONTINUE) | (1L << LET) | (1L << RETURN) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PAREN))) != 0)) {
+				while (((((_la - 9)) & ~0x3f) == 0 && ((1L << (_la - 9)) & ((1L << (BREAK - 9)) | (1L << (CONTINUE - 9)) | (1L << (LET - 9)) | (1L << (RETURN - 9)) | (1L << (IDENTIFIER - 9)) | (1L << (INTEGER_LITERAL - 9)) | (1L << (HEX_INTEGER_LITERAL - 9)) | (1L << (BIN_INTEGER_LITERAL - 9)) | (1L << (REAL_LITERAL - 9)) | (1L << (CHARACTER_LITERAL - 9)) | (1L << (REGULAR_STRING - 9)) | (1L << (VERBATIUM_STRING - 9)) | (1L << (OPEN_BRACE - 9)) | (1L << (OPEN_PAREN - 9)))) != 0)) {
 					{
 					{
-					State = 102;
+					State = 134;
 					statement();
-					State = 103;
+					State = 135;
 					Match(SEMICOLON);
 					}
 					}
-					State = 109;
+					State = 141;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
 				}
-				State = 110;
+				State = 142;
 				Match(CLOSE_BRACE);
 				}
 				break;
@@ -1248,29 +1513,29 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ValueBlockExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 111;
+				State = 143;
 				Match(OPEN_BRACE);
-				State = 117;
+				State = 149;
 				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,11,Context);
+				_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
 				while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
 					if ( _alt==1 ) {
 						{
 						{
-						State = 112;
+						State = 144;
 						statement();
-						State = 113;
+						State = 145;
 						Match(SEMICOLON);
 						}
 						} 
 					}
-					State = 119;
+					State = 151;
 					ErrorHandler.Sync(this);
-					_alt = Interpreter.AdaptivePredict(TokenStream,11,Context);
+					_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
 				}
-				State = 120;
+				State = 152;
 				expr(0);
-				State = 121;
+				State = 153;
 				Match(CLOSE_BRACE);
 				}
 				break;
@@ -1279,11 +1544,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new ParenExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 123;
+				State = 155;
 				Match(OPEN_PAREN);
-				State = 124;
+				State = 156;
 				expr(0);
-				State = 125;
+				State = 157;
 				Match(CLOSE_PAREN);
 				}
 				break;
@@ -1292,7 +1557,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new LiteralExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 127;
+				State = 159;
 				literal();
 				}
 				break;
@@ -1301,7 +1566,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new EvalVarExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 128;
+				State = 160;
 				identifier();
 				}
 				break;
@@ -1310,11 +1575,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new EvalUnitFuncExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 129;
+				State = 161;
 				identifier();
-				State = 130;
+				State = 162;
 				Match(OPEN_PAREN);
-				State = 131;
+				State = 163;
 				Match(CLOSE_PAREN);
 				}
 				break;
@@ -1323,13 +1588,13 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new EvalSingleFuncExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 133;
+				State = 165;
 				identifier();
-				State = 134;
+				State = 166;
 				Match(OPEN_PAREN);
-				State = 135;
+				State = 167;
 				expr(0);
-				State = 136;
+				State = 168;
 				Match(CLOSE_PAREN);
 				}
 				break;
@@ -1338,29 +1603,29 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new EvalTupleFuncExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 138;
+				State = 170;
 				identifier();
-				State = 139;
+				State = 171;
 				Match(OPEN_PAREN);
-				State = 140;
+				State = 172;
 				expr(0);
-				State = 145;
+				State = 177;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 				while (_la==COMMA) {
 					{
 					{
-					State = 141;
+					State = 173;
 					Match(COMMA);
-					State = 142;
+					State = 174;
 					expr(0);
 					}
 					}
-					State = 147;
+					State = 179;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
 				}
-				State = 148;
+				State = 180;
 				Match(CLOSE_PAREN);
 				}
 				break;
@@ -1369,11 +1634,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new FuncExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 150;
+				State = 182;
 				varDecl(false);
-				State = 151;
+				State = 183;
 				Match(OP_PTR);
-				State = 152;
+				State = 184;
 				expr(2);
 				}
 				break;
@@ -1382,21 +1647,21 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new LetInBindExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 154;
+				State = 186;
 				Match(LET);
-				State = 155;
+				State = 187;
 				varBind();
-				State = 156;
+				State = 188;
 				Match(IN);
-				State = 157;
+				State = 189;
 				expr(1);
 				}
 				break;
 			}
 			Context.Stop = TokenStream.LT(-1);
-			State = 166;
+			State = 198;
 			ErrorHandler.Sync(this);
-			_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
+			_alt = Interpreter.AdaptivePredict(TokenStream,17,Context);
 			while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( ParseListeners!=null )
@@ -1406,18 +1671,18 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					{
 					_localctx = new AccessExprContext(new ExprContext(_parentctx, _parentState));
 					PushNewRecursionContext(_localctx, _startState, RULE_expr);
-					State = 161;
+					State = 193;
 					if (!(Precpred(Context, 3))) throw new FailedPredicateException(this, "Precpred(Context, 3)");
-					State = 162;
+					State = 194;
 					Match(DOT);
-					State = 163;
+					State = 195;
 					expr(4);
 					}
 					} 
 				}
-				State = 168;
+				State = 200;
 				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
+				_alt = Interpreter.AdaptivePredict(TokenStream,17,Context);
 			}
 			}
 		}
@@ -1548,16 +1813,16 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public LiteralContext literal() {
 		LiteralContext _localctx = new LiteralContext(Context, State);
-		EnterRule(_localctx, 18, RULE_literal);
+		EnterRule(_localctx, 22, RULE_literal);
 		try {
-			State = 176;
+			State = 208;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case INTEGER_LITERAL:
 				_localctx = new IntegerLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 169;
+				State = 201;
 				Match(INTEGER_LITERAL);
 				}
 				break;
@@ -1565,7 +1830,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new HexIntegerLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 170;
+				State = 202;
 				Match(HEX_INTEGER_LITERAL);
 				}
 				break;
@@ -1573,7 +1838,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new BinIntegerLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 171;
+				State = 203;
 				Match(BIN_INTEGER_LITERAL);
 				}
 				break;
@@ -1581,7 +1846,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new RealLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 172;
+				State = 204;
 				Match(REAL_LITERAL);
 				}
 				break;
@@ -1589,7 +1854,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new CharacterLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 173;
+				State = 205;
 				Match(CHARACTER_LITERAL);
 				}
 				break;
@@ -1597,7 +1862,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new RegularStringContext(_localctx);
 				EnterOuterAlt(_localctx, 6);
 				{
-				State = 174;
+				State = 206;
 				Match(REGULAR_STRING);
 				}
 				break;
@@ -1605,7 +1870,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new VervatiumStringContext(_localctx);
 				EnterOuterAlt(_localctx, 7);
 				{
-				State = 175;
+				State = 207;
 				Match(VERBATIUM_STRING);
 				}
 				break;
@@ -1626,7 +1891,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 
 	public override bool Sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
-		case 8: return expr_sempred((ExprContext)_localctx, predIndex);
+		case 10: return expr_sempred((ExprContext)_localctx, predIndex);
 		}
 		return true;
 	}
@@ -1639,159 +1904,187 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 
 	private static char[] _serializedATN = {
 		'\x3', '\x608B', '\xA72A', '\x8133', '\xB9ED', '\x417C', '\x3BE7', '\x7786', 
-		'\x5964', '\x3', 'n', '\xB5', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
+		'\x5964', '\x3', 's', '\xD5', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
 		'\t', '\x3', '\x4', '\x4', '\t', '\x4', '\x4', '\x5', '\t', '\x5', '\x4', 
 		'\x6', '\t', '\x6', '\x4', '\a', '\t', '\a', '\x4', '\b', '\t', '\b', 
 		'\x4', '\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', 
-		'\x3', '\x2', '\x3', '\x2', '\x3', '\x2', '\x3', '\x2', '\x3', '\x2', 
-		'\x3', '\x2', '\x3', '\x2', '\x3', '\x2', '\x3', '\x2', '\x5', '\x2', 
-		' ', '\n', '\x2', '\x3', '\x3', '\x6', '\x3', '#', '\n', '\x3', '\r', 
-		'\x3', '\xE', '\x3', '$', '\x3', '\x4', '\x3', '\x4', '\x3', '\x4', '\x3', 
-		'\x4', '\x3', '\x4', '\x3', '\x4', '\x5', '\x4', '-', '\n', '\x4', '\x3', 
-		'\x5', '\x3', '\x5', '\x3', '\x5', '\x3', '\x5', '\x3', '\x6', '\x3', 
-		'\x6', '\x3', '\x6', '\x3', '\x6', '\x3', '\x6', '\x5', '\x6', '\x38', 
-		'\n', '\x6', '\x3', '\x6', '\x3', '\x6', '\x3', '\x6', '\x3', '\x6', '\x5', 
-		'\x6', '>', '\n', '\x6', '\x3', '\x6', '\x3', '\x6', '\x3', '\x6', '\x3', 
-		'\x6', '\x5', '\x6', '\x44', '\n', '\x6', '\a', '\x6', '\x46', '\n', '\x6', 
-		'\f', '\x6', '\xE', '\x6', 'I', '\v', '\x6', '\x3', '\x6', '\x3', '\x6', 
-		'\x5', '\x6', 'M', '\n', '\x6', '\x3', '\a', '\x3', '\a', '\x3', '\a', 
-		'\a', '\a', 'R', '\n', '\a', '\f', '\a', '\xE', '\a', 'U', '\v', '\a', 
-		'\x3', '\b', '\x3', '\b', '\x3', '\t', '\x3', '\t', '\x3', '\t', '\x3', 
-		'\t', '\x3', '\t', '\x3', '\t', '\x3', '\t', '\x3', '\t', '\x3', '\t', 
-		'\x3', '\t', '\x3', '\t', '\x3', '\t', '\x5', '\t', '\x65', '\n', '\t', 
-		'\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\a', 
-		'\n', 'l', '\n', '\n', '\f', '\n', '\xE', '\n', 'o', '\v', '\n', '\x3', 
-		'\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\a', '\n', 
-		'v', '\n', '\n', '\f', '\n', '\xE', '\n', 'y', '\v', '\n', '\x3', '\n', 
-		'\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', 
-		'\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', 
-		'\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', 
-		'\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', 
-		'\a', '\n', '\x92', '\n', '\n', '\f', '\n', '\xE', '\n', '\x95', '\v', 
-		'\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', 
-		'\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', '\n', '\x3', 
-		'\n', '\x5', '\n', '\xA2', '\n', '\n', '\x3', '\n', '\x3', '\n', '\x3', 
-		'\n', '\a', '\n', '\xA7', '\n', '\n', '\f', '\n', '\xE', '\n', '\xAA', 
-		'\v', '\n', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
-		'\v', '\x3', '\v', '\x3', '\v', '\x5', '\v', '\xB3', '\n', '\v', '\x3', 
-		'\v', '\x2', '\x3', '\x12', '\f', '\x2', '\x4', '\x6', '\b', '\n', '\f', 
-		'\xE', '\x10', '\x12', '\x14', '\x2', '\x2', '\x2', '\xCE', '\x2', '\x1F', 
-		'\x3', '\x2', '\x2', '\x2', '\x4', '\"', '\x3', '\x2', '\x2', '\x2', '\x6', 
-		',', '\x3', '\x2', '\x2', '\x2', '\b', '.', '\x3', '\x2', '\x2', '\x2', 
-		'\n', 'L', '\x3', '\x2', '\x2', '\x2', '\f', 'N', '\x3', '\x2', '\x2', 
-		'\x2', '\xE', 'V', '\x3', '\x2', '\x2', '\x2', '\x10', '\x64', '\x3', 
-		'\x2', '\x2', '\x2', '\x12', '\xA1', '\x3', '\x2', '\x2', '\x2', '\x14', 
-		'\xB2', '\x3', '\x2', '\x2', '\x2', '\x16', '\x17', '\a', ';', '\x2', 
-		'\x2', '\x17', '\x18', '\x5', '\x4', '\x3', '\x2', '\x18', '\x19', '\a', 
-		'<', '\x2', '\x2', '\x19', '\x1A', '\a', '\x44', '\x2', '\x2', '\x1A', 
-		'\x1B', '\a', '\x2', '\x2', '\x3', '\x1B', ' ', '\x3', '\x2', '\x2', '\x2', 
-		'\x1C', '\x1D', '\x5', '\x4', '\x3', '\x2', '\x1D', '\x1E', '\a', '\x2', 
-		'\x2', '\x3', '\x1E', ' ', '\x3', '\x2', '\x2', '\x2', '\x1F', '\x16', 
-		'\x3', '\x2', '\x2', '\x2', '\x1F', '\x1C', '\x3', '\x2', '\x2', '\x2', 
-		' ', '\x3', '\x3', '\x2', '\x2', '\x2', '!', '#', '\x5', '\x6', '\x4', 
-		'\x2', '\"', '!', '\x3', '\x2', '\x2', '\x2', '#', '$', '\x3', '\x2', 
-		'\x2', '\x2', '$', '\"', '\x3', '\x2', '\x2', '\x2', '$', '%', '\x3', 
-		'\x2', '\x2', '\x2', '%', '\x5', '\x3', '\x2', '\x2', '\x2', '&', '\'', 
-		'\x5', '\b', '\x5', '\x2', '\'', '(', '\a', '\x44', '\x2', '\x2', '(', 
-		'-', '\x3', '\x2', '\x2', '\x2', ')', '*', '\x5', '\x12', '\n', '\x2', 
-		'*', '+', '\a', '\x44', '\x2', '\x2', '+', '-', '\x3', '\x2', '\x2', '\x2', 
-		',', '&', '\x3', '\x2', '\x2', '\x2', ',', ')', '\x3', '\x2', '\x2', '\x2', 
-		'-', '\a', '\x3', '\x2', '\x2', '\x2', '.', '/', '\x5', '\n', '\x6', '\x2', 
-		'/', '\x30', '\a', 'O', '\x2', '\x2', '\x30', '\x31', '\x5', '\x12', '\n', 
-		'\x2', '\x31', '\t', '\x3', '\x2', '\x2', '\x2', '\x32', '\x33', '\a', 
-		'?', '\x2', '\x2', '\x33', 'M', '\a', '@', '\x2', '\x2', '\x34', '\x37', 
-		'\x5', '\xE', '\b', '\x2', '\x35', '\x36', '\a', '\x43', '\x2', '\x2', 
-		'\x36', '\x38', '\x5', '\f', '\a', '\x2', '\x37', '\x35', '\x3', '\x2', 
-		'\x2', '\x2', '\x37', '\x38', '\x3', '\x2', '\x2', '\x2', '\x38', 'M', 
-		'\x3', '\x2', '\x2', '\x2', '\x39', ':', '\a', '?', '\x2', '\x2', ':', 
-		'=', '\x5', '\xE', '\b', '\x2', ';', '<', '\a', '\x43', '\x2', '\x2', 
-		'<', '>', '\x5', '\f', '\a', '\x2', '=', ';', '\x3', '\x2', '\x2', '\x2', 
-		'=', '>', '\x3', '\x2', '\x2', '\x2', '>', 'G', '\x3', '\x2', '\x2', '\x2', 
-		'?', '@', '\a', '\x42', '\x2', '\x2', '@', '\x43', '\x5', '\xE', '\b', 
-		'\x2', '\x41', '\x42', '\a', '\x43', '\x2', '\x2', '\x42', '\x44', '\x5', 
-		'\f', '\a', '\x2', '\x43', '\x41', '\x3', '\x2', '\x2', '\x2', '\x43', 
-		'\x44', '\x3', '\x2', '\x2', '\x2', '\x44', '\x46', '\x3', '\x2', '\x2', 
-		'\x2', '\x45', '?', '\x3', '\x2', '\x2', '\x2', '\x46', 'I', '\x3', '\x2', 
-		'\x2', '\x2', 'G', '\x45', '\x3', '\x2', '\x2', '\x2', 'G', 'H', '\x3', 
-		'\x2', '\x2', '\x2', 'H', 'J', '\x3', '\x2', '\x2', '\x2', 'I', 'G', '\x3', 
-		'\x2', '\x2', '\x2', 'J', 'K', '\a', '@', '\x2', '\x2', 'K', 'M', '\x3', 
-		'\x2', '\x2', '\x2', 'L', '\x32', '\x3', '\x2', '\x2', '\x2', 'L', '\x34', 
-		'\x3', '\x2', '\x2', '\x2', 'L', '\x39', '\x3', '\x2', '\x2', '\x2', 'M', 
-		'\v', '\x3', '\x2', '\x2', '\x2', 'N', 'S', '\x5', '\xE', '\b', '\x2', 
-		'O', 'P', '\a', '\x41', '\x2', '\x2', 'P', 'R', '\x5', '\xE', '\b', '\x2', 
-		'Q', 'O', '\x3', '\x2', '\x2', '\x2', 'R', 'U', '\x3', '\x2', '\x2', '\x2', 
-		'S', 'Q', '\x3', '\x2', '\x2', '\x2', 'S', 'T', '\x3', '\x2', '\x2', '\x2', 
-		'T', '\r', '\x3', '\x2', '\x2', '\x2', 'U', 'S', '\x3', '\x2', '\x2', 
-		'\x2', 'V', 'W', '\a', '\x32', '\x2', '\x2', 'W', '\xF', '\x3', '\x2', 
-		'\x2', '\x2', 'X', '\x65', '\a', '&', '\x2', '\x2', 'Y', 'Z', '\a', '&', 
-		'\x2', '\x2', 'Z', '\x65', '\x5', '\x12', '\n', '\x2', '[', '\x65', '\a', 
-		'\xF', '\x2', '\x2', '\\', ']', '\a', '\xF', '\x2', '\x2', ']', '\x65', 
-		'\x5', '\x12', '\n', '\x2', '^', '\x65', '\a', '\v', '\x2', '\x2', '_', 
-		'`', '\a', '\v', '\x2', '\x2', '`', '\x65', '\x5', '\x12', '\n', '\x2', 
-		'\x61', '\x62', '\a', '\x1A', '\x2', '\x2', '\x62', '\x65', '\x5', '\b', 
-		'\x5', '\x2', '\x63', '\x65', '\x5', '\x12', '\n', '\x2', '\x64', 'X', 
-		'\x3', '\x2', '\x2', '\x2', '\x64', 'Y', '\x3', '\x2', '\x2', '\x2', '\x64', 
-		'[', '\x3', '\x2', '\x2', '\x2', '\x64', '\\', '\x3', '\x2', '\x2', '\x2', 
-		'\x64', '^', '\x3', '\x2', '\x2', '\x2', '\x64', '_', '\x3', '\x2', '\x2', 
-		'\x2', '\x64', '\x61', '\x3', '\x2', '\x2', '\x2', '\x64', '\x63', '\x3', 
-		'\x2', '\x2', '\x2', '\x65', '\x11', '\x3', '\x2', '\x2', '\x2', '\x66', 
-		'g', '\b', '\n', '\x1', '\x2', 'g', 'm', '\a', ';', '\x2', '\x2', 'h', 
-		'i', '\x5', '\x10', '\t', '\x2', 'i', 'j', '\a', '\x44', '\x2', '\x2', 
-		'j', 'l', '\x3', '\x2', '\x2', '\x2', 'k', 'h', '\x3', '\x2', '\x2', '\x2', 
-		'l', 'o', '\x3', '\x2', '\x2', '\x2', 'm', 'k', '\x3', '\x2', '\x2', '\x2', 
-		'm', 'n', '\x3', '\x2', '\x2', '\x2', 'n', 'p', '\x3', '\x2', '\x2', '\x2', 
-		'o', 'm', '\x3', '\x2', '\x2', '\x2', 'p', '\xA2', '\a', '<', '\x2', '\x2', 
-		'q', 'w', '\a', ';', '\x2', '\x2', 'r', 's', '\x5', '\x10', '\t', '\x2', 
-		's', 't', '\a', '\x44', '\x2', '\x2', 't', 'v', '\x3', '\x2', '\x2', '\x2', 
-		'u', 'r', '\x3', '\x2', '\x2', '\x2', 'v', 'y', '\x3', '\x2', '\x2', '\x2', 
-		'w', 'u', '\x3', '\x2', '\x2', '\x2', 'w', 'x', '\x3', '\x2', '\x2', '\x2', 
-		'x', 'z', '\x3', '\x2', '\x2', '\x2', 'y', 'w', '\x3', '\x2', '\x2', '\x2', 
-		'z', '{', '\x5', '\x12', '\n', '\x2', '{', '|', '\a', '<', '\x2', '\x2', 
-		'|', '\xA2', '\x3', '\x2', '\x2', '\x2', '}', '~', '\a', '?', '\x2', '\x2', 
-		'~', '\x7F', '\x5', '\x12', '\n', '\x2', '\x7F', '\x80', '\a', '@', '\x2', 
-		'\x2', '\x80', '\xA2', '\x3', '\x2', '\x2', '\x2', '\x81', '\xA2', '\x5', 
-		'\x14', '\v', '\x2', '\x82', '\xA2', '\x5', '\xE', '\b', '\x2', '\x83', 
-		'\x84', '\x5', '\xE', '\b', '\x2', '\x84', '\x85', '\a', '?', '\x2', '\x2', 
-		'\x85', '\x86', '\a', '@', '\x2', '\x2', '\x86', '\xA2', '\x3', '\x2', 
-		'\x2', '\x2', '\x87', '\x88', '\x5', '\xE', '\b', '\x2', '\x88', '\x89', 
-		'\a', '?', '\x2', '\x2', '\x89', '\x8A', '\x5', '\x12', '\n', '\x2', '\x8A', 
-		'\x8B', '\a', '@', '\x2', '\x2', '\x8B', '\xA2', '\x3', '\x2', '\x2', 
-		'\x2', '\x8C', '\x8D', '\x5', '\xE', '\b', '\x2', '\x8D', '\x8E', '\a', 
-		'?', '\x2', '\x2', '\x8E', '\x93', '\x5', '\x12', '\n', '\x2', '\x8F', 
-		'\x90', '\a', '\x42', '\x2', '\x2', '\x90', '\x92', '\x5', '\x12', '\n', 
-		'\x2', '\x91', '\x8F', '\x3', '\x2', '\x2', '\x2', '\x92', '\x95', '\x3', 
-		'\x2', '\x2', '\x2', '\x93', '\x91', '\x3', '\x2', '\x2', '\x2', '\x93', 
-		'\x94', '\x3', '\x2', '\x2', '\x2', '\x94', '\x96', '\x3', '\x2', '\x2', 
-		'\x2', '\x95', '\x93', '\x3', '\x2', '\x2', '\x2', '\x96', '\x97', '\a', 
-		'@', '\x2', '\x2', '\x97', '\xA2', '\x3', '\x2', '\x2', '\x2', '\x98', 
-		'\x99', '\x5', '\n', '\x6', '\x2', '\x99', '\x9A', '\a', 'X', '\x2', '\x2', 
-		'\x9A', '\x9B', '\x5', '\x12', '\n', '\x4', '\x9B', '\xA2', '\x3', '\x2', 
-		'\x2', '\x2', '\x9C', '\x9D', '\a', '\x1A', '\x2', '\x2', '\x9D', '\x9E', 
-		'\x5', '\b', '\x5', '\x2', '\x9E', '\x9F', '\a', '\x18', '\x2', '\x2', 
-		'\x9F', '\xA0', '\x5', '\x12', '\n', '\x3', '\xA0', '\xA2', '\x3', '\x2', 
-		'\x2', '\x2', '\xA1', '\x66', '\x3', '\x2', '\x2', '\x2', '\xA1', 'q', 
-		'\x3', '\x2', '\x2', '\x2', '\xA1', '}', '\x3', '\x2', '\x2', '\x2', '\xA1', 
-		'\x81', '\x3', '\x2', '\x2', '\x2', '\xA1', '\x82', '\x3', '\x2', '\x2', 
-		'\x2', '\xA1', '\x83', '\x3', '\x2', '\x2', '\x2', '\xA1', '\x87', '\x3', 
-		'\x2', '\x2', '\x2', '\xA1', '\x8C', '\x3', '\x2', '\x2', '\x2', '\xA1', 
-		'\x98', '\x3', '\x2', '\x2', '\x2', '\xA1', '\x9C', '\x3', '\x2', '\x2', 
-		'\x2', '\xA2', '\xA8', '\x3', '\x2', '\x2', '\x2', '\xA3', '\xA4', '\f', 
-		'\x5', '\x2', '\x2', '\xA4', '\xA5', '\a', '\x41', '\x2', '\x2', '\xA5', 
-		'\xA7', '\x5', '\x12', '\n', '\x6', '\xA6', '\xA3', '\x3', '\x2', '\x2', 
-		'\x2', '\xA7', '\xAA', '\x3', '\x2', '\x2', '\x2', '\xA8', '\xA6', '\x3', 
-		'\x2', '\x2', '\x2', '\xA8', '\xA9', '\x3', '\x2', '\x2', '\x2', '\xA9', 
-		'\x13', '\x3', '\x2', '\x2', '\x2', '\xAA', '\xA8', '\x3', '\x2', '\x2', 
-		'\x2', '\xAB', '\xB3', '\a', '\x34', '\x2', '\x2', '\xAC', '\xB3', '\a', 
-		'\x35', '\x2', '\x2', '\xAD', '\xB3', '\a', '\x36', '\x2', '\x2', '\xAE', 
-		'\xB3', '\a', '\x37', '\x2', '\x2', '\xAF', '\xB3', '\a', '\x38', '\x2', 
-		'\x2', '\xB0', '\xB3', '\a', '\x39', '\x2', '\x2', '\xB1', '\xB3', '\a', 
-		':', '\x2', '\x2', '\xB2', '\xAB', '\x3', '\x2', '\x2', '\x2', '\xB2', 
-		'\xAC', '\x3', '\x2', '\x2', '\x2', '\xB2', '\xAD', '\x3', '\x2', '\x2', 
-		'\x2', '\xB2', '\xAE', '\x3', '\x2', '\x2', '\x2', '\xB2', '\xAF', '\x3', 
-		'\x2', '\x2', '\x2', '\xB2', '\xB0', '\x3', '\x2', '\x2', '\x2', '\xB2', 
-		'\xB1', '\x3', '\x2', '\x2', '\x2', '\xB3', '\x15', '\x3', '\x2', '\x2', 
-		'\x2', '\x12', '\x1F', '$', ',', '\x37', '=', '\x43', 'G', 'L', 'S', '\x64', 
-		'm', 'w', '\x93', '\xA1', '\xA8', '\xB2',
+		'\x4', '\f', '\t', '\f', '\x4', '\r', '\t', '\r', '\x3', '\x2', '\x3', 
+		'\x2', '\x3', '\x2', '\x3', '\x2', '\x3', '\x2', '\x3', '\x2', '\x3', 
+		'\x2', '\x3', '\x2', '\x3', '\x2', '\x5', '\x2', '$', '\n', '\x2', '\x3', 
+		'\x3', '\x6', '\x3', '\'', '\n', '\x3', '\r', '\x3', '\xE', '\x3', '(', 
+		'\x3', '\x4', '\a', '\x4', ',', '\n', '\x4', '\f', '\x4', '\xE', '\x4', 
+		'/', '\v', '\x4', '\x3', '\x4', '\x3', '\x4', '\x3', '\x4', '\x3', '\x4', 
+		'\a', '\x4', '\x35', '\n', '\x4', '\f', '\x4', '\xE', '\x4', '\x38', '\v', 
+		'\x4', '\x3', '\x4', '\x3', '\x4', '\x3', '\x4', '\x5', '\x4', '=', '\n', 
+		'\x4', '\x3', '\x5', '\x3', '\x5', '\x3', '\x5', '\x3', '\x5', '\x3', 
+		'\x5', '\x3', '\x5', '\x3', '\x5', '\x3', '\x5', '\x3', '\x5', '\x5', 
+		'\x5', 'H', '\n', '\x5', '\x3', '\x6', '\x3', '\x6', '\x3', '\x6', '\x3', 
+		'\x6', '\x3', '\x6', '\x3', '\a', '\x3', '\a', '\x3', '\a', '\x3', '\a', 
+		'\x3', '\b', '\x3', '\b', '\x3', '\b', '\x3', '\b', '\x3', '\b', '\x5', 
+		'\b', 'X', '\n', '\b', '\x3', '\b', '\x3', '\b', '\x3', '\b', '\x3', '\b', 
+		'\x5', '\b', '^', '\n', '\b', '\x3', '\b', '\x3', '\b', '\x3', '\b', '\x3', 
+		'\b', '\x5', '\b', '\x64', '\n', '\b', '\a', '\b', '\x66', '\n', '\b', 
+		'\f', '\b', '\xE', '\b', 'i', '\v', '\b', '\x3', '\b', '\x3', '\b', '\x5', 
+		'\b', 'm', '\n', '\b', '\x3', '\t', '\x3', '\t', '\x3', '\t', '\a', '\t', 
+		'r', '\n', '\t', '\f', '\t', '\xE', '\t', 'u', '\v', '\t', '\x3', '\n', 
+		'\x3', '\n', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x5', '\v', '\x85', '\n', '\v', '\x3', '\f', 
+		'\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\a', '\f', '\x8C', 
+		'\n', '\f', '\f', '\f', '\xE', '\f', '\x8F', '\v', '\f', '\x3', '\f', 
+		'\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\a', '\f', '\x96', 
+		'\n', '\f', '\f', '\f', '\xE', '\f', '\x99', '\v', '\f', '\x3', '\f', 
+		'\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', 
+		'\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', 
+		'\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', 
+		'\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', 
+		'\a', '\f', '\xB2', '\n', '\f', '\f', '\f', '\xE', '\f', '\xB5', '\v', 
+		'\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', 
+		'\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', 
+		'\f', '\x5', '\f', '\xC2', '\n', '\f', '\x3', '\f', '\x3', '\f', '\x3', 
+		'\f', '\a', '\f', '\xC7', '\n', '\f', '\f', '\f', '\xE', '\f', '\xCA', 
+		'\v', '\f', '\x3', '\r', '\x3', '\r', '\x3', '\r', '\x3', '\r', '\x3', 
+		'\r', '\x3', '\r', '\x3', '\r', '\x5', '\r', '\xD3', '\n', '\r', '\x3', 
+		'\r', '\x2', '\x3', '\x16', '\xE', '\x2', '\x4', '\x6', '\b', '\n', '\f', 
+		'\xE', '\x10', '\x12', '\x14', '\x16', '\x18', '\x2', '\x2', '\x2', '\xF2', 
+		'\x2', '#', '\x3', '\x2', '\x2', '\x2', '\x4', '&', '\x3', '\x2', '\x2', 
+		'\x2', '\x6', '<', '\x3', '\x2', '\x2', '\x2', '\b', 'G', '\x3', '\x2', 
+		'\x2', '\x2', '\n', 'I', '\x3', '\x2', '\x2', '\x2', '\f', 'N', '\x3', 
+		'\x2', '\x2', '\x2', '\xE', 'l', '\x3', '\x2', '\x2', '\x2', '\x10', 'n', 
+		'\x3', '\x2', '\x2', '\x2', '\x12', 'v', '\x3', '\x2', '\x2', '\x2', '\x14', 
+		'\x84', '\x3', '\x2', '\x2', '\x2', '\x16', '\xC1', '\x3', '\x2', '\x2', 
+		'\x2', '\x18', '\xD2', '\x3', '\x2', '\x2', '\x2', '\x1A', '\x1B', '\a', 
+		'?', '\x2', '\x2', '\x1B', '\x1C', '\x5', '\x4', '\x3', '\x2', '\x1C', 
+		'\x1D', '\a', '@', '\x2', '\x2', '\x1D', '\x1E', '\a', 'H', '\x2', '\x2', 
+		'\x1E', '\x1F', '\a', '\x2', '\x2', '\x3', '\x1F', '$', '\x3', '\x2', 
+		'\x2', '\x2', ' ', '!', '\x5', '\x4', '\x3', '\x2', '!', '\"', '\a', '\x2', 
+		'\x2', '\x3', '\"', '$', '\x3', '\x2', '\x2', '\x2', '#', '\x1A', '\x3', 
+		'\x2', '\x2', '\x2', '#', ' ', '\x3', '\x2', '\x2', '\x2', '$', '\x3', 
+		'\x3', '\x2', '\x2', '\x2', '%', '\'', '\x5', '\x6', '\x4', '\x2', '&', 
+		'%', '\x3', '\x2', '\x2', '\x2', '\'', '(', '\x3', '\x2', '\x2', '\x2', 
+		'(', '&', '\x3', '\x2', '\x2', '\x2', '(', ')', '\x3', '\x2', '\x2', '\x2', 
+		')', '\x5', '\x3', '\x2', '\x2', '\x2', '*', ',', '\x5', '\b', '\x5', 
+		'\x2', '+', '*', '\x3', '\x2', '\x2', '\x2', ',', '/', '\x3', '\x2', '\x2', 
+		'\x2', '-', '+', '\x3', '\x2', '\x2', '\x2', '-', '.', '\x3', '\x2', '\x2', 
+		'\x2', '.', '\x30', '\x3', '\x2', '\x2', '\x2', '/', '-', '\x3', '\x2', 
+		'\x2', '\x2', '\x30', '\x31', '\x5', '\f', '\a', '\x2', '\x31', '\x32', 
+		'\a', 'H', '\x2', '\x2', '\x32', '=', '\x3', '\x2', '\x2', '\x2', '\x33', 
+		'\x35', '\x5', '\n', '\x6', '\x2', '\x34', '\x33', '\x3', '\x2', '\x2', 
+		'\x2', '\x35', '\x38', '\x3', '\x2', '\x2', '\x2', '\x36', '\x34', '\x3', 
+		'\x2', '\x2', '\x2', '\x36', '\x37', '\x3', '\x2', '\x2', '\x2', '\x37', 
+		'\x39', '\x3', '\x2', '\x2', '\x2', '\x38', '\x36', '\x3', '\x2', '\x2', 
+		'\x2', '\x39', ':', '\x5', '\x16', '\f', '\x2', ':', ';', '\a', 'H', '\x2', 
+		'\x2', ';', '=', '\x3', '\x2', '\x2', '\x2', '<', '-', '\x3', '\x2', '\x2', 
+		'\x2', '<', '\x36', '\x3', '\x2', '\x2', '\x2', '=', '\a', '\x3', '\x2', 
+		'\x2', '\x2', '>', '?', '\a', '\x31', '\x2', '\x2', '?', '@', '\a', '\x43', 
+		'\x2', '\x2', '@', '\x41', '\x5', '\x12', '\n', '\x2', '\x41', '\x42', 
+		'\a', '\x44', '\x2', '\x2', '\x42', 'H', '\x3', '\x2', '\x2', '\x2', '\x43', 
+		'H', '\a', '\x32', '\x2', '\x2', '\x44', 'H', '\a', '\x33', '\x2', '\x2', 
+		'\x45', 'H', '\a', '\x34', '\x2', '\x2', '\x46', 'H', '\a', '\x35', '\x2', 
+		'\x2', 'G', '>', '\x3', '\x2', '\x2', '\x2', 'G', '\x43', '\x3', '\x2', 
+		'\x2', '\x2', 'G', '\x44', '\x3', '\x2', '\x2', '\x2', 'G', '\x45', '\x3', 
+		'\x2', '\x2', '\x2', 'G', '\x46', '\x3', '\x2', '\x2', '\x2', 'H', '\t', 
+		'\x3', '\x2', '\x2', '\x2', 'I', 'J', '\a', '\x31', '\x2', '\x2', 'J', 
+		'K', '\a', '\x43', '\x2', '\x2', 'K', 'L', '\x5', '\x12', '\n', '\x2', 
+		'L', 'M', '\a', '\x44', '\x2', '\x2', 'M', '\v', '\x3', '\x2', '\x2', 
+		'\x2', 'N', 'O', '\x5', '\xE', '\b', '\x2', 'O', 'P', '\a', 'S', '\x2', 
+		'\x2', 'P', 'Q', '\x5', '\x16', '\f', '\x2', 'Q', '\r', '\x3', '\x2', 
+		'\x2', '\x2', 'R', 'S', '\a', '\x43', '\x2', '\x2', 'S', 'm', '\a', '\x44', 
+		'\x2', '\x2', 'T', 'W', '\x5', '\x12', '\n', '\x2', 'U', 'V', '\a', 'G', 
+		'\x2', '\x2', 'V', 'X', '\x5', '\x10', '\t', '\x2', 'W', 'U', '\x3', '\x2', 
+		'\x2', '\x2', 'W', 'X', '\x3', '\x2', '\x2', '\x2', 'X', 'm', '\x3', '\x2', 
+		'\x2', '\x2', 'Y', 'Z', '\a', '\x43', '\x2', '\x2', 'Z', ']', '\x5', '\x12', 
+		'\n', '\x2', '[', '\\', '\a', 'G', '\x2', '\x2', '\\', '^', '\x5', '\x10', 
+		'\t', '\x2', ']', '[', '\x3', '\x2', '\x2', '\x2', ']', '^', '\x3', '\x2', 
+		'\x2', '\x2', '^', 'g', '\x3', '\x2', '\x2', '\x2', '_', '`', '\a', '\x46', 
+		'\x2', '\x2', '`', '\x63', '\x5', '\x12', '\n', '\x2', '\x61', '\x62', 
+		'\a', 'G', '\x2', '\x2', '\x62', '\x64', '\x5', '\x10', '\t', '\x2', '\x63', 
+		'\x61', '\x3', '\x2', '\x2', '\x2', '\x63', '\x64', '\x3', '\x2', '\x2', 
+		'\x2', '\x64', '\x66', '\x3', '\x2', '\x2', '\x2', '\x65', '_', '\x3', 
+		'\x2', '\x2', '\x2', '\x66', 'i', '\x3', '\x2', '\x2', '\x2', 'g', '\x65', 
+		'\x3', '\x2', '\x2', '\x2', 'g', 'h', '\x3', '\x2', '\x2', '\x2', 'h', 
+		'j', '\x3', '\x2', '\x2', '\x2', 'i', 'g', '\x3', '\x2', '\x2', '\x2', 
+		'j', 'k', '\a', '\x44', '\x2', '\x2', 'k', 'm', '\x3', '\x2', '\x2', '\x2', 
+		'l', 'R', '\x3', '\x2', '\x2', '\x2', 'l', 'T', '\x3', '\x2', '\x2', '\x2', 
+		'l', 'Y', '\x3', '\x2', '\x2', '\x2', 'm', '\xF', '\x3', '\x2', '\x2', 
+		'\x2', 'n', 's', '\x5', '\x12', '\n', '\x2', 'o', 'p', '\a', '\x45', '\x2', 
+		'\x2', 'p', 'r', '\x5', '\x12', '\n', '\x2', 'q', 'o', '\x3', '\x2', '\x2', 
+		'\x2', 'r', 'u', '\x3', '\x2', '\x2', '\x2', 's', 'q', '\x3', '\x2', '\x2', 
+		'\x2', 's', 't', '\x3', '\x2', '\x2', '\x2', 't', '\x11', '\x3', '\x2', 
+		'\x2', '\x2', 'u', 's', '\x3', '\x2', '\x2', '\x2', 'v', 'w', '\a', '\x36', 
+		'\x2', '\x2', 'w', '\x13', '\x3', '\x2', '\x2', '\x2', 'x', '\x85', '\a', 
+		'&', '\x2', '\x2', 'y', 'z', '\a', '&', '\x2', '\x2', 'z', '\x85', '\x5', 
+		'\x16', '\f', '\x2', '{', '\x85', '\a', '\xF', '\x2', '\x2', '|', '}', 
+		'\a', '\xF', '\x2', '\x2', '}', '\x85', '\x5', '\x16', '\f', '\x2', '~', 
+		'\x85', '\a', '\v', '\x2', '\x2', '\x7F', '\x80', '\a', '\v', '\x2', '\x2', 
+		'\x80', '\x85', '\x5', '\x16', '\f', '\x2', '\x81', '\x82', '\a', '\x1A', 
+		'\x2', '\x2', '\x82', '\x85', '\x5', '\f', '\a', '\x2', '\x83', '\x85', 
+		'\x5', '\x16', '\f', '\x2', '\x84', 'x', '\x3', '\x2', '\x2', '\x2', '\x84', 
+		'y', '\x3', '\x2', '\x2', '\x2', '\x84', '{', '\x3', '\x2', '\x2', '\x2', 
+		'\x84', '|', '\x3', '\x2', '\x2', '\x2', '\x84', '~', '\x3', '\x2', '\x2', 
+		'\x2', '\x84', '\x7F', '\x3', '\x2', '\x2', '\x2', '\x84', '\x81', '\x3', 
+		'\x2', '\x2', '\x2', '\x84', '\x83', '\x3', '\x2', '\x2', '\x2', '\x85', 
+		'\x15', '\x3', '\x2', '\x2', '\x2', '\x86', '\x87', '\b', '\f', '\x1', 
+		'\x2', '\x87', '\x8D', '\a', '?', '\x2', '\x2', '\x88', '\x89', '\x5', 
+		'\x14', '\v', '\x2', '\x89', '\x8A', '\a', 'H', '\x2', '\x2', '\x8A', 
+		'\x8C', '\x3', '\x2', '\x2', '\x2', '\x8B', '\x88', '\x3', '\x2', '\x2', 
+		'\x2', '\x8C', '\x8F', '\x3', '\x2', '\x2', '\x2', '\x8D', '\x8B', '\x3', 
+		'\x2', '\x2', '\x2', '\x8D', '\x8E', '\x3', '\x2', '\x2', '\x2', '\x8E', 
+		'\x90', '\x3', '\x2', '\x2', '\x2', '\x8F', '\x8D', '\x3', '\x2', '\x2', 
+		'\x2', '\x90', '\xC2', '\a', '@', '\x2', '\x2', '\x91', '\x97', '\a', 
+		'?', '\x2', '\x2', '\x92', '\x93', '\x5', '\x14', '\v', '\x2', '\x93', 
+		'\x94', '\a', 'H', '\x2', '\x2', '\x94', '\x96', '\x3', '\x2', '\x2', 
+		'\x2', '\x95', '\x92', '\x3', '\x2', '\x2', '\x2', '\x96', '\x99', '\x3', 
+		'\x2', '\x2', '\x2', '\x97', '\x95', '\x3', '\x2', '\x2', '\x2', '\x97', 
+		'\x98', '\x3', '\x2', '\x2', '\x2', '\x98', '\x9A', '\x3', '\x2', '\x2', 
+		'\x2', '\x99', '\x97', '\x3', '\x2', '\x2', '\x2', '\x9A', '\x9B', '\x5', 
+		'\x16', '\f', '\x2', '\x9B', '\x9C', '\a', '@', '\x2', '\x2', '\x9C', 
+		'\xC2', '\x3', '\x2', '\x2', '\x2', '\x9D', '\x9E', '\a', '\x43', '\x2', 
+		'\x2', '\x9E', '\x9F', '\x5', '\x16', '\f', '\x2', '\x9F', '\xA0', '\a', 
+		'\x44', '\x2', '\x2', '\xA0', '\xC2', '\x3', '\x2', '\x2', '\x2', '\xA1', 
+		'\xC2', '\x5', '\x18', '\r', '\x2', '\xA2', '\xC2', '\x5', '\x12', '\n', 
+		'\x2', '\xA3', '\xA4', '\x5', '\x12', '\n', '\x2', '\xA4', '\xA5', '\a', 
+		'\x43', '\x2', '\x2', '\xA5', '\xA6', '\a', '\x44', '\x2', '\x2', '\xA6', 
+		'\xC2', '\x3', '\x2', '\x2', '\x2', '\xA7', '\xA8', '\x5', '\x12', '\n', 
+		'\x2', '\xA8', '\xA9', '\a', '\x43', '\x2', '\x2', '\xA9', '\xAA', '\x5', 
+		'\x16', '\f', '\x2', '\xAA', '\xAB', '\a', '\x44', '\x2', '\x2', '\xAB', 
+		'\xC2', '\x3', '\x2', '\x2', '\x2', '\xAC', '\xAD', '\x5', '\x12', '\n', 
+		'\x2', '\xAD', '\xAE', '\a', '\x43', '\x2', '\x2', '\xAE', '\xB3', '\x5', 
+		'\x16', '\f', '\x2', '\xAF', '\xB0', '\a', '\x46', '\x2', '\x2', '\xB0', 
+		'\xB2', '\x5', '\x16', '\f', '\x2', '\xB1', '\xAF', '\x3', '\x2', '\x2', 
+		'\x2', '\xB2', '\xB5', '\x3', '\x2', '\x2', '\x2', '\xB3', '\xB1', '\x3', 
+		'\x2', '\x2', '\x2', '\xB3', '\xB4', '\x3', '\x2', '\x2', '\x2', '\xB4', 
+		'\xB6', '\x3', '\x2', '\x2', '\x2', '\xB5', '\xB3', '\x3', '\x2', '\x2', 
+		'\x2', '\xB6', '\xB7', '\a', '\x44', '\x2', '\x2', '\xB7', '\xC2', '\x3', 
+		'\x2', '\x2', '\x2', '\xB8', '\xB9', '\x5', '\xE', '\b', '\x2', '\xB9', 
+		'\xBA', '\a', ']', '\x2', '\x2', '\xBA', '\xBB', '\x5', '\x16', '\f', 
+		'\x4', '\xBB', '\xC2', '\x3', '\x2', '\x2', '\x2', '\xBC', '\xBD', '\a', 
+		'\x1A', '\x2', '\x2', '\xBD', '\xBE', '\x5', '\f', '\a', '\x2', '\xBE', 
+		'\xBF', '\a', '\x18', '\x2', '\x2', '\xBF', '\xC0', '\x5', '\x16', '\f', 
+		'\x3', '\xC0', '\xC2', '\x3', '\x2', '\x2', '\x2', '\xC1', '\x86', '\x3', 
+		'\x2', '\x2', '\x2', '\xC1', '\x91', '\x3', '\x2', '\x2', '\x2', '\xC1', 
+		'\x9D', '\x3', '\x2', '\x2', '\x2', '\xC1', '\xA1', '\x3', '\x2', '\x2', 
+		'\x2', '\xC1', '\xA2', '\x3', '\x2', '\x2', '\x2', '\xC1', '\xA3', '\x3', 
+		'\x2', '\x2', '\x2', '\xC1', '\xA7', '\x3', '\x2', '\x2', '\x2', '\xC1', 
+		'\xAC', '\x3', '\x2', '\x2', '\x2', '\xC1', '\xB8', '\x3', '\x2', '\x2', 
+		'\x2', '\xC1', '\xBC', '\x3', '\x2', '\x2', '\x2', '\xC2', '\xC8', '\x3', 
+		'\x2', '\x2', '\x2', '\xC3', '\xC4', '\f', '\x5', '\x2', '\x2', '\xC4', 
+		'\xC5', '\a', '\x45', '\x2', '\x2', '\xC5', '\xC7', '\x5', '\x16', '\f', 
+		'\x6', '\xC6', '\xC3', '\x3', '\x2', '\x2', '\x2', '\xC7', '\xCA', '\x3', 
+		'\x2', '\x2', '\x2', '\xC8', '\xC6', '\x3', '\x2', '\x2', '\x2', '\xC8', 
+		'\xC9', '\x3', '\x2', '\x2', '\x2', '\xC9', '\x17', '\x3', '\x2', '\x2', 
+		'\x2', '\xCA', '\xC8', '\x3', '\x2', '\x2', '\x2', '\xCB', '\xD3', '\a', 
+		'\x38', '\x2', '\x2', '\xCC', '\xD3', '\a', '\x39', '\x2', '\x2', '\xCD', 
+		'\xD3', '\a', ':', '\x2', '\x2', '\xCE', '\xD3', '\a', ';', '\x2', '\x2', 
+		'\xCF', '\xD3', '\a', '<', '\x2', '\x2', '\xD0', '\xD3', '\a', '=', '\x2', 
+		'\x2', '\xD1', '\xD3', '\a', '>', '\x2', '\x2', '\xD2', '\xCB', '\x3', 
+		'\x2', '\x2', '\x2', '\xD2', '\xCC', '\x3', '\x2', '\x2', '\x2', '\xD2', 
+		'\xCD', '\x3', '\x2', '\x2', '\x2', '\xD2', '\xCE', '\x3', '\x2', '\x2', 
+		'\x2', '\xD2', '\xCF', '\x3', '\x2', '\x2', '\x2', '\xD2', '\xD0', '\x3', 
+		'\x2', '\x2', '\x2', '\xD2', '\xD1', '\x3', '\x2', '\x2', '\x2', '\xD3', 
+		'\x19', '\x3', '\x2', '\x2', '\x2', '\x15', '#', '(', '-', '\x36', '<', 
+		'G', 'W', ']', '\x63', 'g', 'l', 's', '\x84', '\x8D', '\x97', '\xB3', 
+		'\xC1', '\xC8', '\xD2',
 	};
 
 	public static readonly ATN _ATN =

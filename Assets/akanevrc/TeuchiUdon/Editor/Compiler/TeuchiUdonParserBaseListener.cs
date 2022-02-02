@@ -92,6 +92,90 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>InitVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterInitVarAttr([NotNull] TeuchiUdonParser.InitVarAttrContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>InitVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitInitVarAttr([NotNull] TeuchiUdonParser.InitVarAttrContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ExportVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ExportVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SyncVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSyncVarAttr([NotNull] TeuchiUdonParser.SyncVarAttrContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SyncVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSyncVarAttr([NotNull] TeuchiUdonParser.SyncVarAttrContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>LinearVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterLinearVarAttr([NotNull] TeuchiUdonParser.LinearVarAttrContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>LinearVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitLinearVarAttr([NotNull] TeuchiUdonParser.LinearVarAttrContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SmoothVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSmoothVarAttr([NotNull] TeuchiUdonParser.SmoothVarAttrContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SmoothVarAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSmoothVarAttr([NotNull] TeuchiUdonParser.SmoothVarAttrContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>InitExprAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.exprAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterInitExprAttr([NotNull] TeuchiUdonParser.InitExprAttrContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>InitExprAttr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.exprAttr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitInitExprAttr([NotNull] TeuchiUdonParser.InitExprAttrContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.varBind"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
