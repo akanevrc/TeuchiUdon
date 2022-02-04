@@ -1,3 +1,7 @@
+@export
+@sync
+message = "Hello!";
+
 _start = () -> {
     let hello = "Hello, world!"      in UnityEngine.Debug.Log(hello);
     let hello = "Hello, TeuchiUdon!" in UnityEngine.Debug.Log(hello);
@@ -6,4 +10,5 @@ _start = () -> {
     let f1 = x: string -> x;
     let f2 = () -> UnityEngine.Debug.Log(f1("function"));
     f2();
+    UnityEngine.Debug.Log(message);
 };

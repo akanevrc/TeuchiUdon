@@ -30,9 +30,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public void PushDataPart(params IEnumerable<TeuchiUdonAssembly>[] assembliess)
         {
-            foreach (var asms in assembliess)
+            if (assembliess.Length >= 1) DataPart.AddRange(assembliess[0]);
+            for (var i = 1; i < assembliess.Length; i++)
             {
-                DataPart.AddRange(asms);
+                DataPart.Add(new Assembly_NEW_LINE());
+                DataPart.AddRange(assembliess[i]);
             }
         }
 

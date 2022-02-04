@@ -29,9 +29,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public abstract class TeuchiUdonAssemblySyncMode
     {
+        public static TeuchiUdonAssemblySyncMode Create(TeuchiUdonSyncMode syncMode)
+        {
+            switch (syncMode)
+            {
+                case TeuchiUdonSyncMode.Disable:
+                    return null;
+                case TeuchiUdonSyncMode.Sync:
+                    return new AssemblySyncMode_NONE();
+                case TeuchiUdonSyncMode.Linear:
+                    return new AssemblySyncMode_LINEAR();
+                case TeuchiUdonSyncMode.Smooth:
+                    return new AssemblySyncMode_SMOOTH();
+                default:
+                    return null;
+            }
+        }
     }
 
-    public class AssemblySyncMode_NONE
+    public class AssemblySyncMode_NONE : TeuchiUdonAssemblySyncMode
     {
         public override string ToString()
         {
@@ -39,7 +55,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class AssemblySyncMode_LINEAR
+    public class AssemblySyncMode_LINEAR : TeuchiUdonAssemblySyncMode
     {
         public override string ToString()
         {
@@ -47,7 +63,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class AssemblySyncMode_SMOOTH
+    public class AssemblySyncMode_SMOOTH : TeuchiUdonAssemblySyncMode
     {
         public override string ToString()
         {

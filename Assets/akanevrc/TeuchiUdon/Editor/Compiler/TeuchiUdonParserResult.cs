@@ -30,6 +30,30 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TopStatements = topStatements.ToArray();
         }
 
+        public IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
+        {
+            var exports = TopStatements
+                .Select(x => x is TopBindResult topBind ? topBind : null)
+                .Where(x => x != null && x.Export);
+            var syncs = TopStatements
+                .Select(x => x is TopBindResult topBind ? topBind : null)
+                .Where(x => x != null && x.Sync != TeuchiUdonSyncMode.Disable);
+
+            return
+                exports.SelectMany(x =>
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_EXPORT_DATA(new TextLabel(x.VarBind.Vars[0].Name))
+                    }
+                )
+                .Concat(syncs.SelectMany(x =>
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_SYNC_DATA(new TextLabel(x.VarBind.Vars[0].Name), TeuchiUdonAssemblySyncMode.Create(x.Sync))
+                    }
+                ));
+        }
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             var topFuncs = TopStatements
@@ -96,9 +120,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public VarBindResult VarBind { get; }
         public string Init { get; }
         public bool Export { get; }
-        public SyncMode Sync { get; }
+        public TeuchiUdonSyncMode Sync { get; }
 
-        public TopBindResult(IToken token, VarBindResult varBind, string init, bool export, SyncMode sync)
+        public TopBindResult(IToken token, VarBindResult varBind, string init, bool export, TeuchiUdonSyncMode sync)
             : base(token)
         {
             VarBind = varBind;
@@ -166,9 +190,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class SyncVarAttrResult : VarAttrResult
     {
-        public SyncMode Mode { get; }
+        public TeuchiUdonSyncMode Mode { get; }
 
-        public SyncVarAttrResult(IToken token, SyncMode mode)
+        public SyncVarAttrResult(IToken token, TeuchiUdonSyncMode mode)
             : base(token)
         {
             Mode = mode;

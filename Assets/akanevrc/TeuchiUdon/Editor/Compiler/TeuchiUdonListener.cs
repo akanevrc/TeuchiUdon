@@ -19,7 +19,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitTarget([NotNull] TargetContext context)
         {
-            TeuchiUdonAssemblyWriter.Instance.PushDataPart(TeuchiUdonTables.Instance.GetAssemblyDataPart());
+            TeuchiUdonAssemblyWriter.Instance.PushDataPart(context.body().result.GetAssemblyDataPart(), TeuchiUdonTables.Instance.GetAssemblyDataPart());
             TeuchiUdonAssemblyWriter.Instance.PushCodePart(TeuchiUdonTables.Instance.GetAssemblyCodePart(), context.body().result.GetAssemblyCodePart());
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
@@ -32,11 +32,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitBody([NotNull] BodyContext context)
         {
-            // foreach (var (id, result) in vars.Select(x => (x.Key, x.Value)))
-            // {
-            //     Debug.Log($"{id} = {Eval(result.Expr)}");
-            // }
-
             var topStatements = context.topStatement().Select(x => x.result).ToArray();
             context.result    = new BodyResult(context.Start, topStatements);
         }
@@ -47,13 +42,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var attrs                = context.varAttr().Select(x => x.result);
             var (init, export, sync) = ExtractFromVarAttrs(attrs);
 
-            if (varBind.Vars.Length == 1 && varBind.Vars[0].Type.TypeNameEquals(TeuchiUdonType.Func))
+            if (varBind.Vars.Length != 1 && (init != null || export || sync != TeuchiUdonSyncMode.Disable))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"tuple cannot be specified with any attributes");
+            }
+            else if (varBind.Vars.Length == 1 && varBind.Vars[0].Type.TypeNameEquals(TeuchiUdonType.Func))
             {
                 if (init != null)
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @init");
                 }
-                if (sync != SyncMode.Disable)
+                if (sync != TeuchiUdonSyncMode.Disable)
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @sync, @linear, or @smooth");
                 }
@@ -69,11 +68,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new TopBindResult(context.Start, varBind, init, export, sync);
         }
 
-        private (string init, bool export, SyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
+        private (string init, bool export, TeuchiUdonSyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
         {
             var init   = (string)null;
             var export = false;
-            var sync   = SyncMode.Disable;
+            var sync   = TeuchiUdonSyncMode.Disable;
 
             foreach (var attr in attrs)
             {
@@ -101,7 +100,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else if (attr is SyncVarAttrResult syncAttr)
                 {
-                    if (sync == SyncMode.Disable)
+                    if (sync == TeuchiUdonSyncMode.Disable)
                     {
                         sync = syncAttr.Mode;
                     }
@@ -164,17 +163,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitSyncVarAttr([NotNull] SyncVarAttrContext context)
         {
-            context.result = new SyncVarAttrResult(context.Start, SyncMode.Sync);
+            context.result = new SyncVarAttrResult(context.Start, TeuchiUdonSyncMode.Sync);
         }
 
         public override void ExitLinearVarAttr([NotNull] LinearVarAttrContext context)
         {
-            context.result = new SyncVarAttrResult(context.Start, SyncMode.Linear);
+            context.result = new SyncVarAttrResult(context.Start, TeuchiUdonSyncMode.Linear);
         }
 
         public override void ExitSmoothVarAttr([NotNull] SmoothVarAttrContext context)
         {
-            context.result = new SyncVarAttrResult(context.Start, SyncMode.Smooth);
+            context.result = new SyncVarAttrResult(context.Start, TeuchiUdonSyncMode.Smooth);
         }
 
         public override void ExitInitExprAttr([NotNull] InitExprAttrContext context)

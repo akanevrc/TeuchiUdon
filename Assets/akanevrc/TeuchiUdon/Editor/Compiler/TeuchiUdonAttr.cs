@@ -1,7 +1,7 @@
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public enum SyncMode
+    public enum TeuchiUdonSyncMode
     {
         Disable,
         Sync,
