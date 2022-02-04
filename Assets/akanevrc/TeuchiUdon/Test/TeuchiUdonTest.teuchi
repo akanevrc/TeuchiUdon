@@ -10,5 +10,7 @@ _start = () -> {
     let f1 = x: string -> x;
     let f2 = () -> UnityEngine.Debug.Log(f1("function"));
     f2();
-    UnityEngine.Debug.Log(message);
+    let f3 = () -> UnityEngine.Debug.Log(message);
+    let f4 = f3;
+    f4();
 };

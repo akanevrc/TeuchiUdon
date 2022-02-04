@@ -438,8 +438,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var v    = TeuchiUdonTables.Instance.Vars[qv];
                         var type = v.Type;
                         evalVar  = new EvalVarResult(context.Start, type, v, identifier);
+                        break;
                     }
-                    break;
                 }
 
                 if (evalVar == null)
@@ -573,7 +573,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var eval = (TypedResult)null;
                 foreach (var qual in TeuchiUdonQualifierStack.Instance.Qualifiers)
                 {
-                    var qv   = new TeuchiUdonVar(qual, methodCandidate1.Identifier.Name);
+                    var qv = new TeuchiUdonVar(qual, methodCandidate1.Identifier.Name);
                     if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
                     {
                         var v         = TeuchiUdonTables.Instance.Vars[qv];
@@ -602,6 +602,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             }
                             eval = new BottomResult(methodCandidate1.Token);
                         }
+                        break;
                     }
                 }
 

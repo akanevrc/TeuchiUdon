@@ -56,12 +56,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetLabel()
         {
-            return $"var[{Name}]";
+            return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Name}]";
         }
 
         public string GetFullLabel()
         {
-            return $"var[{Qualifier.Qualify(">", Name)}]";
+            return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Qualifier.Qualify(">", Name)}]";
         }
     }
 }
