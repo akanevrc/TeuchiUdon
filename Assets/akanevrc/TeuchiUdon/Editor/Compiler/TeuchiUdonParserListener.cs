@@ -197,16 +197,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterQualified([NotNull] TeuchiUdonParser.QualifiedContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitQualified([NotNull] TeuchiUdonParser.QualifiedContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.identifier"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

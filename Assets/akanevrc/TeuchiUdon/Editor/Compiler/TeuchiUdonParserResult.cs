@@ -243,12 +243,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonVar[] Vars { get; }
         public TeuchiUdonType[] Types { get; }
         public IdentifierResult[] Identifiers { get; }
-        public QualifiedResult[] Qualifieds { get; }
+        public ExprResult[] Qualifieds { get; }
 
-        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<IdentifierResult> identifiers, IEnumerable<QualifiedResult> qualifieds)
+        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<IdentifierResult> identifiers, IEnumerable<ExprResult> qualifieds)
             : base(token)
         {
-            Types       = qualifieds .Select(x => x.Type).ToArray();
+            Types       = qualifieds .Select(x => x.Inner.Type.GetArgAsType()).ToArray();
             Vars        = identifiers.Zip(Types, (i, t) => (i, t)).Select(x => new TeuchiUdonVar(qualifier, x.i.Name, x.t)).ToArray();
             Identifiers = identifiers.ToArray();
             Qualifieds  = qualifieds .ToArray();
@@ -264,19 +264,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     TeuchiUdonTables.Instance.Vars.Add(v, v);
                 }
             }
-        }
-    }
-
-    public class QualifiedResult : TeuchiUdonParserResult
-    {
-        public IdentifierResult[] Identifiers { get; }
-        public TeuchiUdonType Type { get; }
-
-        public QualifiedResult(IToken token, IEnumerable<IdentifierResult> identifiers, TeuchiUdonType type)
-            : base(token)
-        {
-            Identifiers = identifiers.ToArray();
-            Type        = type;
         }
     }
 
@@ -382,6 +369,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"bottom detected");
             return new TeuchiUdonAssembly[0];
+        }
+    }
+
+    public class UnknownTypeResult : TypedResult
+    {
+        public UnknownTypeResult(IToken token)
+            : base(token, TeuchiUdonType.Type.ApplyArgAsType(TeuchiUdonType.Unknown))
+        {
         }
     }
 

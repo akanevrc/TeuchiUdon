@@ -230,18 +230,6 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTupleVarDecl([NotNull] TeuchiUdonParser.TupleVarDeclContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterQualified([NotNull] TeuchiUdonParser.QualifiedContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.qualified"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitQualified([NotNull] TeuchiUdonParser.QualifiedContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.identifier"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

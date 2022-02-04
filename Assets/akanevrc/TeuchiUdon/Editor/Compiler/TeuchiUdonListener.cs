@@ -242,28 +242,41 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
         {
             var identifiers = new IdentifierResult[0];
-            var qualifieds  = new QualifiedResult [0];
+            var qualifieds  = new ExprResult[0];
             context.result  = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
         }
 
         public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
         {
             var identifiers = new IdentifierResult[] { context.identifier().result };
-            var qualifieds  = new QualifiedResult []
+            var expr        = context.expr()?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start));
+
+            if (!expr.Inner.Type.TypeNameEquals(TeuchiUdonType.Type))
             {
-                context.qualified()?.result ?? new QualifiedResult(context.Start, new IdentifierResult[0], TeuchiUdonType.Unknown)
-            };
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"qualified type {expr.Inner.Type} is not a type");
+            }
+
+            var qualifieds = new ExprResult[] { expr };
             context.result = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
         }
 
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
             var identifiers = context.identifier().Select(x => x .result);
-            var qualifieds  = context.qualified ().Select(x => x?.result ?? new QualifiedResult(context.Start, new IdentifierResult[0], TeuchiUdonType.Unknown));
+            var qualifieds  = context.expr().Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)));
+
+            foreach (var q in qualifieds)
+            {
+                if (!q.Inner.Type.TypeNameEquals(TeuchiUdonType.Type))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"qualified type {q.Inner.Type} is not a type");
+                }
+            }
+
             context.result = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
         }
 
-        private VarDeclResult ExitVarDecl(IToken token, IEnumerable<IdentifierResult> identifiers, IEnumerable<QualifiedResult> qualifieds, bool isActual)
+        private VarDeclResult ExitVarDecl(IToken token, IEnumerable<IdentifierResult> identifiers, IEnumerable<ExprResult> qualifieds, bool isActual)
         {
             var oldQual = (TeuchiUdonQualifier)null;
             if (isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
@@ -273,25 +286,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
 
             return new VarDeclResult(token, qualifier, identifiers, qualifieds);
-        }
-
-        public override void ExitQualified([NotNull] QualifiedContext context)
-        {
-            var identifiers = context.identifier().Select(x => x.result).ToArray();
-            var qual        = new TeuchiUdonQualifier(identifiers.Take(identifiers.Length - 1).Select(x => new TeuchiUdonScope(x.Name, TeuchiUdonScopeMode.Type)));
-            var t           = new TeuchiUdonType(qual, identifiers[identifiers.Length - 1].Name);
-            var type        = (TeuchiUdonType)null;
-            if (TeuchiUdonTables.Instance.Types.ContainsKey(t))
-            {
-                type = TeuchiUdonTables.Instance.Types[t];
-            }
-            else
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{t}' is not defined");
-                type = TeuchiUdonType.Bottom;
-            }
-
-            context.result = new QualifiedResult(context.Start, identifiers, type);
         }
 
         public override void ExitIdentifier([NotNull] IdentifierContext context)
@@ -438,6 +432,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var v    = TeuchiUdonTables.Instance.Vars[qv];
                         var type = v.Type;
                         evalVar  = new EvalVarResult(context.Start, type, v, identifier);
+                        break;
+                    }
+
+                    var qt = new TeuchiUdonType(qual, identifier.Name);
+                    if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
+                    {
+                        var type  = TeuchiUdonTables.Instance.Types[qt];
+                        var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
+                        evalVar   = new EvalTypeResult(context.Start, outer, type, identifier);
                         break;
                     }
                 }

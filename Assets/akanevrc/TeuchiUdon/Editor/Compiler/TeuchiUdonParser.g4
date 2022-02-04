@@ -49,14 +49,9 @@ varBind
 
 varDecl[bool isActual]
     returns [VarDeclResult result]
-    : '(' ')'                                                                #UnitVarDecl
-    | identifier (':' qualified)?                                            #SingleVarDecl
-    | '(' identifier (':' qualified)? (',' identifier (':' qualified)?)* ')' #TupleVarDecl
-    ;
-
-qualified
-    returns [QualifiedResult result]
-    : identifier ('.' identifier)*
+    : '(' ')'                                                      #UnitVarDecl
+    | identifier (':' expr)?                                       #SingleVarDecl
+    | '(' identifier (':' expr)? (',' identifier (':' expr)?)* ')' #TupleVarDecl
     ;
 
 identifier
