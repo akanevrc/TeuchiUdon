@@ -781,11 +781,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var outType   = expr.Inner.Type;
             var type      = TeuchiUdonType.Func.ApplyArgsAsFunc(inType, outType);
 
-            if (!(context.Parent is VarBindContext varBind))
-            {
-                throw new NotImplementedException();
-            }
-
             var index      = context.tableIndex;
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr);
@@ -910,43 +905,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
-        public override void ExitRealLiteral([NotNull] RealLiteralContext context)
-        {
-        }
-
-        public override void ExitCharacterLiteral([NotNull] CharacterLiteralContext context)
-        {
-        }
-
-        public override void ExitRegularString([NotNull] RegularStringContext context)
-        {
-            var text       = context.GetText();
-            var type       = TeuchiUdonType.String;
-            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToRegularStringValue(text.Substring(1, text.Length - 2));
-            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
-        }
-
-        public override void ExitVervatiumString([NotNull] VervatiumStringContext context)
-        {
-            var text       = context.GetText();
-            var type       = TeuchiUdonType.String;
-            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToVervatiumStringValue(text.Substring(2, text.Length - 3));
-            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
-        }
-
-        private object Eval(ExprResult expr)
-        {
-            return
-                expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Literal.Value}" :
-                expr.Inner is EvalVarResult  evalVar  ? $"<evalVar>{evalVar.Identifier.Name}" :
-                expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(x => Eval(x)))})" :
-                expr.Inner is InfixResult    infix    ? $"<infix>{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
-                expr.Inner is FuncResult     func     ? $"<func>({string.Join(", ", func.VarDecl.Identifiers.Select(x => x.Name))}) -> {Eval(func.Expr)}" :
-                "<expr>";
-        }
-
         private object ToIntegerValue(IToken token, TeuchiUdonType type, string text, int basis)
         {
             if (type == TeuchiUdonType.Int)
@@ -1004,6 +962,100 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
+        public override void ExitRealLiteral([NotNull] RealLiteralContext context)
+        {
+            var text = context.GetText().Replace("_", "").ToLower();
+
+            var count = text.Length;
+            var type  = TeuchiUdonType.Float;
+
+            if (text.EndsWith("f"))
+            {
+                count--;
+            }
+            else if (text.EndsWith("d"))
+            {
+                count--;
+                type = TeuchiUdonType.Double;
+            }
+            else if (text.EndsWith("m"))
+            {
+                count--;
+                type = TeuchiUdonType.Decimal;
+            }
+
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            var value      = ToRealValue      (context.Start, type, text.Substring(0, count));
+            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
+        }
+
+        private object ToRealValue(IToken token, TeuchiUdonType type, string text)
+        {
+            if (type == TeuchiUdonType.Float)
+            {
+                try
+                {
+                    return Convert.ToSingle(text);
+                }
+                catch
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"failed to convert '{token.Text}' to float");
+                    return null;
+                }
+            }
+            else if (type == TeuchiUdonType.Double)
+            {
+                try
+                {
+                    return Convert.ToDouble(text);
+                }
+                catch
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"failed to convert '{token.Text}' to double");
+                    return null;
+                }
+            }
+            else if (type == TeuchiUdonType.Decimal)
+            {
+                try
+                {
+                    return Convert.ToDecimal(text);
+                }
+                catch
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"failed to convert '{token.Text}' to decimal");
+                    return null;
+                }
+            }
+            else
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"failed to convert '{token.Text}' to unknown");
+                return null;
+            }
+        }
+
+        public override void ExitCharacterLiteral([NotNull] CharacterLiteralContext context)
+        {
+        }
+
+        public override void ExitRegularString([NotNull] RegularStringContext context)
+        {
+            var text       = context.GetText();
+            var type       = TeuchiUdonType.String;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            var value      = ToRegularStringValue(text.Substring(1, text.Length - 2));
+            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
+        }
+
+        public override void ExitVervatiumString([NotNull] VervatiumStringContext context)
+        {
+            var text       = context.GetText();
+            var type       = TeuchiUdonType.String;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            var value      = ToVervatiumStringValue(text.Substring(2, text.Length - 3));
+            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
+        }
+
         private object ToRegularStringValue(string text)
         {
             return text;
@@ -1012,6 +1064,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private object ToVervatiumStringValue(string text)
         {
             return text;
+        }
+
+        private object Eval(ExprResult expr)
+        {
+            return
+                expr.Inner is LiteralResult  literal  ? $"<literal>{literal.Literal.Value}" :
+                expr.Inner is EvalVarResult  evalVar  ? $"<evalVar>{evalVar.Identifier.Name}" :
+                expr.Inner is EvalFuncResult evalFunc ? $"<evalFunc>{evalFunc.Identifier.Name}({string.Join(", ", evalFunc.Args.Select(x => Eval(x)))})" :
+                expr.Inner is InfixResult    infix    ? $"<infix>{Eval(infix.Expr1)}{(infix.Op == "." ? infix.Op : $" {infix.Op} ")}{Eval(infix.Expr2)}" :
+                expr.Inner is FuncResult     func     ? $"<func>({string.Join(", ", func.VarDecl.Identifiers.Select(x => x.Name))}) -> {Eval(func.Expr)}" :
+                "<expr>";
         }
     }
 }

@@ -74,6 +74,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.UInt,
                 TeuchiUdonType.Long,
                 TeuchiUdonType.ULong,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.Double,
+                TeuchiUdonType.Decimal,
                 TeuchiUdonType.String,
                 TeuchiUdonType.UObject,
                 TeuchiUdonType.List
