@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
@@ -841,7 +843,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToIntegerValue   (context.Start, type, text.Substring(index, count), basis);
+            var value      = ToIntegerValue(context.Start, type, text.Substring(index, count), basis);
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
@@ -871,7 +873,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToIntegerValue   (context.Start, type, text.Substring(index, count), basis);
+            var value      = ToIntegerValue(context.Start, type, text.Substring(index, count), basis);
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
@@ -901,7 +903,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToIntegerValue   (context.Start, type, text.Substring(index, count), basis);
+            var value      = ToIntegerValue(context.Start, type, text.Substring(index, count), basis);
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
@@ -985,7 +987,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToRealValue      (context.Start, type, text.Substring(0, count));
+            var value      = ToRealValue(context.Start, type, text.Substring(0, count));
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
@@ -1036,6 +1038,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitCharacterLiteral([NotNull] CharacterLiteralContext context)
         {
+            var text       = context.GetText();
+            var type       = TeuchiUdonType.Char;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            var value      = ToRegularStringValue(context.Start, text.Substring(1, text.Length - 2));
+            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
         public override void ExitRegularString([NotNull] RegularStringContext context)
@@ -1043,7 +1050,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var text       = context.GetText();
             var type       = TeuchiUdonType.String;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToRegularStringValue(text.Substring(1, text.Length - 2));
+            var value      = ToRegularStringValue(context.Start, text.Substring(1, text.Length - 2));
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
@@ -1052,18 +1059,183 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var text       = context.GetText();
             var type       = TeuchiUdonType.String;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToVervatiumStringValue(text.Substring(2, text.Length - 3));
+            var value      = ToVervatiumStringValue(context.Start, text.Substring(2, text.Length - 3));
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
-        private object ToRegularStringValue(string text)
+        private object ToCharacterValue(IToken token, string text)
         {
-            return text;
+            var ch = EscapeRegularString(token, text);
+
+            if (ch.Length != 1)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid length of character literal");
+                return null;
+            }
+
+            return ch[0];
         }
 
-        private object ToVervatiumStringValue(string text)
+        private object ToRegularStringValue(IToken token, string text)
         {
-            return text;
+            return EscapeRegularString(token, text);
+        }
+
+        private object ToVervatiumStringValue(IToken token, string text)
+        {
+            return EscapeVervatiumString(token, text);
+        }
+
+        private string EscapeRegularString(IToken token, string text)
+        {
+            return EscapeString(token, text, reader =>
+            {
+                var ch = reader.Read();
+                if (ch == -1) return null;
+                if (ch == '\\')
+                {
+                    var escaped = reader.Read();
+                    switch (escaped)
+                    {
+                        case '\'':
+                            return "'";
+                        case '"':
+                            return "\"";
+                        case '\\':
+                            return "\\";
+                        case '0':
+                            return "\0";
+                        case 'a':
+                            return "\a";
+                        case 'b':
+                            return "\b";
+                        case 'f':
+                            return "\f";
+                        case 'n':
+                            return "\n";
+                        case 'r':
+                            return "\r";
+                        case 't':
+                            return "\t";
+                        case 'v':
+                            return "\v";
+                        case 'x':
+                        {
+                            var d0 = CharNumberToInt(reader.Peek());
+                            if (d0 == -1)
+                            {
+                                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid char detected");
+                                return "";
+                            }
+                            reader.Read();
+                            var u = d0;
+
+                            for (var i = 1; i < 4; i++)
+                            {
+                                var d = CharNumberToInt(reader.Peek());
+                                if (d == -1)
+                                {
+                                    return ((char)u).ToString();
+                                }
+                                reader.Read();
+                                u = u * 16 + d;
+                            }
+
+                            return ((char)u).ToString();
+                        }
+                        case 'u':
+                        {
+                            var u = 0L;
+                            for (var i = 0; i < 4; i++)
+                            {
+                                var d = CharNumberToInt(reader.Read());
+                                if (d == -1)
+                                {
+                                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid char detected");
+                                    return "";
+                                }
+                                u = u * 16 + d;
+                            }
+                            return ((char)u).ToString();
+                        }
+                        case 'U':
+                        {
+                            var u0 = 0L;
+                            for (var i = 0; i < 4; i++)
+                            {
+                                var d = CharNumberToInt(reader.Read());
+                                if (d == -1)
+                                {
+                                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid char detected");
+                                    return "";
+                                }
+                                u0 = u0 * 16 + d;
+                            }
+                            var u1 = 0L;
+                            for (var i = 0; i < 4; i++)
+                            {
+                                var d = CharNumberToInt(reader.Read());
+                                if (d == -1)
+                                {
+                                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid char detected");
+                                    return "";
+                                }
+                                u1 = u1 * 16 + d;
+                            }
+                            return ((char)u0).ToString() + ((char)u1).ToString();
+                        }
+                        default:
+                            TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid char detected");
+                            return "";
+                    }
+                }
+                return ((char)ch).ToString();
+            });
+        }
+
+        private long CharNumberToInt(int ch)
+        {
+            if ('0' <= ch && ch <= '9') return ch - '0';
+            if ('A' <= ch && ch <= 'F') return ch - 'A' + 10;
+            if ('a' <= ch && ch <= 'f') return ch - 'a' + 10;
+            return -1;
+        }
+
+        private string EscapeVervatiumString(IToken token, string text)
+        {
+            return EscapeString(token, text, reader =>
+            {
+                var ch = reader.Read();
+                if (ch == -1) return null;
+                if (ch == '"')
+                {
+                    var escaped = reader.Read();
+                    if (escaped == '"')
+                    {
+                        return "\"";
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"invalid char detected");
+                        return "";
+                    }
+                }
+                return ((char)ch).ToString();
+            });
+        }
+
+        private string EscapeString(IToken token, string text, Func<StringReader, string> consumeFunc)
+        {
+            var result = new StringBuilder();
+            using (var reader = new StringReader(text))
+            {
+                for (;;)
+                {
+                    var ch = consumeFunc(reader);
+                    if (ch == null) return result.ToString();
+                    result.Append(ch);
+                }
+            }
         }
 
         private object Eval(ExprResult expr)
