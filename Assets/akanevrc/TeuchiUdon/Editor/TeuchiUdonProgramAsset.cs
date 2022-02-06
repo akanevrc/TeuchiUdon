@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VRC.Udon.Editor.ProgramSources;
 using VRC.Udon.Serialization.OdinSerializer;
 
@@ -10,9 +11,10 @@ namespace akanevrc.TeuchiUdon.Editor
         [NonSerialized, OdinSerialize]
         public Dictionary<string, (object value, Type type)> heapDefaultValues = new Dictionary<string, (object value, Type type)>();
 
-        public void SetUdonAssembly(string assembly)
+        public void SetUdonAssembly(string assembly, IEnumerable<(string name, object value, Type type)> defaultValues)
         {
-            udonAssembly = assembly;
+            udonAssembly      = assembly;
+            heapDefaultValues = defaultValues.ToDictionary(x => x.name, x => (x.value, x.type));
         }
 
         protected override void RefreshProgramImpl()

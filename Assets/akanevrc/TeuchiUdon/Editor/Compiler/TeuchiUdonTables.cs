@@ -320,7 +320,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(Literals.Values.SelectMany(x =>
                 new TeuchiUdonAssembly[]
                 {
-                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_RAW(x.Text))
+                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                 }))
                 .Concat(Funcs.Values.SelectMany(x =>
                 new TeuchiUdonAssembly[]
@@ -357,6 +357,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
                     .Concat(x));
+        }
+
+        public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
+        {
+            return Literals.Values.Select(x => (x.GetFullLabel(), x.Value, x.Type.RealType)).ToArray();
         }
     }
 }

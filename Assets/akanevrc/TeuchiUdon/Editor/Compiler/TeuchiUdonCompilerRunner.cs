@@ -56,7 +56,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset...")]
+        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset")]
         public static void SaveTeuchiUdonAsset()
         {
             var compilerResult = CompileFromPath("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
@@ -71,16 +71,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (program == null)
             {
                 program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-                program.SetUdonAssembly(compilerResult.output);
+                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
                 program.RefreshProgram();
                 AssetDatabase.CreateAsset(program, assetPath);
             }
             else
             {
-                program.SetUdonAssembly(compilerResult.output);
+                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
                 program.RefreshProgram();
             }
             AssetDatabase.Refresh();
+
+            Debug.Log("save succeeded");
         }
     }
 }

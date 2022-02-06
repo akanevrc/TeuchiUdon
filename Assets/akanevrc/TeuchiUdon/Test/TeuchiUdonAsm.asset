@@ -22,13 +22,13 @@ MonoBehaviour:
     null\r\n    var[_start>func[0]>block[0]>f2]: %SystemUInt32, null\r\n    var[_start>func[0]>block[0]>f3]:
     %SystemUInt32, null\r\n    var[_start>func[0]>block[0]>f4]: %SystemUInt32, null\r\n   
     var[_start>func[0]>block[0]>let[2]>num]: %SystemInt32, null\r\n    var[_start>func[0]>block[0]>let[3]>num]:
-    %SystemSingle, null\r\n    literal[0]: %SystemString, \"Hello!\"\r\n    literal[1]:
-    %SystemString, \"Hello, world!\"\r\n    literal[2]: %SystemString, \"Hello, TeuchiUdon!\"\r\n   
-    literal[3]: %SystemString, \"ok\"\r\n    literal[4]: %SystemString, \"function\"\r\n   
-    literal[5]: %SystemInt32, 100\r\n    literal[6]: %SystemSingle, 100.123\r\n   
-    _start>func[0]>block[0]>f1>func[1]>return: %SystemUInt32, null\r\n    _start>func[0]>block[0]>f2>func[2]>return:
-    %SystemUInt32, null\r\n    _start>func[0]>block[0]>f3>func[3]>return: %SystemUInt32,
-    null\r\n    _start>func[0]>return: %SystemUInt32, null\r\n    address[evalfunc[_start>func[0]>block[0]>3]]:
+    %SystemSingle, null\r\n    literal[0]: %SystemString, null\r\n    literal[1]:
+    %SystemString, null\r\n    literal[2]: %SystemString, null\r\n    literal[3]:
+    %SystemString, null\r\n    literal[4]: %SystemString, null\r\n    literal[5]:
+    %SystemInt32, null\r\n    literal[6]: %SystemSingle, null\r\n    _start>func[0]>block[0]>f1>func[1]>return:
+    %SystemUInt32, null\r\n    _start>func[0]>block[0]>f2>func[2]>return: %SystemUInt32,
+    null\r\n    _start>func[0]>block[0]>f3>func[3]>return: %SystemUInt32, null\r\n   
+    _start>func[0]>return: %SystemUInt32, null\r\n    address[evalfunc[_start>func[0]>block[0]>3]]:
     %SystemUInt32, 0x0000004C\r\n    address[func[_start>func[0]>block[0]>f1>1]]:
     %SystemUInt32, 0x00000000\r\n    address[func[_start>func[0]>block[0]>f2>2]]:
     %SystemUInt32, 0x00000028\r\n    address[evalfunc[_start>func[0]>block[0]>5]]:
