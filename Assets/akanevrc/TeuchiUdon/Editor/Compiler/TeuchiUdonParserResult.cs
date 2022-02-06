@@ -60,6 +60,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.TypeNameEquals(TeuchiUdonType.Func))
                 .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].Name, x: (TopBindResult)x));
             var topStats = TopStatements
+                .Where(x => !(x is TopBindResult topBind && topBind.Export))
                 .Select(x => x is TopBindResult topBind ? (name: topBind.Init, x) : x is TopExprResult topExpr ? (name: topExpr.Init, x) : (name: null, x))
                 .Where(x => x.name != null);
 

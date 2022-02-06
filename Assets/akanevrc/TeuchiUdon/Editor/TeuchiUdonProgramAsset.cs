@@ -23,6 +23,29 @@ namespace akanevrc.TeuchiUdon.Editor
             ApplyDefaultValuesToHeap();
         }
 
+        protected override object GetPublicVariableDefaultValue(string symbol, Type type)
+        {
+            var symbolTable = program?.SymbolTable;
+            var heap        = program?.Heap;
+            if (symbolTable == null || heap == null) return null;
+
+            if (!heapDefaultValues.ContainsKey(symbol)) return null;
+
+            var (val, t) = heapDefaultValues[symbol];
+            if (typeof(UnityEngine.Object).IsAssignableFrom(t))
+            {
+                if (val != null && !t.IsInstanceOfType(val)) return null;
+                if ((UnityEngine.Object)val == null)         return null;
+            }
+
+            if (val != null && !t.IsInstanceOfType(val))
+            {
+                return t.IsValueType ? Activator.CreateInstance(t) : null;
+            }
+
+            return val;
+        }
+
         protected void ApplyDefaultValuesToHeap()
         {
             var symbolTable = program?.SymbolTable;
@@ -50,12 +73,9 @@ namespace akanevrc.TeuchiUdon.Editor
                     }
                 }
 
-                if (val != null)
+                if (val != null && !type.IsInstanceOfType(val))
                 {
-                    if (!type.IsInstanceOfType(val))
-                    {
-                        val = type.IsValueType ? Activator.CreateInstance(type) : null;
-                    }
+                    val = type.IsValueType ? Activator.CreateInstance(type) : null;
                 }
 
                 if(type == null)

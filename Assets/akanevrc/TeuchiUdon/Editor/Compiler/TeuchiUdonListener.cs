@@ -61,6 +61,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
+                if (export)
+                {
+                    if (varBind.Expr.Inner is LiteralResult literal)
+                    {
+                        TeuchiUdonTables.Instance.Exports.Add(varBind.Vars[0], literal.Literal);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"exported valiable cannot be bound non-literal expression");
+                    }
+                }
                 if (init == null)
                 {
                     init = "_start";

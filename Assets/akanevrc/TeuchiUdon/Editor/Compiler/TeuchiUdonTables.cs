@@ -15,6 +15,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
+        public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> Exports { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
 
@@ -35,9 +36,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (!IsInitialized)
             {
                 Qualifiers    = new Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier>();
-                Types         = new Dictionary<TeuchiUdonType, TeuchiUdonType>();
-                Methods       = new Dictionary<TeuchiUdonMethod, TeuchiUdonMethod>();
-                TypeToMethods = new Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>();
+                Types         = new Dictionary<TeuchiUdonType     , TeuchiUdonType>();
+                Methods       = new Dictionary<TeuchiUdonMethod   , TeuchiUdonMethod>();
+                TypeToMethods = new Dictionary<TeuchiUdonType     , Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>();
 
                 InitInternalTypes();
                 InitExternalTypes();
@@ -48,6 +49,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             Vars     = new Dictionary<TeuchiUdonVar    , TeuchiUdonVar>();
+            Exports  = new Dictionary<TeuchiUdonVar    , TeuchiUdonLiteral>();
             Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
             Funcs    = new Dictionary<TeuchiUdonFunc   , TeuchiUdonFunc>();
 
@@ -313,20 +315,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 Vars.Values.SelectMany(x =>
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
-                })
-                .Concat(Literals.Values.SelectMany(x =>
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
-                }))
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    })
+                .Concat(Literals.Values.Except(Exports.Values).SelectMany(x =>
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    }))
                 .Concat(Funcs.Values.SelectMany(x =>
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_DECL_DATA(x.ReturnAddress, x.Type, new AssemblyLiteral_NULL())
-                }));
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x.ReturnAddress, x.Type, new AssemblyLiteral_NULL())
+                    }));
         }
 
         public IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
@@ -361,7 +363,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
         {
-            return Literals.Values.Select(x => (x.GetFullLabel(), x.Value, x.Type.RealType)).ToArray();
+            return
+                Exports.Select(x => (x.Key.GetFullLabel(), x.Value.Value, x.Value.Type.RealType))
+                .Concat(Literals.Values.Select(x => (x.GetFullLabel(), x.Value, x.Type.RealType)));
         }
     }
 }
