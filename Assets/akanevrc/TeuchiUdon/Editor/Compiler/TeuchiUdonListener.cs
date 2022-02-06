@@ -1041,7 +1041,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var text       = context.GetText();
             var type       = TeuchiUdonType.Char;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
-            var value      = ToRegularStringValue(context.Start, text.Substring(1, text.Length - 2));
+            var value      = ToCharacterValue(context.Start, text.Substring(1, text.Length - 2));
             context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
         }
 
