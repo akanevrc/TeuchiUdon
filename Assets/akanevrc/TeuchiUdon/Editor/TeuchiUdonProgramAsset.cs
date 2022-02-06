@@ -1,76 +1,67 @@
-using System.IO;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using UnityEditor;
-using UnityEngine;
-using VRC.Udon;
-using VRC.Udon.ProgramSources;
+using System;
+using System.Collections.Generic;
 using VRC.Udon.Editor.ProgramSources;
-using akanevrc.TeuchiUdon.Editor.Compiler;
+using VRC.Udon.Serialization.OdinSerializer;
 
 namespace akanevrc.TeuchiUdon.Editor
 {
     public class TeuchiUdonProgramAsset : UdonAssemblyProgramAsset
     {
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset...")]
-        public static void SaveTeuchiUdonAsset()
-        {
-            var script    = UnityEditor.AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
-            var assetPath = "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset";
-            var program   = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
-            if (program == null)
-            {
-                program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-                program.sourceScript = script;
-                program.RefreshProgram();
-                UnityEditor.AssetDatabase.CreateAsset(program, assetPath);
-            }
-            else
-            {
-                program.sourceScript = script;
-                program.RefreshProgram();
-            }
-            UnityEditor.AssetDatabase.Refresh();
-        }
+        [NonSerialized, OdinSerialize]
+        public Dictionary<string, (object value, Type type)> heapDefaultValues = new Dictionary<string, (object value, Type type)>();
 
-        public TeuchiUdonScript sourceScript;
+        public void SetUdonAssembly(string assembly)
+        {
+            udonAssembly = assembly;
+        }
 
         protected override void RefreshProgramImpl()
         {
-            Compile();
             base.RefreshProgramImpl();
+            ApplyDefaultValuesToHeap();
         }
 
-        protected void Compile()
+        protected void ApplyDefaultValuesToHeap()
         {
-            if (sourceScript == null) return;
+            var symbolTable = program?.SymbolTable;
+            var heap        = program?.Heap;
+            if (symbolTable == null || heap == null) return;
 
-            using (var outputWriter = new StringWriter())
-            using (var errorWriter  = new StringWriter())
+            foreach (var defaultValue in heapDefaultValues)
             {
-                var inputStream = CharStreams.fromString(sourceScript.text);
-                var lexer       = new TeuchiUdonLexer(inputStream, outputWriter, errorWriter);
-                var tokenStream = new CommonTokenStream(lexer);
-                var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
-                var listener    = new TeuchiUdonListener(parser);
+                if (!symbolTable.HasAddressForSymbol(defaultValue.Key)) continue;
 
-                TeuchiUdonLogicalErrorHandler.Instance.Init(parser);
-                TeuchiUdonTables             .Instance.Init();
-                TeuchiUdonQualifierStack     .Instance.Init();
-                TeuchiUdonAssemblyWriter     .Instance.Init();
-
-                ParseTreeWalker.Default.Walk(listener, parser.target());
-
-                var output = outputWriter.ToString();
-                var error  = errorWriter .ToString();
-                if (string.IsNullOrEmpty(error))
+                var symbolAddress = symbolTable.GetAddressFromSymbol(defaultValue.Key);
+                var (val, type) = defaultValue.Value;
+                if (typeof(UnityEngine.Object).IsAssignableFrom(type))
                 {
-                    udonAssembly = output;
+                    if (val != null && !type.IsInstanceOfType(val))
+                    {
+                        heap.SetHeapVariable(symbolAddress, null, type);
+                        continue;
+                    }
+
+                    if ((UnityEngine.Object)val == null)
+                    {
+                        heap.SetHeapVariable(symbolAddress, null, type);
+                        continue;
+                    }
                 }
-                else
+
+                if (val != null)
                 {
-                    Debug.LogError(error);
+                    if (!type.IsInstanceOfType(val))
+                    {
+                        val = type.IsValueType ? Activator.CreateInstance(type) : null;
+                    }
                 }
+
+                if(type == null)
+                {
+                    type = typeof(object);
+                }
+
+                heap.SetHeapVariable(symbolAddress, val, type);
             }
         }
     }
