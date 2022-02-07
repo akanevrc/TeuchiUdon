@@ -86,3 +86,361 @@ MonoBehaviour:
     PUSH, address[topcall[_start]]\r\n        JUMP_INDIRECT, _start\r\n        topcall[_start]:\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: heapDefaultValues
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.ValueTuple`2[[System.Object,
+        mscorlib],[System.Type, mscorlib]], mscorlib]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.GenericEqualityComparer`1[[System.String,
+        mscorlib]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 11
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: message
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 2|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: Hello!
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 3|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.String, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[0]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 9
+      Data: 2
+    - Name: Item2
+      Entry: 9
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[1]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 4|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: Hello, world!
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[2]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 5|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: Hello, TeuchiUdon!
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[3]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 6|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: ok
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[4]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 7|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: function
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[5]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 8|System.Int32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 100
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 9|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Int32, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[6]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 10|System.Single, mscorlib
+    - Name: 
+      Entry: 4
+      Data: 100.123
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 11|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Single, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[7]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 12|System.Char, mscorlib
+    - Name: 
+      Entry: 1
+      Data: a
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 13|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Char, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[8]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 14|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: 'ok
+
+        ok'
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[9]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 15|System.Int32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 123
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 9
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  showAssembly: 1

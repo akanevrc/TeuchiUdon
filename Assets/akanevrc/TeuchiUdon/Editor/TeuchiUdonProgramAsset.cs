@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
+using VRC.Udon;
 using VRC.Udon.Editor.ProgramSources;
 using VRC.Udon.Serialization.OdinSerializer;
 
@@ -10,6 +13,12 @@ namespace akanevrc.TeuchiUdon.Editor
     {
         [NonSerialized, OdinSerialize]
         public Dictionary<string, (object value, Type type)> heapDefaultValues = new Dictionary<string, (object value, Type type)>();
+
+        [SerializeField, HideInInspector]
+        private SerializationData serializationData;
+
+        [SerializeField, HideInInspector]
+        private bool showAssembly = true;
 
         public void SetUdonAssembly(string assembly, IEnumerable<(string name, object value, Type type)> defaultValues)
         {
@@ -21,6 +30,61 @@ namespace akanevrc.TeuchiUdon.Editor
         {
             base.RefreshProgramImpl();
             ApplyDefaultValuesToHeap();
+        }
+
+        protected override void DrawProgramSourceGUI(UdonBehaviour udonBehaviour, ref bool dirty)
+        {
+            DrawInteractionArea(udonBehaviour);
+            DrawPublicVariables(udonBehaviour, ref dirty);
+            DrawAssemblyErrorTextArea();
+            DrawAssemblyTextArea(false, ref dirty);
+        }
+
+        protected override void DrawAssemblyTextArea(bool allowEditing, ref bool dirty)
+        {
+            EditorGUI.BeginChangeCheck();
+
+            var newShowAssembly = EditorGUILayout.Foldout(showAssembly, "Compiled TeuchiUdon Assembly");
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(this, "Toggle Assembly Foldout");
+                showAssembly = newShowAssembly;
+            }
+
+            if (!showAssembly)  return;
+
+            EditorGUI.indentLevel++;
+            base.DrawAssemblyTextArea(allowEditing, ref dirty);
+            EditorGUI.indentLevel--;
+        }
+
+        protected override object DrawPublicVariableField(string symbol, object variableValue, Type variableType, ref bool dirty, bool enabled)
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            variableValue    = base.DrawPublicVariableField(symbol, variableValue, variableType, ref dirty, enabled);
+            var defaultValue = (object)null;
+            if (heapDefaultValues.ContainsKey(symbol))
+            {
+                defaultValue = heapDefaultValues[symbol].value;
+            }
+
+            if (variableValue == null || !variableValue.Equals(defaultValue))
+            {
+                if(defaultValue != null)
+                {
+                    if(!dirty && GUILayout.Button("Reset to Default Value"))
+                    {
+                        variableValue = defaultValue;
+                        dirty = true;
+                    }
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            return variableValue;
         }
 
         protected override object GetPublicVariableDefaultValue(string symbol, Type type)
@@ -85,6 +149,18 @@ namespace akanevrc.TeuchiUdon.Editor
 
                 heap.SetHeapVariable(symbolAddress, val, type);
             }
+        }
+
+        protected override void OnBeforeSerialize()
+        {
+            UnitySerializationUtility.SerializeUnityObject(this, ref serializationData);
+            base.OnBeforeSerialize();
+        }
+
+        protected override void OnAfterDeserialize()
+        {
+            UnitySerializationUtility.DeserializeUnityObject(this, ref serializationData);
+            base.OnAfterDeserialize();
         }
     }
 }

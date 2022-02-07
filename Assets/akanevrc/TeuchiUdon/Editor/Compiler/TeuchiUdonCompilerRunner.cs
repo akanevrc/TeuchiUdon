@@ -80,6 +80,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
                 program.RefreshProgram();
             }
+            AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
             Debug.Log("save succeeded");
