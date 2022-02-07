@@ -197,7 +197,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void EnterVarBind([NotNull] VarBindContext context)
         {
-            var scope = new TeuchiUdonScope(((SingleVarDeclContext)context.varDecl()).identifier().GetText(), TeuchiUdonScopeMode.Var);
+            var index          = TeuchiUdonTables.Instance.GetVarBindIndex();
+            context.tableIndex = index;
+            var qual           = TeuchiUdonQualifierStack.Instance.Peek();
+            var varDecl        = context.varDecl();
+            var varNames =
+                varDecl is SingleVarDeclContext sv ? new string[] { sv.identifier().GetText() } :
+                varDecl is TupleVarDeclContext  tv ? tv.identifier().Select(x => x.GetText()).ToArray() : new string[0];
+            var scope   = new TeuchiUdonScope(new TeuchiUdonVarBind(index, qual, varNames), TeuchiUdonScopeMode.VarBind);
             TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
@@ -205,8 +212,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             TeuchiUdonQualifierStack.Instance.Pop();
 
+            var index   = context.tableIndex;
             var varDecl = context.varDecl().result;
             var expr    = context.expr   ().result;
+            var qual    = TeuchiUdonQualifierStack.Instance.Peek();
 
             var vars = (TeuchiUdonVar[])null;
             if (varDecl.Vars.Length == 1)
@@ -249,7 +258,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
             
-            context.result = new VarBindResult(context.Start, vars, varDecl, expr);
+            context.result = new VarBindResult(context.Start, index, qual, vars, varDecl, expr);
         }
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
@@ -802,10 +811,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void EnterLetInBindExpr([NotNull] LetInBindExprContext context)
         {
-            var index          = TeuchiUdonTables.Instance.GetLetIndex();
+            var index          = TeuchiUdonTables.Instance.GetLetInIndex();
             context.tableIndex = index;
             var qual           = TeuchiUdonQualifierStack.Instance.Peek();
-            var scope          = new TeuchiUdonScope(new TeuchiUdonLet(index, qual), TeuchiUdonScopeMode.Let);
+            var scope          = new TeuchiUdonScope(new TeuchiUdonLetIn(index, qual), TeuchiUdonScopeMode.LetIn);
             TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 

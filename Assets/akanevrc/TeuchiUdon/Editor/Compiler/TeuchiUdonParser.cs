@@ -623,6 +623,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 
 	public partial class VarBindContext : ParserRuleContext {
 		public VarBindResult result;
+		public int tableIndex;
 		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
 			return GetRuleContext<VarDeclContext>(0);
 		}

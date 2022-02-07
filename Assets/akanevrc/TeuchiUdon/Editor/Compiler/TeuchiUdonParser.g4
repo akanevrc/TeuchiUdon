@@ -43,7 +43,7 @@ exprAttr
     ;
 
 varBind
-    returns [VarBindResult result]
+    returns [VarBindResult result, int tableIndex]
     : varDecl[true] '=' expr
     ;
 

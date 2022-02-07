@@ -221,13 +221,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class VarBindResult : TeuchiUdonParserResult
     {
+        public TeuchiUdonVarBind VarBind { get; }
         public TeuchiUdonVar[] Vars { get; }
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public VarBindResult(IToken token, IEnumerable<TeuchiUdonVar> vars, VarDeclResult varDecl, ExprResult expr)
+        public VarBindResult(IToken token, int index, TeuchiUdonQualifier qualifier, IEnumerable<TeuchiUdonVar> vars, VarDeclResult varDecl, ExprResult expr)
             : base(token)
         {
+            VarBind = new TeuchiUdonVarBind(index, qualifier, vars.Select(x => x.Name));
             Vars    = vars.ToArray();
             VarDecl = varDecl;
             Expr    = expr;
@@ -649,14 +651,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class LetInBindResult : TypedResult
     {
-        public TeuchiUdonLet Let { get; }
+        public TeuchiUdonLetIn LetIn { get; }
         public VarBindResult VarBind { get; }
         public ExprResult Expr { get; }
 
         public LetInBindResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, VarBindResult varBind, ExprResult expr)
             : base(token, type)
         {
-            Let     = new TeuchiUdonLet(index, qualifier);
+            LetIn   = new TeuchiUdonLetIn(index, qualifier);
             VarBind = varBind;
             Expr    = expr;
         }
