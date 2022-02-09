@@ -57,7 +57,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             var topFuncs = TopStatements
-                .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.TypeNameEquals(TeuchiUdonType.Func))
+                .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
                 .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].Name, x: (TopBindResult)x));
             var topStats = TopStatements
                 .Where(x => !(x is TopBindResult topBind && topBind.Export))
@@ -359,6 +359,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Type = type;
         }
+
+        public abstract bool IsLeftValue { get; }
     }
 
     public class BottomResult : TypedResult
@@ -367,6 +369,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, TeuchiUdonType.Bottom)
         {
         }
+
+        public override bool IsLeftValue => false;
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
@@ -381,6 +385,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, TeuchiUdonType.Type.ApplyArgAsType(TeuchiUdonType.Unknown))
         {
         }
+
+        public override bool IsLeftValue => false;
     }
 
     public class UnitResult : TypedResult
@@ -389,6 +395,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, TeuchiUdonType.Unit)
         {
         }
+
+        public override bool IsLeftValue => false;
     }
 
     public class BlockResult : TypedResult
@@ -405,6 +413,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr       = expr;
         }
 
+        public override bool IsLeftValue => false;
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return Statements.SelectMany(x => x.GetAssemblyCodePart()).Concat(Expr.GetAssemblyCodePart());
@@ -420,6 +430,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Expr = expr;
         }
+
+        public override bool IsLeftValue => Expr.Inner.IsLeftValue;
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
@@ -446,6 +458,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
+        public override bool IsLeftValue => false;
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return new TeuchiUdonAssembly[]
@@ -467,6 +481,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
+        public override bool IsLeftValue => true;
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return new TeuchiUdonAssembly[]
@@ -487,6 +503,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             InnerType  = innerType;
             Identifier = identifier;
         }
+
+        public override bool IsLeftValue => false;
     }
 
     public class EvalQualifierResult : TypedResult
@@ -500,6 +518,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Qualifier  = qualifier;
             Identifier = identifier;
         }
+
+        public override bool IsLeftValue => false;
     }
 
     public class EvalFuncResult : TypedResult
@@ -526,6 +546,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Args       = args.ToArray();
         }
 
+        public override bool IsLeftValue => false;
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return
@@ -544,6 +566,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonMethod Method { get; }
         public IdentifierResult Identifier { get; }
         public ExprResult[] Args { get; }
+        public TeuchiUdonOutValue[] OutValues { get; }
 
         public EvalMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod method, IdentifierResult identifier, IEnumerable<ExprResult> args)
             : base(token, type)
@@ -551,14 +574,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Method     = method;
             Identifier = identifier;
             Args       = args.ToArray();
+            OutValues  = method.OutTypes.Select(x => TeuchiUdonTables.Instance.GetOutValue(x)).ToArray();
         }
+
+        public override bool IsLeftValue => false;
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return Args.SelectMany(x => x.GetAssemblyCodePart()).Concat(new TeuchiUdonAssembly[]
-            {
-                new Assembly_EXTERN(Method)
-            });
+            return
+                Method.SortAlongParams
+                (
+                    Args.Select(x => x.GetAssemblyCodePart()),
+                    OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                )
+                .SelectMany(x => x)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(Method)
+                })
+                .Concat(OutValues.SelectMany(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }));
         }
     }
 
@@ -584,6 +618,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, identifier)
         {
         }
+
+        public override bool IsLeftValue => false;
     }
 
     public class EvalMethodCandidateResult : EvalCandidateResult
@@ -594,6 +630,314 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, identifier)
         {
             Args = args.ToArray();
+        }
+
+        public override bool IsLeftValue => false;
+    }
+
+    public abstract class UnaryOpResult : TypedResult
+    {
+        public string Op { get; }
+        public ExprResult Expr { get; }
+        public TeuchiUdonMethod[] Methods { get; }
+        public TeuchiUdonOutValue[][] OutValuess { get; }
+        public TeuchiUdonLiteral[] Literals { get; }
+
+        public UnaryOpResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
+            : base(token, type)
+        {
+            Op         = op;
+            Expr       = expr;
+            Methods    = GetMethods   ().ToArray();
+            OutValuess = GetOutValuess().Select(x => x.ToArray()).ToArray();
+            Literals   = GetLiterals  ().ToArray();
+        }
+
+        protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
+        protected abstract IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess();
+        protected abstract IEnumerable<TeuchiUdonLiteral> GetLiterals();
+
+        protected TeuchiUdonType GetTypeFromLogicalName(string logicalName, bool isTypeType)
+        {
+            var qt = new TeuchiUdonType(logicalName);
+            if (!TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"type '{logicalName}' is not defined");
+                return TeuchiUdonType.Bottom;
+            }
+
+            var type = TeuchiUdonTables.Instance.LogicalTypes[qt];
+            return isTypeType ? TeuchiUdonType.Type.ApplyArgAsType(type) : type;
+        }
+
+        protected TeuchiUdonMethod GetMethodFromName(string logicalTypeName, bool isTypeType, string methodName, params string[] inTypeNames)
+        {
+            var type    = GetTypeFromLogicalName(logicalTypeName, isTypeType);
+            var inTypes = inTypeNames.Select(x => GetTypeFromLogicalName(x, false)).ToArray();
+            var qm      = new TeuchiUdonMethod(type, methodName, inTypes);
+            var m       = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+            if (m.Length == 0)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"operator '{Op}' is not defined");
+                return null;
+            }
+            else if (m.Length == 1)
+            {
+                return m[0];
+            }
+            else
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"arguments of operator '{Op}' is nondeterministic");
+                return null;
+            }
+        }
+    }
+
+    public class PrefixResult : UnaryOpResult
+    {
+        public PrefixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
+            : base(token, type, op, expr)
+        {
+        }
+
+        public override bool IsLeftValue => false;
+
+        protected override IEnumerable<TeuchiUdonMethod> GetMethods()
+        {
+            var exprType = Expr.Inner.Type.LogicalName;
+
+            switch (Op)
+            {
+                case "+":
+                    return new TeuchiUdonMethod[0];
+                case "-":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_UnaryMinus"   , exprType) };
+                case "!":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_UnaryNegation", exprType) };
+                case "~":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_LogicalXor"   , exprType, exprType) };
+                case "++":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Addition"     , exprType, exprType) };
+                case "--":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Subtraction"  , exprType, exprType) };
+                default:
+                    return new TeuchiUdonMethod[0];
+            }
+        }
+
+        protected override IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess()
+        {
+            switch (Op)
+            {
+                case "+":
+                    return new TeuchiUdonOutValue[0][];
+                case "-":
+                case "!":
+                case "~":
+                    return Methods.Select(x => x.OutTypes.Select(y => TeuchiUdonTables.Instance.GetOutValue(y)));
+                case "++":
+                case "--":
+                    return new TeuchiUdonOutValue[0][];
+                default:
+                    return new TeuchiUdonOutValue[0][];
+            }
+        }
+
+        protected override IEnumerable<TeuchiUdonLiteral> GetLiterals()
+        {
+            switch (Op)
+            {
+                case "+":
+                case "-":
+                case "!":
+                    return new TeuchiUdonLiteral[0];
+                case "~":
+                case "++":
+                case "--":
+                    if (Methods[0] == null)
+                    {
+                        return new TeuchiUdonLiteral[] { null };
+                    }
+                    else
+                    {
+                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateNumber(index, "1", Expr.Inner.Type) };
+                    }
+                default:
+                    return new TeuchiUdonLiteral[0];
+            }
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            switch (Op)
+            {
+                case "+":
+                    return Expr.GetAssemblyCodePart();
+                case "-":
+                case "!":
+                    return
+                        Methods[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod
+                        (
+                            Methods[0],
+                            new TeuchiUdonAssembly[][]
+                            {
+                                Expr.GetAssemblyCodePart().ToArray()
+                            },
+                            OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                        );
+                case "~":
+                    return
+                        Methods[0] == null || Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod
+                        (
+                            Methods[0],
+                            new TeuchiUdonAssembly[][]
+                            {
+                                Expr.GetAssemblyCodePart().ToArray(),
+                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literals[0])) }
+                            },
+                            OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                        );
+                case "++":
+                case "--":
+                    return
+                        Methods[0] == null || Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod
+                        (
+                            Methods[0],
+                            new TeuchiUdonAssembly[][]
+                            {
+                                Expr.GetAssemblyCodePart().ToArray(),
+                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literals[0])) }
+                            },
+                            new TeuchiUdonAssembly[][]
+                            {
+                                Expr.GetAssemblyCodePart().ToArray()
+                            }
+                        );
+                default:
+                    return new TeuchiUdonAssembly[0];
+            }
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalMethod
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues
+        )
+        {
+            return
+                method.SortAlongParams(inValues, outValues).SelectMany(x => x)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(method)
+                })
+                .Concat(outValues.SelectMany(x => x));
+        }
+    }
+
+    public class PostfixResult : UnaryOpResult
+    {
+        public PostfixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
+            : base(token, type, op, expr)
+        {
+        }
+
+        public override bool IsLeftValue => false;
+
+        protected override IEnumerable<TeuchiUdonMethod> GetMethods()
+        {
+            var exprType = Expr.Inner.Type.LogicalName;
+
+            switch (Op)
+            {
+                case "++":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Addition"   , exprType, exprType) };
+                case "--":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Subtraction", exprType, exprType) };
+                default:
+                    return new TeuchiUdonMethod[0];
+            }
+        }
+
+        protected override IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess()
+        {
+            switch (Op)
+            {
+                case "++":
+                case "--":
+                    return new TeuchiUdonOutValue[][] { new TeuchiUdonOutValue[] { TeuchiUdonTables.Instance.GetOutValue(Expr.Inner.Type) } };
+                default:
+                    return new TeuchiUdonOutValue[0][];
+            }
+        }
+
+        protected override IEnumerable<TeuchiUdonLiteral> GetLiterals()
+        {
+            switch (Op)
+            {
+                case "++":
+                case "--":
+                    if (Methods[0] == null)
+                    {
+                        return new TeuchiUdonLiteral[] { null };
+                    }
+                    else
+                    {
+                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateNumber(index, "1", Expr.Inner.Type) };
+                    }
+                default:
+                    return new TeuchiUdonLiteral[0];
+            }
+        }
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            switch (Op)
+            {
+                case "++":
+                case "--":
+                    return
+                        Methods[0] == null || Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod
+                        (
+                            Methods[0],
+                            new TeuchiUdonAssembly[][]
+                            {
+                                Expr.GetAssemblyCodePart().ToArray(),
+                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literals[0])) }
+                            },
+                            new TeuchiUdonAssembly[][]
+                            {
+                                Expr.GetAssemblyCodePart().ToArray()
+                            },
+                            OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                        );
+                default:
+                    return new TeuchiUdonAssembly[0];
+            }
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalMethod
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> tmpValues
+        )
+        {
+            return
+                inValues.Zip(tmpValues, (i, t) => (i, t)).SelectMany(x => x.i.Concat(x.t).Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() }))
+                .Concat(method.SortAlongParams(inValues, outValues).SelectMany(x => x))
+                .Concat(new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_EXTERN(method)
+                    })
+                .Concat(tmpValues.SelectMany(x => x));
         }
     }
 
@@ -611,9 +955,40 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr2 = expr2;
         }
 
+        public override bool IsLeftValue => (Op == "." || Op == "?.") && Expr2.Inner.IsLeftValue;
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return Expr1.GetAssemblyCodePart().Concat(Expr2.GetAssemblyCodePart());
+        }
+    }
+
+    public class LetInBindResult : TypedResult
+    {
+        public TeuchiUdonLetIn LetIn { get; }
+        public VarBindResult VarBind { get; }
+        public ExprResult Expr { get; }
+
+        public LetInBindResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, VarBindResult varBind, ExprResult expr)
+            : base(token, type)
+        {
+            LetIn   = new TeuchiUdonLetIn(index, qualifier);
+            VarBind = varBind;
+            Expr    = expr;
+        }
+
+        public override bool IsLeftValue => false;
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return
+                VarBind.Expr.GetAssemblyCodePart()
+                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                    new Assembly_COPY()
+                }))
+                .Concat(Expr.GetAssemblyCodePart());
         }
     }
 
@@ -640,39 +1015,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
+        public override bool IsLeftValue => false;
+
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
             return new TeuchiUdonAssembly[]
             {
                 new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(Func))
             };
-        }
-    }
-
-    public class LetInBindResult : TypedResult
-    {
-        public TeuchiUdonLetIn LetIn { get; }
-        public VarBindResult VarBind { get; }
-        public ExprResult Expr { get; }
-
-        public LetInBindResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, VarBindResult varBind, ExprResult expr)
-            : base(token, type)
-        {
-            LetIn   = new TeuchiUdonLetIn(index, qualifier);
-            VarBind = varBind;
-            Expr    = expr;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                    new Assembly_COPY()
-                }))
-                .Concat(Expr.GetAssemblyCodePart());
         }
     }
 }

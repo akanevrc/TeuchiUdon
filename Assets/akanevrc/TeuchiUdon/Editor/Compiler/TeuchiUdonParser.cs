@@ -41,25 +41,26 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
 		BYTE_ORDER_MARK=1, SINGLE_LINE_COMMENT=2, OPEN_DELIMITED_COMMENT=3, NEWLINE=4, 
-		WS=5, TAB=6, AS=7, BASE=8, BREAK=9, CASE=10, CATCH=11, CHECKED=12, CONTINUE=13, 
-		DATA=14, DYNAMIC=15, ELSE=16, FINALLY=17, HIDING=18, IMPORT=19, INTERNAL=20, 
-		IF=21, IN=22, IS=23, LET=24, MODULE=25, NAMEOF=26, NAMESPACE=27, NEW=28, 
-		NEWTYPE=29, OF=30, OUT=31, PRIVATE=32, PROTECTED=33, PUBLIC=34, REF=35, 
-		RETURN=36, SIZEOF=37, THEN=38, THIS=39, THROW=40, TRY=41, TYPE=42, TYPEOF=43, 
-		UNCHECKED=44, WHERE=45, YIELD=46, INIT=47, EXPORT=48, SYNC=49, LINEAR=50, 
-		SMOOTH=51, IDENTIFIER=52, LITERAL_ACCESS=53, INTEGER_LITERAL=54, HEX_INTEGER_LITERAL=55, 
-		BIN_INTEGER_LITERAL=56, REAL_LITERAL=57, CHARACTER_LITERAL=58, REGULAR_STRING=59, 
-		VERBATIUM_STRING=60, OPEN_BRACE=61, CLOSE_BRACE=62, OPEN_BRACKET=63, CLOSE_BRACKET=64, 
-		OPEN_PAREN=65, CLOSE_PAREN=66, DOT=67, COMMA=68, COLON=69, SEMICOLON=70, 
-		PLUS=71, MINUS=72, STAR=73, DIV=74, PERCENT=75, AMP=76, BITWISE_OR=77, 
-		CARET=78, BANG=79, TILDE=80, ASSIGNMENT=81, LT=82, GT=83, WILDCARD=84, 
-		INTERR=85, OP_COALESCING=86, OP_INC=87, OP_DEC=88, OP_AND=89, OP_OR=90, 
-		OP_PTR=91, OP_EQ=92, OP_NE=93, OP_LE=94, OP_GE=95, OP_ADD_ASSIGNMENT=96, 
-		OP_SUB_ASSIGNMENT=97, OP_MULT_ASSIGNMENT=98, OP_DIV_ASSIGNMENT=99, OP_MOD_ASSIGNMENT=100, 
-		OP_AND_ASSIGNMENT=101, OP_OR_ASSIGNMENT=102, OP_XOR_ASSIGNMENT=103, OP_LEFT_SHIFT=104, 
-		OP_RIGHT_SHIFT=105, OP_LEFT_SHIFT_ASSIGNMENT=106, OP_RIGHT_SHIFT_ASSIGNMENT=107, 
-		OP_COALESCING_ASSIGNMENT=108, OP_RANGE=109, OP_LEFT_PIPELINE=110, OP_RIGHT_PIPELINE=111, 
-		OPEN_DELIMITED_COMMENT_INSIDE=112, CLOSE_DELIMITED_COMMENT_INSIDE=113;
+		WS=5, TAB=6, AS=7, BASE=8, BREAK=9, CASE=10, CATCH=11, CONTINUE=12, DATA=13, 
+		ELSE=14, FINALLY=15, HIDING=16, IMPORT=17, INTERNAL=18, IF=19, IN=20, 
+		IS=21, LET=22, MODULE=23, NAMEOF=24, NAMESPACE=25, NEW=26, NEWTYPE=27, 
+		OF=28, OUT=29, PRIVATE=30, PROTECTED=31, PUBLIC=32, REF=33, RETURN=34, 
+		THEN=35, THIS=36, THROW=37, TRY=38, TYPE=39, WHERE=40, YIELD=41, INIT=42, 
+		EXPORT=43, SYNC=44, LINEAR=45, SMOOTH=46, IDENTIFIER=47, LITERAL_ACCESS=48, 
+		INTEGER_LITERAL=49, HEX_INTEGER_LITERAL=50, BIN_INTEGER_LITERAL=51, REAL_LITERAL=52, 
+		CHARACTER_LITERAL=53, REGULAR_STRING=54, VERBATIUM_STRING=55, OPEN_BRACE=56, 
+		CLOSE_BRACE=57, OPEN_BRACKET=58, CLOSE_BRACKET=59, OPEN_PAREN=60, CLOSE_PAREN=61, 
+		DOT=62, COMMA=63, COLON=64, SEMICOLON=65, PLUS=66, MINUS=67, STAR=68, 
+		DIV=69, PERCENT=70, AMP=71, PIPE=72, CARET=73, BANG=74, TILDE=75, ASSIGNMENT=76, 
+		LT=77, GT=78, WILDCARD=79, INTERR=80, OP_COALESCING=81, OP_COALESCING_ACCESS=82, 
+		OP_INC=83, OP_DEC=84, OP_AND=85, OP_OR=86, OP_XOR=87, OP_ARROW=88, OP_EQ=89, 
+		OP_NE=90, OP_LE=91, OP_GE=92, OP_ADD_ASSIGNMENT=93, OP_SUB_ASSIGNMENT=94, 
+		OP_MULT_ASSIGNMENT=95, OP_DIV_ASSIGNMENT=96, OP_MOD_ASSIGNMENT=97, OP_AMP_ASSIGNMENT=98, 
+		OP_PIPE_ASSIGNMENT=99, OP_CARET_ASSIGNMENT=100, OP_AND_ASSIGNMENT=101, 
+		OP_OR_ASSIGNMENT=102, OP_LEFT_SHIFT=103, OP_RIGHT_SHIFT=104, OP_LEFT_SHIFT_ASSIGNMENT=105, 
+		OP_RIGHT_SHIFT_ASSIGNMENT=106, OP_COALESCING_ASSIGNMENT=107, OP_RANGE=108, 
+		OP_LEFT_PIPELINE=109, OP_RIGHT_PIPELINE=110, OPEN_DELIMITED_COMMENT_INSIDE=111, 
+		CLOSE_DELIMITED_COMMENT_INSIDE=112;
 	public const int
 		RULE_target = 0, RULE_body = 1, RULE_topStatement = 2, RULE_varAttr = 3, 
 		RULE_exprAttr = 4, RULE_varBind = 5, RULE_varDecl = 6, RULE_identifier = 7, 
@@ -71,40 +72,40 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 
 	private static readonly string[] _LiteralNames = {
 		null, "'\u00EF\u00BB\u00BF'", null, null, null, null, null, "'as'", "'base'", 
-		"'break'", "'case'", "'catch'", "'checked'", "'continue'", "'data'", "'dynamic'", 
-		"'else'", "'finally'", "'hiding'", "'import'", "'internal'", "'if'", "'in'", 
-		"'is'", "'let'", "'module'", "'nameof'", "'namespace'", "'new'", "'newtype'", 
-		"'of'", "'out'", "'private'", "'protected'", "'public'", "'ref'", "'return'", 
-		"'sizeof'", "'then'", "'this'", "'throw'", "'try'", "'type'", "'typeof'", 
-		"'unchecked'", "'where'", "'yield'", "'@init'", "'@export'", "'@sync'", 
-		"'@linear'", "'@smooth'", null, null, null, null, null, null, null, null, 
-		null, "'{'", "'}'", "'['", "']'", "'('", "')'", "'.'", "','", "':'", "';'", 
-		"'+'", "'-'", "'*'", "'/'", "'%'", "'&'", "'|'", "'^'", "'!'", "'~'", 
-		"'='", "'<'", "'>'", "'_'", "'?'", "'??'", "'++'", "'--'", "'&&'", "'||'", 
-		"'->'", "'=='", "'!='", "'<='", "'>='", "'+='", "'-='", "'*='", "'/='", 
-		"'%='", "'&='", "'|='", "'^='", "'<<'", "'>>'", "'<<='", "'>>='", "'??='", 
-		"'..'", "'<|'", "'|>'", "'{/'", "'/}'"
+		"'break'", "'case'", "'catch'", "'continue'", "'data'", "'else'", "'finally'", 
+		"'hiding'", "'import'", "'internal'", "'if'", "'in'", "'is'", "'let'", 
+		"'module'", "'nameof'", "'namespace'", "'new'", "'newtype'", "'of'", "'out'", 
+		"'private'", "'protected'", "'public'", "'ref'", "'return'", "'then'", 
+		"'this'", "'throw'", "'try'", "'type'", "'where'", "'yield'", "'@init'", 
+		"'@export'", "'@sync'", "'@linear'", "'@smooth'", null, null, null, null, 
+		null, null, null, null, null, "'{'", "'}'", "'['", "']'", "'('", "')'", 
+		"'.'", "','", "':'", "';'", "'+'", "'-'", "'*'", "'/'", "'%'", "'&'", 
+		"'|'", "'^'", "'!'", "'~'", "'='", "'<'", "'>'", "'_'", "'?'", "'??'", 
+		"'?.'", "'++'", "'--'", "'&&'", "'||'", "'^^'", "'->'", "'=='", "'!='", 
+		"'<='", "'>='", "'+='", "'-='", "'*='", "'/='", "'%='", "'&='", "'|='", 
+		"'^='", "'&&='", "'||='", "'<<'", "'>>'", "'<<='", "'>>='", "'??='", "'..'", 
+		"'<|'", "'|>'", "'{/'", "'/}'"
 	};
 	private static readonly string[] _SymbolicNames = {
 		null, "BYTE_ORDER_MARK", "SINGLE_LINE_COMMENT", "OPEN_DELIMITED_COMMENT", 
-		"NEWLINE", "WS", "TAB", "AS", "BASE", "BREAK", "CASE", "CATCH", "CHECKED", 
-		"CONTINUE", "DATA", "DYNAMIC", "ELSE", "FINALLY", "HIDING", "IMPORT", 
-		"INTERNAL", "IF", "IN", "IS", "LET", "MODULE", "NAMEOF", "NAMESPACE", 
-		"NEW", "NEWTYPE", "OF", "OUT", "PRIVATE", "PROTECTED", "PUBLIC", "REF", 
-		"RETURN", "SIZEOF", "THEN", "THIS", "THROW", "TRY", "TYPE", "TYPEOF", 
-		"UNCHECKED", "WHERE", "YIELD", "INIT", "EXPORT", "SYNC", "LINEAR", "SMOOTH", 
-		"IDENTIFIER", "LITERAL_ACCESS", "INTEGER_LITERAL", "HEX_INTEGER_LITERAL", 
+		"NEWLINE", "WS", "TAB", "AS", "BASE", "BREAK", "CASE", "CATCH", "CONTINUE", 
+		"DATA", "ELSE", "FINALLY", "HIDING", "IMPORT", "INTERNAL", "IF", "IN", 
+		"IS", "LET", "MODULE", "NAMEOF", "NAMESPACE", "NEW", "NEWTYPE", "OF", 
+		"OUT", "PRIVATE", "PROTECTED", "PUBLIC", "REF", "RETURN", "THEN", "THIS", 
+		"THROW", "TRY", "TYPE", "WHERE", "YIELD", "INIT", "EXPORT", "SYNC", "LINEAR", 
+		"SMOOTH", "IDENTIFIER", "LITERAL_ACCESS", "INTEGER_LITERAL", "HEX_INTEGER_LITERAL", 
 		"BIN_INTEGER_LITERAL", "REAL_LITERAL", "CHARACTER_LITERAL", "REGULAR_STRING", 
 		"VERBATIUM_STRING", "OPEN_BRACE", "CLOSE_BRACE", "OPEN_BRACKET", "CLOSE_BRACKET", 
 		"OPEN_PAREN", "CLOSE_PAREN", "DOT", "COMMA", "COLON", "SEMICOLON", "PLUS", 
-		"MINUS", "STAR", "DIV", "PERCENT", "AMP", "BITWISE_OR", "CARET", "BANG", 
-		"TILDE", "ASSIGNMENT", "LT", "GT", "WILDCARD", "INTERR", "OP_COALESCING", 
-		"OP_INC", "OP_DEC", "OP_AND", "OP_OR", "OP_PTR", "OP_EQ", "OP_NE", "OP_LE", 
-		"OP_GE", "OP_ADD_ASSIGNMENT", "OP_SUB_ASSIGNMENT", "OP_MULT_ASSIGNMENT", 
-		"OP_DIV_ASSIGNMENT", "OP_MOD_ASSIGNMENT", "OP_AND_ASSIGNMENT", "OP_OR_ASSIGNMENT", 
-		"OP_XOR_ASSIGNMENT", "OP_LEFT_SHIFT", "OP_RIGHT_SHIFT", "OP_LEFT_SHIFT_ASSIGNMENT", 
-		"OP_RIGHT_SHIFT_ASSIGNMENT", "OP_COALESCING_ASSIGNMENT", "OP_RANGE", "OP_LEFT_PIPELINE", 
-		"OP_RIGHT_PIPELINE", "OPEN_DELIMITED_COMMENT_INSIDE", "CLOSE_DELIMITED_COMMENT_INSIDE"
+		"MINUS", "STAR", "DIV", "PERCENT", "AMP", "PIPE", "CARET", "BANG", "TILDE", 
+		"ASSIGNMENT", "LT", "GT", "WILDCARD", "INTERR", "OP_COALESCING", "OP_COALESCING_ACCESS", 
+		"OP_INC", "OP_DEC", "OP_AND", "OP_OR", "OP_XOR", "OP_ARROW", "OP_EQ", 
+		"OP_NE", "OP_LE", "OP_GE", "OP_ADD_ASSIGNMENT", "OP_SUB_ASSIGNMENT", "OP_MULT_ASSIGNMENT", 
+		"OP_DIV_ASSIGNMENT", "OP_MOD_ASSIGNMENT", "OP_AMP_ASSIGNMENT", "OP_PIPE_ASSIGNMENT", 
+		"OP_CARET_ASSIGNMENT", "OP_AND_ASSIGNMENT", "OP_OR_ASSIGNMENT", "OP_LEFT_SHIFT", 
+		"OP_RIGHT_SHIFT", "OP_LEFT_SHIFT_ASSIGNMENT", "OP_RIGHT_SHIFT_ASSIGNMENT", 
+		"OP_COALESCING_ASSIGNMENT", "OP_RANGE", "OP_LEFT_PIPELINE", "OP_RIGHT_PIPELINE", 
+		"OPEN_DELIMITED_COMMENT_INSIDE", "CLOSE_DELIMITED_COMMENT_INSIDE"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -254,7 +255,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 36;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-			} while ( ((((_la - 24)) & ~0x3f) == 0 && ((1L << (_la - 24)) & ((1L << (LET - 24)) | (1L << (INIT - 24)) | (1L << (EXPORT - 24)) | (1L << (SYNC - 24)) | (1L << (LINEAR - 24)) | (1L << (SMOOTH - 24)) | (1L << (IDENTIFIER - 24)) | (1L << (INTEGER_LITERAL - 24)) | (1L << (HEX_INTEGER_LITERAL - 24)) | (1L << (BIN_INTEGER_LITERAL - 24)) | (1L << (REAL_LITERAL - 24)) | (1L << (CHARACTER_LITERAL - 24)) | (1L << (REGULAR_STRING - 24)) | (1L << (VERBATIUM_STRING - 24)) | (1L << (OPEN_BRACE - 24)) | (1L << (OPEN_PAREN - 24)))) != 0) );
+			} while ( ((((_la - 22)) & ~0x3f) == 0 && ((1L << (_la - 22)) & ((1L << (LET - 22)) | (1L << (NAMEOF - 22)) | (1L << (INIT - 22)) | (1L << (EXPORT - 22)) | (1L << (SYNC - 22)) | (1L << (LINEAR - 22)) | (1L << (SMOOTH - 22)) | (1L << (IDENTIFIER - 22)) | (1L << (INTEGER_LITERAL - 22)) | (1L << (HEX_INTEGER_LITERAL - 22)) | (1L << (BIN_INTEGER_LITERAL - 22)) | (1L << (REAL_LITERAL - 22)) | (1L << (CHARACTER_LITERAL - 22)) | (1L << (REGULAR_STRING - 22)) | (1L << (VERBATIUM_STRING - 22)) | (1L << (OPEN_BRACE - 22)) | (1L << (OPEN_PAREN - 22)) | (1L << (PLUS - 22)) | (1L << (MINUS - 22)) | (1L << (BANG - 22)) | (1L << (TILDE - 22)) | (1L << (OP_INC - 22)) | (1L << (OP_DEC - 22)))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -1161,6 +1162,86 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			this.tableIndex = context.tableIndex;
 		}
 	}
+	public partial class UnitBlockExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACE() { return GetToken(TeuchiUdonParser.OPEN_BRACE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACE() { return GetToken(TeuchiUdonParser.CLOSE_BRACE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext[] statement() {
+			return GetRuleContexts<StatementContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement(int i) {
+			return GetRuleContext<StatementContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] SEMICOLON() { return GetTokens(TeuchiUdonParser.SEMICOLON); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON(int i) {
+			return GetToken(TeuchiUdonParser.SEMICOLON, i);
+		}
+		public UnitBlockExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterUnitBlockExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitUnitBlockExpr(this);
+		}
+	}
+	public partial class LogicalAndExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AMP() { return GetToken(TeuchiUdonParser.AMP, 0); }
+		public LogicalAndExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterLogicalAndExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitLogicalAndExpr(this);
+		}
+	}
+	public partial class AssignExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGNMENT() { return GetToken(TeuchiUdonParser.ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ADD_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_ADD_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SUB_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_SUB_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_MULT_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_MULT_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DIV_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_DIV_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_MOD_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_MOD_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_AMP_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_AMP_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_PIPE_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_PIPE_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_CARET_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_CARET_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_AND_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_AND_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_OR_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_OR_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LEFT_SHIFT_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_LEFT_SHIFT_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RIGHT_SHIFT_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_RIGHT_SHIFT_ASSIGNMENT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_COALESCING_ASSIGNMENT() { return GetToken(TeuchiUdonParser.OP_COALESCING_ASSIGNMENT, 0); }
+		public AssignExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterAssignExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitAssignExpr(this);
+		}
+	}
 	public partial class EvalVarExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
 			return GetRuleContext<IdentifierContext>(0);
@@ -1177,7 +1258,159 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitEvalVarExpr(this);
 		}
 	}
+	public partial class PostfixExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INC() { return GetToken(TeuchiUdonParser.OP_INC, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DEC() { return GetToken(TeuchiUdonParser.OP_DEC, 0); }
+		public PostfixExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterPostfixExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitPostfixExpr(this);
+		}
+	}
+	public partial class EqualityExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_EQ() { return GetToken(TeuchiUdonParser.OP_EQ, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NE() { return GetToken(TeuchiUdonParser.OP_NE, 0); }
+		public EqualityExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterEqualityExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitEqualityExpr(this);
+		}
+	}
+	public partial class ValueBlockExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACE() { return GetToken(TeuchiUdonParser.OPEN_BRACE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACE() { return GetToken(TeuchiUdonParser.CLOSE_BRACE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext[] statement() {
+			return GetRuleContexts<StatementContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement(int i) {
+			return GetRuleContext<StatementContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] SEMICOLON() { return GetTokens(TeuchiUdonParser.SEMICOLON); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON(int i) {
+			return GetToken(TeuchiUdonParser.SEMICOLON, i);
+		}
+		public ValueBlockExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterValueBlockExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitValueBlockExpr(this);
+		}
+	}
+	public partial class LiteralExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public LiteralContext literal() {
+			return GetRuleContext<LiteralContext>(0);
+		}
+		public LiteralExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterLiteralExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitLiteralExpr(this);
+		}
+	}
+	public partial class MultiplicationExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STAR() { return GetToken(TeuchiUdonParser.STAR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIV() { return GetToken(TeuchiUdonParser.DIV, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PERCENT() { return GetToken(TeuchiUdonParser.PERCENT, 0); }
+		public MultiplicationExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterMultiplicationExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitMultiplicationExpr(this);
+		}
+	}
+	public partial class ShiftExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LEFT_SHIFT() { return GetToken(TeuchiUdonParser.OP_LEFT_SHIFT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RIGHT_SHIFT() { return GetToken(TeuchiUdonParser.OP_RIGHT_SHIFT, 0); }
+		public ShiftExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterShiftExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitShiftExpr(this);
+		}
+	}
+	public partial class EvalSingleFuncExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
+			return GetRuleContext<IdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
+		public EvalSingleFuncExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterEvalSingleFuncExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitEvalSingleFuncExpr(this);
+		}
+	}
 	public partial class AccessExprContext : ExprContext {
+		public IToken op;
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
 			return GetRuleContexts<ExprContext>();
 		}
@@ -1185,6 +1418,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			return GetRuleContext<ExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(TeuchiUdonParser.DOT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_COALESCING_ACCESS() { return GetToken(TeuchiUdonParser.OP_COALESCING_ACCESS, 0); }
 		public AccessExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -1243,73 +1477,217 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitEvalTupleFuncExpr(this);
 		}
 	}
-	public partial class ValueBlockExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACE() { return GetToken(TeuchiUdonParser.OPEN_BRACE, 0); }
+	public partial class NameOfExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NAMEOF() { return GetToken(TeuchiUdonParser.NAMEOF, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
+			return GetRuleContext<IdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
+		public NameOfExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterNameOfExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitNameOfExpr(this);
+		}
+	}
+	public partial class RelationExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LT() { return GetToken(TeuchiUdonParser.LT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GT() { return GetToken(TeuchiUdonParser.GT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LE() { return GetToken(TeuchiUdonParser.OP_LE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_GE() { return GetToken(TeuchiUdonParser.OP_GE, 0); }
+		public RelationExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterRelationExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitRelationExpr(this);
+		}
+	}
+	public partial class RangeExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RANGE() { return GetToken(TeuchiUdonParser.OP_RANGE, 0); }
+		public RangeExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterRangeExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitRangeExpr(this);
+		}
+	}
+	public partial class ConditionalXorExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_XOR() { return GetToken(TeuchiUdonParser.OP_XOR, 0); }
+		public ConditionalXorExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterConditionalXorExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitConditionalXorExpr(this);
+		}
+	}
+	public partial class ConditionalExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INTERR() { return GetToken(TeuchiUdonParser.INTERR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COLON() { return GetToken(TeuchiUdonParser.COLON, 0); }
+		public ConditionalExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterConditionalExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitConditionalExpr(this);
+		}
+	}
+	public partial class FuncExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
+			return GetRuleContext<VarDeclContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ARROW() { return GetToken(TeuchiUdonParser.OP_ARROW, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
 			return GetRuleContext<ExprContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACE() { return GetToken(TeuchiUdonParser.CLOSE_BRACE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public StatementContext[] statement() {
-			return GetRuleContexts<StatementContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement(int i) {
-			return GetRuleContext<StatementContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] SEMICOLON() { return GetTokens(TeuchiUdonParser.SEMICOLON); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON(int i) {
-			return GetToken(TeuchiUdonParser.SEMICOLON, i);
-		}
-		public ValueBlockExprContext(ExprContext context) { CopyFrom(context); }
+		public FuncExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterValueBlockExpr(this);
+			if (typedListener != null) typedListener.EnterFuncExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitValueBlockExpr(this);
+			if (typedListener != null) typedListener.ExitFuncExpr(this);
 		}
 	}
-	public partial class UnitBlockExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACE() { return GetToken(TeuchiUdonParser.OPEN_BRACE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACE() { return GetToken(TeuchiUdonParser.CLOSE_BRACE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public StatementContext[] statement() {
-			return GetRuleContexts<StatementContext>();
+	public partial class PrefixExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement(int i) {
-			return GetRuleContext<StatementContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] SEMICOLON() { return GetTokens(TeuchiUdonParser.SEMICOLON); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON(int i) {
-			return GetToken(TeuchiUdonParser.SEMICOLON, i);
-		}
-		public UnitBlockExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(TeuchiUdonParser.PLUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(TeuchiUdonParser.MINUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BANG() { return GetToken(TeuchiUdonParser.BANG, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TILDE() { return GetToken(TeuchiUdonParser.TILDE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INC() { return GetToken(TeuchiUdonParser.OP_INC, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DEC() { return GetToken(TeuchiUdonParser.OP_DEC, 0); }
+		public PrefixExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterUnitBlockExpr(this);
+			if (typedListener != null) typedListener.EnterPrefixExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitUnitBlockExpr(this);
+			if (typedListener != null) typedListener.ExitPrefixExpr(this);
 		}
 	}
-	public partial class LiteralExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public LiteralContext literal() {
-			return GetRuleContext<LiteralContext>(0);
+	public partial class ConditionalOrExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
 		}
-		public LiteralExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_OR() { return GetToken(TeuchiUdonParser.OP_OR, 0); }
+		public ConditionalOrExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterLiteralExpr(this);
+			if (typedListener != null) typedListener.EnterConditionalOrExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitLiteralExpr(this);
+			if (typedListener != null) typedListener.ExitConditionalOrExpr(this);
+		}
+	}
+	public partial class LogicalOrExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PIPE() { return GetToken(TeuchiUdonParser.PIPE, 0); }
+		public LogicalOrExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterLogicalOrExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitLogicalOrExpr(this);
+		}
+	}
+	public partial class AdditionExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(TeuchiUdonParser.PLUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(TeuchiUdonParser.MINUS, 0); }
+		public AdditionExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterAdditionExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitAdditionExpr(this);
 		}
 	}
 	public partial class LetInBindExprContext : ExprContext {
@@ -1333,6 +1711,48 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitLetInBindExpr(this);
 		}
 	}
+	public partial class ConditionalAndExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_AND() { return GetToken(TeuchiUdonParser.OP_AND, 0); }
+		public ConditionalAndExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterConditionalAndExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitConditionalAndExpr(this);
+		}
+	}
+	public partial class CoalescingExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_COALESCING() { return GetToken(TeuchiUdonParser.OP_COALESCING, 0); }
+		public CoalescingExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterCoalescingExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitCoalescingExpr(this);
+		}
+	}
 	public partial class ParenExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
@@ -1351,45 +1771,25 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitParenExpr(this);
 		}
 	}
-	public partial class FuncExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
-			return GetRuleContext<VarDeclContext>(0);
+	public partial class LogicalXorExprContext : ExprContext {
+		public IToken op;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
+			return GetRuleContexts<ExprContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_PTR() { return GetToken(TeuchiUdonParser.OP_PTR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
-			return GetRuleContext<ExprContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
+			return GetRuleContext<ExprContext>(i);
 		}
-		public FuncExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CARET() { return GetToken(TeuchiUdonParser.CARET, 0); }
+		public LogicalXorExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterFuncExpr(this);
+			if (typedListener != null) typedListener.EnterLogicalXorExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitFuncExpr(this);
-		}
-	}
-	public partial class EvalSingleFuncExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
-			return GetRuleContext<IdentifierContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_PAREN() { return GetToken(TeuchiUdonParser.OPEN_PAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
-			return GetRuleContext<ExprContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_PAREN() { return GetToken(TeuchiUdonParser.CLOSE_PAREN, 0); }
-		public EvalSingleFuncExprContext(ExprContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterEvalSingleFuncExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitEvalSingleFuncExpr(this);
+			if (typedListener != null) typedListener.ExitLogicalXorExpr(this);
 		}
 	}
 
@@ -1410,7 +1810,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			int _alt;
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 181;
+			State = 188;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,15,Context) ) {
 			case 1:
@@ -1424,7 +1824,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 129;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-				while (((((_la - 9)) & ~0x3f) == 0 && ((1L << (_la - 9)) & ((1L << (BREAK - 9)) | (1L << (CONTINUE - 9)) | (1L << (LET - 9)) | (1L << (RETURN - 9)) | (1L << (IDENTIFIER - 9)) | (1L << (INTEGER_LITERAL - 9)) | (1L << (HEX_INTEGER_LITERAL - 9)) | (1L << (BIN_INTEGER_LITERAL - 9)) | (1L << (REAL_LITERAL - 9)) | (1L << (CHARACTER_LITERAL - 9)) | (1L << (REGULAR_STRING - 9)) | (1L << (VERBATIUM_STRING - 9)) | (1L << (OPEN_BRACE - 9)) | (1L << (OPEN_PAREN - 9)))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BREAK) | (1L << CONTINUE) | (1L << LET) | (1L << NAMEOF) | (1L << RETURN) | (1L << IDENTIFIER) | (1L << INTEGER_LITERAL) | (1L << HEX_INTEGER_LITERAL) | (1L << BIN_INTEGER_LITERAL) | (1L << REAL_LITERAL) | (1L << CHARACTER_LITERAL) | (1L << REGULAR_STRING) | (1L << VERBATIUM_STRING) | (1L << OPEN_BRACE) | (1L << OPEN_PAREN))) != 0) || ((((_la - 66)) & ~0x3f) == 0 && ((1L << (_la - 66)) & ((1L << (PLUS - 66)) | (1L << (MINUS - 66)) | (1L << (BANG - 66)) | (1L << (TILDE - 66)) | (1L << (OP_INC - 66)) | (1L << (OP_DEC - 66)))) != 0)) {
 					{
 					{
 					State = 124;
@@ -1564,58 +1964,356 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				break;
 			case 9:
 				{
-				_localctx = new FuncExprContext(_localctx);
+				_localctx = new NameOfExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 172;
-				varDecl(false);
+				Match(NAMEOF);
 				State = 173;
-				Match(OP_PTR);
+				Match(OPEN_PAREN);
 				State = 174;
-				expr(2);
+				identifier();
+				State = 175;
+				Match(CLOSE_PAREN);
 				}
 				break;
 			case 10:
 				{
+				_localctx = new PrefixExprContext(_localctx);
+				Context = _localctx;
+				_prevctx = _localctx;
+				State = 177;
+				((PrefixExprContext)_localctx).op = TokenStream.LT(1);
+				_la = TokenStream.LA(1);
+				if ( !(((((_la - 66)) & ~0x3f) == 0 && ((1L << (_la - 66)) & ((1L << (PLUS - 66)) | (1L << (MINUS - 66)) | (1L << (BANG - 66)) | (1L << (TILDE - 66)) | (1L << (OP_INC - 66)) | (1L << (OP_DEC - 66)))) != 0)) ) {
+					((PrefixExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+				}
+				else {
+					ErrorHandler.ReportMatch(this);
+				    Consume();
+				}
+				State = 178;
+				expr(18);
+				}
+				break;
+			case 11:
+				{
 				_localctx = new LetInBindExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
-				State = 176;
-				Match(LET);
-				State = 177;
-				varBind();
-				State = 178;
-				Match(IN);
 				State = 179;
+				Match(LET);
+				State = 180;
+				varBind();
+				State = 181;
+				Match(IN);
+				State = 182;
+				expr(2);
+				}
+				break;
+			case 12:
+				{
+				_localctx = new FuncExprContext(_localctx);
+				Context = _localctx;
+				_prevctx = _localctx;
+				State = 184;
+				varDecl(false);
+				State = 185;
+				Match(OP_ARROW);
+				State = 186;
 				expr(1);
 				}
 				break;
 			}
 			Context.Stop = TokenStream.LT(-1);
-			State = 188;
+			State = 245;
 			ErrorHandler.Sync(this);
-			_alt = Interpreter.AdaptivePredict(TokenStream,16,Context);
+			_alt = Interpreter.AdaptivePredict(TokenStream,17,Context);
 			while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( ParseListeners!=null )
 						TriggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					{
-					_localctx = new AccessExprContext(new ExprContext(_parentctx, _parentState));
-					PushNewRecursionContext(_localctx, _startState, RULE_expr);
-					State = 183;
-					if (!(Precpred(Context, 3))) throw new FailedPredicateException(this, "Precpred(Context, 3)");
-					State = 184;
-					Match(DOT);
-					State = 185;
-					expr(4);
+					State = 243;
+					ErrorHandler.Sync(this);
+					switch ( Interpreter.AdaptivePredict(TokenStream,16,Context) ) {
+					case 1:
+						{
+						_localctx = new AccessExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 190;
+						if (!(Precpred(Context, 20))) throw new FailedPredicateException(this, "Precpred(Context, 20)");
+						State = 191;
+						((AccessExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(_la==DOT || _la==OP_COALESCING_ACCESS) ) {
+							((AccessExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 192;
+						expr(21);
+						}
+						break;
+					case 2:
+						{
+						_localctx = new RangeExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 193;
+						if (!(Precpred(Context, 17))) throw new FailedPredicateException(this, "Precpred(Context, 17)");
+						State = 194;
+						((RangeExprContext)_localctx).op = Match(OP_RANGE);
+						State = 195;
+						expr(18);
+						}
+						break;
+					case 3:
+						{
+						_localctx = new MultiplicationExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 196;
+						if (!(Precpred(Context, 16))) throw new FailedPredicateException(this, "Precpred(Context, 16)");
+						State = 197;
+						((MultiplicationExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(((((_la - 68)) & ~0x3f) == 0 && ((1L << (_la - 68)) & ((1L << (STAR - 68)) | (1L << (DIV - 68)) | (1L << (PERCENT - 68)))) != 0)) ) {
+							((MultiplicationExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 198;
+						expr(17);
+						}
+						break;
+					case 4:
+						{
+						_localctx = new AdditionExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 199;
+						if (!(Precpred(Context, 15))) throw new FailedPredicateException(this, "Precpred(Context, 15)");
+						State = 200;
+						((AdditionExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(_la==PLUS || _la==MINUS) ) {
+							((AdditionExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 201;
+						expr(16);
+						}
+						break;
+					case 5:
+						{
+						_localctx = new ShiftExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 202;
+						if (!(Precpred(Context, 14))) throw new FailedPredicateException(this, "Precpred(Context, 14)");
+						State = 203;
+						((ShiftExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(_la==OP_LEFT_SHIFT || _la==OP_RIGHT_SHIFT) ) {
+							((ShiftExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 204;
+						expr(15);
+						}
+						break;
+					case 6:
+						{
+						_localctx = new RelationExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 205;
+						if (!(Precpred(Context, 13))) throw new FailedPredicateException(this, "Precpred(Context, 13)");
+						State = 206;
+						((RelationExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(((((_la - 77)) & ~0x3f) == 0 && ((1L << (_la - 77)) & ((1L << (LT - 77)) | (1L << (GT - 77)) | (1L << (OP_LE - 77)) | (1L << (OP_GE - 77)))) != 0)) ) {
+							((RelationExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 207;
+						expr(14);
+						}
+						break;
+					case 7:
+						{
+						_localctx = new EqualityExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 208;
+						if (!(Precpred(Context, 12))) throw new FailedPredicateException(this, "Precpred(Context, 12)");
+						State = 209;
+						((EqualityExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(_la==OP_EQ || _la==OP_NE) ) {
+							((EqualityExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 210;
+						expr(13);
+						}
+						break;
+					case 8:
+						{
+						_localctx = new LogicalAndExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 211;
+						if (!(Precpred(Context, 11))) throw new FailedPredicateException(this, "Precpred(Context, 11)");
+						State = 212;
+						((LogicalAndExprContext)_localctx).op = Match(AMP);
+						State = 213;
+						expr(12);
+						}
+						break;
+					case 9:
+						{
+						_localctx = new LogicalXorExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 214;
+						if (!(Precpred(Context, 10))) throw new FailedPredicateException(this, "Precpred(Context, 10)");
+						State = 215;
+						((LogicalXorExprContext)_localctx).op = Match(CARET);
+						State = 216;
+						expr(11);
+						}
+						break;
+					case 10:
+						{
+						_localctx = new LogicalOrExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 217;
+						if (!(Precpred(Context, 9))) throw new FailedPredicateException(this, "Precpred(Context, 9)");
+						State = 218;
+						((LogicalOrExprContext)_localctx).op = Match(PIPE);
+						State = 219;
+						expr(10);
+						}
+						break;
+					case 11:
+						{
+						_localctx = new ConditionalAndExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 220;
+						if (!(Precpred(Context, 8))) throw new FailedPredicateException(this, "Precpred(Context, 8)");
+						State = 221;
+						((ConditionalAndExprContext)_localctx).op = Match(OP_AND);
+						State = 222;
+						expr(9);
+						}
+						break;
+					case 12:
+						{
+						_localctx = new ConditionalXorExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 223;
+						if (!(Precpred(Context, 7))) throw new FailedPredicateException(this, "Precpred(Context, 7)");
+						State = 224;
+						((ConditionalXorExprContext)_localctx).op = Match(OP_XOR);
+						State = 225;
+						expr(8);
+						}
+						break;
+					case 13:
+						{
+						_localctx = new ConditionalOrExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 226;
+						if (!(Precpred(Context, 6))) throw new FailedPredicateException(this, "Precpred(Context, 6)");
+						State = 227;
+						((ConditionalOrExprContext)_localctx).op = Match(OP_OR);
+						State = 228;
+						expr(7);
+						}
+						break;
+					case 14:
+						{
+						_localctx = new CoalescingExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 229;
+						if (!(Precpred(Context, 5))) throw new FailedPredicateException(this, "Precpred(Context, 5)");
+						State = 230;
+						((CoalescingExprContext)_localctx).op = Match(OP_COALESCING);
+						State = 231;
+						expr(6);
+						}
+						break;
+					case 15:
+						{
+						_localctx = new ConditionalExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 232;
+						if (!(Precpred(Context, 4))) throw new FailedPredicateException(this, "Precpred(Context, 4)");
+						State = 233;
+						Match(INTERR);
+						State = 234;
+						expr(0);
+						State = 235;
+						Match(COLON);
+						State = 236;
+						expr(4);
+						}
+						break;
+					case 16:
+						{
+						_localctx = new AssignExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 238;
+						if (!(Precpred(Context, 3))) throw new FailedPredicateException(this, "Precpred(Context, 3)");
+						State = 239;
+						((AssignExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(((((_la - 76)) & ~0x3f) == 0 && ((1L << (_la - 76)) & ((1L << (ASSIGNMENT - 76)) | (1L << (OP_ADD_ASSIGNMENT - 76)) | (1L << (OP_SUB_ASSIGNMENT - 76)) | (1L << (OP_MULT_ASSIGNMENT - 76)) | (1L << (OP_DIV_ASSIGNMENT - 76)) | (1L << (OP_MOD_ASSIGNMENT - 76)) | (1L << (OP_AMP_ASSIGNMENT - 76)) | (1L << (OP_PIPE_ASSIGNMENT - 76)) | (1L << (OP_CARET_ASSIGNMENT - 76)) | (1L << (OP_AND_ASSIGNMENT - 76)) | (1L << (OP_OR_ASSIGNMENT - 76)) | (1L << (OP_LEFT_SHIFT_ASSIGNMENT - 76)) | (1L << (OP_RIGHT_SHIFT_ASSIGNMENT - 76)) | (1L << (OP_COALESCING_ASSIGNMENT - 76)))) != 0)) ) {
+							((AssignExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 240;
+						expr(3);
+						}
+						break;
+					case 17:
+						{
+						_localctx = new PostfixExprContext(new ExprContext(_parentctx, _parentState));
+						PushNewRecursionContext(_localctx, _startState, RULE_expr);
+						State = 241;
+						if (!(Precpred(Context, 19))) throw new FailedPredicateException(this, "Precpred(Context, 19)");
+						State = 242;
+						((PostfixExprContext)_localctx).op = TokenStream.LT(1);
+						_la = TokenStream.LA(1);
+						if ( !(_la==OP_INC || _la==OP_DEC) ) {
+							((PostfixExprContext)_localctx).op = ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						}
+						break;
 					}
 					} 
 				}
-				State = 190;
+				State = 247;
 				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,16,Context);
+				_alt = Interpreter.AdaptivePredict(TokenStream,17,Context);
 			}
 			}
 		}
@@ -1748,14 +2446,14 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		LiteralContext _localctx = new LiteralContext(Context, State);
 		EnterRule(_localctx, 20, RULE_literal);
 		try {
-			State = 198;
+			State = 255;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case INTEGER_LITERAL:
 				_localctx = new IntegerLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 191;
+				State = 248;
 				Match(INTEGER_LITERAL);
 				}
 				break;
@@ -1763,7 +2461,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new HexIntegerLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 192;
+				State = 249;
 				Match(HEX_INTEGER_LITERAL);
 				}
 				break;
@@ -1771,7 +2469,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new BinIntegerLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 193;
+				State = 250;
 				Match(BIN_INTEGER_LITERAL);
 				}
 				break;
@@ -1779,7 +2477,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new RealLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 194;
+				State = 251;
 				Match(REAL_LITERAL);
 				}
 				break;
@@ -1787,7 +2485,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new CharacterLiteralContext(_localctx);
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 195;
+				State = 252;
 				Match(CHARACTER_LITERAL);
 				}
 				break;
@@ -1795,7 +2493,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new RegularStringContext(_localctx);
 				EnterOuterAlt(_localctx, 6);
 				{
-				State = 196;
+				State = 253;
 				Match(REGULAR_STRING);
 				}
 				break;
@@ -1803,7 +2501,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new VervatiumStringContext(_localctx);
 				EnterOuterAlt(_localctx, 7);
 				{
-				State = 197;
+				State = 254;
 				Match(VERBATIUM_STRING);
 				}
 				break;
@@ -1830,14 +2528,30 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	private bool expr_sempred(ExprContext _localctx, int predIndex) {
 		switch (predIndex) {
-		case 0: return Precpred(Context, 3);
+		case 0: return Precpred(Context, 20);
+		case 1: return Precpred(Context, 17);
+		case 2: return Precpred(Context, 16);
+		case 3: return Precpred(Context, 15);
+		case 4: return Precpred(Context, 14);
+		case 5: return Precpred(Context, 13);
+		case 6: return Precpred(Context, 12);
+		case 7: return Precpred(Context, 11);
+		case 8: return Precpred(Context, 10);
+		case 9: return Precpred(Context, 9);
+		case 10: return Precpred(Context, 8);
+		case 11: return Precpred(Context, 7);
+		case 12: return Precpred(Context, 6);
+		case 13: return Precpred(Context, 5);
+		case 14: return Precpred(Context, 4);
+		case 15: return Precpred(Context, 3);
+		case 16: return Precpred(Context, 19);
 		}
 		return true;
 	}
 
 	private static char[] _serializedATN = {
 		'\x3', '\x608B', '\xA72A', '\x8133', '\xB9ED', '\x417C', '\x3BE7', '\x7786', 
-		'\x5964', '\x3', 's', '\xCB', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
+		'\x5964', '\x3', 'r', '\x104', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
 		'\t', '\x3', '\x4', '\x4', '\t', '\x4', '\x4', '\x5', '\t', '\x5', '\x4', 
 		'\x6', '\t', '\x6', '\x4', '\a', '\t', '\a', '\x4', '\b', '\t', '\b', 
 		'\x4', '\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', 
@@ -1872,144 +2586,204 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x3', '\v', '\x3', '\v', '\a', '\v', '\xA8', '\n', '\v', '\f', '\v', 
 		'\xE', '\v', '\xAB', '\v', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
-		'\v', '\x3', '\v', '\x3', '\v', '\x5', '\v', '\xB8', '\n', '\v', '\x3', 
-		'\v', '\x3', '\v', '\x3', '\v', '\a', '\v', '\xBD', '\n', '\v', '\f', 
-		'\v', '\xE', '\v', '\xC0', '\v', '\v', '\x3', '\f', '\x3', '\f', '\x3', 
-		'\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x5', '\f', 
-		'\xC9', '\n', '\f', '\x3', '\f', '\x2', '\x3', '\x14', '\r', '\x2', '\x4', 
-		'\x6', '\b', '\n', '\f', '\xE', '\x10', '\x12', '\x14', '\x16', '\x2', 
-		'\x2', '\x2', '\xE8', '\x2', '!', '\x3', '\x2', '\x2', '\x2', '\x4', '$', 
-		'\x3', '\x2', '\x2', '\x2', '\x6', ':', '\x3', '\x2', '\x2', '\x2', '\b', 
-		'\x45', '\x3', '\x2', '\x2', '\x2', '\n', 'G', '\x3', '\x2', '\x2', '\x2', 
-		'\f', 'L', '\x3', '\x2', '\x2', '\x2', '\xE', 'j', '\x3', '\x2', '\x2', 
-		'\x2', '\x10', 'l', '\x3', '\x2', '\x2', '\x2', '\x12', 'z', '\x3', '\x2', 
-		'\x2', '\x2', '\x14', '\xB7', '\x3', '\x2', '\x2', '\x2', '\x16', '\xC8', 
-		'\x3', '\x2', '\x2', '\x2', '\x18', '\x19', '\a', '?', '\x2', '\x2', '\x19', 
-		'\x1A', '\x5', '\x4', '\x3', '\x2', '\x1A', '\x1B', '\a', '@', '\x2', 
-		'\x2', '\x1B', '\x1C', '\a', 'H', '\x2', '\x2', '\x1C', '\x1D', '\a', 
-		'\x2', '\x2', '\x3', '\x1D', '\"', '\x3', '\x2', '\x2', '\x2', '\x1E', 
-		'\x1F', '\x5', '\x4', '\x3', '\x2', '\x1F', ' ', '\a', '\x2', '\x2', '\x3', 
-		' ', '\"', '\x3', '\x2', '\x2', '\x2', '!', '\x18', '\x3', '\x2', '\x2', 
-		'\x2', '!', '\x1E', '\x3', '\x2', '\x2', '\x2', '\"', '\x3', '\x3', '\x2', 
-		'\x2', '\x2', '#', '%', '\x5', '\x6', '\x4', '\x2', '$', '#', '\x3', '\x2', 
-		'\x2', '\x2', '%', '&', '\x3', '\x2', '\x2', '\x2', '&', '$', '\x3', '\x2', 
-		'\x2', '\x2', '&', '\'', '\x3', '\x2', '\x2', '\x2', '\'', '\x5', '\x3', 
-		'\x2', '\x2', '\x2', '(', '*', '\x5', '\b', '\x5', '\x2', ')', '(', '\x3', 
-		'\x2', '\x2', '\x2', '*', '-', '\x3', '\x2', '\x2', '\x2', '+', ')', '\x3', 
-		'\x2', '\x2', '\x2', '+', ',', '\x3', '\x2', '\x2', '\x2', ',', '.', '\x3', 
-		'\x2', '\x2', '\x2', '-', '+', '\x3', '\x2', '\x2', '\x2', '.', '/', '\x5', 
-		'\f', '\a', '\x2', '/', '\x30', '\a', 'H', '\x2', '\x2', '\x30', ';', 
-		'\x3', '\x2', '\x2', '\x2', '\x31', '\x33', '\x5', '\n', '\x6', '\x2', 
-		'\x32', '\x31', '\x3', '\x2', '\x2', '\x2', '\x33', '\x36', '\x3', '\x2', 
-		'\x2', '\x2', '\x34', '\x32', '\x3', '\x2', '\x2', '\x2', '\x34', '\x35', 
-		'\x3', '\x2', '\x2', '\x2', '\x35', '\x37', '\x3', '\x2', '\x2', '\x2', 
-		'\x36', '\x34', '\x3', '\x2', '\x2', '\x2', '\x37', '\x38', '\x5', '\x14', 
-		'\v', '\x2', '\x38', '\x39', '\a', 'H', '\x2', '\x2', '\x39', ';', '\x3', 
-		'\x2', '\x2', '\x2', ':', '+', '\x3', '\x2', '\x2', '\x2', ':', '\x34', 
-		'\x3', '\x2', '\x2', '\x2', ';', '\a', '\x3', '\x2', '\x2', '\x2', '<', 
-		'=', '\a', '\x31', '\x2', '\x2', '=', '>', '\a', '\x43', '\x2', '\x2', 
-		'>', '?', '\x5', '\x10', '\t', '\x2', '?', '@', '\a', '\x44', '\x2', '\x2', 
-		'@', '\x46', '\x3', '\x2', '\x2', '\x2', '\x41', '\x46', '\a', '\x32', 
-		'\x2', '\x2', '\x42', '\x46', '\a', '\x33', '\x2', '\x2', '\x43', '\x46', 
-		'\a', '\x34', '\x2', '\x2', '\x44', '\x46', '\a', '\x35', '\x2', '\x2', 
-		'\x45', '<', '\x3', '\x2', '\x2', '\x2', '\x45', '\x41', '\x3', '\x2', 
-		'\x2', '\x2', '\x45', '\x42', '\x3', '\x2', '\x2', '\x2', '\x45', '\x43', 
-		'\x3', '\x2', '\x2', '\x2', '\x45', '\x44', '\x3', '\x2', '\x2', '\x2', 
-		'\x46', '\t', '\x3', '\x2', '\x2', '\x2', 'G', 'H', '\a', '\x31', '\x2', 
-		'\x2', 'H', 'I', '\a', '\x43', '\x2', '\x2', 'I', 'J', '\x5', '\x10', 
-		'\t', '\x2', 'J', 'K', '\a', '\x44', '\x2', '\x2', 'K', '\v', '\x3', '\x2', 
-		'\x2', '\x2', 'L', 'M', '\x5', '\xE', '\b', '\x2', 'M', 'N', '\a', 'S', 
-		'\x2', '\x2', 'N', 'O', '\x5', '\x14', '\v', '\x2', 'O', '\r', '\x3', 
-		'\x2', '\x2', '\x2', 'P', 'Q', '\a', '\x43', '\x2', '\x2', 'Q', 'k', '\a', 
-		'\x44', '\x2', '\x2', 'R', 'U', '\x5', '\x10', '\t', '\x2', 'S', 'T', 
-		'\a', 'G', '\x2', '\x2', 'T', 'V', '\x5', '\x14', '\v', '\x2', 'U', 'S', 
-		'\x3', '\x2', '\x2', '\x2', 'U', 'V', '\x3', '\x2', '\x2', '\x2', 'V', 
-		'k', '\x3', '\x2', '\x2', '\x2', 'W', 'X', '\a', '\x43', '\x2', '\x2', 
-		'X', '[', '\x5', '\x10', '\t', '\x2', 'Y', 'Z', '\a', 'G', '\x2', '\x2', 
-		'Z', '\\', '\x5', '\x14', '\v', '\x2', '[', 'Y', '\x3', '\x2', '\x2', 
-		'\x2', '[', '\\', '\x3', '\x2', '\x2', '\x2', '\\', '\x65', '\x3', '\x2', 
-		'\x2', '\x2', ']', '^', '\a', '\x46', '\x2', '\x2', '^', '\x61', '\x5', 
-		'\x10', '\t', '\x2', '_', '`', '\a', 'G', '\x2', '\x2', '`', '\x62', '\x5', 
-		'\x14', '\v', '\x2', '\x61', '_', '\x3', '\x2', '\x2', '\x2', '\x61', 
-		'\x62', '\x3', '\x2', '\x2', '\x2', '\x62', '\x64', '\x3', '\x2', '\x2', 
-		'\x2', '\x63', ']', '\x3', '\x2', '\x2', '\x2', '\x64', 'g', '\x3', '\x2', 
-		'\x2', '\x2', '\x65', '\x63', '\x3', '\x2', '\x2', '\x2', '\x65', '\x66', 
-		'\x3', '\x2', '\x2', '\x2', '\x66', 'h', '\x3', '\x2', '\x2', '\x2', 'g', 
-		'\x65', '\x3', '\x2', '\x2', '\x2', 'h', 'i', '\a', '\x44', '\x2', '\x2', 
-		'i', 'k', '\x3', '\x2', '\x2', '\x2', 'j', 'P', '\x3', '\x2', '\x2', '\x2', 
-		'j', 'R', '\x3', '\x2', '\x2', '\x2', 'j', 'W', '\x3', '\x2', '\x2', '\x2', 
-		'k', '\xF', '\x3', '\x2', '\x2', '\x2', 'l', 'm', '\a', '\x36', '\x2', 
-		'\x2', 'm', '\x11', '\x3', '\x2', '\x2', '\x2', 'n', '{', '\a', '&', '\x2', 
-		'\x2', 'o', 'p', '\a', '&', '\x2', '\x2', 'p', '{', '\x5', '\x14', '\v', 
-		'\x2', 'q', '{', '\a', '\xF', '\x2', '\x2', 'r', 's', '\a', '\xF', '\x2', 
-		'\x2', 's', '{', '\x5', '\x14', '\v', '\x2', 't', '{', '\a', '\v', '\x2', 
-		'\x2', 'u', 'v', '\a', '\v', '\x2', '\x2', 'v', '{', '\x5', '\x14', '\v', 
-		'\x2', 'w', 'x', '\a', '\x1A', '\x2', '\x2', 'x', '{', '\x5', '\f', '\a', 
-		'\x2', 'y', '{', '\x5', '\x14', '\v', '\x2', 'z', 'n', '\x3', '\x2', '\x2', 
-		'\x2', 'z', 'o', '\x3', '\x2', '\x2', '\x2', 'z', 'q', '\x3', '\x2', '\x2', 
-		'\x2', 'z', 'r', '\x3', '\x2', '\x2', '\x2', 'z', 't', '\x3', '\x2', '\x2', 
-		'\x2', 'z', 'u', '\x3', '\x2', '\x2', '\x2', 'z', 'w', '\x3', '\x2', '\x2', 
-		'\x2', 'z', 'y', '\x3', '\x2', '\x2', '\x2', '{', '\x13', '\x3', '\x2', 
-		'\x2', '\x2', '|', '}', '\b', '\v', '\x1', '\x2', '}', '\x83', '\a', '?', 
-		'\x2', '\x2', '~', '\x7F', '\x5', '\x12', '\n', '\x2', '\x7F', '\x80', 
-		'\a', 'H', '\x2', '\x2', '\x80', '\x82', '\x3', '\x2', '\x2', '\x2', '\x81', 
-		'~', '\x3', '\x2', '\x2', '\x2', '\x82', '\x85', '\x3', '\x2', '\x2', 
-		'\x2', '\x83', '\x81', '\x3', '\x2', '\x2', '\x2', '\x83', '\x84', '\x3', 
-		'\x2', '\x2', '\x2', '\x84', '\x86', '\x3', '\x2', '\x2', '\x2', '\x85', 
-		'\x83', '\x3', '\x2', '\x2', '\x2', '\x86', '\xB8', '\a', '@', '\x2', 
-		'\x2', '\x87', '\x8D', '\a', '?', '\x2', '\x2', '\x88', '\x89', '\x5', 
-		'\x12', '\n', '\x2', '\x89', '\x8A', '\a', 'H', '\x2', '\x2', '\x8A', 
-		'\x8C', '\x3', '\x2', '\x2', '\x2', '\x8B', '\x88', '\x3', '\x2', '\x2', 
-		'\x2', '\x8C', '\x8F', '\x3', '\x2', '\x2', '\x2', '\x8D', '\x8B', '\x3', 
-		'\x2', '\x2', '\x2', '\x8D', '\x8E', '\x3', '\x2', '\x2', '\x2', '\x8E', 
-		'\x90', '\x3', '\x2', '\x2', '\x2', '\x8F', '\x8D', '\x3', '\x2', '\x2', 
-		'\x2', '\x90', '\x91', '\x5', '\x14', '\v', '\x2', '\x91', '\x92', '\a', 
-		'@', '\x2', '\x2', '\x92', '\xB8', '\x3', '\x2', '\x2', '\x2', '\x93', 
-		'\x94', '\a', '\x43', '\x2', '\x2', '\x94', '\x95', '\x5', '\x14', '\v', 
-		'\x2', '\x95', '\x96', '\a', '\x44', '\x2', '\x2', '\x96', '\xB8', '\x3', 
-		'\x2', '\x2', '\x2', '\x97', '\xB8', '\x5', '\x16', '\f', '\x2', '\x98', 
-		'\xB8', '\x5', '\x10', '\t', '\x2', '\x99', '\x9A', '\x5', '\x10', '\t', 
-		'\x2', '\x9A', '\x9B', '\a', '\x43', '\x2', '\x2', '\x9B', '\x9C', '\a', 
-		'\x44', '\x2', '\x2', '\x9C', '\xB8', '\x3', '\x2', '\x2', '\x2', '\x9D', 
-		'\x9E', '\x5', '\x10', '\t', '\x2', '\x9E', '\x9F', '\a', '\x43', '\x2', 
-		'\x2', '\x9F', '\xA0', '\x5', '\x14', '\v', '\x2', '\xA0', '\xA1', '\a', 
-		'\x44', '\x2', '\x2', '\xA1', '\xB8', '\x3', '\x2', '\x2', '\x2', '\xA2', 
-		'\xA3', '\x5', '\x10', '\t', '\x2', '\xA3', '\xA4', '\a', '\x43', '\x2', 
-		'\x2', '\xA4', '\xA9', '\x5', '\x14', '\v', '\x2', '\xA5', '\xA6', '\a', 
-		'\x46', '\x2', '\x2', '\xA6', '\xA8', '\x5', '\x14', '\v', '\x2', '\xA7', 
-		'\xA5', '\x3', '\x2', '\x2', '\x2', '\xA8', '\xAB', '\x3', '\x2', '\x2', 
-		'\x2', '\xA9', '\xA7', '\x3', '\x2', '\x2', '\x2', '\xA9', '\xAA', '\x3', 
-		'\x2', '\x2', '\x2', '\xAA', '\xAC', '\x3', '\x2', '\x2', '\x2', '\xAB', 
-		'\xA9', '\x3', '\x2', '\x2', '\x2', '\xAC', '\xAD', '\a', '\x44', '\x2', 
-		'\x2', '\xAD', '\xB8', '\x3', '\x2', '\x2', '\x2', '\xAE', '\xAF', '\x5', 
-		'\xE', '\b', '\x2', '\xAF', '\xB0', '\a', ']', '\x2', '\x2', '\xB0', '\xB1', 
-		'\x5', '\x14', '\v', '\x4', '\xB1', '\xB8', '\x3', '\x2', '\x2', '\x2', 
-		'\xB2', '\xB3', '\a', '\x1A', '\x2', '\x2', '\xB3', '\xB4', '\x5', '\f', 
-		'\a', '\x2', '\xB4', '\xB5', '\a', '\x18', '\x2', '\x2', '\xB5', '\xB6', 
-		'\x5', '\x14', '\v', '\x3', '\xB6', '\xB8', '\x3', '\x2', '\x2', '\x2', 
-		'\xB7', '|', '\x3', '\x2', '\x2', '\x2', '\xB7', '\x87', '\x3', '\x2', 
-		'\x2', '\x2', '\xB7', '\x93', '\x3', '\x2', '\x2', '\x2', '\xB7', '\x97', 
-		'\x3', '\x2', '\x2', '\x2', '\xB7', '\x98', '\x3', '\x2', '\x2', '\x2', 
-		'\xB7', '\x99', '\x3', '\x2', '\x2', '\x2', '\xB7', '\x9D', '\x3', '\x2', 
-		'\x2', '\x2', '\xB7', '\xA2', '\x3', '\x2', '\x2', '\x2', '\xB7', '\xAE', 
-		'\x3', '\x2', '\x2', '\x2', '\xB7', '\xB2', '\x3', '\x2', '\x2', '\x2', 
-		'\xB8', '\xBE', '\x3', '\x2', '\x2', '\x2', '\xB9', '\xBA', '\f', '\x5', 
-		'\x2', '\x2', '\xBA', '\xBB', '\a', '\x45', '\x2', '\x2', '\xBB', '\xBD', 
-		'\x5', '\x14', '\v', '\x6', '\xBC', '\xB9', '\x3', '\x2', '\x2', '\x2', 
-		'\xBD', '\xC0', '\x3', '\x2', '\x2', '\x2', '\xBE', '\xBC', '\x3', '\x2', 
-		'\x2', '\x2', '\xBE', '\xBF', '\x3', '\x2', '\x2', '\x2', '\xBF', '\x15', 
-		'\x3', '\x2', '\x2', '\x2', '\xC0', '\xBE', '\x3', '\x2', '\x2', '\x2', 
-		'\xC1', '\xC9', '\a', '\x38', '\x2', '\x2', '\xC2', '\xC9', '\a', '\x39', 
-		'\x2', '\x2', '\xC3', '\xC9', '\a', ':', '\x2', '\x2', '\xC4', '\xC9', 
-		'\a', ';', '\x2', '\x2', '\xC5', '\xC9', '\a', '<', '\x2', '\x2', '\xC6', 
-		'\xC9', '\a', '=', '\x2', '\x2', '\xC7', '\xC9', '\a', '>', '\x2', '\x2', 
-		'\xC8', '\xC1', '\x3', '\x2', '\x2', '\x2', '\xC8', '\xC2', '\x3', '\x2', 
-		'\x2', '\x2', '\xC8', '\xC3', '\x3', '\x2', '\x2', '\x2', '\xC8', '\xC4', 
-		'\x3', '\x2', '\x2', '\x2', '\xC8', '\xC5', '\x3', '\x2', '\x2', '\x2', 
-		'\xC8', '\xC6', '\x3', '\x2', '\x2', '\x2', '\xC8', '\xC7', '\x3', '\x2', 
-		'\x2', '\x2', '\xC9', '\x17', '\x3', '\x2', '\x2', '\x2', '\x14', '!', 
-		'&', '+', '\x34', ':', '\x45', 'U', '[', '\x61', '\x65', 'j', 'z', '\x83', 
-		'\x8D', '\xA9', '\xB7', '\xBE', '\xC8',
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x5', '\v', '\xBF', 
+		'\n', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\a', '\v', 
+		'\xF6', '\n', '\v', '\f', '\v', '\xE', '\v', '\xF9', '\v', '\v', '\x3', 
+		'\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', 
+		'\x3', '\f', '\x5', '\f', '\x102', '\n', '\f', '\x3', '\f', '\x2', '\x3', 
+		'\x14', '\r', '\x2', '\x4', '\x6', '\b', '\n', '\f', '\xE', '\x10', '\x12', 
+		'\x14', '\x16', '\x2', '\v', '\x5', '\x2', '\x44', '\x45', 'L', 'M', 'U', 
+		'V', '\x4', '\x2', '@', '@', 'T', 'T', '\x3', '\x2', '\x46', 'H', '\x3', 
+		'\x2', '\x44', '\x45', '\x3', '\x2', 'i', 'j', '\x4', '\x2', 'O', 'P', 
+		']', '^', '\x3', '\x2', '[', '\\', '\x5', '\x2', 'N', 'N', '_', 'h', 'k', 
+		'm', '\x3', '\x2', 'U', 'V', '\x2', '\x133', '\x2', '!', '\x3', '\x2', 
+		'\x2', '\x2', '\x4', '$', '\x3', '\x2', '\x2', '\x2', '\x6', ':', '\x3', 
+		'\x2', '\x2', '\x2', '\b', '\x45', '\x3', '\x2', '\x2', '\x2', '\n', 'G', 
+		'\x3', '\x2', '\x2', '\x2', '\f', 'L', '\x3', '\x2', '\x2', '\x2', '\xE', 
+		'j', '\x3', '\x2', '\x2', '\x2', '\x10', 'l', '\x3', '\x2', '\x2', '\x2', 
+		'\x12', 'z', '\x3', '\x2', '\x2', '\x2', '\x14', '\xBE', '\x3', '\x2', 
+		'\x2', '\x2', '\x16', '\x101', '\x3', '\x2', '\x2', '\x2', '\x18', '\x19', 
+		'\a', ':', '\x2', '\x2', '\x19', '\x1A', '\x5', '\x4', '\x3', '\x2', '\x1A', 
+		'\x1B', '\a', ';', '\x2', '\x2', '\x1B', '\x1C', '\a', '\x43', '\x2', 
+		'\x2', '\x1C', '\x1D', '\a', '\x2', '\x2', '\x3', '\x1D', '\"', '\x3', 
+		'\x2', '\x2', '\x2', '\x1E', '\x1F', '\x5', '\x4', '\x3', '\x2', '\x1F', 
+		' ', '\a', '\x2', '\x2', '\x3', ' ', '\"', '\x3', '\x2', '\x2', '\x2', 
+		'!', '\x18', '\x3', '\x2', '\x2', '\x2', '!', '\x1E', '\x3', '\x2', '\x2', 
+		'\x2', '\"', '\x3', '\x3', '\x2', '\x2', '\x2', '#', '%', '\x5', '\x6', 
+		'\x4', '\x2', '$', '#', '\x3', '\x2', '\x2', '\x2', '%', '&', '\x3', '\x2', 
+		'\x2', '\x2', '&', '$', '\x3', '\x2', '\x2', '\x2', '&', '\'', '\x3', 
+		'\x2', '\x2', '\x2', '\'', '\x5', '\x3', '\x2', '\x2', '\x2', '(', '*', 
+		'\x5', '\b', '\x5', '\x2', ')', '(', '\x3', '\x2', '\x2', '\x2', '*', 
+		'-', '\x3', '\x2', '\x2', '\x2', '+', ')', '\x3', '\x2', '\x2', '\x2', 
+		'+', ',', '\x3', '\x2', '\x2', '\x2', ',', '.', '\x3', '\x2', '\x2', '\x2', 
+		'-', '+', '\x3', '\x2', '\x2', '\x2', '.', '/', '\x5', '\f', '\a', '\x2', 
+		'/', '\x30', '\a', '\x43', '\x2', '\x2', '\x30', ';', '\x3', '\x2', '\x2', 
+		'\x2', '\x31', '\x33', '\x5', '\n', '\x6', '\x2', '\x32', '\x31', '\x3', 
+		'\x2', '\x2', '\x2', '\x33', '\x36', '\x3', '\x2', '\x2', '\x2', '\x34', 
+		'\x32', '\x3', '\x2', '\x2', '\x2', '\x34', '\x35', '\x3', '\x2', '\x2', 
+		'\x2', '\x35', '\x37', '\x3', '\x2', '\x2', '\x2', '\x36', '\x34', '\x3', 
+		'\x2', '\x2', '\x2', '\x37', '\x38', '\x5', '\x14', '\v', '\x2', '\x38', 
+		'\x39', '\a', '\x43', '\x2', '\x2', '\x39', ';', '\x3', '\x2', '\x2', 
+		'\x2', ':', '+', '\x3', '\x2', '\x2', '\x2', ':', '\x34', '\x3', '\x2', 
+		'\x2', '\x2', ';', '\a', '\x3', '\x2', '\x2', '\x2', '<', '=', '\a', ',', 
+		'\x2', '\x2', '=', '>', '\a', '>', '\x2', '\x2', '>', '?', '\x5', '\x10', 
+		'\t', '\x2', '?', '@', '\a', '?', '\x2', '\x2', '@', '\x46', '\x3', '\x2', 
+		'\x2', '\x2', '\x41', '\x46', '\a', '-', '\x2', '\x2', '\x42', '\x46', 
+		'\a', '.', '\x2', '\x2', '\x43', '\x46', '\a', '/', '\x2', '\x2', '\x44', 
+		'\x46', '\a', '\x30', '\x2', '\x2', '\x45', '<', '\x3', '\x2', '\x2', 
+		'\x2', '\x45', '\x41', '\x3', '\x2', '\x2', '\x2', '\x45', '\x42', '\x3', 
+		'\x2', '\x2', '\x2', '\x45', '\x43', '\x3', '\x2', '\x2', '\x2', '\x45', 
+		'\x44', '\x3', '\x2', '\x2', '\x2', '\x46', '\t', '\x3', '\x2', '\x2', 
+		'\x2', 'G', 'H', '\a', ',', '\x2', '\x2', 'H', 'I', '\a', '>', '\x2', 
+		'\x2', 'I', 'J', '\x5', '\x10', '\t', '\x2', 'J', 'K', '\a', '?', '\x2', 
+		'\x2', 'K', '\v', '\x3', '\x2', '\x2', '\x2', 'L', 'M', '\x5', '\xE', 
+		'\b', '\x2', 'M', 'N', '\a', 'N', '\x2', '\x2', 'N', 'O', '\x5', '\x14', 
+		'\v', '\x2', 'O', '\r', '\x3', '\x2', '\x2', '\x2', 'P', 'Q', '\a', '>', 
+		'\x2', '\x2', 'Q', 'k', '\a', '?', '\x2', '\x2', 'R', 'U', '\x5', '\x10', 
+		'\t', '\x2', 'S', 'T', '\a', '\x42', '\x2', '\x2', 'T', 'V', '\x5', '\x14', 
+		'\v', '\x2', 'U', 'S', '\x3', '\x2', '\x2', '\x2', 'U', 'V', '\x3', '\x2', 
+		'\x2', '\x2', 'V', 'k', '\x3', '\x2', '\x2', '\x2', 'W', 'X', '\a', '>', 
+		'\x2', '\x2', 'X', '[', '\x5', '\x10', '\t', '\x2', 'Y', 'Z', '\a', '\x42', 
+		'\x2', '\x2', 'Z', '\\', '\x5', '\x14', '\v', '\x2', '[', 'Y', '\x3', 
+		'\x2', '\x2', '\x2', '[', '\\', '\x3', '\x2', '\x2', '\x2', '\\', '\x65', 
+		'\x3', '\x2', '\x2', '\x2', ']', '^', '\a', '\x41', '\x2', '\x2', '^', 
+		'\x61', '\x5', '\x10', '\t', '\x2', '_', '`', '\a', '\x42', '\x2', '\x2', 
+		'`', '\x62', '\x5', '\x14', '\v', '\x2', '\x61', '_', '\x3', '\x2', '\x2', 
+		'\x2', '\x61', '\x62', '\x3', '\x2', '\x2', '\x2', '\x62', '\x64', '\x3', 
+		'\x2', '\x2', '\x2', '\x63', ']', '\x3', '\x2', '\x2', '\x2', '\x64', 
+		'g', '\x3', '\x2', '\x2', '\x2', '\x65', '\x63', '\x3', '\x2', '\x2', 
+		'\x2', '\x65', '\x66', '\x3', '\x2', '\x2', '\x2', '\x66', 'h', '\x3', 
+		'\x2', '\x2', '\x2', 'g', '\x65', '\x3', '\x2', '\x2', '\x2', 'h', 'i', 
+		'\a', '?', '\x2', '\x2', 'i', 'k', '\x3', '\x2', '\x2', '\x2', 'j', 'P', 
+		'\x3', '\x2', '\x2', '\x2', 'j', 'R', '\x3', '\x2', '\x2', '\x2', 'j', 
+		'W', '\x3', '\x2', '\x2', '\x2', 'k', '\xF', '\x3', '\x2', '\x2', '\x2', 
+		'l', 'm', '\a', '\x31', '\x2', '\x2', 'm', '\x11', '\x3', '\x2', '\x2', 
+		'\x2', 'n', '{', '\a', '$', '\x2', '\x2', 'o', 'p', '\a', '$', '\x2', 
+		'\x2', 'p', '{', '\x5', '\x14', '\v', '\x2', 'q', '{', '\a', '\xE', '\x2', 
+		'\x2', 'r', 's', '\a', '\xE', '\x2', '\x2', 's', '{', '\x5', '\x14', '\v', 
+		'\x2', 't', '{', '\a', '\v', '\x2', '\x2', 'u', 'v', '\a', '\v', '\x2', 
+		'\x2', 'v', '{', '\x5', '\x14', '\v', '\x2', 'w', 'x', '\a', '\x18', '\x2', 
+		'\x2', 'x', '{', '\x5', '\f', '\a', '\x2', 'y', '{', '\x5', '\x14', '\v', 
+		'\x2', 'z', 'n', '\x3', '\x2', '\x2', '\x2', 'z', 'o', '\x3', '\x2', '\x2', 
+		'\x2', 'z', 'q', '\x3', '\x2', '\x2', '\x2', 'z', 'r', '\x3', '\x2', '\x2', 
+		'\x2', 'z', 't', '\x3', '\x2', '\x2', '\x2', 'z', 'u', '\x3', '\x2', '\x2', 
+		'\x2', 'z', 'w', '\x3', '\x2', '\x2', '\x2', 'z', 'y', '\x3', '\x2', '\x2', 
+		'\x2', '{', '\x13', '\x3', '\x2', '\x2', '\x2', '|', '}', '\b', '\v', 
+		'\x1', '\x2', '}', '\x83', '\a', ':', '\x2', '\x2', '~', '\x7F', '\x5', 
+		'\x12', '\n', '\x2', '\x7F', '\x80', '\a', '\x43', '\x2', '\x2', '\x80', 
+		'\x82', '\x3', '\x2', '\x2', '\x2', '\x81', '~', '\x3', '\x2', '\x2', 
+		'\x2', '\x82', '\x85', '\x3', '\x2', '\x2', '\x2', '\x83', '\x81', '\x3', 
+		'\x2', '\x2', '\x2', '\x83', '\x84', '\x3', '\x2', '\x2', '\x2', '\x84', 
+		'\x86', '\x3', '\x2', '\x2', '\x2', '\x85', '\x83', '\x3', '\x2', '\x2', 
+		'\x2', '\x86', '\xBF', '\a', ';', '\x2', '\x2', '\x87', '\x8D', '\a', 
+		':', '\x2', '\x2', '\x88', '\x89', '\x5', '\x12', '\n', '\x2', '\x89', 
+		'\x8A', '\a', '\x43', '\x2', '\x2', '\x8A', '\x8C', '\x3', '\x2', '\x2', 
+		'\x2', '\x8B', '\x88', '\x3', '\x2', '\x2', '\x2', '\x8C', '\x8F', '\x3', 
+		'\x2', '\x2', '\x2', '\x8D', '\x8B', '\x3', '\x2', '\x2', '\x2', '\x8D', 
+		'\x8E', '\x3', '\x2', '\x2', '\x2', '\x8E', '\x90', '\x3', '\x2', '\x2', 
+		'\x2', '\x8F', '\x8D', '\x3', '\x2', '\x2', '\x2', '\x90', '\x91', '\x5', 
+		'\x14', '\v', '\x2', '\x91', '\x92', '\a', ';', '\x2', '\x2', '\x92', 
+		'\xBF', '\x3', '\x2', '\x2', '\x2', '\x93', '\x94', '\a', '>', '\x2', 
+		'\x2', '\x94', '\x95', '\x5', '\x14', '\v', '\x2', '\x95', '\x96', '\a', 
+		'?', '\x2', '\x2', '\x96', '\xBF', '\x3', '\x2', '\x2', '\x2', '\x97', 
+		'\xBF', '\x5', '\x16', '\f', '\x2', '\x98', '\xBF', '\x5', '\x10', '\t', 
+		'\x2', '\x99', '\x9A', '\x5', '\x10', '\t', '\x2', '\x9A', '\x9B', '\a', 
+		'>', '\x2', '\x2', '\x9B', '\x9C', '\a', '?', '\x2', '\x2', '\x9C', '\xBF', 
+		'\x3', '\x2', '\x2', '\x2', '\x9D', '\x9E', '\x5', '\x10', '\t', '\x2', 
+		'\x9E', '\x9F', '\a', '>', '\x2', '\x2', '\x9F', '\xA0', '\x5', '\x14', 
+		'\v', '\x2', '\xA0', '\xA1', '\a', '?', '\x2', '\x2', '\xA1', '\xBF', 
+		'\x3', '\x2', '\x2', '\x2', '\xA2', '\xA3', '\x5', '\x10', '\t', '\x2', 
+		'\xA3', '\xA4', '\a', '>', '\x2', '\x2', '\xA4', '\xA9', '\x5', '\x14', 
+		'\v', '\x2', '\xA5', '\xA6', '\a', '\x41', '\x2', '\x2', '\xA6', '\xA8', 
+		'\x5', '\x14', '\v', '\x2', '\xA7', '\xA5', '\x3', '\x2', '\x2', '\x2', 
+		'\xA8', '\xAB', '\x3', '\x2', '\x2', '\x2', '\xA9', '\xA7', '\x3', '\x2', 
+		'\x2', '\x2', '\xA9', '\xAA', '\x3', '\x2', '\x2', '\x2', '\xAA', '\xAC', 
+		'\x3', '\x2', '\x2', '\x2', '\xAB', '\xA9', '\x3', '\x2', '\x2', '\x2', 
+		'\xAC', '\xAD', '\a', '?', '\x2', '\x2', '\xAD', '\xBF', '\x3', '\x2', 
+		'\x2', '\x2', '\xAE', '\xAF', '\a', '\x1A', '\x2', '\x2', '\xAF', '\xB0', 
+		'\a', '>', '\x2', '\x2', '\xB0', '\xB1', '\x5', '\x10', '\t', '\x2', '\xB1', 
+		'\xB2', '\a', '?', '\x2', '\x2', '\xB2', '\xBF', '\x3', '\x2', '\x2', 
+		'\x2', '\xB3', '\xB4', '\t', '\x2', '\x2', '\x2', '\xB4', '\xBF', '\x5', 
+		'\x14', '\v', '\x14', '\xB5', '\xB6', '\a', '\x18', '\x2', '\x2', '\xB6', 
+		'\xB7', '\x5', '\f', '\a', '\x2', '\xB7', '\xB8', '\a', '\x16', '\x2', 
+		'\x2', '\xB8', '\xB9', '\x5', '\x14', '\v', '\x4', '\xB9', '\xBF', '\x3', 
+		'\x2', '\x2', '\x2', '\xBA', '\xBB', '\x5', '\xE', '\b', '\x2', '\xBB', 
+		'\xBC', '\a', 'Z', '\x2', '\x2', '\xBC', '\xBD', '\x5', '\x14', '\v', 
+		'\x3', '\xBD', '\xBF', '\x3', '\x2', '\x2', '\x2', '\xBE', '|', '\x3', 
+		'\x2', '\x2', '\x2', '\xBE', '\x87', '\x3', '\x2', '\x2', '\x2', '\xBE', 
+		'\x93', '\x3', '\x2', '\x2', '\x2', '\xBE', '\x97', '\x3', '\x2', '\x2', 
+		'\x2', '\xBE', '\x98', '\x3', '\x2', '\x2', '\x2', '\xBE', '\x99', '\x3', 
+		'\x2', '\x2', '\x2', '\xBE', '\x9D', '\x3', '\x2', '\x2', '\x2', '\xBE', 
+		'\xA2', '\x3', '\x2', '\x2', '\x2', '\xBE', '\xAE', '\x3', '\x2', '\x2', 
+		'\x2', '\xBE', '\xB3', '\x3', '\x2', '\x2', '\x2', '\xBE', '\xB5', '\x3', 
+		'\x2', '\x2', '\x2', '\xBE', '\xBA', '\x3', '\x2', '\x2', '\x2', '\xBF', 
+		'\xF7', '\x3', '\x2', '\x2', '\x2', '\xC0', '\xC1', '\f', '\x16', '\x2', 
+		'\x2', '\xC1', '\xC2', '\t', '\x3', '\x2', '\x2', '\xC2', '\xF6', '\x5', 
+		'\x14', '\v', '\x17', '\xC3', '\xC4', '\f', '\x13', '\x2', '\x2', '\xC4', 
+		'\xC5', '\a', 'n', '\x2', '\x2', '\xC5', '\xF6', '\x5', '\x14', '\v', 
+		'\x14', '\xC6', '\xC7', '\f', '\x12', '\x2', '\x2', '\xC7', '\xC8', '\t', 
+		'\x4', '\x2', '\x2', '\xC8', '\xF6', '\x5', '\x14', '\v', '\x13', '\xC9', 
+		'\xCA', '\f', '\x11', '\x2', '\x2', '\xCA', '\xCB', '\t', '\x5', '\x2', 
+		'\x2', '\xCB', '\xF6', '\x5', '\x14', '\v', '\x12', '\xCC', '\xCD', '\f', 
+		'\x10', '\x2', '\x2', '\xCD', '\xCE', '\t', '\x6', '\x2', '\x2', '\xCE', 
+		'\xF6', '\x5', '\x14', '\v', '\x11', '\xCF', '\xD0', '\f', '\xF', '\x2', 
+		'\x2', '\xD0', '\xD1', '\t', '\a', '\x2', '\x2', '\xD1', '\xF6', '\x5', 
+		'\x14', '\v', '\x10', '\xD2', '\xD3', '\f', '\xE', '\x2', '\x2', '\xD3', 
+		'\xD4', '\t', '\b', '\x2', '\x2', '\xD4', '\xF6', '\x5', '\x14', '\v', 
+		'\xF', '\xD5', '\xD6', '\f', '\r', '\x2', '\x2', '\xD6', '\xD7', '\a', 
+		'I', '\x2', '\x2', '\xD7', '\xF6', '\x5', '\x14', '\v', '\xE', '\xD8', 
+		'\xD9', '\f', '\f', '\x2', '\x2', '\xD9', '\xDA', '\a', 'K', '\x2', '\x2', 
+		'\xDA', '\xF6', '\x5', '\x14', '\v', '\r', '\xDB', '\xDC', '\f', '\v', 
+		'\x2', '\x2', '\xDC', '\xDD', '\a', 'J', '\x2', '\x2', '\xDD', '\xF6', 
+		'\x5', '\x14', '\v', '\f', '\xDE', '\xDF', '\f', '\n', '\x2', '\x2', '\xDF', 
+		'\xE0', '\a', 'W', '\x2', '\x2', '\xE0', '\xF6', '\x5', '\x14', '\v', 
+		'\v', '\xE1', '\xE2', '\f', '\t', '\x2', '\x2', '\xE2', '\xE3', '\a', 
+		'Y', '\x2', '\x2', '\xE3', '\xF6', '\x5', '\x14', '\v', '\n', '\xE4', 
+		'\xE5', '\f', '\b', '\x2', '\x2', '\xE5', '\xE6', '\a', 'X', '\x2', '\x2', 
+		'\xE6', '\xF6', '\x5', '\x14', '\v', '\t', '\xE7', '\xE8', '\f', '\a', 
+		'\x2', '\x2', '\xE8', '\xE9', '\a', 'S', '\x2', '\x2', '\xE9', '\xF6', 
+		'\x5', '\x14', '\v', '\b', '\xEA', '\xEB', '\f', '\x6', '\x2', '\x2', 
+		'\xEB', '\xEC', '\a', 'R', '\x2', '\x2', '\xEC', '\xED', '\x5', '\x14', 
+		'\v', '\x2', '\xED', '\xEE', '\a', '\x42', '\x2', '\x2', '\xEE', '\xEF', 
+		'\x5', '\x14', '\v', '\x6', '\xEF', '\xF6', '\x3', '\x2', '\x2', '\x2', 
+		'\xF0', '\xF1', '\f', '\x5', '\x2', '\x2', '\xF1', '\xF2', '\t', '\t', 
+		'\x2', '\x2', '\xF2', '\xF6', '\x5', '\x14', '\v', '\x5', '\xF3', '\xF4', 
+		'\f', '\x15', '\x2', '\x2', '\xF4', '\xF6', '\t', '\n', '\x2', '\x2', 
+		'\xF5', '\xC0', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xC3', '\x3', '\x2', 
+		'\x2', '\x2', '\xF5', '\xC6', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xC9', 
+		'\x3', '\x2', '\x2', '\x2', '\xF5', '\xCC', '\x3', '\x2', '\x2', '\x2', 
+		'\xF5', '\xCF', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xD2', '\x3', '\x2', 
+		'\x2', '\x2', '\xF5', '\xD5', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xD8', 
+		'\x3', '\x2', '\x2', '\x2', '\xF5', '\xDB', '\x3', '\x2', '\x2', '\x2', 
+		'\xF5', '\xDE', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xE1', '\x3', '\x2', 
+		'\x2', '\x2', '\xF5', '\xE4', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xE7', 
+		'\x3', '\x2', '\x2', '\x2', '\xF5', '\xEA', '\x3', '\x2', '\x2', '\x2', 
+		'\xF5', '\xF0', '\x3', '\x2', '\x2', '\x2', '\xF5', '\xF3', '\x3', '\x2', 
+		'\x2', '\x2', '\xF6', '\xF9', '\x3', '\x2', '\x2', '\x2', '\xF7', '\xF5', 
+		'\x3', '\x2', '\x2', '\x2', '\xF7', '\xF8', '\x3', '\x2', '\x2', '\x2', 
+		'\xF8', '\x15', '\x3', '\x2', '\x2', '\x2', '\xF9', '\xF7', '\x3', '\x2', 
+		'\x2', '\x2', '\xFA', '\x102', '\a', '\x33', '\x2', '\x2', '\xFB', '\x102', 
+		'\a', '\x34', '\x2', '\x2', '\xFC', '\x102', '\a', '\x35', '\x2', '\x2', 
+		'\xFD', '\x102', '\a', '\x36', '\x2', '\x2', '\xFE', '\x102', '\a', '\x37', 
+		'\x2', '\x2', '\xFF', '\x102', '\a', '\x38', '\x2', '\x2', '\x100', '\x102', 
+		'\a', '\x39', '\x2', '\x2', '\x101', '\xFA', '\x3', '\x2', '\x2', '\x2', 
+		'\x101', '\xFB', '\x3', '\x2', '\x2', '\x2', '\x101', '\xFC', '\x3', '\x2', 
+		'\x2', '\x2', '\x101', '\xFD', '\x3', '\x2', '\x2', '\x2', '\x101', '\xFE', 
+		'\x3', '\x2', '\x2', '\x2', '\x101', '\xFF', '\x3', '\x2', '\x2', '\x2', 
+		'\x101', '\x100', '\x3', '\x2', '\x2', '\x2', '\x102', '\x17', '\x3', 
+		'\x2', '\x2', '\x2', '\x15', '!', '&', '+', '\x34', ':', '\x45', 'U', 
+		'[', '\x61', '\x65', 'j', 'z', '\x83', '\x8D', '\xA9', '\xBE', '\xF5', 
+		'\xF7', '\x101',
 	};
 
 	public static readonly ATN _ATN =

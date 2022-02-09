@@ -10,16 +10,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class TeuchiUdonType : ITeuchiUdonTypeArg, IEquatable<TeuchiUdonType>
     {
-        public static TeuchiUdonType Unknown { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unknown", "_unknown", null, null);
-        public static TeuchiUdonType Any { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "any", "_any", null, null);
-        public static TeuchiUdonType Bottom { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "bottom", "_bottom", null, null);
-        public static TeuchiUdonType Qual { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "qual", "_qual", null, null);
-        public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "_type", null, null);
-        public static TeuchiUdonType Unit { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unit", "_unit", null, null);
-        public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "_tuple", null, null);
-        public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "_list", null, null);
-        public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "_func", "SystemUInt32", typeof(uint));
+        public static TeuchiUdonType Unknown { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unknown", "unknown", null, null);
+        public static TeuchiUdonType Any { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "any", "any", null, null);
+        public static TeuchiUdonType Bottom { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "bottom", "bottom", null, null);
+        public static TeuchiUdonType Qual { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "qual", "qual", null, null);
+        public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "type", null, null);
+        public static TeuchiUdonType Unit { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unit", "unit", null, null);
+        public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
+        public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
+        public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
+        public static TeuchiUdonType Byte { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "byte", "SystemByte", "SystemByte", typeof(byte));
+        public static TeuchiUdonType SByte { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "sbyte", "SystemSByte", "SystemSByte", typeof(sbyte));
+        public static TeuchiUdonType Short { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "short", "SystemInt16", "SystemInt16", typeof(short));
+        public static TeuchiUdonType UShort { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "ushort", "SystemUInt16", "SystemUInt16", typeof(ushort));
         public static TeuchiUdonType Int { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "int", "SystemInt32", "SystemInt32", typeof(int));
         public static TeuchiUdonType UInt { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "uint", "SystemUInt32", "SystemUInt32", typeof(uint));
         public static TeuchiUdonType Long { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "long", "SystemInt64", "SystemInt64", typeof(long));
@@ -45,6 +49,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public TeuchiUdonType(TeuchiUdonQualifier qualifier, string name, IEnumerable<ITeuchiUdonTypeArg> args)
             : this(qualifier, name, args, null, null, null)
+        {
+        }
+
+        public TeuchiUdonType(string logicalName)
+            : this(null, null, new TeuchiUdonType[0], logicalName, null, null)
+        {
+        }
+
+        public TeuchiUdonType(string logicalName, IEnumerable<ITeuchiUdonTypeArg> args)
+            : this(null, null, args, logicalName, null, null)
         {
         }
 
@@ -101,14 +115,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             if (RealName == null)
             {
-                throw new InvalidOperationException("No real name");
+                throw new InvalidOperationException("no real name");
             }
             return RealName;
         }
 
-        public bool TypeNameEquals(TeuchiUdonType obj)
+        public bool LogicalTypeNameEquals(TeuchiUdonType obj)
         {
-            return obj != null && Qualifier == obj.Qualifier && Name == obj.Name;
+            return obj != null && LogicalName == obj.LogicalName;
+        }
+
+        public bool LogicalTypeEquals(TeuchiUdonType obj)
+        {
+            return obj != null && LogicalName == obj.LogicalName && Args.SequenceEqual(obj.Args, ITeuchiUdonTypeArgLogicalEqualityComparer.Instance);
         }
 
         public bool IsAssignableFrom(TeuchiUdonType obj)
@@ -116,10 +135,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 obj != null &&
                 (
-                        TypeNameEquals(TeuchiUdonType.Unknown) ||
-                        TypeNameEquals(TeuchiUdonType.Any    ) ||
-                    obj.TypeNameEquals(TeuchiUdonType.Bottom ) ||
-                    this == obj ||
+                        LogicalTypeNameEquals(TeuchiUdonType.Unknown) ||
+                        LogicalTypeNameEquals(TeuchiUdonType.Any    ) ||
+                    obj.LogicalTypeNameEquals(TeuchiUdonType.Bottom ) ||
+                    LogicalTypeEquals(obj) ||
                     RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType)
                 );
         }
@@ -187,12 +206,52 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public bool IsAssignableFromFunc(TeuchiUdonType obj)
         {
             if (obj == null) return false;
-            if (!TypeNameEquals(TeuchiUdonType.Func) || !obj.TypeNameEquals(TeuchiUdonType.Func)) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Func) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Func)) return false;
             if (Args.Length != 2 || obj.Args.Length != 2) return false;
 
             return
                     GetArgAsFuncInType ().IsAssignableFrom(obj.GetArgAsFuncInType ()) &&
                 obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
+        }
+    }
+
+    public class TeuchiUdonTypeLogicalEqualityComparer : IEqualityComparer<TeuchiUdonType>
+    {
+        public static TeuchiUdonTypeLogicalEqualityComparer Instance { get; } = new TeuchiUdonTypeLogicalEqualityComparer();
+
+        protected TeuchiUdonTypeLogicalEqualityComparer()
+        {
+        }
+
+        public bool Equals(TeuchiUdonType obj1, TeuchiUdonType obj2)
+        {
+            return obj1.LogicalTypeEquals(obj2);
+        }
+
+        public int GetHashCode(TeuchiUdonType obj)
+        {
+            return obj.LogicalName.GetHashCode();
+        }
+    }
+
+    public class ITeuchiUdonTypeArgLogicalEqualityComparer : IEqualityComparer<ITeuchiUdonTypeArg>
+    {
+        public static ITeuchiUdonTypeArgLogicalEqualityComparer Instance { get; } = new ITeuchiUdonTypeArgLogicalEqualityComparer();
+
+        protected ITeuchiUdonTypeArgLogicalEqualityComparer()
+        {
+        }
+
+        public bool Equals(ITeuchiUdonTypeArg obj1, ITeuchiUdonTypeArg obj2)
+        {
+            return
+                obj1 is TeuchiUdonQualifier q1 && obj2 is TeuchiUdonQualifier q2 && q1.Equals(q2) ||
+                obj1 is TeuchiUdonType      t1 && obj2 is TeuchiUdonType      t2 && t1.LogicalTypeEquals(t2);
+        }
+
+        public int GetHashCode(ITeuchiUdonTypeArg obj)
+        {
+            return obj is TeuchiUdonType t ? t.LogicalName.GetHashCode() : obj.GetHashCode();
         }
     }
 }

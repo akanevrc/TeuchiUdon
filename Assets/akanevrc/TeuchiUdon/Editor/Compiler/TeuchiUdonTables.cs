@@ -12,13 +12,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier> Qualifiers { get; private set; }
         public Dictionary<TeuchiUdonType, TeuchiUdonType> Types { get; private set; }
+        public Dictionary<TeuchiUdonType, TeuchiUdonType> LogicalTypes { get; private set; }
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
+        public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> Exports { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
+        public Dictionary<string, string> UnaryOps { get; private set; }
+        public Dictionary<string, string> BinaryOps { get; private set; }
 
+        private Dictionary<TeuchiUdonType, int> OutValueCounters { get; set; }
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
         private int VarBindCounter { get; set; }
@@ -38,28 +43,36 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 Qualifiers    = new Dictionary<TeuchiUdonQualifier, TeuchiUdonQualifier>();
                 Types         = new Dictionary<TeuchiUdonType     , TeuchiUdonType>();
+                LogicalTypes  = new Dictionary<TeuchiUdonType     , TeuchiUdonType>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
                 Methods       = new Dictionary<TeuchiUdonMethod   , TeuchiUdonMethod>();
-                TypeToMethods = new Dictionary<TeuchiUdonType     , Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>();
+                TypeToMethods = new Dictionary<TeuchiUdonType     , Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
+                UnaryOps      = new Dictionary<string             , string>();
+                BinaryOps     = new Dictionary<string             , string>();
 
                 InitInternalTypes();
                 InitExternalTypes();
                 InitQualifiers();
                 InitMethods();
+                //InitOps();
 
                 IsInitialized = true;
             }
 
-            Vars     = new Dictionary<TeuchiUdonVar    , TeuchiUdonVar>();
-            Exports  = new Dictionary<TeuchiUdonVar    , TeuchiUdonLiteral>();
-            Literals = new Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral>();
-            Funcs    = new Dictionary<TeuchiUdonFunc   , TeuchiUdonFunc>();
+            Vars      = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
+            OutValues = new Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue>();
+            Exports   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
+            Literals  = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
+            Funcs     = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
 
-            LiteralCounter  = 0;
-            FuncCounter     = 0;
-            VarBindCounter  = 0;
-            BlockCounter    = 0;
-            EvalFuncCounter = 0;
-            LetInCounter      = 0;
+            OutValueCounters = new Dictionary<TeuchiUdonType, int>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
+            LiteralCounter   = 0;
+            FuncCounter      = 0;
+            VarBindCounter   = 0;
+            BlockCounter     = 0;
+            EvalFuncCounter  = 0;
+            LetInCounter     = 0;
+
+            //var m = Methods.Values.Where(x => x.Name == "op_UnaryMinus").ToArray();
         }
 
         private void InitInternalTypes()
@@ -74,6 +87,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Unit,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Object,
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.UShort,
                 TeuchiUdonType.Int,
                 TeuchiUdonType.UInt,
                 TeuchiUdonType.Long,
@@ -122,6 +139,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             Types.Add(type, type);
                         }
 
+                        if (!LogicalTypes.ContainsKey(type))
+                        {
+                            LogicalTypes.Add(type, type);
+                        }
+
                         var paramTypes         = def.parameters.Select(x => x.type).ToArray();
                         var paramUdonTypeNames = paramTypes.Select(x => GetUdonTypeName(x)).ToArray();
                         var paramTypeNamess    = paramTypes.Select(x => x.FullName.Split(new string[] { "." }, StringSplitOptions.None).ToArray());
@@ -136,6 +158,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             if (!Types.ContainsKey(methodParamType))
                             {
                                 Types.Add(methodParamType, methodParamType);
+                            }
+
+                            if (!LogicalTypes.ContainsKey(methodParamType))
+                            {
+                                LogicalTypes.Add(methodParamType, methodParamType);
                             }
                         }
                     }
@@ -184,9 +211,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var outTypes = def.parameters
                             .Where(x => x.parameterType == UdonNodeParameter.ParameterType.OUT)
                             .Select(x => GetTeuchiUdonType(x.type));
-                        var allArgTypes = def.parameters
+                        var allParamTypes = def.parameters
                             .Select(x => GetTeuchiUdonType(x.type));
-                        var method = new TeuchiUdonMethod(instanceType, methodName, inTypes, outTypes, allArgTypes, def.fullName);
+                        var allParamInOuts = def.parameters
+                            .Select(x =>
+                                x.parameterType == UdonNodeParameter.ParameterType.IN     ? TeuchiUdonMethodParamInOut.In    :
+                                x.parameterType == UdonNodeParameter.ParameterType.IN_OUT ? TeuchiUdonMethodParamInOut.InOut : TeuchiUdonMethodParamInOut.Out);
+                        var method = new TeuchiUdonMethod(instanceType, methodName, inTypes, outTypes, allParamTypes, allParamInOuts, def.fullName);
 
                         if (!Methods.ContainsKey(method))
                         {
@@ -223,6 +254,37 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Types[t];
         }
 
+        public void InitOps()
+        {
+            UnaryOps.Add("--", "op_Decrement");
+            UnaryOps.Add("++", "op_Increment");
+            UnaryOps.Add("-" , "op_UnaryMinus");
+            UnaryOps.Add("!" , "op_UnaryNegation");
+            UnaryOps.Add("+" , "op_UnaryPlus");
+
+            BinaryOps.Add("&&", "op_ConditionalAnd");
+            BinaryOps.Add("||", "op_ConditionalOr");
+            BinaryOps.Add("^^", "op_ConditionalXor");
+            BinaryOps.Add("+" , "op_Addition");
+            BinaryOps.Add("/" , "op_Division");
+            BinaryOps.Add("==", "op_Equality");
+            BinaryOps.Add(">=", "op_GreaterThanOrEqual");
+            BinaryOps.Add(">" , "op_GreaterThan");
+            BinaryOps.Add("!=", "op_Inequality");
+            BinaryOps.Add("<<", "op_LeftShift");
+            BinaryOps.Add("<=", "op_LessThanOrEqual");
+            BinaryOps.Add("<" , "op_LessThan");
+            BinaryOps.Add("&" , "op_LogicalAnd");
+            BinaryOps.Add("|" , "op_LogicalOr");
+            BinaryOps.Add("^" , "op_LogicalXor");
+            BinaryOps.Add("*" , "op_Multiplication");
+            BinaryOps.Add("*" , "op_Multiply");
+            BinaryOps.Add("%" , "op_Modulus");
+            BinaryOps.Add("%" , "op_Remainder");
+            BinaryOps.Add(">>", "op_RightShift");
+            BinaryOps.Add("-" , "op_Subtraction");
+        }
+
         public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(TeuchiUdonMethod query)
         {
             if (!TypeToMethods.ContainsKey(query.Type)) return new TeuchiUdonMethod[0];
@@ -249,7 +311,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         break;
                     }
 
-                    if (m == q) justCount++;
+                    if (m.LogicalTypeEquals(q)) justCount++;
                 }
 
                 if (isCompatible)
@@ -300,9 +362,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return LetInCounter++;
         }
 
+        public TeuchiUdonOutValue GetOutValue(TeuchiUdonType type)
+        {
+            var index = 0;
+            if (OutValueCounters.ContainsKey(type))
+            {
+                index = OutValueCounters[type]++;
+            }
+            else
+            {
+                OutValueCounters.Add(type, 1);
+            }
+
+            var o = new TeuchiUdonOutValue(type, index);
+
+            if (!OutValues.ContainsKey(o))
+            {
+                OutValues.Add(o, o);
+            }
+
+            return o;
+        }
+
         public static string GetUdonTypeName(Type type)
         {
-            if (type.IsArray) return "_list";
+            if (type.IsArray) return "list";
 
             var name = type.FullName.Replace(".", "");
             return name;
@@ -326,6 +410,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                     })
+                .Concat(OutValues.Values.SelectMany(x =>
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    }))
                 .Concat(Literals.Values.Except(Exports.Values).SelectMany(x =>
                     new TeuchiUdonAssembly[]
                     {

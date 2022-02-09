@@ -4,17 +4,25 @@ using System.Linq;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
+    public enum TeuchiUdonMethodParamInOut
+    {
+        In,
+        InOut,
+        Out
+    }
+
     public class TeuchiUdonMethod : IEquatable<TeuchiUdonMethod>
     {
         public TeuchiUdonType Type { get; }
         public string Name { get; }
         public TeuchiUdonType[] InTypes { get; }
         public TeuchiUdonType[] OutTypes { get; }
-        public TeuchiUdonType[] AllArgTypes { get; }
+        public TeuchiUdonType[] AllParamTypes { get; }
+        public TeuchiUdonMethodParamInOut[] AllParamInOuts { get; }
         public string UdonName { get; }
 
         public TeuchiUdonMethod(TeuchiUdonType type, string name, IEnumerable<TeuchiUdonType> inTypes)
-            : this(type, name, inTypes, null, null, null)
+            : this(type, name, inTypes, null, null, null, null)
         {
         }
 
@@ -24,16 +32,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             string name,
             IEnumerable<TeuchiUdonType> inTypes,
             IEnumerable<TeuchiUdonType> outTypes,
-            IEnumerable<TeuchiUdonType> allArgTypes,
+            IEnumerable<TeuchiUdonType> allParamTypes,
+            IEnumerable<TeuchiUdonMethodParamInOut> allParamInOuts,
             string udonName
         )
         {
-            Type         = type;
-            Name         = name;
-            InTypes      = inTypes    ?.ToArray();
-            OutTypes     = outTypes   ?.ToArray();
-            AllArgTypes  = allArgTypes?.ToArray();
-            UdonName     = udonName;
+            Type           = type;
+            Name           = name;
+            InTypes        = inTypes       ?.ToArray();
+            OutTypes       = outTypes      ?.ToArray();
+            AllParamTypes  = allParamTypes ?.ToArray();
+            AllParamInOuts = allParamInOuts?.ToArray();
+            UdonName       = udonName;
         }
 
         public bool Equals(TeuchiUdonMethod obj)
@@ -68,6 +78,35 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override string ToString()
         {
             return $"{Type}.{Name}({string.Join<TeuchiUdonType>(", ", InTypes)})";
+        }
+
+        public IEnumerable<T> SortAlongParams<T>(IEnumerable<T> inTypes, IEnumerable<T> outTypes)
+        {
+            var inTypesArr  = inTypes .ToArray();
+            var outTypesArr = outTypes.ToArray();
+
+            if
+            (
+                inTypesArr .Length != AllParamInOuts.Count(x => x == TeuchiUdonMethodParamInOut.In || x == TeuchiUdonMethodParamInOut.InOut) ||
+                outTypesArr.Length != AllParamInOuts.Count(x => x == TeuchiUdonMethodParamInOut.Out)
+            )
+            {
+                throw new InvalidOperationException("invalid param count");
+            }
+
+            var i = 0;
+            var o = 0;
+            for (var p = 0; p < AllParamInOuts.Length; p++)
+            {
+                if (AllParamInOuts[p] == TeuchiUdonMethodParamInOut.In || AllParamInOuts[p] == TeuchiUdonMethodParamInOut.InOut)
+                {
+                    yield return inTypesArr[i++];
+                }
+                else
+                {
+                    yield return outTypesArr[o++];
+                }
+            }
         }
     }
 }

@@ -16,5 +16,16 @@ _start = () -> {
     let num = 100.123  in UnityEngine.Debug.Log(num);
     let ch  = 'a'      in UnityEngine.Debug.Log(ch);
     let str = "ok\nok" in UnityEngine.Debug.Log(str);
-    let val1 = let val2 = 123 in val2 in UnityEngine.Debug.Log(val1);
+    let val1 = let val2 = 123 in val2 in UnityEngine.Debug.Log(+val1);
+    let val1 = let val2 = 123 in val2 in UnityEngine.Debug.Log(-val1);
+    let num = 0;
+    UnityEngine.Debug.Log(num);
+    UnityEngine.Debug.Log(++num);
+    UnityEngine.Debug.Log(num);
+    UnityEngine.Debug.Log(num++);
+    UnityEngine.Debug.Log(num);
+    UnityEngine.Debug.Log(--num);
+    UnityEngine.Debug.Log(num);
+    UnityEngine.Debug.Log(num--);
+    UnityEngine.Debug.Log(num);
 };

@@ -29,7 +29,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonLiteral obj)
         {
-            return !object.ReferenceEquals(obj, null) && Text == obj.Text;
+            return !object.ReferenceEquals(obj, null) && Text == obj.Text && Type == obj.Type;
         }
 
         public override bool Equals(object obj)
@@ -69,6 +69,74 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public string GetFullLabel()
         {
             return $"literal[{Index}]";
+        }
+
+        public static TeuchiUdonLiteral CreateNumber(int index, string number, TeuchiUdonType type)
+        {
+            var result = (object)null;
+            if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
+            {
+                result = Convert.ToByte(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.SByte))
+            {
+                result = Convert.ToSByte(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Short))
+            {
+                result = Convert.ToInt16(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UShort))
+            {
+                result = Convert.ToUInt16(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Int))
+            {
+                result = Convert.ToInt32(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UInt))
+            {
+                result = Convert.ToUInt32(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Long))
+            {
+                result = Convert.ToInt64(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.ULong))
+            {
+                result = Convert.ToUInt64(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Float))
+            {
+                result = Convert.ToSingle(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Double))
+            {
+                result = Convert.ToDouble(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Decimal))
+            {
+                result = Convert.ToDecimal(number);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Char))
+            {
+                result = Convert.ToChar(Convert.ToInt32(number));
+            }
+            else
+            {
+                return null;
+            }
+
+            var literal = new TeuchiUdonLiteral(index, number, type, result);
+            if (!TeuchiUdonTables.Instance.Literals.ContainsKey(literal))
+            {
+                TeuchiUdonTables.Instance.Literals.Add(literal, literal);
+            }
+            else
+            {
+                literal = TeuchiUdonTables.Instance.Literals[literal];
+            }
+            return literal;
         }
     }
 }
