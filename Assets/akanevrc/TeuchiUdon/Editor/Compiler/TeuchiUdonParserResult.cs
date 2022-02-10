@@ -136,11 +136,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                    new Assembly_COPY()
-                }));
+                .Concat(VarBind.Vars.Reverse().SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                        new Assembly_COPY()
+                    }
+                ));
         }
     }
 
@@ -326,17 +330,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                    new Assembly_COPY()
-                }));
+                .Concat(VarBind.Vars.Reverse().SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                        new Assembly_COPY()
+                    }
+                ));
         }
     }
 
     public class ExprResult : StatementResult
     {
         public TypedResult Inner { get; }
+        public bool ReturnsValue { get; set; } = true;
 
         public ExprResult(IToken token, TypedResult inner)
             : base(token)
@@ -346,7 +355,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return Inner.GetAssemblyCodePart();
+            return
+                Inner.GetAssemblyCodePart()
+                .Concat
+                (
+                    ReturnsValue || Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                        new TeuchiUdonAssembly[0] :
+                        new TeuchiUdonAssembly[] { new Assembly_POP() }
+                );
         }
     }
 
@@ -462,10 +478,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literal))
-            };
+            return
+                Literal.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                new TeuchiUdonAssembly[0] :
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literal))
+                };
         }
     }
 
@@ -485,10 +504,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Var))
-            };
+            return
+                Var.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                new TeuchiUdonAssembly[0] :
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Var))
+                };
         }
     }
 
@@ -931,7 +953,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         )
         {
             return
-                inValues.Zip(tmpValues, (i, t) => (i, t)).SelectMany(x => x.i.Concat(x.t).Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() }))
+                outValues.Zip(tmpValues, (o, t) => (o, t)).SelectMany(x => x.o.Concat(x.t).Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() }))
                 .Concat(method.SortAlongParams(inValues, outValues).SelectMany(x => x))
                 .Concat(new TeuchiUdonAssembly[]
                     {
@@ -983,11 +1005,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x => new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                    new Assembly_COPY()
-                }))
+                .Concat(VarBind.Vars.Reverse().SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                        new Assembly_COPY()
+                    }
+                ))
                 .Concat(Expr.GetAssemblyCodePart());
         }
     }

@@ -440,18 +440,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         new Assembly_COPY()
                     }
                     .Concat(x.Vars.Reverse().SelectMany(y =>
+                        y.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                        new TeuchiUdonAssembly[0] :
                         new TeuchiUdonAssembly[]
                         {
                             new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(y)),
                             new Assembly_COPY()
-                        }))
-                .Concat(x.Expr.GetAssemblyCodePart())
-                .Concat(
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(x.ReturnAddress)),
-                        new Assembly_INDENT(-1)
-                    }))
+                        })
+                    )
+                    .Concat(x.Expr.GetAssemblyCodePart())
+                    .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(x.ReturnAddress)),
+                            new Assembly_INDENT(-1)
+                        }
+                    )
+                )
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
                     .Concat(x));

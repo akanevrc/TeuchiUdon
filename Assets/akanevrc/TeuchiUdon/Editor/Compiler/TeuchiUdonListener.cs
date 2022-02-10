@@ -271,7 +271,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
         {
             var identifiers = new IdentifierResult[] { context.identifier().result };
-            var expr        = context.expr()?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start));
+            var expr        = context.expr()?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false };
 
             if (!expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type))
             {
@@ -285,7 +285,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
             var identifiers = context.identifier().Select(x => x .result);
-            var qualifieds  = context.expr().Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)));
+            var qualifieds  = context.expr().Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false });
 
             foreach (var q in qualifieds)
             {
@@ -364,7 +364,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitExprStatement([NotNull] ExprStatementContext context)
         {
-            context.result = context.expr().result;
+            var expr          = context.expr().result;
+            expr.ReturnsValue = false;
+            context.result    = expr;
         }
 
         public override void EnterUnitBlockExpr([NotNull] UnitBlockExprContext context)

@@ -44,7 +44,7 @@ MonoBehaviour:
     %SystemUInt32, 0x00000130\r\n    address[func[_start>func[0]>block[0]>f3>3]]:
     %SystemUInt32, 0x0000005C\r\n    address[evalfunc[_start>func[0]>block[0]>7]]:
     %SystemUInt32, 0x00000168\r\n    address[func[_start>0]]: %SystemUInt32, 0x00000080\r\n   
-    address[topcall[_start]]: %SystemUInt32, 0x000003F8\r\n.data_end\r\n\r\n.code_start\r\n   
+    address[topcall[_start]]: %SystemUInt32, 0x00000404\r\n.data_end\r\n\r\n.code_start\r\n   
     func[_start>func[0]>block[0]>f1>1]:\r\n        PUSH, _start>func[0]>block[0]>f1>func[1]>return\r\n       
     COPY\r\n        PUSH, var[_start>func[0]>block[0]>f1>func[1]>x]\r\n        COPY\r\n       
     PUSH, var[_start>func[0]>block[0]>f1>func[1]>x]\r\n        JUMP_INDIRECT, _start>func[0]>block[0]>f1>func[1]>return\r\n\r\n   
@@ -112,9 +112,10 @@ MonoBehaviour:
     PUSH, var[_start>func[0]>block[0]>num]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[SystemInt32>2]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     PUSH, var[_start>func[0]>block[0]>num]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    JUMP_INDIRECT, _start>func[0]>return\r\n\r\n    .export _start\r\n    _start:\r\n       
-    PUSH, address[func[_start>0]]\r\n        PUSH, _start\r\n        COPY\r\n       
-    PUSH, address[topcall[_start]]\r\n        JUMP_INDIRECT, _start\r\n        topcall[_start]:\r\n       
+    PUSH, var[_start>func[0]>block[0]>num]\r\n        POP\r\n        JUMP_INDIRECT,
+    _start>func[0]>return\r\n\r\n    .export _start\r\n    _start:\r\n        PUSH,
+    address[func[_start>0]]\r\n        PUSH, _start\r\n        COPY\r\n        PUSH,
+    address[topcall[_start]]\r\n        JUMP_INDIRECT, _start\r\n        topcall[_start]:\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:

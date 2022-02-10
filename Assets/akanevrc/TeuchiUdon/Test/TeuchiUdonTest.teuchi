@@ -28,4 +28,5 @@ _start = () -> {
     UnityEngine.Debug.Log(num);
     UnityEngine.Debug.Log(num--);
     UnityEngine.Debug.Log(num);
+    num;
 };

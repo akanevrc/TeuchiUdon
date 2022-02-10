@@ -24,8 +24,8 @@ body
 
 topStatement
     returns [TopStatementResult result]
-    : varAttr * varBind ';' #VarBindTopStatement
-    | exprAttr* expr ';'    #ExprTopStatement
+    : varAttr* varBind ';' #VarBindTopStatement
+    | exprAttr* expr ';'   #ExprTopStatement
     ;
 
 varAttr
