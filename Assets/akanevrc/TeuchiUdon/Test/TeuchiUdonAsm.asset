@@ -34,22 +34,23 @@ MonoBehaviour:
     %SystemString, null\r\n    literal[5]: %SystemInt32, null\r\n    literal[6]:
     %SystemSingle, null\r\n    literal[7]: %SystemChar, null\r\n    literal[8]: %SystemString,
     null\r\n    literal[9]: %SystemInt32, null\r\n    literal[11]: %SystemInt32,
-    null\r\n    literal[12]: %SystemInt32, null\r\n    _start>func[0]>block[0]>f1>func[1]>return:
-    %SystemUInt32, null\r\n    _start>func[0]>block[0]>f2>func[2]>return: %SystemUInt32,
-    null\r\n    _start>func[0]>block[0]>f3>func[3]>return: %SystemUInt32, null\r\n   
-    _start>func[0]>return: %SystemUInt32, null\r\n    address[evalfunc[_start>func[0]>block[0]>3]]:
-    %SystemUInt32, 0x0000004C\r\n    address[func[_start>func[0]>block[0]>f1>1]]:
-    %SystemUInt32, 0x00000000\r\n    address[func[_start>func[0]>block[0]>f2>2]]:
-    %SystemUInt32, 0x00000028\r\n    address[evalfunc[_start>func[0]>block[0]>5]]:
-    %SystemUInt32, 0x00000130\r\n    address[func[_start>func[0]>block[0]>f3>3]]:
-    %SystemUInt32, 0x0000005C\r\n    address[evalfunc[_start>func[0]>block[0]>7]]:
-    %SystemUInt32, 0x00000168\r\n    address[func[_start>0]]: %SystemUInt32, 0x00000080\r\n   
-    address[topcall[_start]]: %SystemUInt32, 0x00000404\r\n.data_end\r\n\r\n.code_start\r\n   
-    func[_start>func[0]>block[0]>f1>1]:\r\n        PUSH, _start>func[0]>block[0]>f1>func[1]>return\r\n       
-    COPY\r\n        PUSH, var[_start>func[0]>block[0]>f1>func[1]>x]\r\n        COPY\r\n       
-    PUSH, var[_start>func[0]>block[0]>f1>func[1]>x]\r\n        JUMP_INDIRECT, _start>func[0]>block[0]>f1>func[1]>return\r\n\r\n   
-    func[_start>func[0]>block[0]>f2>2]:\r\n        PUSH, _start>func[0]>block[0]>f2>func[2]>return\r\n       
-    COPY\r\n        PUSH, literal[4]\r\n        PUSH, address[evalfunc[_start>func[0]>block[0]>3]]\r\n       
+    null\r\n    literal[12]: %SystemInt32, null\r\n    literal[16]: %SystemString,
+    null\r\n    _start>func[0]>block[0]>f1>func[1]>return: %SystemUInt32, null\r\n   
+    _start>func[0]>block[0]>f2>func[2]>return: %SystemUInt32, null\r\n    _start>func[0]>block[0]>f3>func[3]>return:
+    %SystemUInt32, null\r\n    _start>func[0]>return: %SystemUInt32, null\r\n   
+    address[evalfunc[_start>func[0]>block[0]>3]]: %SystemUInt32, 0x0000004C\r\n   
+    address[func[_start>func[0]>block[0]>f1>1]]: %SystemUInt32, 0x00000000\r\n   
+    address[func[_start>func[0]>block[0]>f2>2]]: %SystemUInt32, 0x00000028\r\n   
+    address[evalfunc[_start>func[0]>block[0]>5]]: %SystemUInt32, 0x00000130\r\n   
+    address[func[_start>func[0]>block[0]>f3>3]]: %SystemUInt32, 0x0000005C\r\n   
+    address[evalfunc[_start>func[0]>block[0]>7]]: %SystemUInt32, 0x00000168\r\n   
+    address[func[_start>0]]: %SystemUInt32, 0x00000080\r\n    address[topcall[_start]]:
+    %SystemUInt32, 0x00000424\r\n.data_end\r\n\r\n.code_start\r\n    func[_start>func[0]>block[0]>f1>1]:\r\n       
+    PUSH, _start>func[0]>block[0]>f1>func[1]>return\r\n        COPY\r\n        PUSH,
+    var[_start>func[0]>block[0]>f1>func[1]>x]\r\n        COPY\r\n        PUSH, var[_start>func[0]>block[0]>f1>func[1]>x]\r\n       
+    JUMP_INDIRECT, _start>func[0]>block[0]>f1>func[1]>return\r\n\r\n    func[_start>func[0]>block[0]>f2>2]:\r\n       
+    PUSH, _start>func[0]>block[0]>f2>func[2]>return\r\n        COPY\r\n        PUSH,
+    literal[4]\r\n        PUSH, address[evalfunc[_start>func[0]>block[0]>3]]\r\n       
     JUMP_INDIRECT, var[_start>func[0]>block[0]>f1]\r\n        evalfunc[_start>func[0]>block[0]>3]:\r\n       
     EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP_INDIRECT,
     _start>func[0]>block[0]>f2>func[2]>return\r\n\r\n    func[_start>func[0]>block[0]>f3>3]:\r\n       
@@ -112,10 +113,12 @@ MonoBehaviour:
     PUSH, var[_start>func[0]>block[0]>num]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[SystemInt32>2]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     PUSH, var[_start>func[0]>block[0]>num]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    PUSH, var[_start>func[0]>block[0]>num]\r\n        POP\r\n        JUMP_INDIRECT,
-    _start>func[0]>return\r\n\r\n    .export _start\r\n    _start:\r\n        PUSH,
-    address[func[_start>0]]\r\n        PUSH, _start\r\n        COPY\r\n        PUSH,
-    address[topcall[_start]]\r\n        JUMP_INDIRECT, _start\r\n        topcall[_start]:\r\n       
+    PUSH, var[_start>func[0]>block[0]>num]\r\n        POP\r\n        PUSH, literal[16]\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH,
+    literal[16]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    JUMP_INDIRECT, _start>func[0]>return\r\n\r\n    .export _start\r\n    _start:\r\n       
+    PUSH, address[func[_start>0]]\r\n        PUSH, _start\r\n        COPY\r\n       
+    PUSH, address[topcall[_start]]\r\n        JUMP_INDIRECT, _start\r\n        topcall[_start]:\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
@@ -140,7 +143,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 13
+      Data: 14
     - Name: 
       Entry: 7
       Data: 
@@ -519,6 +522,34 @@ MonoBehaviour:
     - Name: Item2
       Entry: 9
       Data: 9
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[16]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 18|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: this will be displayed
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 3
     - Name: 
       Entry: 8
       Data: 

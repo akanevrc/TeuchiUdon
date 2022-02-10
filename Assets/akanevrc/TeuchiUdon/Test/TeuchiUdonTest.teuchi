@@ -29,4 +29,14 @@ _start = () -> {
     UnityEngine.Debug.Log(num--);
     UnityEngine.Debug.Log(num);
     num;
+    //UnityEngine.Debug.Log("this is comment");
+    UnityEngine.Debug.Log("this will be displayed");
+    {/
+    UnityEngine.Debug.Log("this will not be displayed");
+    {/
+    UnityEngine.Debug.Log("this will not be displayed");
+    /}
+    UnityEngine.Debug.Log("this will not be displayed");
+    /}
+    UnityEngine.Debug.Log("this will be displayed");
 };

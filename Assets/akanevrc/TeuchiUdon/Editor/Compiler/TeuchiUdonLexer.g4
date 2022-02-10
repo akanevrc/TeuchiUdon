@@ -11,19 +11,14 @@ options
     #pragma warning disable 3021
 }
 
-channels
-{
-    COMMENTS_CHANNEL
-}
-
 BYTE_ORDER_MARK : '\u00EF\u00BB\u00BF';
 
-SINGLE_LINE_COMMENT    : '//' InputCharacter*       -> channel(COMMENTS_CHANNEL);
-OPEN_DELIMITED_COMMENT : '{/' { commentLevel = 1; } -> pushMode(DELIMITED_COMMENT);
+SINGLE_LINE_COMMENT : '//' InputCharacter* NewLine?                              -> skip;
+DELIMITED_COMMENT   : '{/' (DELIMITED_COMMENT | InputCharacter | NewLine)*? '/}' -> skip;
 
-NEWLINE : (NewLine)+    -> channel(HIDDEN);
-WS      : (Whitespace)+ -> channel(HIDDEN);
-TAB     : (Tab)+        -> channel(HIDDEN);
+NEWLINE : (NewLine)+    -> skip;
+WS      : (Whitespace)+ -> skip;
+TAB     : (Tab)+        -> skip;
 
 AS        : 'as'       ;
 BASE      : 'base'     ;
@@ -134,21 +129,6 @@ OP_COALESCING_ASSIGNMENT  : '??=';
 OP_RANGE                  : '..' ;
 OP_LEFT_PIPELINE          : '<|' ;
 OP_RIGHT_PIPELINE         : '|>' ;
-
-mode DELIMITED_COMMENT;
-
-OPEN_DELIMITED_COMMENT_INSIDE  : '{/' { commentLevel++; };
-CLOSE_DELIMITED_COMMENT_INSIDE : '/}'
-{
-    if (commentLevel > 0)
-    {
-        commentLevel--;
-        if (commentLevel == 0)
-        {
-            PopMode();
-        }
-    }
-};
 
 // Fragments
 

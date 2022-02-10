@@ -40,7 +40,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		BYTE_ORDER_MARK=1, SINGLE_LINE_COMMENT=2, OPEN_DELIMITED_COMMENT=3, NEWLINE=4, 
+		BYTE_ORDER_MARK=1, SINGLE_LINE_COMMENT=2, DELIMITED_COMMENT=3, NEWLINE=4, 
 		WS=5, TAB=6, AS=7, BASE=8, BREAK=9, CASE=10, CATCH=11, CONTINUE=12, DATA=13, 
 		ELSE=14, FINALLY=15, HIDING=16, IMPORT=17, INTERNAL=18, IF=19, IN=20, 
 		IS=21, LET=22, MODULE=23, NAMEOF=24, NAMESPACE=25, NEW=26, NEWTYPE=27, 
@@ -59,8 +59,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		OP_PIPE_ASSIGNMENT=99, OP_CARET_ASSIGNMENT=100, OP_AND_ASSIGNMENT=101, 
 		OP_OR_ASSIGNMENT=102, OP_LEFT_SHIFT=103, OP_RIGHT_SHIFT=104, OP_LEFT_SHIFT_ASSIGNMENT=105, 
 		OP_RIGHT_SHIFT_ASSIGNMENT=106, OP_COALESCING_ASSIGNMENT=107, OP_RANGE=108, 
-		OP_LEFT_PIPELINE=109, OP_RIGHT_PIPELINE=110, OPEN_DELIMITED_COMMENT_INSIDE=111, 
-		CLOSE_DELIMITED_COMMENT_INSIDE=112;
+		OP_LEFT_PIPELINE=109, OP_RIGHT_PIPELINE=110;
 	public const int
 		RULE_target = 0, RULE_body = 1, RULE_topStatement = 2, RULE_varAttr = 3, 
 		RULE_exprAttr = 4, RULE_varBind = 5, RULE_varDecl = 6, RULE_identifier = 7, 
@@ -84,16 +83,16 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		"'?.'", "'++'", "'--'", "'&&'", "'||'", "'^^'", "'->'", "'=='", "'!='", 
 		"'<='", "'>='", "'+='", "'-='", "'*='", "'/='", "'%='", "'&='", "'|='", 
 		"'^='", "'&&='", "'||='", "'<<'", "'>>'", "'<<='", "'>>='", "'??='", "'..'", 
-		"'<|'", "'|>'", "'{/'", "'/}'"
+		"'<|'", "'|>'"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, "BYTE_ORDER_MARK", "SINGLE_LINE_COMMENT", "OPEN_DELIMITED_COMMENT", 
-		"NEWLINE", "WS", "TAB", "AS", "BASE", "BREAK", "CASE", "CATCH", "CONTINUE", 
-		"DATA", "ELSE", "FINALLY", "HIDING", "IMPORT", "INTERNAL", "IF", "IN", 
-		"IS", "LET", "MODULE", "NAMEOF", "NAMESPACE", "NEW", "NEWTYPE", "OF", 
-		"OUT", "PRIVATE", "PROTECTED", "PUBLIC", "REF", "RETURN", "THEN", "THIS", 
-		"THROW", "TRY", "TYPE", "WHERE", "YIELD", "INIT", "EXPORT", "SYNC", "LINEAR", 
-		"SMOOTH", "IDENTIFIER", "LITERAL_ACCESS", "INTEGER_LITERAL", "HEX_INTEGER_LITERAL", 
+		null, "BYTE_ORDER_MARK", "SINGLE_LINE_COMMENT", "DELIMITED_COMMENT", "NEWLINE", 
+		"WS", "TAB", "AS", "BASE", "BREAK", "CASE", "CATCH", "CONTINUE", "DATA", 
+		"ELSE", "FINALLY", "HIDING", "IMPORT", "INTERNAL", "IF", "IN", "IS", "LET", 
+		"MODULE", "NAMEOF", "NAMESPACE", "NEW", "NEWTYPE", "OF", "OUT", "PRIVATE", 
+		"PROTECTED", "PUBLIC", "REF", "RETURN", "THEN", "THIS", "THROW", "TRY", 
+		"TYPE", "WHERE", "YIELD", "INIT", "EXPORT", "SYNC", "LINEAR", "SMOOTH", 
+		"IDENTIFIER", "LITERAL_ACCESS", "INTEGER_LITERAL", "HEX_INTEGER_LITERAL", 
 		"BIN_INTEGER_LITERAL", "REAL_LITERAL", "CHARACTER_LITERAL", "REGULAR_STRING", 
 		"VERBATIUM_STRING", "OPEN_BRACE", "CLOSE_BRACE", "OPEN_BRACKET", "CLOSE_BRACKET", 
 		"OPEN_PAREN", "CLOSE_PAREN", "DOT", "COMMA", "COLON", "SEMICOLON", "PLUS", 
@@ -104,8 +103,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		"OP_DIV_ASSIGNMENT", "OP_MOD_ASSIGNMENT", "OP_AMP_ASSIGNMENT", "OP_PIPE_ASSIGNMENT", 
 		"OP_CARET_ASSIGNMENT", "OP_AND_ASSIGNMENT", "OP_OR_ASSIGNMENT", "OP_LEFT_SHIFT", 
 		"OP_RIGHT_SHIFT", "OP_LEFT_SHIFT_ASSIGNMENT", "OP_RIGHT_SHIFT_ASSIGNMENT", 
-		"OP_COALESCING_ASSIGNMENT", "OP_RANGE", "OP_LEFT_PIPELINE", "OP_RIGHT_PIPELINE", 
-		"OPEN_DELIMITED_COMMENT_INSIDE", "CLOSE_DELIMITED_COMMENT_INSIDE"
+		"OP_COALESCING_ASSIGNMENT", "OP_RANGE", "OP_LEFT_PIPELINE", "OP_RIGHT_PIPELINE"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -2551,7 +2549,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 
 	private static char[] _serializedATN = {
 		'\x3', '\x608B', '\xA72A', '\x8133', '\xB9ED', '\x417C', '\x3BE7', '\x7786', 
-		'\x5964', '\x3', 'r', '\x104', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
+		'\x5964', '\x3', 'p', '\x104', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
 		'\t', '\x3', '\x4', '\x4', '\t', '\x4', '\x4', '\x5', '\t', '\x5', '\x4', 
 		'\x6', '\t', '\x6', '\x4', '\a', '\t', '\a', '\x4', '\b', '\t', '\b', 
 		'\x4', '\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', 
