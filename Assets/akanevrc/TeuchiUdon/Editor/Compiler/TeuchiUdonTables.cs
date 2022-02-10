@@ -87,6 +87,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Unit,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Object,
+                TeuchiUdonType.Bool,
                 TeuchiUdonType.Byte,
                 TeuchiUdonType.SByte,
                 TeuchiUdonType.Short,

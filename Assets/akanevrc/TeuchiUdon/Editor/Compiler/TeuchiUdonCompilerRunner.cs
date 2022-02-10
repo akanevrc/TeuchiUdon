@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -50,7 +51,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonQualifierStack     .Instance.Init();
                 TeuchiUdonAssemblyWriter     .Instance.Init();
 
-                ParseTreeWalker.Default.Walk(listener, parser.target());
+                try
+                {
+                    ParseTreeWalker.Default.Walk(listener, parser.target());
+                }
+                catch (Exception ex)
+                {
+                    return ("", $"{ex}\n{errorWriter}");
+                }
 
                 return (outputWriter.ToString(), errorWriter.ToString());
             }

@@ -973,6 +973,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(func.Token, func);
         }
 
+        public override void ExitBoolLiteral([NotNull] BoolLiteralContext context)
+        {
+            if (context.ChildCount == 0 || context.Parent == null) return;
+
+            var text = context.GetText();
+
+            var type       = TeuchiUdonType.Bool;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            var value      = ToBoolValue(context.Start, text);
+            context.result = new LiteralResult(context.Start, type, tableIndex, text, value);
+        }
+
+        private object ToBoolValue(IToken token, string text)
+        {
+            try
+            {
+                return Convert.ToBoolean(text);
+            }
+            catch
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"failed to convert '{token.Text}' to int");
+                return null;
+            }
+        }
+
         public override void ExitIntegerLiteral([NotNull] IntegerLiteralContext context)
         {
             if (context.ChildCount == 0 || context.Parent == null) return;
@@ -1232,7 +1257,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitVervatiumString([NotNull] VervatiumStringContext context)
         {
             if (context.ChildCount == 0 || context.Parent == null) return;
-            
+
             var text       = context.GetText();
             var type       = TeuchiUdonType.String;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;

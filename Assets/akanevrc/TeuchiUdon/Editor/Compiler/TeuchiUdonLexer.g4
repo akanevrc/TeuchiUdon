@@ -62,6 +62,8 @@ SYNC   : '@sync'  ;
 LINEAR : '@linear';
 SMOOTH : '@smooth';
 
+BOOL_LITERAL : 'true' | 'false';
+
 IDENTIFIER : IdentifierOrKeyword;
 
 LITERAL_ACCESS      : [0-9] ('_'* [0-9])* IntegerTypeSuffix? '.' '@'? IdentifierOrKeyword;
