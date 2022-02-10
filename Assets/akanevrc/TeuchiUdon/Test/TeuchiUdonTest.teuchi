@@ -18,6 +18,7 @@ _start = () -> {
     let str = "ok\nok" in UnityEngine.Debug.Log(str);
     let val1 = let val2 = 123 in val2 in UnityEngine.Debug.Log(+val1);
     let val1 = let val2 = 123 in val2 in UnityEngine.Debug.Log(-val1);
+    UnityEngine.Debug.Log(null);
     UnityEngine.Debug.Log(true);
     UnityEngine.Debug.Log(false);
     let num = 0;

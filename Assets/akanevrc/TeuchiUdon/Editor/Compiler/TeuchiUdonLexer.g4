@@ -62,6 +62,7 @@ SYNC   : '@sync'  ;
 LINEAR : '@linear';
 SMOOTH : '@smooth';
 
+NULL_LITERAL : 'null';
 BOOL_LITERAL : 'true' | 'false';
 
 IDENTIFIER : IdentifierOrKeyword;

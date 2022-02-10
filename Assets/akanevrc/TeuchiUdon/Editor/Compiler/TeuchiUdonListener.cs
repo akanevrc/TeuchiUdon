@@ -973,12 +973,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(func.Token, func);
         }
 
+        public override void ExitNullLiteral([NotNull] NullLiteralContext context)
+        {
+            if (context.ChildCount == 0 || context.Parent == null) return;
+
+            var text       = context.GetText();
+            var type       = TeuchiUdonType.Bottom;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            context.result = new LiteralResult(context.Start, type, tableIndex, text, null);
+        }
+
         public override void ExitBoolLiteral([NotNull] BoolLiteralContext context)
         {
             if (context.ChildCount == 0 || context.Parent == null) return;
 
-            var text = context.GetText();
-
+            var text       = context.GetText();
             var type       = TeuchiUdonType.Bool;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             var value      = ToBoolValue(context.Start, text);

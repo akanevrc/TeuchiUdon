@@ -106,7 +106,8 @@ expr
 
 literal
     returns [LiteralResult result]
-    : BOOL_LITERAL        #BoolLiteral
+    : NULL_LITERAL        #NullLiteral
+    | BOOL_LITERAL        #BoolLiteral
     | INTEGER_LITERAL     #IntegerLiteral
     | HEX_INTEGER_LITERAL #HexIntegerLiteral
     | BIN_INTEGER_LITERAL #BinIntegerLiteral

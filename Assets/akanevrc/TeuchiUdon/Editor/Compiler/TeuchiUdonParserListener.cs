@@ -651,6 +651,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitLogicalXorExpr([NotNull] TeuchiUdonParser.LogicalXorExprContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>NullLiteral</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterNullLiteral([NotNull] TeuchiUdonParser.NullLiteralContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>NullLiteral</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitNullLiteral([NotNull] TeuchiUdonParser.NullLiteralContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>BoolLiteral</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.
 	/// </summary>
