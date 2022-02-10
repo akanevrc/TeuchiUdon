@@ -390,7 +390,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"bottom detected");
             return new TeuchiUdonAssembly[0];
         }
     }
@@ -630,7 +629,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
         {
-            throw new InvalidOperationException("candidate detected");
+            return new TeuchiUdonAssembly[0];
         }
     }
 

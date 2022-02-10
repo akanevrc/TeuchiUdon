@@ -115,7 +115,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             if (RealName == null)
             {
-                throw new InvalidOperationException("no real name");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(null, $"no real type name");
+                return "";
             }
             return RealName;
         }

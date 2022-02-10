@@ -91,7 +91,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 outTypesArr.Length != AllParamInOuts.Count(x => x == TeuchiUdonMethodParamInOut.Out)
             )
             {
-                throw new InvalidOperationException("invalid param count");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(null, $"invalid param count");
+                yield break;
             }
 
             var i = 0;

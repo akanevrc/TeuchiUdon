@@ -34,6 +34,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public TeuchiUdonQualifier Pop()
         {
+            if (Qualifiers.Count == 0) return TeuchiUdonQualifier.Top;
             return Qualifiers.Pop();
         }
 
