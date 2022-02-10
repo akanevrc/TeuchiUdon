@@ -107,7 +107,8 @@ expr
 
 literal
     returns [LiteralResult result]
-    : NULL_LITERAL        #NullLiteral
+    : '(' ')'             #UnitLiteral
+    | NULL_LITERAL        #NullLiteral
     | BOOL_LITERAL        #BoolLiteral
     | INTEGER_LITERAL     #IntegerLiteral
     | HEX_INTEGER_LITERAL #HexIntegerLiteral

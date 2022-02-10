@@ -411,26 +411,36 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 Vars.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                     })
                 .Concat(OutValues.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                     }))
                 .Concat(Literals.Values.Except(Exports.Values).SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                     }))
                 .Concat(This.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_THIS())
                     }))
                 .Concat(Funcs.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
                         new Assembly_DECL_DATA(x.ReturnAddress, x.Type, new AssemblyLiteral_NULL())

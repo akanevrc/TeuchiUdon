@@ -989,6 +989,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(func.Token, func);
         }
 
+        public override void ExitUnitLiteral([NotNull] UnitLiteralContext context)
+        {
+            if (context.ChildCount == 0 || context.Parent == null) return;
+
+            var type       = TeuchiUdonType.Unit;
+            var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
+            context.result = new LiteralResult(context.Start, type, tableIndex, "()", null);
+        }
+
         public override void ExitNullLiteral([NotNull] NullLiteralContext context)
         {
             if (context.ChildCount == 0 || context.Parent == null) return;

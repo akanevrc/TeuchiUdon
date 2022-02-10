@@ -22,6 +22,7 @@ _start = () -> {
     UnityEngine.Debug.Log(true);
     UnityEngine.Debug.Log(false);
     UnityEngine.Debug.Log(this);
+    let u = ();
     let num = 0;
     UnityEngine.Debug.Log(num);
     UnityEngine.Debug.Log(++num);
