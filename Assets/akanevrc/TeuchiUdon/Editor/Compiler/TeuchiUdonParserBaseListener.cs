@@ -354,6 +354,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExprStatement([NotNull] TeuchiUdonParser.ExprStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>ThisLiteralExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterThisLiteralExpr([NotNull] TeuchiUdonParser.ThisLiteralExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ThisLiteralExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitThisLiteralExpr([NotNull] TeuchiUdonParser.ThisLiteralExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>UnitBlockExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -885,6 +899,18 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVervatiumString([NotNull] TeuchiUdonParser.VervatiumStringContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.thisLiteral"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterThisLiteral([NotNull] TeuchiUdonParser.ThisLiteralContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.thisLiteral"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitThisLiteral([NotNull] TeuchiUdonParser.ThisLiteralContext context) { }
 
 	/// <inheritdoc/>
 	/// <remarks>The default implementation does nothing.</remarks>

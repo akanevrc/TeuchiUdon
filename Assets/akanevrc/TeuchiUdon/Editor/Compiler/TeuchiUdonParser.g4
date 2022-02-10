@@ -77,6 +77,7 @@ expr
     | '{' (statement ';')* expr '}'                 #ValueBlockExpr
     | '(' expr ')'                                  #ParenExpr
     | literal                                       #LiteralExpr
+    | thisLiteral                                   #ThisLiteralExpr
     | identifier                                    #EvalVarExpr
     | identifier '(' ')'                            #EvalUnitFuncExpr
     | identifier '(' expr ')'                       #EvalSingleFuncExpr
@@ -115,6 +116,11 @@ literal
     | CHARACTER_LITERAL   #CharacterLiteral
     | REGULAR_STRING      #RegularString
     | VERBATIUM_STRING    #VervatiumString
+    ;
+
+thisLiteral
+    returns [ThisResult result]
+    : THIS_LITERAL
     ;
 
 // target

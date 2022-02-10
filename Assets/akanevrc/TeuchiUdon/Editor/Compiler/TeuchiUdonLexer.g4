@@ -49,7 +49,6 @@ PUBLIC    : 'public'   ;
 REF       : 'ref'      ;
 RETURN    : 'return'   ;
 THEN      : 'then'     ;
-THIS      : 'this'     ;
 THROW     : 'throw'    ;
 TRY       : 'try'      ;
 TYPE      : 'type'     ;
@@ -64,6 +63,7 @@ SMOOTH : '@smooth';
 
 NULL_LITERAL : 'null';
 BOOL_LITERAL : 'true' | 'false';
+THIS_LITERAL : 'this';
 
 IDENTIFIER : IdentifierOrKeyword;
 

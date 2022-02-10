@@ -303,6 +303,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExprStatement([NotNull] TeuchiUdonParser.ExprStatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>ThisLiteralExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterThisLiteralExpr([NotNull] TeuchiUdonParser.ThisLiteralExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ThisLiteralExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitThisLiteralExpr([NotNull] TeuchiUdonParser.ThisLiteralExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>UnitBlockExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -758,5 +770,15 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitVervatiumString([NotNull] TeuchiUdonParser.VervatiumStringContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.thisLiteral"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterThisLiteral([NotNull] TeuchiUdonParser.ThisLiteralContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.thisLiteral"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitThisLiteral([NotNull] TeuchiUdonParser.ThisLiteralContext context);
 }
 } // namespace akanevrc.TeuchiUdon.Editor.Compiler

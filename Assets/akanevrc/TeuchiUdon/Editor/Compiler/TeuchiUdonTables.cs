@@ -19,6 +19,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> Exports { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
+        public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<string, string> UnaryOps { get; private set; }
         public Dictionary<string, string> BinaryOps { get; private set; }
@@ -62,6 +63,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             OutValues = new Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue>();
             Exports   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
             Literals  = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
+            This      = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs     = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
 
             OutValueCounters = new Dictionary<TeuchiUdonType, int>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
@@ -85,6 +87,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Unit,
                 TeuchiUdonType.Qual,
                 TeuchiUdonType.Type,
+                TeuchiUdonType.Tuple,
+                TeuchiUdonType.List,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Object,
                 TeuchiUdonType.Bool,
@@ -101,8 +105,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Decimal,
                 TeuchiUdonType.Char,
                 TeuchiUdonType.String,
-                TeuchiUdonType.UObject,
-                TeuchiUdonType.List
+                TeuchiUdonType.UnityObject,
+                TeuchiUdonType.GameObject
             };
 
             foreach (var t in types)
@@ -420,6 +424,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new TeuchiUdonAssembly[]
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    }))
+                .Concat(This.Values.SelectMany(x =>
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_THIS())
                     }))
                 .Concat(Funcs.Values.SelectMany(x =>
                     new TeuchiUdonAssembly[]

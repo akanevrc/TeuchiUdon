@@ -83,6 +83,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class AssemblyLiteral_THIS : TeuchiUdonAssemblyLiteral
+    {
+        public override string ToString()
+        {
+            return $"this";
+        }
+    }
+
     public class AssemblyLiteral_ADDRESS : TeuchiUdonAssemblyLiteral
     {
         public uint Address { get; }

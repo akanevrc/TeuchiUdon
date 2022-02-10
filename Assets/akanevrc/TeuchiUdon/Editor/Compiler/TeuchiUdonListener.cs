@@ -469,6 +469,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(literal.Token, literal);
         }
 
+        public override void EnterThisLiteralExpr([NotNull] ThisLiteralExprContext context)
+        {
+            var scope = new TeuchiUdonScope(new TeuchiUdonThis(), TeuchiUdonScopeMode.This);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
+        }
+
+        public override void ExitThisLiteralExpr([NotNull] ThisLiteralExprContext context)
+        {
+            var thisLiteral = context.thisLiteral()?.result;
+            if (thisLiteral == null) return;
+
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            context.result = new ExprResult(thisLiteral.Token, thisLiteral);
+        }
+
         public override void ExitEvalVarExpr([NotNull] EvalVarExprContext context)
         {
             var identifier = context.identifier()?.result;
@@ -1447,6 +1463,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     result.Append(ch);
                 }
             }
+        }
+
+        public override void ExitThisLiteral([NotNull] ThisLiteralContext context)
+        {
+            if (context.ChildCount == 0) return;
+
+            var text       = context.GetText();
+            var type       = TeuchiUdonType.String;
+            context.result = new ThisResult(context.Start);
         }
     }
 }

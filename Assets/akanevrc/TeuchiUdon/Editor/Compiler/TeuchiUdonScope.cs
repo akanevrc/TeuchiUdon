@@ -11,6 +11,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         If,
         LetIn,
         Literal,
+        This,
         Type,
         VarBind,
         While

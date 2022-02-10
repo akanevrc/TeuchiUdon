@@ -487,6 +487,39 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class ThisResult : TypedResult
+    {
+        public TeuchiUdonThis This { get; }
+
+        public ThisResult(IToken token)
+            : base(token, TeuchiUdonType.GameObject)
+        {
+            This = new TeuchiUdonThis();
+
+            if (TeuchiUdonTables.Instance.This.ContainsKey(This))
+            {
+                This = TeuchiUdonTables.Instance.This[This];
+            }
+            else
+            {
+                TeuchiUdonTables.Instance.This.Add(This, This);
+            }
+        }
+
+        public override bool IsLeftValue => false;
+
+        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
+        {
+            return
+                This.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                new TeuchiUdonAssembly[0] :
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(This))
+                };
+        }
+    }
+
     public class EvalVarResult : TypedResult
     {
         public TeuchiUdonVar Var { get; }
