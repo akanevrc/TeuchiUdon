@@ -13,11 +13,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Token = token;
         }
-
-        public virtual IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return new TeuchiUdonAssembly[0];
-        }
     }
 
     public class BodyResult : TeuchiUdonParserResult
@@ -28,83 +23,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token)
         {
             TopStatements = topStatements.ToArray();
-        }
-
-        public IEnumerable<TeuchiUdonAssembly> GetAssemblyDataPart()
-        {
-            var exports = TopStatements
-                .Select(x => x is TopBindResult topBind ? topBind : null)
-                .Where(x => x != null && x.Export);
-            var syncs = TopStatements
-                .Select(x => x is TopBindResult topBind ? topBind : null)
-                .Where(x => x != null && x.Sync != TeuchiUdonSyncMode.Disable);
-
-            return
-                exports.SelectMany(x =>
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_EXPORT_DATA(new TextLabel(x.VarBind.Vars[0].Name))
-                    }
-                )
-                .Concat(syncs.SelectMany(x =>
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_SYNC_DATA(new TextLabel(x.VarBind.Vars[0].Name), TeuchiUdonAssemblySyncMode.Create(x.Sync))
-                    }
-                ));
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            var topFuncs = TopStatements
-                .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
-                .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].Name, x: (TopBindResult)x));
-            var topStats = TopStatements
-                .Where(x => !(x is TopBindResult topBind && topBind.Export))
-                .Select(x => x is TopBindResult topBind ? (name: topBind.Init, x) : x is TopExprResult topExpr ? (name: topExpr.Init, x) : (name: null, x))
-                .Where(x => x.name != null);
-
-            var topFuncStats = new Dictionary<string, List<TopStatementResult>>();
-            foreach (var func in topFuncs)
-            {
-                if (func.name == "_start" || func.x.Export)
-                {
-                    topFuncStats.Add(func.name, new List<TopStatementResult>());
-                    topFuncStats[func.name].Add(func.x);
-                }
-            }
-            foreach (var stat in topStats)
-            {
-                if (topFuncStats.ContainsKey(stat.name))
-                {
-                    topFuncStats[stat.name].Add(stat.x);
-                }
-            }
-
-            return
-                topFuncStats.Count == 0 ? new TeuchiUdonAssembly[0] :
-                topFuncStats.Select(x =>
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_EXPORT_CODE(new TextLabel(x.Key)),
-                        new Assembly_LABEL      (new TextLabel(x.Key)),
-                        new Assembly_INDENT(1)
-                    }
-                .Concat(x.Value.SelectMany(y => y.GetAssemblyCodePart()))
-                .Concat(TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)) ?
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(new TextLabel($"topcall[{x.Key}]"))),
-                        new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)])),
-                        new Assembly_LABEL(new TextLabel($"topcall[{x.Key}]")),
-                        new Assembly_JUMP(new AssemblyAddress_NUMBER(0xFFFFFFFC)),
-                        new Assembly_INDENT(-1)
-                    } :
-                    new TeuchiUdonAssembly[0]
-                ))
-                .Aggregate((acc, x) => acc
-                    .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
-                    .Concat(x));
         }
     }
 
@@ -131,21 +49,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Export  = export;
             Sync    = sync;
         }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x =>
-                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                    new TeuchiUdonAssembly[0] :
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                        new Assembly_COPY()
-                    }
-                ));
-        }
     }
 
     public class TopExprResult : TopStatementResult
@@ -158,11 +61,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Expr = expr;
             Init = init;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return Expr.GetAssemblyCodePart();
         }
     }
 
@@ -304,16 +202,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Value = value;
             Label = label;
         }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                Value.GetAssemblyCodePart()
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(Label))
-                });
-        }
     }
 
     public class LetBindResult : StatementResult
@@ -324,21 +212,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token)
         {
             VarBind = varBind;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x =>
-                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                    new TeuchiUdonAssembly[0] :
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                        new Assembly_COPY()
-                    }
-                ));
         }
     }
 
@@ -351,18 +224,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token)
         {
             Inner = inner;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                Inner.GetAssemblyCodePart()
-                .Concat
-                (
-                    ReturnsValue || Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                        new TeuchiUdonAssembly[0] :
-                        new TeuchiUdonAssembly[] { new Assembly_POP() }
-                );
         }
     }
 
@@ -387,11 +248,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return new TeuchiUdonAssembly[0];
-        }
     }
 
     public class UnknownTypeResult : TypedResult
@@ -429,11 +285,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return Statements.SelectMany(x => x.GetAssemblyCodePart()).Concat(Expr.GetAssemblyCodePart());
-        }
     }
 
     public class ParenResult : TypedResult
@@ -447,11 +298,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => Expr.Inner.IsLeftValue;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return Expr.GetAssemblyCodePart();
-        }
     }
 
     public class LiteralResult : TypedResult
@@ -474,17 +320,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                Literal.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                new TeuchiUdonAssembly[0] :
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literal))
-                };
-        }
     }
 
     public class ThisResult : TypedResult
@@ -507,17 +342,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                This.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                new TeuchiUdonAssembly[0] :
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(This))
-                };
-        }
     }
 
     public class EvalVarResult : TypedResult
@@ -533,17 +357,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => true;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                Var.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                new TeuchiUdonAssembly[0] :
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Var))
-                };
-        }
     }
 
     public class EvalTypeResult : TypedResult
@@ -601,18 +414,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                Args.SelectMany(x => x.GetAssemblyCodePart())
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(EvalFunc)),
-                    new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(Var)),
-                    new Assembly_LABEL(EvalFunc)
-                });
-        }
     }
 
     public class EvalMethodResult : TypedResult
@@ -632,22 +433,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                Method.SortAlongParams
-                (
-                    Args.Select(x => x.GetAssemblyCodePart()),
-                    OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
-                )
-                .SelectMany(x => x)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(Method)
-                })
-                .Concat(OutValues.SelectMany(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }));
-        }
     }
 
     public abstract class EvalCandidateResult : TypedResult
@@ -658,11 +443,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, TeuchiUdonType.Unknown)
         {
             Identifier = identifier;
-        }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return new TeuchiUdonAssembly[0];
         }
     }
 
@@ -821,76 +601,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return new TeuchiUdonLiteral[0];
             }
         }
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            switch (Op)
-            {
-                case "+":
-                    return Expr.GetAssemblyCodePart();
-                case "-":
-                case "!":
-                    return
-                        Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod
-                        (
-                            Methods[0],
-                            new TeuchiUdonAssembly[][]
-                            {
-                                Expr.GetAssemblyCodePart().ToArray()
-                            },
-                            OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
-                        );
-                case "~":
-                    return
-                        Methods[0] == null || Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod
-                        (
-                            Methods[0],
-                            new TeuchiUdonAssembly[][]
-                            {
-                                Expr.GetAssemblyCodePart().ToArray(),
-                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literals[0])) }
-                            },
-                            OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
-                        );
-                case "++":
-                case "--":
-                    return
-                        Methods[0] == null || Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod
-                        (
-                            Methods[0],
-                            new TeuchiUdonAssembly[][]
-                            {
-                                Expr.GetAssemblyCodePart().ToArray(),
-                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literals[0])) }
-                            },
-                            new TeuchiUdonAssembly[][]
-                            {
-                                Expr.GetAssemblyCodePart().ToArray()
-                            }
-                        );
-                default:
-                    return new TeuchiUdonAssembly[0];
-            }
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalMethod
-        (
-            TeuchiUdonMethod method,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues
-        )
-        {
-            return
-                method.SortAlongParams(inValues, outValues).SelectMany(x => x)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(method)
-                })
-                .Concat(outValues.SelectMany(x => x));
-        }
     }
 
     public class PostfixResult : UnaryOpResult
@@ -949,50 +659,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            switch (Op)
-            {
-                case "++":
-                case "--":
-                    return
-                        Methods[0] == null || Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod
-                        (
-                            Methods[0],
-                            new TeuchiUdonAssembly[][]
-                            {
-                                Expr.GetAssemblyCodePart().ToArray(),
-                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Literals[0])) }
-                            },
-                            new TeuchiUdonAssembly[][]
-                            {
-                                Expr.GetAssemblyCodePart().ToArray()
-                            },
-                            OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
-                        );
-                default:
-                    return new TeuchiUdonAssembly[0];
-            }
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalMethod
-        (
-            TeuchiUdonMethod method,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> tmpValues
-        )
-        {
-            return
-                outValues.Zip(tmpValues, (o, t) => (o, t)).SelectMany(x => x.o.Concat(x.t).Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() }))
-                .Concat(method.SortAlongParams(inValues, outValues).SelectMany(x => x))
-                .Concat(new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_EXTERN(method)
-                    })
-                .Concat(tmpValues.SelectMany(x => x));
-        }
+        
     }
 
     public class InfixResult : TypedResult
@@ -1010,11 +677,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => (Op == "." || Op == "?.") && Expr2.Inner.IsLeftValue;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return Expr1.GetAssemblyCodePart().Concat(Expr2.GetAssemblyCodePart());
-        }
     }
 
     public class LetInBindResult : TypedResult
@@ -1032,22 +694,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return
-                VarBind.Expr.GetAssemblyCodePart()
-                .Concat(VarBind.Vars.Reverse().SelectMany(x =>
-                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                    new TeuchiUdonAssembly[0] :
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                        new Assembly_COPY()
-                    }
-                ))
-                .Concat(Expr.GetAssemblyCodePart());
-        }
     }
 
     public class FuncResult : TypedResult
@@ -1074,13 +720,5 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override bool IsLeftValue => false;
-
-        public override IEnumerable<TeuchiUdonAssembly> GetAssemblyCodePart()
-        {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(Func))
-            };
-        }
     }
 }

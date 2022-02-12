@@ -17,6 +17,36 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Debug.Log(error);
         }
 
+        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset")]
+        public static void SaveTeuchiUdonAsset()
+        {
+            var compilerResult = CompileFromPath("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
+            if (!string.IsNullOrEmpty(compilerResult.error))
+            {
+                Debug.LogError(compilerResult.error);
+                return;
+            }
+
+            var assetPath = "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset";
+            var program   = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
+            if (program == null)
+            {
+                program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
+                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
+                program.RefreshProgram();
+                AssetDatabase.CreateAsset(program, assetPath);
+            }
+            else
+            {
+                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
+                program.RefreshProgram();
+            }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("save succeeded");
+        }
+
         public static (string output, string error) CompileFromPath(string path)
         {
             var script = AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>(path);
@@ -46,6 +76,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
                 var listener    = new TeuchiUdonListener(parser);
 
+                TeuchiUdonStrategy.SetStrategy<TeuchiUdonStrategySimple>();
+
                 TeuchiUdonLogicalErrorHandler.Instance.Init(parser);
                 TeuchiUdonTables             .Instance.Init();
                 TeuchiUdonQualifierStack     .Instance.Init();
@@ -62,36 +94,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                 return (outputWriter.ToString(), errorWriter.ToString());
             }
-        }
-
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset")]
-        public static void SaveTeuchiUdonAsset()
-        {
-            var compilerResult = CompileFromPath("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
-            if (!string.IsNullOrEmpty(compilerResult.error))
-            {
-                Debug.LogError(compilerResult.error);
-                return;
-            }
-
-            var assetPath = "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset";
-            var program   = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
-            if (program == null)
-            {
-                program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
-                program.RefreshProgram();
-                AssetDatabase.CreateAsset(program, assetPath);
-            }
-            else
-            {
-                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
-                program.RefreshProgram();
-            }
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            Debug.Log("save succeeded");
         }
     }
 }

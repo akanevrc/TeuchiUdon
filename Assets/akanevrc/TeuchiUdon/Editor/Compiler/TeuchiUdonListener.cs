@@ -24,8 +24,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var body = context.body()?.result;
             if (body == null) return;
 
-            TeuchiUdonAssemblyWriter.Instance.PushDataPart(body.GetAssemblyDataPart(), TeuchiUdonTables.Instance.GetAssemblyDataPart());
-            TeuchiUdonAssemblyWriter.Instance.PushCodePart(TeuchiUdonTables.Instance.GetAssemblyCodePart(), body.GetAssemblyCodePart());
+            TeuchiUdonAssemblyWriter.Instance.PushDataPart
+            (
+                TeuchiUdonStrategy.Instance.GetDataPartFromBody  (body),
+                TeuchiUdonStrategy.Instance.GetDataPartFromTables(TeuchiUdonTables.Instance)
+            );
+            TeuchiUdonAssemblyWriter.Instance.PushCodePart
+            (
+                TeuchiUdonStrategy.Instance.GetCodePartFromTables(TeuchiUdonTables.Instance),
+                TeuchiUdonStrategy.Instance.GetCodePartFromBody  (body)
+            );
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
         }
