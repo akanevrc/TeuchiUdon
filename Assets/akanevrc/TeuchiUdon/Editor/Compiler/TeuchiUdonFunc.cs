@@ -4,14 +4,14 @@ using System.Linq;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonFunc : ITeuchiUdonLabel, IEquatable<TeuchiUdonFunc>
+    public class TeuchiUdonFunc : IIndexedLabel, IEquatable<TeuchiUdonFunc>
     {
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
         public TeuchiUdonType Type { get; }
         public TeuchiUdonVar[] Vars { get; }
         public ExprResult Expr { get; }
-        public TextLabel ReturnAddress { get; }
+        public TeuchiUdonReturn Return { get; }
 
         public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier)
             : this(index, qualifier, null, null, null)
@@ -20,12 +20,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr)
         {
-            Index         = index;
-            Qualifier     = qualifier;
-            Type          = type;
-            Vars          = vars?.ToArray();
-            Expr          = expr;
-            ReturnAddress = new TextLabel(qualifier, $"{GetLabel()}>return");
+            Index     = index;
+            Qualifier = qualifier;
+            Type      = type;
+            Vars      = vars?.ToArray();
+            Expr      = expr;
+            Return    = new TeuchiUdonReturn(index, this);
         }
 
         public bool Equals(TeuchiUdonFunc obj)

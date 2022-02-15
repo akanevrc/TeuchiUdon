@@ -2,17 +2,15 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonEvalFunc : ITeuchiUdonLabel, IEquatable<TeuchiUdonEvalFunc>
+    public class TeuchiUdonEvalFunc : IIndexedLabel, IEquatable<TeuchiUdonEvalFunc>
     {
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
-        public ITeuchiUdonLabel EndLabel { get; }
 
         public TeuchiUdonEvalFunc(int index, TeuchiUdonQualifier qualifier)
         {
             Index     = index;
             Qualifier = qualifier;
-            EndLabel  = new TextLabel(qualifier, GetLabel());
         }
 
         public bool Equals(TeuchiUdonEvalFunc obj)

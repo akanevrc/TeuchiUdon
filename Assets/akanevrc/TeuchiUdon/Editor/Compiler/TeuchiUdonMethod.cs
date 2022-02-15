@@ -48,7 +48,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonMethod obj)
         {
-            return !object.ReferenceEquals(obj, null) && Type == obj.Type && Name == obj.Name && InTypes.SequenceEqual(obj.InTypes);
+            return !object.ReferenceEquals(obj, null) && Type.LogicalTypeEquals(obj.Type) && Name == obj.Name && InTypes.SequenceEqual(obj.InTypes, TeuchiUdonTypeLogicalEqualityComparer.Instance);
         }
 
         public override bool Equals(object obj)

@@ -16,21 +16,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
+        public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
+        public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> ExportedVars { get; private set; }
+        public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
         public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
-        public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> Exports { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
+        public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
+
+        public int ExpectCount { get; private set; }
+
         public Dictionary<string, string> UnaryOps { get; private set; }
         public Dictionary<string, string> BinaryOps { get; private set; }
 
-        private Dictionary<TeuchiUdonType, int> OutValueCounters { get; set; }
-        private int LiteralCounter { get; set; }
-        private int FuncCounter { get; set; }
-        private int VarBindCounter { get; set; }
-        private int BlockCounter { get; set; }
-        private int EvalFuncCounter { get; set; }
-        private int LetInCounter { get; set; }
+        public int VarCounter { get; private set; }
+        public int OutValueCounter { get; private set; }
+        public int LiteralCounter { get; private set; }
+        public int FuncCounter { get; private set; }
+        public int VarBindCounter { get; private set; }
+        public int BlockCounter { get; private set; }
+        public int EvalFuncCounter { get; private set; }
+        public int LetInCounter { get; private set; }
+        public int IndirectCounter { get; private set; }
 
         private bool IsInitialized { get; set; } = false;
 
@@ -59,22 +67,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 IsInitialized = true;
             }
 
-            Vars      = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
-            OutValues = new Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue>();
-            Exports   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
-            Literals  = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
-            This      = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
-            Funcs     = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
+            Vars           = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
+            UnbufferedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
+            ExportedVars   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
+            SyncedVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
+            OutValues      = new Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue>();
+            Literals       = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
+            This           = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
+            Funcs          = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
+            Indirects      = new Dictionary<TeuchiUdonIndirect, uint>();
 
-            OutValueCounters = new Dictionary<TeuchiUdonType, int>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
-            LiteralCounter   = 0;
-            FuncCounter      = 0;
-            VarBindCounter   = 0;
-            BlockCounter     = 0;
-            EvalFuncCounter  = 0;
-            LetInCounter     = 0;
+            ExpectCount = 0;
 
-            //var m = Methods.Values.Where(x => x.Name == "op_UnaryMinus").ToArray();
+            VarCounter      = 0;
+            OutValueCounter = 0;
+            LiteralCounter  = 0;
+            FuncCounter     = 0;
+            VarBindCounter  = 0;
+            BlockCounter    = 0;
+            EvalFuncCounter = 0;
+            LetInCounter    = 0;
+            IndirectCounter = 0;
         }
 
         private void InitInternalTypes()
@@ -106,12 +119,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Char,
                 TeuchiUdonType.String,
                 TeuchiUdonType.UnityObject,
-                TeuchiUdonType.GameObject
+                TeuchiUdonType.GameObject,
+                TeuchiUdonType.Buffer
             };
 
             foreach (var t in types)
             {
-                Types.Add(t, t);
+                Types       .Add(t, t);
+                LogicalTypes.Add(t, t);
             }
         }
 
@@ -133,11 +148,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var realType     = def.type.IsArray ? def.type.GetElementType() : def.type;
                         var qual         = new TeuchiUdonQualifier(qualNames, qualNames);
                         var type         = new TeuchiUdonType(qual, typeName, udonTypeName, udonTypeName, realType);
-
-                        if (def.type.IsArray)
-                        {
-                            type = TeuchiUdonType.List.ApplyArgAsList(type);
-                        }
 
                         if (!Types.ContainsKey(type))
                         {
@@ -337,6 +347,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonMethod[0];
         }
 
+        public void SetExpectCount(int count)
+        {
+            ExpectCount = ExpectCount >= count ? ExpectCount : count;
+        }
+
+        public int GetVarIndex()
+        {
+            return VarCounter++;
+        }
+
+        public IEnumerable<TeuchiUdonOutValue> GetOutValues(int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                var o = new TeuchiUdonOutValue(OutValueCounter++);
+                if (!OutValues.ContainsKey(o))
+                {
+                    OutValues.Add(o, o);
+                }
+                yield return o;
+            }
+        }
+
+        public void ResetOutValueIndex()
+        {
+            OutValueCounter = 0;
+        }
+
         public int GetLiteralIndex()
         {
             return LiteralCounter++;
@@ -367,34 +405,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return LetInCounter++;
         }
 
-        public TeuchiUdonOutValue GetOutValue(TeuchiUdonType type)
+        public int GetIndirectIndex()
         {
-            var index = 0;
-            if (OutValueCounters.ContainsKey(type))
-            {
-                index = OutValueCounters[type]++;
-            }
-            else
-            {
-                OutValueCounters.Add(type, 1);
-            }
-
-            var o = new TeuchiUdonOutValue(type, index);
-
-            if (!OutValues.ContainsKey(o))
-            {
-                OutValues.Add(o, o);
-            }
-
-            return o;
+            return IndirectCounter++;
         }
 
         public static string GetUdonTypeName(Type type)
         {
-            if (type.IsArray) return "list";
-
-            var name = type.FullName.Replace(".", "");
-            return name;
+            return type.FullName.Replace(".", "").Replace("[]", "Array");
         }
 
         public static string GetGetterName(string name)
@@ -409,9 +427,64 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
         {
-            return
-                Exports.Select(x => (x.Key.GetFullLabel(), x.Value.Value, x.Value.Type.RealType))
-                .Concat(Literals.Values.Select(x => (x.GetFullLabel(), x.Value, x.Type.RealType)));
+            if (TeuchiUdonStrategy.Instance is TeuchiUdonStrategySimple)
+            {
+                return
+                    ExportedVars           .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Value.Type       .RealType))
+                    .Concat(Literals.Values.Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
+                    .Concat(Indirects      .Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
+            }
+            else if (TeuchiUdonStrategy.Instance is TeuchiUdonStrategyBuffered)
+            {
+                return
+                    ExportedVars.Select(x => (x.Key.GetFullLabel(), x.Value.Value, x.Value.Type.RealType))
+                    .Concat(new (string, object, Type)[]
+                        {
+                            (
+                                "buffer[vars]",
+                                (object)Enumerable.Range(0, VarCounter)
+                                    .Select(x => (object)null)
+                                    .ToArray(),
+                                TeuchiUdonType.Buffer.RealType
+                            ),
+                            (
+                                "buffer[literals]",
+                                (object)Enumerable.Range(0, LiteralCounter)
+                                    .Select(x => Literals.Values
+                                        .FirstOrDefault(y => y.Index == x)?.Value
+                                    )
+                                    .ToArray(),
+                                TeuchiUdonType.Buffer.RealType
+                            ),
+                            (
+                                "buffer[returns]",
+                                (object)Enumerable.Range(0, FuncCounter)
+                                    .Select(x => (object)null)
+                                    .ToArray(),
+                                TeuchiUdonType.Buffer.RealType
+                            ),
+                            (
+                                "buffer[indirects]",
+                                (object)Enumerable.Range(0, IndirectCounter)
+                                    .Select(x => Indirects
+                                        .Select(y => new { k = y.Key, v = (object)y.Value })
+                                        .FirstOrDefault(y => y.k.Index == x)?.v
+                                    )
+                                    .ToArray(),
+                                TeuchiUdonType.Buffer.RealType
+                            ),
+                            (
+                                "buffer[tmpstack]",
+                                (object)new object[100000],
+                                TeuchiUdonType.Buffer.RealType
+                            )
+                        }
+                    );
+            }
+            else
+            {
+                return new (string, object, Type)[0];
+            }
         }
     }
 }

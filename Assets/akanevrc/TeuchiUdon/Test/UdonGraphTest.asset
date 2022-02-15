@@ -14,14 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: 0d1b20c4bccaf344a8cdf9501a0a33e3,
     type: 2}
-  udonAssembly: ".data_start\r\n\r\n    \r\n    __Boolean_0: %SystemBoolean, null\r\n   
-    __message_0: %SystemObject, null\r\n    __message_1: %SystemObject, null\r\n\r\n.data_end\r\n\r\n.code_start\r\n\r\n   
-    .export _start\r\n    \r\n    _start:\r\n    \r\n        PUSH, __Boolean_0\r\n       
-    JUMP_IF_FALSE, 0x00000038\r\n        PUSH, __message_0\r\n        EXTERN, \"SystemDateTime.__get_Now__SystemDateTime\"\r\n       
-    PUSH, __message_0\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    JUMP, 0x00000000\r\n        PUSH, __message_0\r\n        PUSH, __message_1\r\n       
-    COPY\r\n        PUSH, __message_0\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    JUMP, 0xFFFFFFFC\r\n    \r\n\r\n.code_end\r\n"
+  udonAssembly: ".data_start\r\n\r\n    \r\n    __message_0: %SystemObject, null\r\n   
+    newVariable: %SystemObjectArray, null\r\n\r\n.data_end\r\n\r\n.code_start\r\n\r\n   
+    .export _start\r\n    \r\n    _start:\r\n    \r\n        PUSH, newVariable\r\n       
+    PUSH, __message_0\r\n        COPY\r\n        PUSH, __message_0\r\n        EXTERN,
+    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP, 0xFFFFFFFC\r\n   
+    \r\n\r\n.code_end\r\n"
   assemblyError: 
   graphData:
     name: 
@@ -32,46 +30,52 @@ MonoBehaviour:
       position: {x: -27, y: 22}
       nodeUIDs: []
       flowUIDs:
-      - df314d5a-8dd6-4218-bfa0-78b8aaf56c9e
+      - 97d9f9ce-23ca-4fcd-8929-555cb222e4b9
       nodeValues: []
-    - fullName: SystemDateTime.__get_Now__SystemDateTime
-      uid: 20b750db-abe4-4672-a437-9b5d53b3b36b
-      position: {x: 124, y: 177}
-      nodeUIDs: []
-      flowUIDs: []
-      nodeValues: []
-    - fullName: UnityEngineDebug.__Log__SystemObject__SystemVoid
-      uid: 5c1c462d-1f4a-49e2-8a6b-67e68aeb2e59
-      position: {x: 314, y: 175}
-      nodeUIDs:
-      - 20b750db-abe4-4672-a437-9b5d53b3b36b|0
-      flowUIDs:
-      - 
-      nodeValues:
-      - unityObjectValue: {fileID: 0}
-        stringValue: 
     - fullName: UnityEngineDebug.__Log__SystemObject__SystemVoid
       uid: 97d9f9ce-23ca-4fcd-8929-555cb222e4b9
-      position: {x: 313, y: 19}
+      position: {x: 236, y: 3}
       nodeUIDs:
-      - 20b750db-abe4-4672-a437-9b5d53b3b36b|0
+      - 1228c148-aef4-49ac-aeaf-381d745abd45|0
       flowUIDs:
       - 
       nodeValues:
       - unityObjectValue: {fileID: 0}
         stringValue: 
-    - fullName: While
-      uid: df314d5a-8dd6-4218-bfa0-78b8aaf56c9e
-      position: {x: 125, y: 20}
+    - fullName: Variable_SystemObjectArray
+      uid: 3fc6b545-338c-44ee-8441-fefc9b46843d
+      position: {x: 0, y: 0}
       nodeUIDs:
       - 
-      flowUIDs:
-      - 97d9f9ce-23ca-4fcd-8929-555cb222e4b9
-      - 5c1c462d-1f4a-49e2-8a6b-67e68aeb2e59
+      - 
+      - 
+      - 
+      - 
+      flowUIDs: []
       nodeValues:
+      - unityObjectValue: {fileID: 0}
+        stringValue: 
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|newVariable
       - unityObjectValue: {fileID: 0}
         stringValue: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089|False
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral,
+          PublicKeyToken=b77a5c561934e089|False
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|none
+    - fullName: Get_Variable
+      uid: 1228c148-aef4-49ac-aeaf-381d745abd45
+      position: {x: -14, y: 135}
+      nodeUIDs:
+      - 
+      flowUIDs: []
+      nodeValues:
+      - unityObjectValue: {fileID: 0}
+        stringValue: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|3fc6b545-338c-44ee-8441-fefc9b46843d
+      - unityObjectValue: {fileID: 0}
+        stringValue: 
     updateOrder: 0
   graphElementData:
   - type: 5
@@ -81,7 +85,7 @@ MonoBehaviour:
     uid: e09695ce-c5f3-4a00-ae48-400ce9171985
     jsonData: '{"visible":false,"layout":{"serializedVersion":"2","x":0.0,"y":23.0,"width":200.0,"height":100.0}}'
   viewTransform:
-    position: {x: 296, y: 82}
+    position: {x: 192, y: 58}
     scale: 1
   version: 1.0.0
   showAssembly: 1

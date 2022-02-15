@@ -36,6 +36,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType String { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "string", "SystemString", "SystemString", typeof(string));
         public static TeuchiUdonType UnityObject { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unityobject", "UnityEngineObject", "UnityEngineObject", typeof(UnityEngine.Object));
         public static TeuchiUdonType GameObject { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "gameobject", "UnityEngineGameObject", "UnityEngineGameObject", typeof(UnityEngine.GameObject));
+        public static TeuchiUdonType Buffer { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "buffer", "SystemObjectArray", "SystemObjectArray", typeof(object[]));
 
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }

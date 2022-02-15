@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
@@ -66,14 +67,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             foreach (var asm in CodePart)
             {
-                if (asm is Assembly_UnaryDataAddress dataAddress && dataAddress.Address is AssemblyAddress_INDIRECT_LABEL indirect)
+                if (asm is Assembly_UnaryDataAddress dataAddress && dataAddress.Address is AssemblyAddress_INDIRECT_LABEL label)
                 {
-                    PushDataPart(new TeuchiUdonAssembly[]
+                    var indirect = label.Indirect;
+                    var address  = CodeAddresses[label.Indirect.Label];
+                    if (TeuchiUdonTables.Instance.Indirects.ContainsKey(indirect))
                     {
-                        new Assembly_DECL_DATA(indirect.Address, TeuchiUdonType.UInt, new AssemblyLiteral_ADDRESS(CodeAddresses[indirect.Address.Label]))
-                    });
+                        TeuchiUdonTables.Instance.Indirects[indirect] = address;
+                    }
                 }
             }
+            PushDataPart(TeuchiUdonStrategy.Instance.DeclIndirectAddresses(TeuchiUdonTables.Instance.Indirects.Select(x => (x.Key, x.Value))));
 
             foreach (var asm in DataPart)
             {
@@ -112,7 +116,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private void WriteOne(TextWriter writer, TeuchiUdonAssembly assembly, ref int indent)
         {
-            if (assembly is Assembly_NO_CODE) return;
+            if (assembly is Assembly_NO_CODE || assembly is Assembly_DUMMY) return;
 
             if (assembly is Assembly_NEW_LINE)
             {

@@ -9,18 +9,40 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public static class TeuchiUdonCompilerRunner
     {
-        [MenuItem("Tools/Run Compile")]
-        public static void RunCompile()
+        [MenuItem("Tools/Run Compile (Simple)")]
+        public static void RunCompile_Simple()
         {
-            var (output, error) = CompileFromPath(@"Assets\akanevrc\TeuchiUdon\Test\TeuchiUdonTest.teuchi");
+            RunCompile<TeuchiUdonStrategySimple>();
+        }
+
+        [MenuItem("Tools/Run Compile (Buffered)")]
+        public static void RunCompile_Buffered()
+        {
+            RunCompile<TeuchiUdonStrategyBuffered>();
+        }
+
+        private static void RunCompile<T>() where T : TeuchiUdonStrategy, new()
+        {
+            var (output, error) = CompileFromPath<T>(@"Assets\akanevrc\TeuchiUdon\Test\TeuchiUdonTest.teuchi");
             Debug.Log(output);
             Debug.Log(error);
         }
 
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset")]
-        public static void SaveTeuchiUdonAsset()
+        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset (Simple)")]
+        public static void SaveTeuchiUdonAsset_Simple()
         {
-            var compilerResult = CompileFromPath("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
+            SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>();
+        }
+
+        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset (Buffered)")]
+        public static void SaveTeuchiUdonAsset_Buffered()
+        {
+            SaveTeuchiUdonAsset<TeuchiUdonStrategyBuffered>();
+        }
+
+        public static void SaveTeuchiUdonAsset<T>() where T : TeuchiUdonStrategy, new()
+        {
+            var compilerResult = CompileFromPath<T>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
             if (!string.IsNullOrEmpty(compilerResult.error))
             {
                 Debug.LogError(compilerResult.error);
@@ -47,25 +69,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Debug.Log("save succeeded");
         }
 
-        public static (string output, string error) CompileFromPath(string path)
+        public static (string output, string error) CompileFromPath<T>(string path) where T : TeuchiUdonStrategy, new()
         {
             var script = AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>(path);
             if (script == null)
             {
                 return ("", "asset file not found");
             }
-            return CompileFromString(script.text);
+            return CompileFromString<T>(script.text);
         }
 
-        public static (string output, string error) CompileFromString(string input)
+        public static (string output, string error) CompileFromString<T>(string input) where T : TeuchiUdonStrategy, new()
         {
             using (var inputReader = new StringReader(input))
             {
-                return CompileFromReader(inputReader);
+                return CompileFromReader<T>(inputReader);
             }
         }
 
-        public static (string output, string error) CompileFromReader(TextReader inputReader)
+        public static (string output, string error) CompileFromReader<T>(TextReader inputReader) where T : TeuchiUdonStrategy, new()
         {
             using (var outputWriter = new StringWriter())
             using (var errorWriter  = new StringWriter())
@@ -76,7 +98,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
                 var listener    = new TeuchiUdonListener(parser);
 
-                TeuchiUdonStrategy.SetStrategy<TeuchiUdonStrategySimple>();
+                TeuchiUdonStrategy.SetStrategy<T>();
 
                 TeuchiUdonLogicalErrorHandler.Instance.Init(parser);
                 TeuchiUdonTables             .Instance.Init();

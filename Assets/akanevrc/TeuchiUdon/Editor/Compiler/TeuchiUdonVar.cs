@@ -2,19 +2,21 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonVar : ITeuchiUdonLabel, IEquatable<TeuchiUdonVar>
+    public class TeuchiUdonVar : IIndexedLabel, IEquatable<TeuchiUdonVar>
     {
+        public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
         public TeuchiUdonType Type { get; }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name)
-            : this(qualifier, name, null)
+            : this(-1, qualifier, name, null)
         {
         }
 
-        public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type)
+        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type)
         {
+            Index     = index;
             Qualifier = qualifier;
             Name      = name;
             Type      = type;

@@ -2,20 +2,20 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonOutValue : ITeuchiUdonLabel, IEquatable<TeuchiUdonOutValue>
+    public class TeuchiUdonOutValue : IIndexedLabel, IEquatable<TeuchiUdonOutValue>
     {
-        public TeuchiUdonType Type { get; }
         public int Index { get; }
+        public TeuchiUdonType Type { get; }
 
-        public TeuchiUdonOutValue(TeuchiUdonType type, int index)
+        public TeuchiUdonOutValue(int index)
         {
-            Type  = type;
             Index = index;
+            Type  = TeuchiUdonType.Any;
         }
 
         public bool Equals(TeuchiUdonOutValue obj)
         {
-            return !object.ReferenceEquals(obj, null) && Type == obj.Type && Index == obj.Index;
+            return !object.ReferenceEquals(obj, null) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
@@ -44,12 +44,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetLabel()
         {
-            return $"out[{Type.LogicalName}>{Index}]";
+            return $"out[{Index}]";
         }
 
         public string GetFullLabel()
         {
-            return $"out[{Type.LogicalName}>{Index}]";
+            return $"out[{Index}]";
         }
     }
 }

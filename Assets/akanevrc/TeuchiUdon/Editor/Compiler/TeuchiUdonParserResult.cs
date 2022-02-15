@@ -153,10 +153,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<IdentifierResult> identifiers, IEnumerable<ExprResult> qualifieds)
             : base(token)
         {
+            var index   = TeuchiUdonTables.Instance.GetVarIndex();
             Types       = qualifieds .Select(x => x.Inner.Type.GetArgAsType()).ToArray();
-            Vars        = identifiers.Zip(Types, (i, t) => (i, t)).Select(x => new TeuchiUdonVar(qualifier, x.i.Name, x.t)).ToArray();
+            Vars        = identifiers.Zip(Types, (i, t) => (i, t)).Select(x => new TeuchiUdonVar(index, qualifier, x.i.Name, x.t)).ToArray();
             Identifiers = identifiers.ToArray();
             Qualifieds  = qualifieds .ToArray();
+
+            TeuchiUdonTables.Instance.SetExpectCount(Qualifieds.Length);
 
             foreach (var v in Vars)
             {
@@ -194,9 +197,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class JumpResult : StatementResult
     {
         public ExprResult Value { get; }
-        public ITeuchiUdonLabel Label { get; }
+        public IIndexedLabel Label { get; }
 
-        public JumpResult(IToken token, ExprResult value, ITeuchiUdonLabel label)
+        public JumpResult(IToken token, ExprResult value, IIndexedLabel label)
             : base(token)
         {
             Value = value;
@@ -237,7 +240,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Type = type;
         }
 
-        public abstract bool IsLeftValue { get; }
+        public abstract TeuchiUdonVar[] LeftValues { get; }
     }
 
     public class BottomResult : TypedResult
@@ -247,7 +250,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class UnknownTypeResult : TypedResult
@@ -257,7 +260,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class UnitResult : TypedResult
@@ -267,7 +270,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class BlockResult : TypedResult
@@ -284,7 +287,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr       = expr;
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class ParenResult : TypedResult
@@ -297,7 +300,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr = expr;
         }
 
-        public override bool IsLeftValue => Expr.Inner.IsLeftValue;
+        public override TeuchiUdonVar[] LeftValues => Expr.Inner.LeftValues;
     }
 
     public class LiteralResult : TypedResult
@@ -319,7 +322,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class ThisResult : TypedResult
@@ -341,7 +344,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class EvalVarResult : TypedResult
@@ -356,7 +359,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
-        public override bool IsLeftValue => true;
+        public override TeuchiUdonVar[] LeftValues => new TeuchiUdonVar[] { Var };
     }
 
     public class EvalTypeResult : TypedResult
@@ -371,7 +374,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class EvalQualifierResult : TypedResult
@@ -386,7 +389,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class EvalFuncResult : TypedResult
@@ -413,7 +416,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Args       = args.ToArray();
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class EvalMethodResult : TypedResult
@@ -429,10 +432,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Method     = method;
             Identifier = identifier;
             Args       = args.ToArray();
-            OutValues  = method.OutTypes.Select(x => TeuchiUdonTables.Instance.GetOutValue(x)).ToArray();
+            OutValues  = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
+
+            TeuchiUdonTables.Instance.SetExpectCount(method.InTypes.Length);
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public abstract class EvalCandidateResult : TypedResult
@@ -453,7 +458,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class EvalMethodCandidateResult : EvalCandidateResult
@@ -466,7 +471,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Args = args.ToArray();
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public abstract class UnaryOpResult : TypedResult
@@ -485,6 +490,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Methods    = GetMethods   ().ToArray();
             OutValuess = GetOutValuess().Select(x => x.ToArray()).ToArray();
             Literals   = GetLiterals  ().ToArray();
+
+            TeuchiUdonTables.Instance.SetExpectCount(Methods.Length == 0 ? 0 : Methods.Max(x => x.InTypes.Length));
         }
 
         protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
@@ -534,7 +541,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
 
         protected override IEnumerable<TeuchiUdonMethod> GetMethods()
         {
@@ -568,10 +575,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "-":
                 case "!":
                 case "~":
-                    return Methods.Select(x => x.OutTypes.Select(y => TeuchiUdonTables.Instance.GetOutValue(y)));
                 case "++":
                 case "--":
-                    return new TeuchiUdonOutValue[0][];
+                    return Methods.Select(x => TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -605,12 +611,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class PostfixResult : UnaryOpResult
     {
+        public TeuchiUdonOutValue[][] TmpValuess { get; }
+
         public PostfixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
             : base(token, type, op, expr)
         {
+            TmpValuess = Methods.Select(_ => TeuchiUdonTables.Instance.GetOutValues(1).ToArray()).ToArray();
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
 
         protected override IEnumerable<TeuchiUdonMethod> GetMethods()
         {
@@ -633,7 +642,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 case "++":
                 case "--":
-                    return new TeuchiUdonOutValue[][] { new TeuchiUdonOutValue[] { TeuchiUdonTables.Instance.GetOutValue(Expr.Inner.Type) } };
+                    return new TeuchiUdonOutValue[][] { new TeuchiUdonOutValue[] { TeuchiUdonTables.Instance.GetOutValues(1).First() } };
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -676,7 +685,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr2 = expr2;
         }
 
-        public override bool IsLeftValue => (Op == "." || Op == "?.") && Expr2.Inner.IsLeftValue;
+        public override TeuchiUdonVar[] LeftValues => (Op == "." || Op == "?.") ? Expr2.Inner.LeftValues : new TeuchiUdonVar[0];
     }
 
     public class LetInBindResult : TypedResult
@@ -693,7 +702,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr    = expr;
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
     public class FuncResult : TypedResult
@@ -709,6 +718,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             VarDecl = varDecl;
             Expr    = expr;
 
+            TeuchiUdonTables.Instance.SetExpectCount(VarDecl.Vars.Length + 1);
+
             if (TeuchiUdonTables.Instance.Funcs.ContainsKey(Func))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"{Func} conflicts with another function");
@@ -719,6 +730,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override bool IsLeftValue => false;
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 }

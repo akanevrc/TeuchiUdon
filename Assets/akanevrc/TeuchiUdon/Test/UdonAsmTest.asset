@@ -16,28 +16,38 @@ MonoBehaviour:
     type: 2}
   udonAssembly: '.data_start
 
-    str:%SystemString,"ok"
+    str1:%SystemString,"ok"
 
-    jump:%SystemString,"_sub"
+    str2:%SystemString,"ng"
 
     .data_end
 
     .code_start
-
-    _sub:
-
-    PUSH,str
-
-    EXTERN,"UnityEngineDebug.__Log__SystemObject__SystemVoid"
-
-    JUMP,0xFFFFFFFC
 
     .export
     _start
 
     _start:
 
-    JUMP_INDIRECT,jump
+    PUSH,str1
+
+    PUSH,str2
+
+    PUSH,str1
+
+    COPY
+
+    PUSH,str1
+
+    PUSH,str2
+
+    EXTERN,"SystemString.__op_Addition__SystemString_SystemString__SystemString"
+
+    PUSH,str2
+
+    EXTERN,"UnityEngineDebug.__Log__SystemObject__SystemVoid"
+
+    JUMP,0xFFFFFFFC
 
     .code_end'
   assemblyError: 

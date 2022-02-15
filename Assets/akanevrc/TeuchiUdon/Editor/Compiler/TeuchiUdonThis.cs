@@ -13,7 +13,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonThis obj)
         {
-            return !object.ReferenceEquals(obj, null) && Type == obj.Type;
+            return !object.ReferenceEquals(obj, null) && Type.LogicalTypeEquals(obj.Type);
         }
 
         public override bool Equals(object obj)

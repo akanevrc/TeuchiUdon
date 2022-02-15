@@ -8,9 +8,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         string GetFullLabel();
     }
 
-    public static class TeuchiUdonLabel
+    public interface IIndexedLabel : ITeuchiUdonLabel
     {
-        public static TextLabel InvalidLabel { get; } = new TextLabel("_invalid");
+        int Index { get; }
+    }
+
+    public class InvalidLabel : IIndexedLabel
+    {
+        public static InvalidLabel Instance = new InvalidLabel();
+        public int Index { get; } = -1;
+        public string GetLabel() => "[invalid]";
+        public string GetFullLabel() => "[invalid]";
+        protected InvalidLabel()
+        {
+        }
     }
 
     public class TextLabel : ITeuchiUdonLabel, IEquatable<TextLabel>

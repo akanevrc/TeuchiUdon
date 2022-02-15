@@ -19,6 +19,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Parser = parser;
         }
 
+        public override void ExitEveryRule([NotNull] ParserRuleContext context)
+        {
+            if (context is TopStatementContext || context is StatementContext)
+            {
+                TeuchiUdonTables.Instance.ResetOutValueIndex();
+            }
+        }
+
         public override void ExitTarget([NotNull] TargetContext context)
         {
             var body = context.body()?.result;
@@ -26,13 +34,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             TeuchiUdonAssemblyWriter.Instance.PushDataPart
             (
-                TeuchiUdonStrategy.Instance.GetDataPartFromBody  (body),
-                TeuchiUdonStrategy.Instance.GetDataPartFromTables(TeuchiUdonTables.Instance)
+                TeuchiUdonStrategy.Instance.GetDataPartFromTables()
             );
             TeuchiUdonAssemblyWriter.Instance.PushCodePart
             (
-                TeuchiUdonStrategy.Instance.GetCodePartFromTables(TeuchiUdonTables.Instance),
-                TeuchiUdonStrategy.Instance.GetCodePartFromBody  (body)
+                TeuchiUdonStrategy.Instance.GetCodePartFromTables(),
+                TeuchiUdonStrategy.Instance.GetCodePartFromResult(body)
             );
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
@@ -76,18 +83,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 if (export)
                 {
-                    if (varBind.Expr.Inner is LiteralResult literal)
+                    if (init == null && varBind.Expr.Inner is LiteralResult literal)
                     {
-                        TeuchiUdonTables.Instance.Exports.Add(varBind.Vars[0], literal.Literal);
+                        TeuchiUdonTables.Instance.ExportedVars.Add(varBind.Vars[0], literal.Literal);
                     }
                     else
                     {
                         TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"exported valiable cannot be bound non-literal expression");
                     }
                 }
-                if (init == null)
+                else if (init == null)
                 {
                     init = "_start";
+                }
+                
+                if (sync != TeuchiUdonSyncMode.Disable)
+                {
+                    TeuchiUdonTables.Instance.SyncedVars.Add(varBind.Vars[0], sync);
+                }
+                if (export || sync != TeuchiUdonSyncMode.Disable)
+                {
+                    TeuchiUdonTables.Instance.UnbufferedVars.Add(varBind.Vars[0], varBind.Vars[0]);
                 }
             }
 
@@ -247,7 +263,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = expr.Inner.Type;
                 if (v.Type.IsAssignableFrom(t))
                 {
-                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type) };
+                    
+                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type) };
                 }
                 else
                 {
@@ -265,7 +282,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         vars = varDecl.Vars
                             .Zip(ts, (v, t) => (v, t))
-                            .Select(x => new TeuchiUdonVar(x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type))
+                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type))
                             .ToArray();
                     }
                     else
@@ -280,7 +297,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     vars = new TeuchiUdonVar[0];
                 }
             }
-            
+
             context.result = new VarBindResult(context.Start, index, qual, vars, varDecl, expr);
         }
 
@@ -288,6 +305,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var identifiers = new IdentifierResult[0];
             var qualifieds  = new ExprResult[0];
+
             context.result  = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
         }
 
@@ -311,7 +329,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
             var identifiers = context.identifier().Select(x => x .result);
-            var qualifieds  = context.expr().Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false });
+            var qualifieds  = context.expr()
+                .Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false })
+                .ToArray();
 
             foreach (var q in qualifieds)
             {
@@ -366,7 +386,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no func exists for return");
             }
 
-            var label = scope == null ? TeuchiUdonLabel.InvalidLabel : ((TeuchiUdonFunc)scope.Label).ReturnAddress;
+            var label = scope == null ? (IIndexedLabel)InvalidLabel.Instance : (IIndexedLabel)((TeuchiUdonFunc)scope.Label).Return;
             return new JumpResult(token, value, label);
         }
 
@@ -858,9 +878,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr = context.expr()?.result;
             if (op == null || expr == null) return;
 
-            if ((op == "++" || op == "--") && !expr.Inner.IsLeftValue)
+            if ((op == "++" || op == "--") && expr.Inner.LeftValues.Length != 1)
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"operand of '{op}' must be left value");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"operand of '{op}' must be a left value");
             }
 
             var postfix    = new PostfixResult(context.Start, expr.Inner.Type, op, expr);
@@ -873,9 +893,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr = context.expr()?.result;
             if (op == null || expr == null) return;
 
-            if ((op == "++" || op == "--") && !expr.Inner.IsLeftValue)
+            if ((op == "++" || op == "--") && expr.Inner.LeftValues.Length != 1)
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"operand of '{op}' must be left value");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"operand of '{op}' must be a left value");
             }
             
             var prefix     = new PrefixResult(context.Start, expr.Inner.Type, op, expr);

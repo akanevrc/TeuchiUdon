@@ -2,7 +2,7 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonLiteral : ITeuchiUdonLabel, IEquatable<TeuchiUdonLiteral>
+    public class TeuchiUdonLiteral : IIndexedLabel, IEquatable<TeuchiUdonLiteral>
     {
         public int Index { get; }
         public string Text { get; }
@@ -29,7 +29,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public bool Equals(TeuchiUdonLiteral obj)
         {
-            return !object.ReferenceEquals(obj, null) && Text == obj.Text && Type == obj.Type;
+            return !object.ReferenceEquals(obj, null) && Text == obj.Text && Type.LogicalTypeEquals(obj.Type);
         }
 
         public override bool Equals(object obj)

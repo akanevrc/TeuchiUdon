@@ -24,7 +24,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         SYNC_DATA,
         DECL_DATA,
         EXPORT_CODE,
-        LABEL
+        LABEL,
+        DUMMY,
+        RETAIN_TMP,
+        RELEASE_TMP
     }
 
     public abstract class TeuchiUdonAssemblySyncMode
@@ -142,16 +145,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class AssemblyAddress_INDIRECT_LABEL : TeuchiUdonAssemblyDataAddress
     {
-        public TeuchiUdonRawAddress Address { get; }
+        public TeuchiUdonIndirect Indirect { get; }
 
         public AssemblyAddress_INDIRECT_LABEL(ITeuchiUdonLabel label)
         {
-            Address = new TeuchiUdonRawAddress(label);
+            var index = TeuchiUdonTables.Instance.GetIndirectIndex();
+            Indirect  = new TeuchiUdonIndirect(index, label);
+            TeuchiUdonTables.Instance.Indirects.Add(Indirect, 0xFFFFFFFF);
         }
 
         public override string ToString()
         {
-            return Address.GetFullLabel();
+            return Indirect.GetFullLabel();
         }
     }
 
@@ -521,6 +526,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override string ToString()
         {
             return $"{Label.GetFullLabel()}:";
+        }
+    }
+
+    public class Assembly_DUMMY : Assembly_UnaryDataAddress
+    {
+        public Assembly_DUMMY(TeuchiUdonAssemblyDataAddress address)
+            : base(TeuchiUdonAssemblyInstruction.DUMMY, 0, address)
+        {
         }
     }
 }
