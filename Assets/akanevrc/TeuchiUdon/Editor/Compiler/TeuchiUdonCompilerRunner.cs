@@ -12,18 +12,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         [MenuItem("Tools/Run Compile (Simple)")]
         public static void RunCompile_Simple()
         {
-            RunCompile<TeuchiUdonStrategySimple>();
+            RunCompile<TeuchiUdonStrategySimple>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
         }
 
         [MenuItem("Tools/Run Compile (Buffered)")]
         public static void RunCompile_Buffered()
         {
-            RunCompile<TeuchiUdonStrategyBuffered>();
+            RunCompile<TeuchiUdonStrategyBuffered>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
         }
 
-        private static void RunCompile<T>() where T : TeuchiUdonStrategy, new()
+        private static void RunCompile<T>(string srcPath) where T : TeuchiUdonStrategy, new()
         {
-            var (output, error) = CompileFromPath<T>(@"Assets\akanevrc\TeuchiUdon\Test\TeuchiUdonTest.teuchi");
+            var (output, error) = CompileFromPath<T>(srcPath);
             Debug.Log(output);
             Debug.Log(error);
         }
@@ -31,42 +31,50 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset (Simple)")]
         public static void SaveTeuchiUdonAsset_Simple()
         {
-            SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>();
+            SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>
+            (
+                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi",
+                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset"
+            );
+            Debug.Log("save succeeded");
         }
 
         [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset (Buffered)")]
         public static void SaveTeuchiUdonAsset_Buffered()
         {
-            SaveTeuchiUdonAsset<TeuchiUdonStrategyBuffered>();
+            SaveTeuchiUdonAsset<TeuchiUdonStrategyBuffered>
+            (
+                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi",
+                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset"
+            );
+            Debug.Log("save succeeded");
         }
 
-        public static void SaveTeuchiUdonAsset<T>() where T : TeuchiUdonStrategy, new()
+        public static TeuchiUdonProgramAsset SaveTeuchiUdonAsset<T>(string srcPath, string assetPath) where T : TeuchiUdonStrategy, new()
         {
-            var compilerResult = CompileFromPath<T>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
-            if (!string.IsNullOrEmpty(compilerResult.error))
+            var (output, error) = CompileFromPath<T>(srcPath);
+            if (!string.IsNullOrEmpty(error))
             {
-                Debug.LogError(compilerResult.error);
-                return;
+                throw new InvalidOperationException(error);
             }
 
-            var assetPath = "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset";
-            var program   = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
+            var program = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
             if (program == null)
             {
                 program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
+                program.SetUdonAssembly(output, TeuchiUdonTables.Instance.GetDefaultValues());
                 program.RefreshProgram();
                 AssetDatabase.CreateAsset(program, assetPath);
             }
             else
             {
-                program.SetUdonAssembly(compilerResult.output, TeuchiUdonTables.Instance.GetDefaultValues());
+                program.SetUdonAssembly(output, TeuchiUdonTables.Instance.GetDefaultValues());
                 program.RefreshProgram();
             }
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log("save succeeded");
+            return program;
         }
 
         public static (string output, string error) CompileFromPath<T>(string path) where T : TeuchiUdonStrategy, new()

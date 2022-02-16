@@ -2,7 +2,7 @@ using System.IO;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 
-namespace akanevrc.TeuchiUdon.Editor
+namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     [ScriptedImporter(1, "teuchi")]
     public class TeuchiUdonScriptImporter : ScriptedImporter

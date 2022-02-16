@@ -1,0 +1,28 @@
+{
+    "name": "akanevrc.TeuchiUdon.Tests.Editor",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "VRC.Udon",
+        "VRC.Udon.Editor",
+        "akanevrc.TeuchiUdon.Editor",
+        "akanevrc.TeuchiUdon.Editor.Compiler"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "VRCSDKBase.dll",
+        "VRCSDK3.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
