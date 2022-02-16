@@ -491,6 +491,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             public IEnumerable<TeuchiUdonAssembly> Expect(int count)
             {
+                var basis  = Count - Current;
                 var offset = Current;
                 Current += count;
 
@@ -498,7 +499,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Parent.TmpStackHead))
                     }
-                    .Concat(Parent.GetCode_GetNumber(count - x))
+                    .Concat(Parent.GetCode_GetNumber(basis - x))
                     .Concat(new TeuchiUdonAssembly[]
                     {
                         new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Labels[offset + x])),
@@ -509,23 +510,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         new Assembly_EXTERN(Parent.GetBufferMethod),
                         new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Labels[offset + x]))
                     })
-                )
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Parent.TmpStackHead))
-                })
-                .Concat(Parent.GetCode_GetNumber(count))
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Parent.TmpStackHead)),
-                    new Assembly_EXTERN(Parent.SubtractionMethod)
-                });
+                );
             }
 
             public IEnumerable<TeuchiUdonAssembly> Release()
             {
                 if (Count != Current) throw new InvalidOperationException("expect not consumed all");
-                return new TeuchiUdonAssembly[0];
+                return new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Parent.TmpStackHead))
+                }
+                .Concat(Parent.GetCode_GetNumber(Count))
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(Parent.TmpStackHead)),
+                    new Assembly_EXTERN(Parent.SubtractionMethod)
+                });
             }
         }
 

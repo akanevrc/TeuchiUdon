@@ -311,12 +311,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 Retain(result.Args.Length, out var holder)
                 .Concat
                 (
+                    this is TeuchiUdonStrategySimple ?
                     result.Method.SortAlongParams
                     (
                         result.Args.Select(x => VisitExpr(x).Concat(Expect(holder, 1))).ToArray(),
                         result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                     )
                     .SelectMany(x => x)
+                    :
+                    result.Args.SelectMany(x => VisitExpr(x))
+                    .Concat
+                    (
+                        result.Method.SortAlongParams
+                        (
+                            result.Args.Select(_ => Expect(holder, 1)).ToArray(),
+                            result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                        )
+                        .SelectMany(x => x)
+                    )
                 )
                 .Concat(new TeuchiUdonAssembly[]
                 {
@@ -403,12 +415,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 Retain(inValues.Count(), out var holder)
                 .Concat
                 (
+                    this is TeuchiUdonStrategySimple ?
                     method.SortAlongParams
                     (
                         inValues.Select(x => x.Concat(Expect(holder, 1))).ToArray(),
                         outValues
                     )
                     .SelectMany(x => x)
+                    :
+                    inValues.SelectMany(x => x)
+                    .Concat
+                    (
+                        method.SortAlongParams
+                        (
+                            inValues.Select(_ => Expect(holder, 1)).ToArray(),
+                            outValues
+                        )
+                        .SelectMany(x => x)
+                    )
                 )
                 .Concat(new TeuchiUdonAssembly[]
                 {
@@ -431,12 +455,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 Retain(inValues.Count(), out var holder)
                 .Concat
                 (
+                    this is TeuchiUdonStrategySimple ?
                     method.SortAlongParams
                     (
                         inValues.Select(x => x.Concat(Expect(holder, 1))).ToArray(),
                         outValues
                     )
                     .SelectMany(x => x)
+                    :
+                    inValues.SelectMany(x => x)
+                    .Concat
+                    (
+                        method.SortAlongParams
+                        (
+                            inValues.Select(_ => Expect(holder, 1)).ToArray(),
+                            outValues
+                        )
+                        .SelectMany(x => x)
+                    )
                 )
                 .Concat(new TeuchiUdonAssembly[]
                 {
@@ -502,12 +538,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(Retain(argValues.Count(), out var holder))
                 .Concat
                 (
+                    this is TeuchiUdonStrategySimple ?
                     method.SortAlongParams
                     (
                         tmpValues.Concat(argValues.Select(x => x.Concat(Expect(holder, 1))).ToArray()),
                         outValues
                     )
-                    .SelectMany(x => x))
+                    .SelectMany(x => x)
+                    :
+                    argValues.SelectMany(x => x)
+                    .Concat
+                    (
+                        method.SortAlongParams
+                        (
+                            tmpValues.Concat(argValues.Select(_ => Expect(holder, 1)).ToArray()),
+                            outValues
+                        )
+                        .SelectMany(x => x)
+                    )
+                )
                 .Concat(new TeuchiUdonAssembly[]
                     {
                         new Assembly_EXTERN(method)
