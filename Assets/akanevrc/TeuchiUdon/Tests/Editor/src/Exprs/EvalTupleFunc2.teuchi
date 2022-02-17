@@ -1,0 +1,3 @@
+// ok
+f = (x : string, y : string) -> UnityEngine.Debug.Log(y);
+f("nop", "ok");

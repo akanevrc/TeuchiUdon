@@ -592,6 +592,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "!":
                     return new TeuchiUdonLiteral[0];
                 case "~":
+                    if (Methods[0] == null)
+                    {
+                        return new TeuchiUdonLiteral[] { null };
+                    }
+                    else
+                    {
+                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateMask(index, Expr.Inner.Type) };
+                    }
                 case "++":
                 case "--":
                     if (Methods[0] == null)

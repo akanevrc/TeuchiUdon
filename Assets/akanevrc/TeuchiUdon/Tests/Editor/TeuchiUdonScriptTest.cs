@@ -53,9 +53,25 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
 
         public TeuchiUdonScriptTest(string srcFileName)
         {
-            var binFileName = $"{Path.GetFileNameWithoutExtension(srcFileName)}.asset";
-            srcAssetPath    = $"Assets/{SrcFolderPath}/{srcFileName}";
-            binAssetPath    = $"Assets/{BinFolderPath}/{binFileName}";
+            srcAssetPath = $"Assets/{SrcFolderPath}/{srcFileName}";
+
+            var splitted    = srcFileName.Split(new string[] { "/" }, System.StringSplitOptions.None);
+            var binFileName = $"{Path.GetFileNameWithoutExtension(srcFileName)}.asset";;
+            if (splitted.Length >= 2)
+            {
+                var folderPath = (string)null;
+                for (var i = 0; i <= splitted.Length - 2; i++)
+                {
+                    var checkedPath = string.Join("", splitted.Take(i).Select(x => $"/{x}"));
+                    folderPath      = $"Assets/{BinFolderPath}{checkedPath}";
+                    if (!AssetDatabase.IsValidFolder($"{folderPath}/{splitted[i]}")) AssetDatabase.CreateFolder(folderPath, splitted[i]);
+                }
+                binAssetPath = $"{folderPath}/{splitted[splitted.Length - 2]}/{binFileName}";
+            }
+            else
+            {
+                binAssetPath = $"Assets/{BinFolderPath}/{binFileName}";
+            }
         }
 
         [OneTimeSetUp]

@@ -13,8 +13,7 @@ options
 }
 
 target
-    : '{' body '}' ';' EOF
-    | body EOF
+    : body EOF
     | EOF
     ;
 
@@ -82,7 +81,7 @@ expr
     | identifier                                    #EvalVarExpr
     | identifier '(' ')'                            #EvalUnitFuncExpr
     | identifier '(' expr ')'                       #EvalSingleFuncExpr
-    | identifier '(' expr (',' expr)* ')'           #EvalTupleFuncExpr
+    | identifier '(' expr (',' expr)+ ')'           #EvalTupleFuncExpr
     | 'nameof' '(' identifier ')'                   #NameOfExpr
     | expr op=('.' | '?.') expr                     #AccessExpr
     | expr op=('++' | '--')                         #PostfixExpr

@@ -138,5 +138,65 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             return literal;
         }
+
+        public static TeuchiUdonLiteral CreateMask(int index, TeuchiUdonType type)
+        {
+            var result = (object)null;
+            if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            {
+                result = true;
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
+            {
+                result = ~Convert.ToByte(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.SByte))
+            {
+                result = ~Convert.ToSByte(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Short))
+            {
+                result = ~Convert.ToInt16(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UShort))
+            {
+                result = ~Convert.ToUInt16(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Int))
+            {
+                result = ~Convert.ToInt32(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UInt))
+            {
+                result = ~Convert.ToUInt32(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Long))
+            {
+                result = ~Convert.ToInt64(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.ULong))
+            {
+                result = ~Convert.ToUInt64(0);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Char))
+            {
+                result = ~Convert.ToChar(Convert.ToInt32(0));
+            }
+            else
+            {
+                return null;
+            }
+
+            var literal = new TeuchiUdonLiteral(index, "~0", type, result);
+            if (!TeuchiUdonTables.Instance.Literals.ContainsKey(literal))
+            {
+                TeuchiUdonTables.Instance.Literals.Add(literal, literal);
+            }
+            else
+            {
+                literal = TeuchiUdonTables.Instance.Literals[literal];
+            }
+            return literal;
+        }
     }
 }
