@@ -9,13 +9,6 @@ namespace akanevrc.TeuchiUdon.Editor
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            var asset = (TeuchiUdonProgramAsset)target;
-            EditorGUI.BeginChangeCheck();
-            if (EditorGUI.EndChangeCheck())
-            {
-                EditorUtility.SetDirty(target);
-                AssetDatabase.SaveAssets();
-            }
         }
     }
 }

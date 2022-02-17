@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEngine;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler

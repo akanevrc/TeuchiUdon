@@ -52,7 +52,7 @@ namespace akanevrc.TeuchiUdon.Editor
                 showAssembly = newShowAssembly;
             }
 
-            if (!showAssembly)  return;
+            if (!showAssembly) return;
 
             EditorGUI.indentLevel++;
             base.DrawAssemblyTextArea(allowEditing, ref dirty);
