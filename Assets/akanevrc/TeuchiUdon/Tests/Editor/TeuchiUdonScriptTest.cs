@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -23,7 +24,15 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
                 {
                     return
                         Directory.GetFiles(Path.Combine(Application.dataPath, SrcFolderPath), "*.teuchi")
-                        .Select(x => new TestFixtureData(Path.GetFileName(x)))
+                            .Select(x => new TestFixtureData(Path.GetFileName(x)))
+                        .Concat
+                        (
+                            Directory.GetDirectories(Path.Combine(Application.dataPath, SrcFolderPath))
+                            .SelectMany(x =>
+                                Directory.GetFiles(Path.Combine(Application.dataPath, SrcFolderPath, Path.GetFileName(x)), "*.teuchi")
+                                .Select(y => new TestFixtureData($"{Path.GetFileName(x)}/{Path.GetFileName(y)}"))
+                            )
+                        )
                         .ToArray();
                 }
             }
@@ -95,6 +104,11 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
                 );
                 yield break;
             }
+            else if (expected.StartsWith("/") && expected.EndsWith("/"))
+            {
+                var regex = new Regex(expected.Substring(1, expected.Length - 2));
+                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>(srcAssetPath, binAssetPath);
+            }
             else
             {
                 program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>(srcAssetPath, binAssetPath);
@@ -105,7 +119,15 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
             udonBehaviour.RunProgram("_start");
             yield return new ExitPlayMode();
 
-            LogAssert.Expect(LogType.Log, expected);
+            if (expected.StartsWith("/") && expected.EndsWith("/"))
+            {
+                var pattern = new Regex(expected.Substring(1, expected.Length - 2));
+                LogAssert.Expect(LogType.Log, pattern);
+            }
+            else
+            {
+                LogAssert.Expect(LogType.Log, expected);
+            }
         }
     }
 }

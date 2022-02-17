@@ -10,21 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
-  m_Name: EmptySrc
+  m_Name: DoubleTypeUpper
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: 899532e8982579c4bb7e49dcd72dffb3,
     type: 2}
-  udonAssembly: '.data_start
-
-    .data_end
-
-    
-
-    .code_start
-
-    .code_end
-
-'
+  udonAssembly: ".data_start\r\n    literal[0]: %SystemDouble, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,
+    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -48,7 +40,41 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 0
+      Data: 1
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: literal[0]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 2|System.Double, mscorlib
+    - Name: 
+      Entry: 4
+      Data: 1.25
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 3|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Double, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
     - Name: 
       Entry: 13
       Data: 

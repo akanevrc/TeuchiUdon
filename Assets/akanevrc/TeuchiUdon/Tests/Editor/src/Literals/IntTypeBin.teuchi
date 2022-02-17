@@ -1,0 +1,2 @@
+// 4
+UnityEngine.Debug.Log(0b100);

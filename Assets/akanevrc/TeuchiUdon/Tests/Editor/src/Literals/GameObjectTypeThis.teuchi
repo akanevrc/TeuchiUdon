@@ -1,0 +1,2 @@
+// /GameObject/
+UnityEngine.Debug.Log(this);
