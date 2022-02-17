@@ -15,6 +15,7 @@ options
 target
     : '{' body '}' ';' EOF
     | body EOF
+    | EOF
     ;
 
 body
