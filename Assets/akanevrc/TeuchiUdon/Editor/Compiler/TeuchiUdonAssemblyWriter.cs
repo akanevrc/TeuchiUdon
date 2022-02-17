@@ -34,7 +34,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (assembliess.Length >= 1) DataPart.AddRange(assembliess[0]);
             for (var i = 1; i < assembliess.Length; i++)
             {
-                DataPart.Add(new Assembly_NEW_LINE());
+                if (assembliess[i - 1].Any()) DataPart.Add(new Assembly_NEW_LINE());
                 DataPart.AddRange(assembliess[i]);
             }
         }
@@ -44,7 +44,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (assembliess.Length >= 1) CodePart.AddRange(assembliess[0]);
             for (var i = 1; i < assembliess.Length; i++)
             {
-                CodePart.Add(new Assembly_NEW_LINE());
+                if (assembliess[i - 1].Any()) CodePart.Add(new Assembly_NEW_LINE());
                 CodePart.AddRange(assembliess[i]);
             }
         }

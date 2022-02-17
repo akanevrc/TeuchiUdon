@@ -1,2 +1,2 @@
 // ok
-_start = () -> let x = "ok" in UnityEngine.Debug.Log(x);
+let x = "ok" in UnityEngine.Debug.Log(x);

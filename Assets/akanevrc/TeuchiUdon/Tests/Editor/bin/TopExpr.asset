@@ -10,15 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
-  m_Name: LetInBind
+  m_Name: TopExpr
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: f0d541f5ad3a05c44a6f3f362c7d9e9a,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: ed228a9b7b635be4ca1c2e14a4a9fe38,
     type: 2}
-  udonAssembly: ".data_start\r\n    var[let[0]>x]: %SystemString, null\r\n    literal[0]:
-    %SystemString, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
-    _start:\r\n        PUSH, literal[0]\r\n        PUSH, var[let[0]>x]\r\n       
-    COPY\r\n        PUSH, var[let[0]>x]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+  udonAssembly: ".data_start\r\n    literal[0]: %SystemString, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,
+    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2

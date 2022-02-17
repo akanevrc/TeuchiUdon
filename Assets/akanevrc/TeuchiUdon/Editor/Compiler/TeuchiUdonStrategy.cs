@@ -47,7 +47,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 )
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
-                    .Concat(x));
+                    .Concat(x)
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitResult(TeuchiUdonParserResult result)
@@ -93,7 +94,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
                 .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].Name, x: (TopBindResult)x));
             var topStats = result.TopStatements
-                .Where(x => !(x is TopBindResult topBind))
+                .Where(x => !(x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func)))
                 .Select(x => x is TopBindResult topBind ? (name: topBind.Init, x) : x is TopExprResult topExpr ? (name: topExpr.Init, x) : (name: null, x))
                 .Where(x => x.name != null);
 
@@ -102,16 +103,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 if (func.name == "_start" || func.x.Export)
                 {
-                    topFuncStats.Add(func.name, new List<TopStatementResult>());
-                    topFuncStats[func.name].Add(func.x);
+                    topFuncStats.Add(func.name, new List<TopStatementResult>() { func.x });
                 }
             }
             foreach (var stat in topStats)
             {
-                if (topFuncStats.ContainsKey(stat.name))
+                if (!topFuncStats.ContainsKey(stat.name))
                 {
-                    topFuncStats[stat.name].Add(stat.x);
+                    topFuncStats.Add(stat.name, new List<TopStatementResult>());
                 }
+                topFuncStats[stat.name].Add(stat.x);
             }
 
             return
@@ -130,16 +131,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         .Concat(new TeuchiUdonAssembly[]
                             {
                                 new Assembly_JUMP_INDIRECT(address),
-                                new Assembly_LABEL(new TextLabel($"topcall[{x.Key}]")),
-                                new Assembly_JUMP(new AssemblyAddress_NUMBER(0xFFFFFFFC)),
-                                new Assembly_INDENT(-1)
+                                new Assembly_LABEL(new TextLabel($"topcall[{x.Key}]"))
                             }
                         ) :
                         new TeuchiUdonAssembly[0]
-                    ))
+                    )
+                    .Concat(new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP(new AssemblyAddress_NUMBER(0xFFFFFFFC)),
+                        new Assembly_INDENT(-1)
+                    }))
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
-                    .Concat(x));
+                    .Concat(x)
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTopBind(TopBindResult result)

@@ -30,7 +30,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitTarget([NotNull] TargetContext context)
         {
             var body = context.body()?.result;
-            if (body == null) return;
 
             TeuchiUdonAssemblyWriter.Instance.PushDataPart
             (
@@ -39,7 +38,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonAssemblyWriter.Instance.PushCodePart
             (
                 TeuchiUdonStrategy.Instance.GetCodePartFromTables(),
-                TeuchiUdonStrategy.Instance.GetCodePartFromResult(body)
+                TeuchiUdonStrategy.Instance.GetCodePartFromResult(body == null ? (TeuchiUdonParserResult)new UnitResult(null) : (TeuchiUdonParserResult)body)
             );
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
@@ -169,6 +168,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 init = "_start";
             }
 
+            expr.ReturnsValue = false;
             context.result = new TopExprResult(context.Start, expr, init);
         }
 
