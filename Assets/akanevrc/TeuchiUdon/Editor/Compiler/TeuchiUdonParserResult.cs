@@ -392,28 +392,52 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
+    public class EvalGetterResult : TypedResult
+    {
+        public TeuchiUdonMethod Method { get; }
+        public IdentifierResult Identifier { get; }
+
+        public EvalGetterResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod method, IdentifierResult identifier)
+            : base(token, type)
+        {
+            Method     = method;
+            Identifier = identifier;
+        }
+
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
+    }
+
+    public class EvalGetterSetterResult : TypedResult
+    {
+        public TeuchiUdonMethod Getter { get; }
+        public TeuchiUdonMethod Setter { get; }
+        public IdentifierResult Identifier { get; }
+
+        public EvalGetterSetterResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod getter, TeuchiUdonMethod setter, IdentifierResult identifier)
+            : base(token, type)
+        {
+            Getter     = getter;
+            Setter     = setter;
+            Identifier = identifier;
+        }
+
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
+    }
+
     public class EvalFuncResult : TypedResult
     {
         public TeuchiUdonEvalFunc EvalFunc { get; }
-        public TeuchiUdonVar Var { get; }
-        public IdentifierResult Identifier { get; }
+        public TeuchiUdonOutValue OutValue { get; }
+        public ExprResult Expr { get; }
         public ExprResult[] Args { get; }
 
-        public EvalFuncResult
-        (
-            IToken token,
-            TeuchiUdonType type,
-            int index,
-            TeuchiUdonQualifier qualifier,
-            TeuchiUdonVar v,
-            IdentifierResult identifier,
-            IEnumerable<ExprResult> args
-        ) : base(token, type)
+        public EvalFuncResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, ExprResult expr, IEnumerable<ExprResult> args)
+            : base(token, type)
         {
-            EvalFunc   = new TeuchiUdonEvalFunc(index, qualifier);
-            Var        = v;
-            Identifier = identifier;
-            Args       = args.ToArray();
+            EvalFunc = new TeuchiUdonEvalFunc(index, qualifier);
+            OutValue = TeuchiUdonTables.Instance.GetOutValues(1).First();
+            Expr     = expr;
+            Args     = args.ToArray();
         }
 
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
@@ -422,17 +446,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class EvalMethodResult : TypedResult
     {
         public TeuchiUdonMethod Method { get; }
-        public IdentifierResult Identifier { get; }
+        public ExprResult Expr { get; }
         public ExprResult[] Args { get; }
         public TeuchiUdonOutValue[] OutValues { get; }
 
-        public EvalMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod method, IdentifierResult identifier, IEnumerable<ExprResult> args)
+        public EvalMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod method, ExprResult expr, IEnumerable<ExprResult> args)
             : base(token, type)
         {
-            Method     = method;
-            Identifier = identifier;
-            Args       = args.ToArray();
-            OutValues  = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
+            Method    = method;
+            Expr      = expr;
+            Args      = args.ToArray();
+            OutValues = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
 
             TeuchiUdonTables.Instance.SetExpectCount(method.InTypes.Length);
         }
@@ -440,35 +464,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
-    public abstract class EvalCandidateResult : TypedResult
+    public class EvalVarCandidateResult : TypedResult
     {
         public IdentifierResult Identifier { get; }
 
-        public EvalCandidateResult(IToken token, IdentifierResult identifier)
+        public EvalVarCandidateResult(IToken token, IdentifierResult identifier)
             : base(token, TeuchiUdonType.Unknown)
         {
             Identifier = identifier;
-        }
-    }
-
-    public class EvalQualifierCandidateResult : EvalCandidateResult
-    {
-        public EvalQualifierCandidateResult(IToken token, IdentifierResult identifier)
-            : base(token, identifier)
-        {
-        }
-
-        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
-    }
-
-    public class EvalMethodCandidateResult : EvalCandidateResult
-    {
-        public ExprResult[] Args { get; }
-
-        public EvalMethodCandidateResult(IToken token, IdentifierResult identifier, IEnumerable<ExprResult> args)
-            : base(token, identifier)
-        {
-            Args = args.ToArray();
         }
 
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
@@ -737,6 +740,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 TeuchiUdonTables.Instance.Funcs.Add(Func, Func);
             }
+        }
+
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
+    }
+
+    public class MethodResult : TypedResult
+    {
+        public IdentifierResult Identifier { get; }
+
+        public MethodResult(IToken token, TeuchiUdonType type, IdentifierResult identifier)
+            : base(token, type)
+        {
+            Identifier = identifier;
+        }
+
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
+    }
+
+    public class SetterResult : TypedResult
+    {
+        public TeuchiUdonMethod Method { get; }
+        public IdentifierResult Identifier { get; }
+
+        public SetterResult(IToken token, TeuchiUdonMethod method, IdentifierResult identifier)
+            : base(token, TeuchiUdonType.Unknown)
+        {
+            Method     = method;
+            Identifier = identifier;
         }
 
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];

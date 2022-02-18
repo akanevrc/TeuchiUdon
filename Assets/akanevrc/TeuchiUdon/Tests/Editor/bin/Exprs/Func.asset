@@ -10,19 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
-  m_Name: EvalUnitFunc
+  m_Name: Func
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 8e047001a64394e4ea5f2fada7c9a2c4,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: ff18c8784ffb20d4fbaf2dafeaa0119e,
     type: 2}
-  udonAssembly: ".data_start\r\n    f: %SystemUInt32, null\r\n    out[0]: %SystemObject,
-    null\r\n    literal[0]: %SystemString, null\r\n    return[func[f>0]]: %SystemUInt32,
-    null\r\n    indirect[evalfunc[1]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    func[f>0]:\r\n        PUSH, return[func[f>0]]\r\n        COPY\r\n        PUSH,
-    literal[0]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    JUMP_INDIRECT, return[func[f>0]]\r\n\r\n    .export _start\r\n    _start:\r\n       
-    PUSH, indirect[evalfunc[1]]\r\n        PUSH, f\r\n        PUSH, out[0]\r\n       
-    COPY\r\n        JUMP_INDIRECT, out[0]\r\n        evalfunc[1]:\r\n        JUMP,
-    0xFFFFFFFC\r\n.code_end\r\n"
+  udonAssembly: ".data_start\r\n    out[0]: %SystemObject, null\r\n    literal[0]:
+    %SystemString, null\r\n    return[func[0]]: %SystemUInt32, null\r\n    indirect[evalfunc[1]]:
+    %SystemUInt32, null\r\n    indirect[func[0]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    func[0]:\r\n        PUSH, return[func[0]]\r\n        COPY\r\n        PUSH, literal[0]\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP_INDIRECT,
+    return[func[0]]\r\n\r\n    .export _start\r\n    _start:\r\n        PUSH, indirect[evalfunc[1]]\r\n       
+    PUSH, indirect[func[0]]\r\n        PUSH, out[0]\r\n        COPY\r\n        JUMP_INDIRECT,
+    out[0]\r\n        evalfunc[1]:\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -46,7 +45,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 7
       Data: 
@@ -109,6 +108,34 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: indirect[func[0]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 6|System.UInt32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 5
     - Name: 
       Entry: 8
       Data: 

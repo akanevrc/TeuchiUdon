@@ -79,11 +79,11 @@ expr
     | literal                                       #LiteralExpr
     | thisLiteral                                   #ThisLiteralExpr
     | identifier                                    #EvalVarExpr
-    | identifier '(' ')'                            #EvalUnitFuncExpr
-    | identifier '(' expr ')'                       #EvalSingleFuncExpr
-    | identifier '(' expr (',' expr)+ ')'           #EvalTupleFuncExpr
-    | 'nameof' '(' identifier ')'                   #NameOfExpr
     | expr op=('.' | '?.') expr                     #AccessExpr
+    | expr '(' ')'                                  #EvalUnitFuncExpr
+    | expr '(' expr ')'                             #EvalSingleFuncExpr
+    | expr '(' expr (',' expr)+ ')'                 #EvalTupleFuncExpr
+    | 'nameof' '(' identifier ')'                   #NameOfExpr
     | expr op=('++' | '--')                         #PostfixExpr
     | op=('+' | '-' | '!' | '~' | '++' | '--') expr #PrefixExpr
     | expr op='..' expr                             #RangeExpr

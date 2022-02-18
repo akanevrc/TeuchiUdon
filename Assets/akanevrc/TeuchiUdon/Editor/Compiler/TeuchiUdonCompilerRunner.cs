@@ -12,13 +12,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         [MenuItem("Tools/Run Compile (Simple)")]
         public static void RunCompile_Simple()
         {
-            RunCompile<TeuchiUdonStrategySimple>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
+            RunCompile<TeuchiUdonStrategySimple>("Assets/akanevrc/TeuchiUdon/Tests/Editor/tmp/TeuchiUdonTest.teuchi");
         }
 
         [MenuItem("Tools/Run Compile (Buffered)")]
         public static void RunCompile_Buffered()
         {
-            RunCompile<TeuchiUdonStrategyBuffered>("Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi");
+            RunCompile<TeuchiUdonStrategyBuffered>("Assets/akanevrc/TeuchiUdon/Tests/Editor/tmp/TeuchiUdonTest.teuchi");
         }
 
         private static void RunCompile<T>(string srcPath) where T : TeuchiUdonStrategy, new()
@@ -33,8 +33,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>
             (
-                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi",
-                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset"
+                "Assets/akanevrc/TeuchiUdon/Tests/Editor/tmp/TeuchiUdonTest.teuchi",
+                "Assets/akanevrc/TeuchiUdon/Tests/Editor/tmp/TeuchiUdonAsm.asset"
             );
             Debug.Log("save succeeded");
         }
@@ -44,8 +44,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             SaveTeuchiUdonAsset<TeuchiUdonStrategyBuffered>
             (
-                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonTest.teuchi",
-                "Assets/akanevrc/TeuchiUdon/Test/TeuchiUdonAsm.asset"
+                "Assets/akanevrc/TeuchiUdon/Tests/Editor/tmp/TeuchiUdonTest.teuchi",
+                "Assets/akanevrc/TeuchiUdon/Tests/Editor/tmp/TeuchiUdonAsm.asset"
             );
             Debug.Log("save succeeded");
         }

@@ -19,6 +19,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
         public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
         public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
+        public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
         public static TeuchiUdonType Bool { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "bool", "SystemBoolean", "SystemBoolean", typeof(bool));
         public static TeuchiUdonType Byte { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "byte", "SystemByte", "SystemByte", typeof(byte));
@@ -177,6 +178,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return ApplyArgs(new ITeuchiUdonTypeArg[] { inType, outType });
         }
 
+        public TeuchiUdonType ApplyArgsAsMethod(IEnumerable<TeuchiUdonMethod> methods)
+        {
+            return ApplyArgs(methods);
+        }
+
         public TeuchiUdonQualifier GetArgAsQual()
         {
             return (TeuchiUdonQualifier)Args[0];
@@ -207,6 +213,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return (TeuchiUdonType)Args[1];
         }
 
+        public IEnumerable<TeuchiUdonMethod> GetArgsAsMethod()
+        {
+            return Args.Cast<TeuchiUdonMethod>();
+        }
+
         public bool IsAssignableFromFunc(TeuchiUdonType obj)
         {
             if (obj == null) return false;
@@ -216,6 +227,50 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                     GetArgAsFuncInType ().IsAssignableFrom(obj.GetArgAsFuncInType ()) &&
                 obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
+        }
+
+        public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(IEnumerable<TeuchiUdonType> inTypes)
+        {
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Method)) return new TeuchiUdonMethod[0];
+
+            var methods = GetArgsAsMethod().ToArray();
+            if (methods.Length == 0) return new TeuchiUdonMethod[0];
+
+            var it = inTypes.ToArray();
+            var justCountToMethods = new Dictionary<int, List<TeuchiUdonMethod>>();
+            foreach (var method in methods)
+            {
+                if (method.InTypes.Length != it.Length) continue;
+
+                var isCompatible = true;
+                var justCount    = 0;
+                foreach (var (m, i) in method.InTypes.Zip(it, (m, i) => (m, i)))
+                {
+                    if (!m.IsAssignableFrom(i))
+                    {
+                        isCompatible = false;
+                        break;
+                    }
+
+                    if (m.LogicalTypeEquals(i)) justCount++;
+                }
+
+                if (isCompatible)
+                {
+                    if (!justCountToMethods.ContainsKey(justCount))
+                    {
+                        justCountToMethods.Add(justCount, new List<TeuchiUdonMethod>());
+                    }
+                    justCountToMethods[justCount].Add(method);
+                }
+            }
+
+            for (var i = it.Length; i >= 0; i--)
+            {
+                if (justCountToMethods.ContainsKey(i)) return justCountToMethods[i];
+            }
+
+            return new TeuchiUdonMethod[0];
         }
     }
 

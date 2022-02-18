@@ -103,6 +103,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Tuple,
                 TeuchiUdonType.List,
                 TeuchiUdonType.Func,
+                TeuchiUdonType.Method,
                 TeuchiUdonType.Object,
                 TeuchiUdonType.Bool,
                 TeuchiUdonType.Byte,

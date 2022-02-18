@@ -11,7 +11,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         Out
     }
 
-    public class TeuchiUdonMethod : IEquatable<TeuchiUdonMethod>
+    public class TeuchiUdonMethod : IEquatable<TeuchiUdonMethod>, ITeuchiUdonTypeArg
     {
         public TeuchiUdonType Type { get; }
         public string Name { get; }
