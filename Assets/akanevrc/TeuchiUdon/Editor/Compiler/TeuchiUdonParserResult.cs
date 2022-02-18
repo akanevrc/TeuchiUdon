@@ -153,9 +153,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<IdentifierResult> identifiers, IEnumerable<ExprResult> qualifieds)
             : base(token)
         {
-            var index   = TeuchiUdonTables.Instance.GetVarIndex();
             Types       = qualifieds .Select(x => x.Inner.Type.GetArgAsType()).ToArray();
-            Vars        = identifiers.Zip(Types, (i, t) => (i, t)).Select(x => new TeuchiUdonVar(index, qualifier, x.i.Name, x.t)).ToArray();
+            var indices = identifiers.Select(_ => TeuchiUdonTables.Instance.GetVarIndex()).ToArray();
+            Vars =
+                identifiers
+                .Zip(Types  , (i, t) => (i, t))
+                .Zip(indices, (x, n) => (x.i, x.t, n))
+                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.i.Name, x.t)).ToArray();
             Identifiers = identifiers.ToArray();
             Qualifieds  = qualifieds .ToArray();
 

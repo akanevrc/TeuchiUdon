@@ -39,11 +39,17 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
         }
 
         private static string SrcFolderPath = "akanevrc/TeuchiUdon/Tests/Editor/src";
-        private static string BinFolderPath = "akanevrc/TeuchiUdon/Tests/Editor/bin";
+        private static string BinSimpleFolderPath = "akanevrc/TeuchiUdon/Tests/Editor/bin/Simple";
+        private static string BinBufferedFolderPath = "akanevrc/TeuchiUdon/Tests/Editor/bin/Buffered";
+        private static string[] BinFolderPaths = new string[]
+        {
+            BinSimpleFolderPath,
+            BinBufferedFolderPath
+        };
         private static string[] SrcFileNames;
 
         public string srcAssetPath;
-        public string binAssetPath;
+        public string[] binAssetPaths;
 
         public GameObject gameObject;
         public UdonBehaviour udonBehaviour;
@@ -59,18 +65,21 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
             var binFileName = $"{Path.GetFileNameWithoutExtension(srcFileName)}.asset";;
             if (splitted.Length >= 2)
             {
-                var folderPath = (string)null;
+                var folderPaths = new string[BinFolderPaths.Length];
                 for (var i = 0; i <= splitted.Length - 2; i++)
                 {
-                    var checkedPath = string.Join("", splitted.Take(i).Select(x => $"/{x}"));
-                    folderPath      = $"Assets/{BinFolderPath}{checkedPath}";
-                    if (!AssetDatabase.IsValidFolder($"{folderPath}/{splitted[i]}")) AssetDatabase.CreateFolder(folderPath, splitted[i]);
+                    var checkedPath  = string.Join("", splitted.Take(i).Select(x => $"/{x}"));
+                    folderPaths = BinFolderPaths.Select(x => $"Assets/{x}{checkedPath}").ToArray();
+                    foreach (var f in folderPaths)
+                    {
+                        if (!AssetDatabase.IsValidFolder($"{f}/{splitted[i]}")) AssetDatabase.CreateFolder(f, splitted[i]);
+                    }
                 }
-                binAssetPath = $"{folderPath}/{splitted[splitted.Length - 2]}/{binFileName}";
+                binAssetPaths = folderPaths.Select(x => $"{x}/{splitted[splitted.Length - 2]}/{binFileName}").ToArray();
             }
             else
             {
-                binAssetPath = $"Assets/{BinFolderPath}/{binFileName}";
+                binAssetPaths = BinFolderPaths.Select(x => $"Assets/{x}/{binFileName}").ToArray();
             }
         }
 
@@ -92,7 +101,18 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
         }
 
         [UnityTest]
-        public IEnumerator UdonAssemblyRunCorrectly()
+        public IEnumerator UdonAssemblyCompiledSimpleAndRunCorrectly()
+        {
+            return UdonAssemblyCompiledAndRunCorrectly<TeuchiUdonStrategySimple>();
+        }
+
+        [UnityTest]
+        public IEnumerator UdonAssemblyCompiledBufferedAndRunCorrectly()
+        {
+            return UdonAssemblyCompiledAndRunCorrectly<TeuchiUdonStrategyBuffered>();
+        }
+
+        private IEnumerator UdonAssemblyCompiledAndRunCorrectly<T>() where T : TeuchiUdonStrategy, new()
         {
             gameObject    = GameObject.Find("__Test__");
             udonBehaviour = gameObject.GetComponent<UdonBehaviour>();
@@ -108,14 +128,14 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
             var program = (TeuchiUdonProgramAsset)null;
             if (expected == "")
             {
-                TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>(srcAssetPath, binAssetPath);
+                TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, GetBinAssetPath<T>());
                 yield break;
             }
             else if (expected == "error")
             {
                 Assert.That
                 (
-                    () => TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>(srcAssetPath, binAssetPath),
+                    () => TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, GetBinAssetPath<T>()),
                     Throws.InvalidOperationException
                 );
                 yield break;
@@ -123,11 +143,11 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
             else if (expected.StartsWith("/") && expected.EndsWith("/"))
             {
                 var regex = new Regex(expected.Substring(1, expected.Length - 2));
-                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>(srcAssetPath, binAssetPath);
+                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, GetBinAssetPath<T>());
             }
             else
             {
-                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>(srcAssetPath, binAssetPath);
+                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, GetBinAssetPath<T>());
             }
             udonBehaviour.programSource = program;
 
@@ -143,6 +163,22 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
             else
             {
                 LogAssert.Expect(LogType.Log, expected);
+            }
+        }
+
+        private string GetBinAssetPath<T>() where T : TeuchiUdonStrategy
+        {
+            if (typeof(T) == typeof(TeuchiUdonStrategySimple))
+            {
+                return binAssetPaths[0];
+            }
+            else if (typeof(T) == typeof(TeuchiUdonStrategyBuffered))
+            {
+                return binAssetPaths[1];
+            }
+            else
+            {
+                return null;
             }
         }
     }
