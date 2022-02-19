@@ -21,8 +21,8 @@ MonoBehaviour:
     PUSH, return[func[f>0]]\r\n        COPY\r\n        PUSH, var[f>func[0]>x]\r\n       
     COPY\r\n        PUSH, var[f>func[0]>x]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP_INDIRECT, return[func[f>0]]\r\n\r\n    .export _start\r\n    _start:\r\n       
-    PUSH, literal[0]\r\n        PUSH, indirect[evalfunc[1]]\r\n        PUSH, f\r\n       
-    PUSH, out[0]\r\n        COPY\r\n        JUMP_INDIRECT, out[0]\r\n        evalfunc[1]:\r\n       
+    PUSH, f\r\n        PUSH, out[0]\r\n        COPY\r\n        PUSH, literal[0]\r\n       
+    PUSH, indirect[evalfunc[1]]\r\n        JUMP_INDIRECT, out[0]\r\n        evalfunc[1]:\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:

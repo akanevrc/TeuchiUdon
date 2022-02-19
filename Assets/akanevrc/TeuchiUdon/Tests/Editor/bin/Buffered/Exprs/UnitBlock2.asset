@@ -55,10 +55,10 @@ MonoBehaviour:
     EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[0]\r\n        PUSH, tmp[0]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
-    PUSH, tmp[0]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
-    EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, buffer[literals]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[get]\r\n       
+    PUSH, tmp[0]\r\n        PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n       
+    PUSH, index[tmpstack]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH,
+    buffer[literals]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[get]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[get]\r\n        PUSH, index[tmpstack]\r\n       
     EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       

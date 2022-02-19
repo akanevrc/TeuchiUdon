@@ -29,13 +29,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     .Concat(Retain(x.Vars.Count(y => !y.Type.LogicalTypeEquals(TeuchiUdonType.Unit)) + 1, out var holder))
                     .Concat(Expect(holder, holder.Count))
+                    .Concat(Release(holder))
                     .Concat(Set(new AssemblyAddress_DATA_LABEL(x.Return)))
                     .Concat(x.Vars.Reverse().SelectMany(y =>
                         y.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                         new TeuchiUdonAssembly[0] :
                         Set(new AssemblyAddress_DATA_LABEL(y))
                     ))
-                    .Concat(Release(holder))
                     .Concat(VisitResult(x.Expr))
                     .Concat(Prepare(new AssemblyAddress_DATA_LABEL(x.Return), out var address))
                     .Concat(new TeuchiUdonAssembly[]
@@ -156,12 +156,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 VisitExpr(result.VarBind.Expr)
                 .Concat(Retain(result.VarBind.Vars.Count(x => !x.Type.LogicalTypeEquals(TeuchiUdonType.Unit)), out var holder))
                 .Concat(Expect(holder, holder.Count))
+                .Concat(Release(holder))
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
                     Set(new AssemblyAddress_DATA_LABEL(x))
-                ))
-                .Concat(Release(holder));
+                ));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTopExpr(TopExprResult result)
@@ -221,12 +221,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 VisitExpr(result.VarBind.Expr)
                 .Concat(Retain(result.VarBind.Vars.Count(x => !x.Type.LogicalTypeEquals(TeuchiUdonType.Unit)), out var holder))
                 .Concat(Expect(holder, holder.Count))
+                .Concat(Release(holder))
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
                     Set(new AssemblyAddress_DATA_LABEL(x))
-                ))
-                .Concat(Release(holder));
+                ));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitExpr(ExprResult result)
@@ -313,14 +313,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalFunc(EvalFuncResult result)
         {
             return
-                result.Args.SelectMany(x => VisitExpr(x))
-                .Concat(Get(new AssemblyAddress_INDIRECT_LABEL(result.EvalFunc)))
-                .Concat(VisitExpr(result.Expr))
+                VisitExpr(result.Expr)
                 .Concat(Retain(1, out var holder))
                 .Concat(Expect(holder, 1))
+                .Concat(Release(holder))
                 .Concat(Set((new AssemblyAddress_DATA_LABEL(result.OutValue))))
                 .Concat(Prepare(new AssemblyAddress_DATA_LABEL(result.OutValue), out var address))
-                .Concat(Release(holder))
+                .Concat(result.Args.SelectMany(x => VisitExpr(x)))
+                .Concat(Get(new AssemblyAddress_INDIRECT_LABEL(result.EvalFunc)))
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_JUMP_INDIRECT(address),
@@ -353,11 +353,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         .SelectMany(x => x)
                     )
                 )
+                .Concat(Release(holder))
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(result.Method)
                 })
-                .Concat(Release(holder))
                 .Concat(result.OutValues.SelectMany(x => Get(new AssemblyAddress_DATA_LABEL(x))));
         }
 
@@ -452,11 +452,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         .SelectMany(x => x)
                     )
                 )
+                .Concat(Release(holder))
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(method)
                 })
-                .Concat(Release(holder))
                 .Concat(retValues.SelectMany(x => x));
         }
 
@@ -492,11 +492,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         .SelectMany(x => x)
                     )
                 )
+                .Concat(Release(holder))
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(method)
                 })
-                .Concat(Release(holder))
                 .Concat(outValues.SelectMany(x => x))
                 .Concat(setValues.SelectMany(x => x))
                 .Concat(retValues.SelectMany(x => x));
@@ -546,12 +546,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 inValues
                     .Zip(tmpValues, (i, t) => (i, t))
                     .SelectMany(x =>
-                        Retain(1, out var h)
-                        .Concat(x.i)
+                        x.i
+                        .Concat(Retain(1, out var h))
                         .Concat(Expect(h, 1))
+                        .Concat(Release(h))
                         .Concat(x.t)
                         .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
-                        .Concat(Release(h))
                     )
                 .Concat(Retain(argValues.Count(), out var holder))
                 .Concat
@@ -575,11 +575,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         .SelectMany(x => x)
                     )
                 )
+                .Concat(Release(holder))
                 .Concat(new TeuchiUdonAssembly[]
                     {
                         new Assembly_EXTERN(method)
                     })
-                .Concat(Release(holder))
                 .Concat(outValues.SelectMany(x => x))
                 .Concat(setValues.SelectMany(x => x))
                 .Concat(retValues.SelectMany(x => x));
@@ -596,12 +596,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 VisitExpr(result.VarBind.Expr)
                 .Concat(Retain(result.VarBind.Vars.Count(x => !x.Type.LogicalTypeEquals(TeuchiUdonType.Unit)), out var holder))
                 .Concat(Expect(holder, holder.Count))
+                .Concat(Release(holder))
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
                     Set(new AssemblyAddress_DATA_LABEL(x))
                 ))
-                .Concat(Release(holder))
                 .Concat(VisitExpr(result.Expr));
         }
 

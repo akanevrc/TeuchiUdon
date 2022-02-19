@@ -41,10 +41,10 @@ MonoBehaviour:
     PUSH, tmp[0]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[0]\r\n        PUSH, tmp[0]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
-    PUSH, tmp[0]\r\n        PUSH, tmp[set]\r\n        COPY\r\n        PUSH, buffer[returns]\r\n       
-    PUSH, tmp[set]\r\n        PUSH, literal[0]\r\n        EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
-    PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
-    EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    PUSH, tmp[0]\r\n        PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n       
+    PUSH, index[tmpstack]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    PUSH, tmp[set]\r\n        COPY\r\n        PUSH, buffer[returns]\r\n        PUSH,
+    tmp[set]\r\n        PUSH, literal[0]\r\n        EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
     PUSH, buffer[literals]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[get]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[get]\r\n        PUSH, index[tmpstack]\r\n       
@@ -55,19 +55,13 @@ MonoBehaviour:
     EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[0]\r\n        PUSH, tmp[0]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
-    PUSH, tmp[0]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
-    EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, buffer[returns]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[prepare]\r\n       
+    PUSH, tmp[0]\r\n        PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n       
+    PUSH, index[tmpstack]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH,
+    buffer[returns]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[prepare]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
     JUMP_INDIRECT, tmp[prepare]\r\n\r\n    .export _start\r\n    _start:\r\n       
     PUSH, buffer[indirects]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[get]\r\n       
-    EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
-    PUSH, buffer[tmpstack]\r\n        PUSH, tmp[get]\r\n        PUSH, index[tmpstack]\r\n       
-    EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
-    PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
-    EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, buffer[indirects]\r\n        PUSH, literal[1]\r\n        PUSH, tmp[get]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[get]\r\n        PUSH, index[tmpstack]\r\n       
     EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
@@ -77,8 +71,14 @@ MonoBehaviour:
     EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[0]\r\n        PUSH, tmp[0]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
-    PUSH, tmp[0]\r\n        PUSH, out[0]\r\n        COPY\r\n        PUSH, index[tmpstack]\r\n       
-    PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    PUSH, tmp[0]\r\n        PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n       
+    PUSH, index[tmpstack]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    PUSH, out[0]\r\n        COPY\r\n        PUSH, buffer[indirects]\r\n        PUSH,
+    literal[1]\r\n        PUSH, tmp[get]\r\n        EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
+    PUSH, buffer[tmpstack]\r\n        PUSH, tmp[get]\r\n        PUSH, index[tmpstack]\r\n       
+    EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
+    PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
+    EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     JUMP_INDIRECT, out[0]\r\n        evalfunc[1]:\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
@@ -236,7 +236,7 @@ MonoBehaviour:
       Data: 8|System.UInt32, mscorlib
     - Name: 
       Entry: 3
-      Data: 712
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -245,7 +245,7 @@ MonoBehaviour:
       Data: 9|System.UInt32, mscorlib
     - Name: 
       Entry: 3
-      Data: 0
+      Data: 712
     - Name: 
       Entry: 8
       Data: 
