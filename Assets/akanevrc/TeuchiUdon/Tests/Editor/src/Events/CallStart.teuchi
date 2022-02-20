@@ -1,2 +1,0 @@
-// ok
-_start = () -> UnityEngine.Debug.Log("ok");

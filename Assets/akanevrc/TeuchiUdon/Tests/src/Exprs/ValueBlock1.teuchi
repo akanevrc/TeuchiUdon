@@ -1,0 +1,6 @@
+// ok
+{
+    UnityEngine.Debug.Log("ok");
+    "nop";
+    "nop"
+};

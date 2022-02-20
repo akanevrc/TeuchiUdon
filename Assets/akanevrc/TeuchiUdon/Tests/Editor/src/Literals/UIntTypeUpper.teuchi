@@ -1,2 +1,0 @@
-// 100
-UnityEngine.Debug.Log(100U);

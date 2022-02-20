@@ -1,2 +1,0 @@
-// 1.25
-UnityEngine.Debug.Log(1.25d);

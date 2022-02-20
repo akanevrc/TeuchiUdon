@@ -1,2 +1,0 @@
-// 256
-UnityEngine.Debug.Log(0x100);

@@ -1,2 +1,0 @@
-// ok
-let x = "ok" in UnityEngine.Debug.Log(x);

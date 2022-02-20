@@ -1,2 +1,0 @@
-// Null
-UnityEngine.Debug.Log(null);

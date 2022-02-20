@@ -1,2 +1,0 @@
-// True
-UnityEngine.Debug.Log(true);

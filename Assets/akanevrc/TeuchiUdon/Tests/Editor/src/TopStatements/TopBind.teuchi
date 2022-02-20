@@ -1,3 +1,0 @@
-// ok
-x = "ok";
-UnityEngine.Debug.Log(x);

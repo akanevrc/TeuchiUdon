@@ -85,6 +85,7 @@ crashlytics-build.properties
 /[Aa]ssets/*
 !/[Aa]ssets/NuGet.config
 !/[Aa]ssets/packages.config
+!/[Aa]ssets/AddressableAssetsData
 
 !/[Aa]ssets/akanevrc/
 /[Aa]ssets/akanevrc/**/.antlr/

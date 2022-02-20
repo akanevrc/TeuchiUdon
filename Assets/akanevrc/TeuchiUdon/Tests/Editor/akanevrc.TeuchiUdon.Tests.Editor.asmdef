@@ -6,7 +6,8 @@
         "VRC.Udon",
         "VRC.Udon.Editor",
         "akanevrc.TeuchiUdon.Editor",
-        "akanevrc.TeuchiUdon.Editor.Compiler"
+        "akanevrc.TeuchiUdon.Editor.Compiler",
+        "akanevrc.TeuchiUdon.Tests.Utils"
     ],
     "includePlatforms": [
         "Editor"

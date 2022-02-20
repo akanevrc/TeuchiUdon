@@ -1,5 +1,0 @@
-// ok
-{
-    let x = "ok";
-    UnityEngine.Debug.Log(x);
-};

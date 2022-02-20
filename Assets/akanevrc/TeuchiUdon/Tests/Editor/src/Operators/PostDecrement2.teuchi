@@ -1,4 +1,0 @@
-// 99
-x = 100;
-x--;
-UnityEngine.Debug.Log(x);

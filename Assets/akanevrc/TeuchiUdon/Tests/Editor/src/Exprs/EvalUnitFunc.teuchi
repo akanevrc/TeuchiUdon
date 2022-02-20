@@ -1,3 +1,0 @@
-// ok
-f = () -> UnityEngine.Debug.Log("ok");
-f();

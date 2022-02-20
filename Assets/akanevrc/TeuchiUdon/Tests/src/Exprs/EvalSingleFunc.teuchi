@@ -1,0 +1,3 @@
+// ok
+f = x : string -> UnityEngine.Debug.Log(x);
+f("ok");
