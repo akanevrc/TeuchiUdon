@@ -481,29 +481,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
     }
 
-    public abstract class UnaryOpResult : TypedResult
+    public abstract class OpResult : TypedResult
     {
         public string Op { get; }
-        public ExprResult Expr { get; }
-        public TeuchiUdonMethod[] Methods { get; }
-        public TeuchiUdonOutValue[][] OutValuess { get; }
-        public TeuchiUdonLiteral[] Literals { get; }
+        public TeuchiUdonMethod[] Methods { get; protected set; }
+        public TeuchiUdonOutValue[][] OutValuess { get; protected set; }
+        public TeuchiUdonLiteral[] Literals { get; protected set; }
 
-        public UnaryOpResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
+        public OpResult(IToken token, TeuchiUdonType type, string op)
             : base(token, type)
         {
-            Op         = op;
-            Expr       = expr;
+            Op = op;
+        }
+
+        protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
+        protected abstract IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess();
+        protected abstract IEnumerable<TeuchiUdonLiteral> GetLiterals();
+
+        protected void Init()
+        {
             Methods    = GetMethods   ().ToArray();
             OutValuess = GetOutValuess().Select(x => x.ToArray()).ToArray();
             Literals   = GetLiterals  ().ToArray();
 
             TeuchiUdonTables.Instance.SetExpectCount(Methods.Length == 0 ? 0 : Methods.Max(x => x.InTypes.Length));
         }
-
-        protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
-        protected abstract IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess();
-        protected abstract IEnumerable<TeuchiUdonLiteral> GetLiterals();
 
         protected TeuchiUdonType GetTypeFromLogicalName(string logicalName, bool isTypeType)
         {
@@ -538,6 +540,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"arguments of operator '{Op}' is nondeterministic");
                 return null;
             }
+        }
+    }
+
+    public abstract class UnaryOpResult : OpResult
+    {
+        public ExprResult Expr { get; }
+
+        public UnaryOpResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
+            : base(token, type, op)
+        {
+            Expr = expr;
+            Init();
         }
     }
 
@@ -584,7 +598,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "~":
                 case "++":
                 case "--":
-                    return Methods.Select(x => TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
+                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -658,7 +672,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 case "++":
                 case "--":
-                    return new TeuchiUdonOutValue[][] { new TeuchiUdonOutValue[] { TeuchiUdonTables.Instance.GetOutValues(1).First() } };
+                    return new TeuchiUdonOutValue[][] { TeuchiUdonTables.Instance.GetOutValues(1).ToArray() };
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -683,25 +697,78 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return new TeuchiUdonLiteral[0];
             }
         }
-
-        
     }
 
-    public class InfixResult : TypedResult
+    public abstract class BinaryOpResult : OpResult
     {
-        public string Op { get; }
         public ExprResult Expr1 { get; }
         public ExprResult Expr2 { get; }
 
-        public InfixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr1, ExprResult expr2)
-            : base(token, type)
+        public BinaryOpResult(IToken token, TeuchiUdonType type, string op, ExprResult expr1, ExprResult expr2)
+            : base(token, type, op)
         {
-            Op    = op;
             Expr1 = expr1;
             Expr2 = expr2;
+            Init();
+        }
+    }
+
+    public class InfixResult : BinaryOpResult
+    {
+        public InfixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr1, ExprResult expr2)
+            : base(token, type, op, expr1, expr2)
+        {
         }
 
         public override TeuchiUdonVar[] LeftValues => (Op == "." || Op == "?.") ? Expr2.Inner.LeftValues : new TeuchiUdonVar[0];
+
+        protected override IEnumerable<TeuchiUdonMethod> GetMethods()
+        {
+            var expr1Type = Expr1.Inner.Type.LogicalName;
+            var expr2Type = Expr2.Inner.Type.LogicalName;
+
+            switch (Op)
+            {
+                case ".":
+                case "?.":
+                    return new TeuchiUdonMethod[0];
+                case "+":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, "op_Addition"   , expr1Type, expr2Type) };
+                case "-":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, "op_Subtraction", expr1Type, expr2Type) };
+                default:
+                    return new TeuchiUdonMethod[0];
+            }
+        }
+
+        protected override IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess()
+        {
+            switch (Op)
+            {
+                case ".":
+                case "?.":
+                    return new TeuchiUdonOutValue[0][];
+                case "+":
+                case "-":
+                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
+                default:
+                    return new TeuchiUdonOutValue[0][];
+            }
+        }
+
+        protected override IEnumerable<TeuchiUdonLiteral> GetLiterals()
+        {
+            switch (Op)
+            {
+                case ".":
+                case "?.":
+                case "+":
+                case "-":
+                    return new TeuchiUdonLiteral[0];
+                default:
+                    return new TeuchiUdonLiteral[0];
+            }
+        }
     }
 
     public class LetInBindResult : TypedResult

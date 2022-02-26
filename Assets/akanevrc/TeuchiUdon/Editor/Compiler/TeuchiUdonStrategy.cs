@@ -587,7 +587,68 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitInfix(InfixResult result)
         {
-            return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
+            switch (result.Op)
+            {
+                case ".":
+                case "?.":
+                   return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
+                case "+":
+                case "-":
+                    return
+                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalInfixMethod
+                        (
+                            result.Methods[0],
+                            new TeuchiUdonAssembly[][]
+                            {
+                                VisitExpr(result.Expr1).ToArray(),
+                                VisitExpr(result.Expr2).ToArray()
+                            },
+                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
+                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                        );
+                default:
+                    return new TeuchiUdonAssembly[0];
+            }
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixMethod
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> retValues
+        )
+        {
+            return
+                Retain(inValues.Count(), out var holder)
+                .Concat
+                (
+                    this is TeuchiUdonStrategySimple ?
+                    method.SortAlongParams
+                    (
+                        inValues.Select(x => x.Concat(Expect(holder, 1))).ToArray(),
+                        outValues
+                    )
+                    .SelectMany(x => x)
+                    :
+                    inValues.SelectMany(x => x)
+                    .Concat
+                    (
+                        method.SortAlongParams
+                        (
+                            inValues.Select(_ => Expect(holder, 1)).ToArray(),
+                            outValues
+                        )
+                        .SelectMany(x => x)
+                    )
+                )
+                .Concat(Release(holder))
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(method)
+                })
+                .Concat(retValues.SelectMany(x => x));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLetInBind(LetInBindResult result)
