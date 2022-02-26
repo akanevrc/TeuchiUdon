@@ -52,15 +52,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitBody([NotNull] BodyContext context)
         {
             var topStatements = context.topStatement().Select(x => x.result).ToArray();
-            context.result    = new BodyResult(context.Start, topStatements);
+            if (topStatements.Any(x => x == null)) return;
+
+            context.result = new BodyResult(context.Start, topStatements);
         }
 
         public override void ExitVarBindTopStatement([NotNull] VarBindTopStatementContext context)
         {
             var varBind = context.varBind()?.result;
-            if (varBind == null) return;
+            var attrs   = context.varAttr().Select(x => x.result);
+            if (varBind == null || attrs.Any(x => x == null)) return;
 
-            var attrs                = context.varAttr().Select(x => x.result);
             var (init, export, sync) = ExtractFromVarAttrs(attrs);
 
             if (varBind.Vars.Length != 1 && (init != null || export || sync != TeuchiUdonSyncMode.Disable))
@@ -157,11 +159,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitExprTopStatement([NotNull] ExprTopStatementContext context)
         {
-            var expr = context.expr()?.result;
-            if (expr == null) return;
-
+            var expr  = context.expr()?.result;
             var attrs = context.exprAttr().Select(x => x.result);
-            var init  = ExtractFromExprAttrs(attrs);
+            if (expr == null || attrs.Any(x => x == null)) return;
+
+            var init = ExtractFromExprAttrs(attrs);
 
             if (init == null)
             {
@@ -233,7 +235,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void EnterVarBind([NotNull] VarBindContext context)
         {
             var varDecl = context.varDecl();
-            if (varDecl == null || varDecl is SingleVarDeclContext c && c.identifier() == null) return;
+            if
+            (
+                varDecl == null ||
+                varDecl is SingleVarDeclContext s && s.identifier() == null ||
+                varDecl is TupleVarDeclContext  t && t.identifier().Any(x => x == null)
+            ) return;
 
             var index          = TeuchiUdonTables.Instance.GetVarBindIndex();
             context.tableIndex = index;
@@ -329,7 +336,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
             var identifiers = context.identifier().Select(x => x .result);
-            var qualifieds  = context.expr()
+            if (identifiers.Any(x => x == null)) return;
+
+            var qualifieds = context.expr()
                 .Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false })
                 .ToArray();
 
@@ -434,12 +443,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitUnitBlockExpr([NotNull] UnitBlockExprContext context)
         {
+            var statements = context.statement().Select(x => x.result);
+            if (statements.Any(x => x == null)) return;
+
             TeuchiUdonQualifierStack.Instance.Pop();
 
             var type       = TeuchiUdonType.Unit;
             var index      = context.tableIndex;
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var statements = context.statement().Select(x => x.result);
             var expr       = new ExprResult(context.Start, new UnitResult(context.Start));
             var block      = new BlockResult(context.Start, type, index, qual, statements, expr);
             context.result = new ExprResult(block.Token, block);
@@ -456,15 +467,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitValueBlockExpr([NotNull] ValueBlockExprContext context)
         {
-            var expr = context.expr()?.result;
-            if (expr == null) return;
+            var expr       = context.expr()?.result;
+            var statements = context.statement().Select(x => x.result);
+            if (expr == null || statements.Any(x => x == null)) return;
 
             TeuchiUdonQualifierStack.Instance.Pop();
 
             var type       = expr.Inner.Type;
             var index      = context.tableIndex;
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var statements = context.statement().Select(x => x.result);
             var block      = new BlockResult(context.Start, type, index, qual, statements, expr);
             context.result = new ExprResult(block.Token, block);
         }
@@ -564,6 +575,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var expr1 = exprs[0].result;
             var expr2 = exprs[1].result;
+            if (expr1 == null || expr2 == null) return;
 
             if (expr1.Inner is EvalVarCandidateResult varCandidate1)
             {
@@ -752,8 +764,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (expr == null) return;
 
             var args       = new ExprResult[] { new ExprResult(context.Start, new UnitResult(context.Start)) };
-            var parent     = context.Parent;
-            context.result = ExitEvalFuncExpr(context.Start, expr, args, parent);
+            context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
         public override void ExitEvalSingleFuncExpr([NotNull] EvalSingleFuncExprContext context)
@@ -763,8 +774,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var expr       = exprs[0];
             var args       = exprs.Skip(1);
-            var parent     = context.Parent;
-            context.result = ExitEvalFuncExpr(context.Start, expr, args, parent);
+            context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
         public override void ExitEvalTupleFuncExpr([NotNull] EvalTupleFuncExprContext context)
@@ -774,11 +784,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var expr       = exprs[0];
             var args       = exprs.Skip(1);
-            var parent     = context.Parent;
-            context.result = ExitEvalFuncExpr(context.Start, expr, args, parent);
+            context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
-        private ExprResult ExitEvalFuncExpr(IToken token, ExprResult expr, IEnumerable<ExprResult> args, RuleContext parent)
+        private ExprResult ExitEvalFuncExpr(IToken token, ExprResult expr, IEnumerable<ExprResult> args)
         {
             var index    = TeuchiUdonTables.Instance.GetEvalFuncIndex();
             var type     = expr.Inner.Type;
