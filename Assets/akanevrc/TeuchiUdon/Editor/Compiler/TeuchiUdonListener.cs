@@ -886,6 +886,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitMultiplicationExpr([NotNull] MultiplicationExprContext context)
         {
+            var op    = context.op?.Text;
+            var exprs = context.expr();
+            if (op == null || exprs.Length != 2) return;
+
+            var expr1 = exprs[0]?.result;
+            var expr2 = exprs[1]?.result;
+            if (expr1 == null || expr2 == null || !expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type)) return;
+
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            context.result = new ExprResult(infix.Token, infix);
         }
 
         public override void ExitAdditionExpr([NotNull] AdditionExprContext context)

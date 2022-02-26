@@ -1,0 +1,2 @@
+// 600
+UnityEngine.Debug.Log(300 * 2);

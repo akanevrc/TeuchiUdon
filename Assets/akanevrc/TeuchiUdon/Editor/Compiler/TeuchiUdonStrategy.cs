@@ -594,6 +594,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                    return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
                 case "+":
                 case "-":
+                case "*":
+                case "/":
+                case "%":
                     return
                         result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
                         EvalInfixMethod

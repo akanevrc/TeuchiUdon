@@ -520,26 +520,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return isTypeType ? TeuchiUdonType.Type.ApplyArgAsType(type) : type;
         }
 
-        protected TeuchiUdonMethod GetMethodFromName(string logicalTypeName, bool isTypeType, string methodName, params string[] inTypeNames)
+        protected TeuchiUdonMethod GetMethodFromName(string logicalTypeName, bool isTypeType, IEnumerable<string> methodNames, params string[] inTypeNames)
         {
             var type    = GetTypeFromLogicalName(logicalTypeName, isTypeType);
             var inTypes = inTypeNames.Select(x => GetTypeFromLogicalName(x, false)).ToArray();
-            var qm      = new TeuchiUdonMethod(type, methodName, inTypes);
-            var m       = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
-            if (m.Length == 0)
+
+            foreach (var name in methodNames)
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"operator '{Op}' is not defined");
-                return null;
+                var qm = new TeuchiUdonMethod(type, name, inTypes);
+                var m  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+                if (m.Length == 0)
+                {
+                }
+                else if (m.Length == 1)
+                {
+                    return m[0];
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"arguments of operator '{Op}' is nondeterministic");
+                    return null;
+                }
             }
-            else if (m.Length == 1)
-            {
-                return m[0];
-            }
-            else
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"arguments of operator '{Op}' is nondeterministic");
-                return null;
-            }
+
+            TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"operator '{Op}' is not defined");
+            return null;
         }
     }
 
@@ -573,15 +578,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "+":
                     return new TeuchiUdonMethod[0];
                 case "-":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_UnaryMinus"   , exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_UnaryMinus"    }, exprType) };
                 case "!":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_UnaryNegation", exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_UnaryNegation" }, exprType) };
                 case "~":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_LogicalXor"   , exprType, exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_LogicalXor"    }, exprType, exprType) };
                 case "++":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Addition"     , exprType, exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_Addition"      }, exprType, exprType) };
                 case "--":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Subtraction"  , exprType, exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_Subtraction"   }, exprType, exprType) };
                 default:
                     return new TeuchiUdonMethod[0];
             }
@@ -658,9 +663,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (Op)
             {
                 case "++":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Addition"   , exprType, exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_Addition"    }, exprType, exprType) };
                 case "--":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, "op_Subtraction", exprType, exprType) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(exprType, true, new string[] { "op_Subtraction" }, exprType, exprType) };
                 default:
                     return new TeuchiUdonMethod[0];
             }
@@ -733,9 +738,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "?.":
                     return new TeuchiUdonMethod[0];
                 case "+":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, "op_Addition"   , expr1Type, expr2Type) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Addition"                      }, expr1Type, expr2Type) };
                 case "-":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, "op_Subtraction", expr1Type, expr2Type) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Subtraction"                   }, expr1Type, expr2Type) };
+                case "*":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Multiplication", "op_Multiply" }, expr1Type, expr2Type) };
+                case "/":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Division"                      }, expr1Type, expr2Type) };
+                case "%":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Modulus", "op_Remainder"       }, expr1Type, expr2Type) };
                 default:
                     return new TeuchiUdonMethod[0];
             }
@@ -750,6 +761,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return new TeuchiUdonOutValue[0][];
                 case "+":
                 case "-":
+                case "*":
+                case "/":
+                case "%":
                     return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
                 default:
                     return new TeuchiUdonOutValue[0][];
@@ -764,6 +778,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "?.":
                 case "+":
                 case "-":
+                case "*":
+                case "/":
+                case "%":
                     return new TeuchiUdonLiteral[0];
                 default:
                     return new TeuchiUdonLiteral[0];
