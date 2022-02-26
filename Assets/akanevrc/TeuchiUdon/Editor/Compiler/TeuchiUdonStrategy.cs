@@ -599,6 +599,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "%":
                 case "<<":
                 case ">>":
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                case "==":
+                case "!=":
                     return
                         result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
                         EvalInfixMethod

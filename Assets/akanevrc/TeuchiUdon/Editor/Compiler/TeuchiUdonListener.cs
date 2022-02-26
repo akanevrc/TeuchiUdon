@@ -892,7 +892,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var expr1 = exprs[0]?.result;
             var expr2 = exprs[1]?.result;
-            if (expr1 == null || expr2 == null || !expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type)) return;
+            if (expr1 == null || expr2 == null) return;
+
+            if (!expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
 
             var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
@@ -906,7 +912,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var expr1 = exprs[0]?.result;
             var expr2 = exprs[1]?.result;
-            if (expr1 == null || expr2 == null || !expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type)) return;
+            if (expr1 == null || expr2 == null) return;
+
+            if (!expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
 
             var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
@@ -920,7 +932,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var expr1 = exprs[0]?.result;
             var expr2 = exprs[1]?.result;
-            if (expr1 == null || expr2 == null || !expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int)) return;
+            if (expr1 == null || expr2 == null) return;
+
+            if (!expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
 
             var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
@@ -928,10 +946,42 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitRelationExpr([NotNull] RelationExprContext context)
         {
+            var op    = context.op?.Text;
+            var exprs = context.expr();
+            if (op == null || exprs.Length != 2) return;
+
+            var expr1 = exprs[0]?.result;
+            var expr2 = exprs[1]?.result;
+            if (expr1 == null || expr2 == null) return;
+
+            if (!expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
+
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            context.result = new ExprResult(infix.Token, infix);
         }
 
         public override void ExitEqualityExpr([NotNull] EqualityExprContext context)
         {
+            var op    = context.op?.Text;
+            var exprs = context.expr();
+            if (op == null || exprs.Length != 2) return;
+
+            var expr1 = exprs[0]?.result;
+            var expr2 = exprs[1]?.result;
+            if (expr1 == null || expr2 == null) return;
+
+            if (!expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type) && !expr2.Inner.Type.IsAssignableFrom(expr1.Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
+
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            context.result = new ExprResult(infix.Token, infix);
         }
 
         public override void ExitLogicalAndExpr([NotNull] LogicalAndExprContext context)

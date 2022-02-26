@@ -751,6 +751,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_LeftShift"                     }, expr1Type, expr2Type) };
                 case ">>":
                     return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_RightShift"                    }, expr1Type, expr2Type) };
+                case "<":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_LessThan"                      }, expr1Type, expr2Type) };
+                case ">":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_GreaterThan"                   }, expr1Type, expr2Type) };
+                case "<=":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_LessThanOrEqual"               }, expr1Type, expr2Type) };
+                case ">=":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_GreaterThanOrEqual"            }, expr1Type, expr2Type) };
+                case "==":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Equality"                      }, expr1Type, expr2Type) };
+                case "!=":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Inequality"                    }, expr1Type, expr2Type) };
                 default:
                     return new TeuchiUdonMethod[0];
             }
@@ -770,6 +782,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "%":
                 case "<<":
                 case ">>":
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                case "==":
+                case "!=":
                     return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
                 default:
                     return new TeuchiUdonOutValue[0][];
@@ -789,6 +807,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "%":
                 case "<<":
                 case ">>":
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                case "==":
+                case "!=":
                     return new TeuchiUdonLiteral[0];
                 default:
                     return new TeuchiUdonLiteral[0];
