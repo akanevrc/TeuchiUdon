@@ -25,8 +25,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
 
-        public int ExpectCount { get; private set; }
-
         public Dictionary<string, string> UnaryOps { get; private set; }
         public Dictionary<string, string> BinaryOps { get; private set; }
 
@@ -76,8 +74,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             This           = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs          = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
             Indirects      = new Dictionary<TeuchiUdonIndirect, uint>();
-
-            ExpectCount = 0;
 
             VarCounter      = 0;
             OutValueCounter = 0;
@@ -346,11 +342,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             return new TeuchiUdonMethod[0];
-        }
-
-        public void SetExpectCount(int count)
-        {
-            ExpectCount = ExpectCount >= count ? ExpectCount : count;
         }
 
         public int GetVarIndex()

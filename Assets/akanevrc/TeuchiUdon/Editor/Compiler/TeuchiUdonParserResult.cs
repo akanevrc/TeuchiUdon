@@ -163,8 +163,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifiers = identifiers.ToArray();
             Qualifieds  = qualifieds .ToArray();
 
-            TeuchiUdonTables.Instance.SetExpectCount(Qualifieds.Length);
-
             foreach (var v in Vars)
             {
                 if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
@@ -461,8 +459,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr      = expr;
             Args      = args.ToArray();
             OutValues = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
-
-            TeuchiUdonTables.Instance.SetExpectCount(method.InTypes.Length);
         }
 
         public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
@@ -503,8 +499,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Methods    = GetMethods   ().ToArray();
             OutValuess = GetOutValuess().Select(x => x.ToArray()).ToArray();
             Literals   = GetLiterals  ().ToArray();
-
-            TeuchiUdonTables.Instance.SetExpectCount(Methods.Length == 0 ? 0 : Methods.Max(x => x.InTypes.Length));
         }
 
         protected TeuchiUdonType GetTypeFromLogicalName(string logicalName, bool isTypeType)
@@ -929,8 +923,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Func    = new TeuchiUdonFunc(index, qualifier, type, varDecl.Vars, expr);
             VarDecl = varDecl;
             Expr    = expr;
-
-            TeuchiUdonTables.Instance.SetExpectCount(VarDecl.Vars.Length + 1);
 
             if (TeuchiUdonTables.Instance.Funcs.ContainsKey(Func))
             {
