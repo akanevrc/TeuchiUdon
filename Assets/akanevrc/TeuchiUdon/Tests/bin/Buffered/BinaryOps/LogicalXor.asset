@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
-  m_Name: Equality
+  m_Name: LogicalXor
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 566ea3e7c63299d4dbb82b4a136f3d16,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: f33a7e7dd2edc5e40ae57cab0b9c1e80,
     type: 2}
   udonAssembly: ".data_start\r\n    buffer[vars]: %SystemObjectArray, null\r\n   
     buffer[literals]: %SystemObjectArray, null\r\n    buffer[returns]: %SystemObjectArray,
@@ -44,7 +44,7 @@ MonoBehaviour:
     EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
     PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, buffer[literals]\r\n        PUSH, literal[0]\r\n        PUSH, tmp[get]\r\n       
+    PUSH, buffer[literals]\r\n        PUSH, literal[1]\r\n        PUSH, tmp[get]\r\n       
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, tmp[get]\r\n        PUSH, index[tmpstack]\r\n       
     EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
@@ -60,7 +60,7 @@ MonoBehaviour:
     EXTERN, \"SystemObjectArray.__GetValue__SystemInt32__SystemObject\"\r\n       
     PUSH, tmp[1]\r\n        PUSH, out[0]\r\n        PUSH, index[tmpstack]\r\n       
     PUSH, literal[2]\r\n        PUSH, index[tmpstack]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    EXTERN, \"SystemInt32.__op_Equality__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
+    EXTERN, \"SystemInt32.__op_LogicalXor__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, buffer[tmpstack]\r\n        PUSH, out[0]\r\n        PUSH, index[tmpstack]\r\n       
     EXTERN, \"SystemObjectArray.__SetValue__SystemObject_SystemInt32__SystemVoid\"\r\n       
     PUSH, index[tmpstack]\r\n        PUSH, literal[1]\r\n        PUSH, index[tmpstack]\r\n       
@@ -149,25 +149,22 @@ MonoBehaviour:
       Data: 4|System.Object[], mscorlib
     - Name: 
       Entry: 12
-      Data: 3
+      Data: 2
     - Name: 
       Entry: 7
       Data: 5|System.Int32, mscorlib
     - Name: 
       Entry: 3
-      Data: 100
+      Data: 65
     - Name: 
       Entry: 8
       Data: 
     - Name: 
-      Entry: 6
-      Data: 
-    - Name: 
       Entry: 7
-      Data: 6|System.Boolean, mscorlib
+      Data: 6|System.Int32, mscorlib
     - Name: 
-      Entry: 5
-      Data: true
+      Entry: 3
+      Data: 66
     - Name: 
       Entry: 8
       Data: 

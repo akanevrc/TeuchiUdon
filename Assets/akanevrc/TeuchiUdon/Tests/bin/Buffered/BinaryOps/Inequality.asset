@@ -149,7 +149,7 @@ MonoBehaviour:
       Data: 4|System.Object[], mscorlib
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 7
       Data: 5|System.Int32, mscorlib
@@ -161,6 +161,15 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 6
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 6|System.Boolean, mscorlib
+    - Name: 
+      Entry: 5
+      Data: false
+    - Name: 
+      Entry: 8
       Data: 
     - Name: 
       Entry: 13
@@ -233,7 +242,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 6|System.Object[], mscorlib
+      Data: 7|System.Object[], mscorlib
     - Name: 
       Entry: 12
       Data: 100000

@@ -96,7 +96,6 @@ expr
     | expr op='^' expr                              #LogicalXorExpr
     | expr op='|' expr                              #LogicalOrExpr
     | expr op='&&' expr                             #ConditionalAndExpr
-    | expr op='^^' expr                             #ConditionalXorExpr
     | expr op='||' expr                             #ConditionalOrExpr
     | expr op='??' expr                             #CoalescingExpr
     |<assoc=right> expr '?' expr ':' expr           #ConditionalExpr

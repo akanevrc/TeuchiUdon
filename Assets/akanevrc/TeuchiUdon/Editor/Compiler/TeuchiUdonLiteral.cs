@@ -71,63 +71,67 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return $"literal[{Index}]";
         }
 
-        public static TeuchiUdonLiteral CreateNumber(int index, string number, TeuchiUdonType type)
+        public static TeuchiUdonLiteral CreateValue(int index, string value, TeuchiUdonType type)
         {
             var result = (object)null;
-            if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
+            if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
             {
-                result = Convert.ToByte(number);
+                result = Convert.ToBoolean(value);
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
+            {
+                result = Convert.ToByte(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.SByte))
             {
-                result = Convert.ToSByte(number);
+                result = Convert.ToSByte(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Short))
             {
-                result = Convert.ToInt16(number);
+                result = Convert.ToInt16(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.UShort))
             {
-                result = Convert.ToUInt16(number);
+                result = Convert.ToUInt16(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Int))
             {
-                result = Convert.ToInt32(number);
+                result = Convert.ToInt32(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.UInt))
             {
-                result = Convert.ToUInt32(number);
+                result = Convert.ToUInt32(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Long))
             {
-                result = Convert.ToInt64(number);
+                result = Convert.ToInt64(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.ULong))
             {
-                result = Convert.ToUInt64(number);
+                result = Convert.ToUInt64(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Float))
             {
-                result = Convert.ToSingle(number);
+                result = Convert.ToSingle(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Double))
             {
-                result = Convert.ToDouble(number);
+                result = Convert.ToDouble(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Decimal))
             {
-                result = Convert.ToDecimal(number);
+                result = Convert.ToDecimal(value);
             }
             else if (type.LogicalTypeEquals(TeuchiUdonType.Char))
             {
-                result = Convert.ToChar(Convert.ToInt32(number));
+                result = Convert.ToChar(Convert.ToInt32(value));
             }
             else
             {
                 return null;
             }
 
-            var literal = new TeuchiUdonLiteral(index, number, type, result);
+            var literal = new TeuchiUdonLiteral(index, value, type, result);
             if (!TeuchiUdonTables.Instance.Literals.ContainsKey(literal))
             {
                 TeuchiUdonTables.Instance.Literals.Add(literal, literal);

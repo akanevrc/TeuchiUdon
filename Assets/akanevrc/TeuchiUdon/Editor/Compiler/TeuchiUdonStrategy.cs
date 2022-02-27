@@ -603,10 +603,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case ">":
                 case "<=":
                 case ">=":
+                case "&":
+                case "^":
+                case "|":
+                    return
+                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalInfixMethod
+                        (
+                            result.Methods[0],
+                            new TeuchiUdonAssembly[][]
+                            {
+                                VisitExpr(result.Expr1).ToArray(),
+                                VisitExpr(result.Expr2).ToArray()
+                            },
+                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
+                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                        );
                 case "==":
                 case "!=":
                     return
-                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 0 ? Get(new AssemblyAddress_DATA_LABEL(result.Literals[0])) :
                         EvalInfixMethod
                         (
                             result.Methods[0],

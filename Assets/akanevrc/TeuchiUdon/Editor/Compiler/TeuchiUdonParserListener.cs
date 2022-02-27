@@ -519,18 +519,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitRangeExpr([NotNull] TeuchiUdonParser.RangeExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ConditionalXorExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterConditionalXorExpr([NotNull] TeuchiUdonParser.ConditionalXorExprContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>ConditionalXorExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitConditionalXorExpr([NotNull] TeuchiUdonParser.ConditionalXorExprContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>ConditionalExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>

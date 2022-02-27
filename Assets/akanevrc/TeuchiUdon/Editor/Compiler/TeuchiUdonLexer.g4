@@ -108,7 +108,6 @@ OP_INC                    : '++' ;
 OP_DEC                    : '--' ;
 OP_AND                    : '&&' ;
 OP_OR                     : '||' ;
-OP_XOR                    : '^^' ;
 OP_ARROW                  : '->' ;
 OP_EQ                     : '==' ;
 OP_NE                     : '!=' ;
