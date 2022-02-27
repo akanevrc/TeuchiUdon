@@ -8,7 +8,6 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using VRC.Udon;
 using VRC.Udon.Common;
-using akanevrc.TeuchiUdon.Editor.Compiler;
 
 namespace akanevrc.TeuchiUdon.Tests.Utils
 {
@@ -18,22 +17,15 @@ namespace akanevrc.TeuchiUdon.Tests.Utils
         public static readonly string binFolderPath = "akanevrc/TeuchiUdon/Tests/bin";
         public static readonly string srcAddress = "Tests/src";
         public static readonly string binAddress = "Tests/bin";
-        public static readonly string simpleStrategyFolderName = "Simple";
-        public static readonly string bufferedStrategyFolderName = "Buffered";
-        public static readonly string[] strategyFolderNames = new string[]
-        {
-            simpleStrategyFolderName,
-            bufferedStrategyFolderName
-        };
 
         public static string GetSrcAssetPath(string testName)
         {
             return $"Assets/{srcFolderPath}/{testName}.teuchi";
         }
 
-        public static IEnumerable<string> GetBinAssetPaths(string testName)
+        public static string GetBinAssetPath(string testName)
         {
-            return GetAssetPaths(testName, "Assets/", ".asset", binFolderPath);
+            return GetAssetPath(testName, "Assets/", ".asset", binFolderPath);
         }
 
         public static string GetSrcAddress(string testName)
@@ -41,48 +33,29 @@ namespace akanevrc.TeuchiUdon.Tests.Utils
             return $"{srcAddress}/{testName}.teuchi";
         }
 
-        public static IEnumerable<string> GetBinAddresses(string testName)
+        public static string GetBinAddress(string testName)
         {
-            return GetAssetPaths(testName, "", ".asset", binAddress);
+            return GetAssetPath(testName, "", ".asset", binAddress);
         }
 
-        private static IEnumerable<string> GetAssetPaths(string testName, string prefix, string ext, string folderPath)
+        private static string GetAssetPath(string testName, string prefix, string ext, string folderPath)
         {
             var splitted = testName.Split(new string[] { "/" }, System.StringSplitOptions.None);
             var fileName = $"{Path.GetFileName(testName)}{ext}";
             if (splitted.Length >= 2)
             {
-                var folderPaths = new string[strategyFolderNames.Length];
+                var path = (string)null;
                 for (var i = 0; i <= splitted.Length - 2; i++)
                 {
                     var checkedPath = string.Join("", splitted.Take(i).Select(x => $"/{x}"));
-                    folderPaths     = strategyFolderNames.Select(x => $"{prefix}{folderPath}/{x}{checkedPath}").ToArray();
-                    foreach (var f in folderPaths)
-                    {
-                        if (!AssetDatabase.IsValidFolder($"{f}/{splitted[i]}")) AssetDatabase.CreateFolder(f, splitted[i]);
-                    }
+                    path            = $"{prefix}{folderPath}{checkedPath}";
+                    if (!AssetDatabase.IsValidFolder($"{path}/{splitted[i]}")) AssetDatabase.CreateFolder(path, splitted[i]);
                 }
-                return folderPaths.Select(x => $"{x}/{splitted[splitted.Length - 2]}/{fileName}");
+                return $"{path}/{splitted[splitted.Length - 2]}/{fileName}";
             }
             else
             {
-                return strategyFolderNames.Select(x => $"{prefix}{folderPath}/{x}/{fileName}");
-            }
-        }
-
-        public static string GetAssetPath<T>(string[] assetPaths) where T : TeuchiUdonStrategy
-        {
-            if (typeof(T) == typeof(TeuchiUdonStrategySimple))
-            {
-                return assetPaths[0];
-            }
-            else if (typeof(T) == typeof(TeuchiUdonStrategyBuffered))
-            {
-                return assetPaths[1];
-            }
-            else
-            {
-                return null;
+                return $"{prefix}{folderPath}/{fileName}";
             }
         }
 

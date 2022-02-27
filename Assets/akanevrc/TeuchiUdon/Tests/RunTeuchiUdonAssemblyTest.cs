@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Linq;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
@@ -17,7 +16,7 @@ namespace akanevrc.TeuchiUdon.Tests
     {
         public readonly string testName;
         public readonly string srcAddress;
-        public readonly string[] binAddresses;
+        public readonly string binAddress;
         public GameObject testObject;
         public TeuchiUdonProgramAsset program;
         public TeuchiUdonScript script;
@@ -25,8 +24,8 @@ namespace akanevrc.TeuchiUdon.Tests
         public RunTeuchiUdonAssemblyTest(string testName)
         {
             this.testName = testName;
-            srcAddress    = TestUtil.GetSrcAddress  (testName);
-            binAddresses  = TestUtil.GetBinAddresses(testName).ToArray();
+            srcAddress    = TestUtil.GetSrcAddress(testName);
+            binAddress    = TestUtil.GetBinAddress(testName);
         }
 
         [TearDown]
@@ -49,21 +48,10 @@ namespace akanevrc.TeuchiUdon.Tests
         }
 
         [UnityTest]
-        public IEnumerator TeuchiUdonCodeCompiledSimpleAndAssemblyRunCorrectly()
-        {
-            return TeuchiUdonCodeCompiledAndAssemblyRunCorrectly<TeuchiUdonStrategySimple>();
-        }
-
-        [UnityTest]
-        public IEnumerator TeuchiUdonCodeCompiledBufferedAndAssemblyRunCorrectly()
-        {
-            return TeuchiUdonCodeCompiledAndAssemblyRunCorrectly<TeuchiUdonStrategyBuffered>();
-        }
-
-        private IEnumerator TeuchiUdonCodeCompiledAndAssemblyRunCorrectly<T>() where T : TeuchiUdonStrategy, new()
+        public IEnumerator TeuchiUdonCodeCompiledAndAssemblyRunCorrectly()
         {
             var srcHandle = TestUtil.LoadAsset<TeuchiUdonScript>(srcAddress);
-            var binHandle = TestUtil.LoadAsset<TeuchiUdonProgramAsset>(TestUtil.GetAssetPath<T>(binAddresses));
+            var binHandle = TestUtil.LoadAsset<TeuchiUdonProgramAsset>(binAddress);
             yield return srcHandle;
             yield return binHandle;
             script  = srcHandle.Result;

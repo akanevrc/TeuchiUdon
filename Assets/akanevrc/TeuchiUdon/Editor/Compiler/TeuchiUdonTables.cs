@@ -428,64 +428,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
         {
-            if (TeuchiUdonStrategy.Instance is TeuchiUdonStrategySimple)
-            {
-                return
-                    ExportedVars           .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Value.Type       .RealType))
-                    .Concat(Literals.Values.Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
-                    .Concat(Indirects      .Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
-            }
-            else if (TeuchiUdonStrategy.Instance is TeuchiUdonStrategyBuffered)
-            {
-                return
-                    ExportedVars.Select(x => (x.Key.GetFullLabel(), x.Value.Value, x.Value.Type.RealType))
-                    .Concat(new (string, object, Type)[]
-                        {
-                            (
-                                "buffer[vars]",
-                                (object)Enumerable.Range(0, VarCounter)
-                                    .Select(x => (object)null)
-                                    .ToArray(),
-                                TeuchiUdonType.Buffer.RealType
-                            ),
-                            (
-                                "buffer[literals]",
-                                (object)Enumerable.Range(0, LiteralCounter)
-                                    .Select(x => Literals.Values
-                                        .FirstOrDefault(y => y.Index == x)?.Value
-                                    )
-                                    .ToArray(),
-                                TeuchiUdonType.Buffer.RealType
-                            ),
-                            (
-                                "buffer[returns]",
-                                (object)Enumerable.Range(0, FuncCounter)
-                                    .Select(x => (object)null)
-                                    .ToArray(),
-                                TeuchiUdonType.Buffer.RealType
-                            ),
-                            (
-                                "buffer[indirects]",
-                                (object)Enumerable.Range(0, IndirectCounter)
-                                    .Select(x => Indirects
-                                        .Select(y => new { k = y.Key, v = (object)y.Value })
-                                        .FirstOrDefault(y => y.k.Index == x)?.v
-                                    )
-                                    .ToArray(),
-                                TeuchiUdonType.Buffer.RealType
-                            ),
-                            (
-                                "buffer[tmpstack]",
-                                (object)new object[100000],
-                                TeuchiUdonType.Buffer.RealType
-                            )
-                        }
-                    );
-            }
-            else
-            {
-                return new (string, object, Type)[0];
-            }
+            return
+                ExportedVars           .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Value.Type       .RealType))
+                .Concat(Literals.Values.Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
+                .Concat(Indirects      .Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
         }
     }
 }

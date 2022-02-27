@@ -9,29 +9,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public static class TeuchiUdonCompilerRunner
     {
-        [MenuItem("Tools/Run Compile (Simple)")]
-        public static void RunCompile_Simple()
+        [MenuItem("Tools/Run Compile")]
+        public static void Tool_RunCompile()
         {
-            RunCompile<TeuchiUdonStrategySimple>("Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi");
-        }
-
-        [MenuItem("Tools/Run Compile (Buffered)")]
-        public static void RunCompile_Buffered()
-        {
-            RunCompile<TeuchiUdonStrategyBuffered>("Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi");
-        }
-
-        private static void RunCompile<T>(string srcPath) where T : TeuchiUdonStrategy, new()
-        {
-            var (output, error) = CompileFromPath<T>(srcPath);
+            var (output, error) = CompileFromPath("Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi");
             Debug.Log(output);
             Debug.Log(error);
         }
 
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset (Simple)")]
-        public static void SaveTeuchiUdonAsset_Simple()
+        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset")]
+        public static void Tool_SaveTeuchiUdonAsset()
         {
-            SaveTeuchiUdonAsset<TeuchiUdonStrategySimple>
+            SaveTeuchiUdonAsset
             (
                 "Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi",
                 "Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonAsm.asset"
@@ -39,20 +28,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Debug.Log("save succeeded");
         }
 
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset (Buffered)")]
-        public static void SaveTeuchiUdonAsset_Buffered()
+        public static TeuchiUdonProgramAsset SaveTeuchiUdonAsset(string srcPath, string assetPath)
         {
-            SaveTeuchiUdonAsset<TeuchiUdonStrategyBuffered>
-            (
-                "Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi",
-                "Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonAsm.asset"
-            );
-            Debug.Log("save succeeded");
-        }
-
-        public static TeuchiUdonProgramAsset SaveTeuchiUdonAsset<T>(string srcPath, string assetPath) where T : TeuchiUdonStrategy, new()
-        {
-            var (output, error) = CompileFromPath<T>(srcPath);
+            var (output, error) = CompileFromPath(srcPath);
             if (!string.IsNullOrEmpty(error))
             {
                 throw new InvalidOperationException(error);
@@ -77,25 +55,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return program;
         }
 
-        public static (string output, string error) CompileFromPath<T>(string path) where T : TeuchiUdonStrategy, new()
+        public static (string output, string error) CompileFromPath(string path)
         {
             var script = AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>(path);
             if (script == null)
             {
                 return ("", "asset file not found");
             }
-            return CompileFromString<T>(script.text);
+            return CompileFromString(script.text);
         }
 
-        public static (string output, string error) CompileFromString<T>(string input) where T : TeuchiUdonStrategy, new()
+        public static (string output, string error) CompileFromString(string input)
         {
             using (var inputReader = new StringReader(input))
             {
-                return CompileFromReader<T>(inputReader);
+                return CompileFromReader(inputReader);
             }
         }
 
-        public static (string output, string error) CompileFromReader<T>(TextReader inputReader) where T : TeuchiUdonStrategy, new()
+        public static (string output, string error) CompileFromReader(TextReader inputReader)
         {
             using (var outputWriter = new StringWriter())
             using (var errorWriter  = new StringWriter())
@@ -106,12 +84,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
                 var listener    = new TeuchiUdonListener(parser);
 
-                TeuchiUdonStrategy.SetStrategy<T>();
-
                 TeuchiUdonLogicalErrorHandler.Instance.Init(parser);
                 TeuchiUdonTables             .Instance.Init();
                 TeuchiUdonQualifierStack     .Instance.Init();
                 TeuchiUdonAssemblyWriter     .Instance.Init();
+                TeuchiUdonStrategy           .Instance.Init();
 
                 try
                 {

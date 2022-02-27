@@ -4,18 +4,79 @@ using System.Linq;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public abstract class TeuchiUdonStrategy
+    public class TeuchiUdonStrategy
     {
-        public static TeuchiUdonStrategy Instance { get; private set; }
+        public static TeuchiUdonStrategy Instance { get; } = new TeuchiUdonStrategy();
 
-        public static void SetStrategy<T>() where T : TeuchiUdonStrategy, new()
+        protected TeuchiUdonStrategy()
         {
-            Instance = new T();
         }
 
-        public abstract IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables();
-        public abstract IEnumerable<TeuchiUdonAssembly> GetCodePartFromTables();
-        public abstract IEnumerable<TeuchiUdonAssembly> GetCodePartFromResult(TeuchiUdonParserResult result);
+        public void Init()
+        {
+        }
+
+        public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
+        {
+            return
+                TeuchiUdonTables.Instance.ExportedVars.Keys.SelectMany(x => x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_EXPORT_DATA(new TextLabel(x.Name))
+                    })
+                .Concat(TeuchiUdonTables.Instance.SyncedVars.SelectMany(x => x.Key.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_SYNC_DATA(new TextLabel(x.Key.Name), TeuchiUdonAssemblySyncMode.Create(x.Value))
+                    }))
+                .Concat(TeuchiUdonTables.Instance.Vars.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    }))
+                .Concat(TeuchiUdonTables.Instance.OutValues.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    }))
+                .Concat(TeuchiUdonTables.Instance.Literals.Values.Except(TeuchiUdonTables.Instance.ExportedVars.Values).SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                    }))
+                .Concat(TeuchiUdonTables.Instance.This.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_THIS())
+                    }))
+                .Concat(TeuchiUdonTables.Instance.Funcs.Values.SelectMany(x =>
+                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    new TeuchiUdonAssembly[0] :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(x.Return, x.Type, new AssemblyLiteral_NULL())
+                    }));
+        }
+
+        public IEnumerable<TeuchiUdonAssembly> GetCodePartFromTables()
+        {
+            return VisitTables();
+        }
+
+        public IEnumerable<TeuchiUdonAssembly> GetCodePartFromResult(TeuchiUdonParserResult result)
+        {
+            return VisitResult(result);
+        }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTables()
         {
@@ -27,20 +88,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         new Assembly_LABEL (x),
                         new Assembly_INDENT(1),
                     }
-                    .Concat(Retain(x.Vars.Count(y => !y.Type.LogicalTypeEquals(TeuchiUdonType.Unit)) + 1, out var holder))
-                    .Concat(Expect(holder, holder.Count))
-                    .Concat(Release(holder))
-                    .Concat(Set(new AssemblyAddress_DATA_LABEL(x.Return)))
+                    .Concat(new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x.Return)),
+                        new Assembly_COPY()
+                    })
                     .Concat(x.Vars.Reverse().SelectMany(y =>
                         y.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                         new TeuchiUdonAssembly[0] :
-                        Set(new AssemblyAddress_DATA_LABEL(y))
+                        new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(y)),
+                            new Assembly_COPY()
+                        }
                     ))
                     .Concat(VisitResult(x.Expr))
-                    .Concat(Prepare(new AssemblyAddress_DATA_LABEL(x.Return), out var address))
                     .Concat(new TeuchiUdonAssembly[]
                         {
-                            new Assembly_JUMP_INDIRECT(address),
+                            new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(x.Return)),
                             new Assembly_INDENT(-1)
                         }
                     )
@@ -129,11 +194,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     .Concat(x.Value.SelectMany(y => VisitResult(y)))
                     .Concat(TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)) ?
-                        Get(new AssemblyAddress_INDIRECT_LABEL(new TextLabel($"topcall[{x.Key}]")))
-                        .Concat(Prepare(new AssemblyAddress_DATA_LABEL(TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)]), out var address))
+                        new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(new TextLabel($"topcall[{x.Key}]")))
+                        }
                         .Concat(new TeuchiUdonAssembly[]
                             {
-                                new Assembly_JUMP_INDIRECT(address),
+                                new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)])),
                                 new Assembly_LABEL(new TextLabel($"topcall[{x.Key}]"))
                             }
                         ) :
@@ -154,13 +221,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitExpr(result.VarBind.Expr)
-                .Concat(Retain(result.VarBind.Vars.Count(x => !x.Type.LogicalTypeEquals(TeuchiUdonType.Unit)), out var holder))
-                .Concat(Expect(holder, holder.Count))
-                .Concat(Release(holder))
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
-                    Set(new AssemblyAddress_DATA_LABEL(x))
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                        new Assembly_COPY()
+                    }
                 ));
         }
 
@@ -208,10 +276,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitExpr(result.Value)
-                .Concat(Prepare(new AssemblyAddress_DATA_LABEL(result.Label), out var address))
                 .Concat(new TeuchiUdonAssembly[]
                 {
-                    new Assembly_JUMP_INDIRECT(address)
+                    new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(result.Label))
                 });
         }
 
@@ -219,13 +286,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitExpr(result.VarBind.Expr)
-                .Concat(Retain(result.VarBind.Vars.Count(x => !x.Type.LogicalTypeEquals(TeuchiUdonType.Unit)), out var holder))
-                .Concat(Expect(holder, holder.Count))
-                .Concat(Release(holder))
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
-                    Set(new AssemblyAddress_DATA_LABEL(x))
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                        new Assembly_COPY()
+                    }
                 ));
         }
 
@@ -237,7 +305,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 (
                     result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                         new TeuchiUdonAssembly[0] :
-                        Pop()
+                        new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_POP()
+                        }
                 );
         }
 
@@ -271,7 +342,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 result.Literal.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                 new TeuchiUdonAssembly[0] :
-                Get(new AssemblyAddress_DATA_LABEL(result.Literal));
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literal))
+                };
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitThis(ThisResult result)
@@ -279,7 +353,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 result.This.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                 new TeuchiUdonAssembly[0] :
-                Get(new AssemblyAddress_DATA_LABEL(result.This));
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.This))
+                };
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalVar(EvalVarResult result)
@@ -287,7 +364,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 result.Var.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                 new TeuchiUdonAssembly[0] :
-                Get(new AssemblyAddress_DATA_LABEL(result.Var));
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Var))
+                };
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalType(EvalTypeResult result)
@@ -314,16 +394,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitExpr(result.Expr)
-                .Concat(Retain(1, out var holder))
-                .Concat(Expect(holder, 1))
-                .Concat(Release(holder))
-                .Concat(Set((new AssemblyAddress_DATA_LABEL(result.OutValue))))
-                .Concat(Prepare(new AssemblyAddress_DATA_LABEL(result.OutValue), out var address))
-                .Concat(result.Args.SelectMany(x => VisitExpr(x)))
-                .Concat(Get(new AssemblyAddress_INDIRECT_LABEL(result.EvalFunc)))
                 .Concat(new TeuchiUdonAssembly[]
                 {
-                    new Assembly_JUMP_INDIRECT(address),
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValue)),
+                    new Assembly_COPY()
+                })
+                .Concat(result.Args.SelectMany(x => VisitExpr(x)))
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(result.EvalFunc)),
+                    new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(result.OutValue)),
                     new Assembly_LABEL(result.EvalFunc)
                 });
         }
@@ -331,34 +411,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalMethod(EvalMethodResult result)
         {
             return
-                Retain(result.Args.Length, out var holder)
-                .Concat
+                result.Method.SortAlongParams
                 (
-                    this is TeuchiUdonStrategySimple ?
-                    result.Method.SortAlongParams
-                    (
-                        result.Args.Select(x => VisitExpr(x).Concat(Expect(holder, 1))).ToArray(),
-                        result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
-                    )
-                    .SelectMany(x => x)
-                    :
-                    result.Args.SelectMany(x => VisitExpr(x))
-                    .Concat
-                    (
-                        result.Method.SortAlongParams
-                        (
-                            result.Args.Select(_ => Expect(holder, 1)).ToArray(),
-                            result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
-                        )
-                        .SelectMany(x => x)
-                    )
+                    result.Args.Select(x => VisitExpr(x)),
+                    result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                 )
-                .Concat(Release(holder))
+                .SelectMany(x => x)
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(result.Method)
                 })
-                .Concat(result.OutValues.SelectMany(x => Get(new AssemblyAddress_DATA_LABEL(x))));
+                .Concat(result.OutValues.SelectMany(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalVarCandidate(EvalVarCandidateResult result)
@@ -383,8 +446,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             {
                                 VisitExpr(result.Expr).ToArray()
                             },
-                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                         );
                 case "~":
                     return
@@ -395,10 +457,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             new TeuchiUdonAssembly[][]
                             {
                                 VisitExpr(result.Expr).ToArray(),
-                                Get(new AssemblyAddress_DATA_LABEL(result.Literals[0])).ToArray()
+                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) }
                             },
-                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                         );
                 case "++":
                 case "--":
@@ -410,11 +471,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             new TeuchiUdonAssembly[][]
                             {
                                 VisitExpr(result.Expr).ToArray(),
-                                Get(new AssemblyAddress_DATA_LABEL(result.Literals[0])).ToArray()
+                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) }
                             },
                             result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.Expr.Inner.LeftValues.Select(x => Set(new AssemblyAddress_DATA_LABEL(x))),
-                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                            result.Expr.Inner.LeftValues.Select(x => new TeuchiUdonAssembly[]
+                                {
+                                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                                    new Assembly_COPY()
+                                }
+                            )
                         );
                 default:
                     return new TeuchiUdonAssembly[0];
@@ -425,39 +490,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             TeuchiUdonMethod method,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> retValues
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues
         )
         {
             return
-                Retain(inValues.Count(), out var holder)
-                .Concat
-                (
-                    this is TeuchiUdonStrategySimple ?
-                    method.SortAlongParams
-                    (
-                        inValues.Select(x => x.Concat(Expect(holder, 1))).ToArray(),
-                        outValues
-                    )
-                    .SelectMany(x => x)
-                    :
-                    inValues.SelectMany(x => x)
-                    .Concat
-                    (
-                        method.SortAlongParams
-                        (
-                            inValues.Select(_ => Expect(holder, 1)).ToArray(),
-                            outValues
-                        )
-                        .SelectMany(x => x)
-                    )
-                )
-                .Concat(Release(holder))
+                method.SortAlongParams(inValues, outValues)
+                .SelectMany(x => x)
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(method)
                 })
-                .Concat(retValues.SelectMany(x => x));
+                .Concat(outValues.SelectMany(x => x));
         }
 
         private IEnumerable<TeuchiUdonAssembly> EvalPrefixAssignMethod
@@ -465,41 +508,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonMethod method,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> setValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> retValues
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> setValues
         )
         {
             return
-                Retain(inValues.Count(), out var holder)
-                .Concat
+                method.SortAlongParams
                 (
-                    this is TeuchiUdonStrategySimple ?
-                    method.SortAlongParams
-                    (
-                        inValues.Select(x => x.Concat(Expect(holder, 1))).ToArray(),
-                        outValues
-                    )
-                    .SelectMany(x => x)
-                    :
-                    inValues.SelectMany(x => x)
-                    .Concat
-                    (
-                        method.SortAlongParams
-                        (
-                            inValues.Select(_ => Expect(holder, 1)).ToArray(),
-                            outValues
-                        )
-                        .SelectMany(x => x)
-                    )
+                    inValues,
+                    outValues
                 )
-                .Concat(Release(holder))
+                .SelectMany(x => x)
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(method)
                 })
                 .Concat(outValues.SelectMany(x => x))
                 .Concat(setValues.SelectMany(x => x))
-                .Concat(retValues.SelectMany(x => x));
+                .Concat(outValues.SelectMany(x => x));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitPostfix(PostfixResult result)
@@ -519,12 +544,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             },
                             new TeuchiUdonAssembly[][]
                             {
-                                Get(new AssemblyAddress_DATA_LABEL(result.Literals[0])).ToArray()
+                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) }
                             },
                             result.TmpValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
                             result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.Expr.Inner.LeftValues.Select(x => Set(new AssemblyAddress_DATA_LABEL(x))),
-                            result.TmpValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                            result.Expr.Inner.LeftValues.Select(x => new TeuchiUdonAssembly[]
+                                {
+                                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                                    new Assembly_COPY()
+                                }
+                            )
                         );
                 default:
                     return new TeuchiUdonAssembly[0];
@@ -538,51 +567,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> argValues,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> tmpValues,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> setValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> retValues
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> setValues
         )
         {
             return
                 inValues
-                    .Zip(tmpValues, (i, t) => (i, t))
-                    .SelectMany(x =>
-                        x.i
-                        .Concat(Retain(1, out var h))
-                        .Concat(Expect(h, 1))
-                        .Concat(Release(h))
-                        .Concat(x.t)
-                        .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
-                    )
-                .Concat(Retain(argValues.Count(), out var holder))
-                .Concat
-                (
-                    this is TeuchiUdonStrategySimple ?
-                    method.SortAlongParams
-                    (
-                        tmpValues.Concat(argValues.Select(x => x.Concat(Expect(holder, 1))).ToArray()),
-                        outValues
-                    )
-                    .SelectMany(x => x)
-                    :
-                    argValues.SelectMany(x => x)
-                    .Concat
-                    (
-                        method.SortAlongParams
-                        (
-                            tmpValues.Concat(argValues.Select(_ => Expect(holder, 1)).ToArray()),
-                            outValues
-                        )
-                        .SelectMany(x => x)
-                    )
-                )
-                .Concat(Release(holder))
+                .Zip(tmpValues, (i, t) => (i, t))
+                .SelectMany(x => x.i.Concat(x.t).Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() }))
+                .Concat(method.SortAlongParams(tmpValues.Concat(argValues), outValues).SelectMany(x => x))
                 .Concat(new TeuchiUdonAssembly[]
                     {
                         new Assembly_EXTERN(method)
                     })
                 .Concat(outValues.SelectMany(x => x))
                 .Concat(setValues.SelectMany(x => x))
-                .Concat(retValues.SelectMany(x => x));
+                .Concat(tmpValues.SelectMany(x => x));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitInfix(InfixResult result)
@@ -616,14 +615,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                                 VisitExpr(result.Expr1).ToArray(),
                                 VisitExpr(result.Expr2).ToArray()
                             },
-                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                         );
                 case "==":
                 case "!=":
                     return
                         result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        result.Methods.Length == 0 ? Get(new AssemblyAddress_DATA_LABEL(result.Literals[0])) :
+                        result.Methods.Length == 0 ? new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) } :
                         EvalInfixMethod
                         (
                             result.Methods[0],
@@ -632,8 +630,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                                 VisitExpr(result.Expr1).ToArray(),
                                 VisitExpr(result.Expr2).ToArray()
                             },
-                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.OutValuess[0].Select(x => Get(new AssemblyAddress_DATA_LABEL(x)))
+                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                         );
                 default:
                     return new TeuchiUdonAssembly[0];
@@ -644,59 +641,41 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             TeuchiUdonMethod method,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> retValues
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues
         )
         {
             return
-                Retain(inValues.Count(), out var holder)
-                .Concat
-                (
-                    this is TeuchiUdonStrategySimple ?
-                    method.SortAlongParams
-                    (
-                        inValues.Select(x => x.Concat(Expect(holder, 1))).ToArray(),
-                        outValues
-                    )
-                    .SelectMany(x => x)
-                    :
-                    inValues.SelectMany(x => x)
-                    .Concat
-                    (
-                        method.SortAlongParams
-                        (
-                            inValues.Select(_ => Expect(holder, 1)).ToArray(),
-                            outValues
-                        )
-                        .SelectMany(x => x)
-                    )
-                )
-                .Concat(Release(holder))
+                method.SortAlongParams(inValues, outValues)
+                .SelectMany(x => x)
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_EXTERN(method)
                 })
-                .Concat(retValues.SelectMany(x => x));
+                .Concat(outValues.SelectMany(x => x));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLetInBind(LetInBindResult result)
         {
             return
                 VisitExpr(result.VarBind.Expr)
-                .Concat(Retain(result.VarBind.Vars.Count(x => !x.Type.LogicalTypeEquals(TeuchiUdonType.Unit)), out var holder))
-                .Concat(Expect(holder, holder.Count))
-                .Concat(Release(holder))
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
-                    Set(new AssemblyAddress_DATA_LABEL(x))
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
+                        new Assembly_COPY()
+                    }
                 ))
                 .Concat(VisitExpr(result.Expr));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitFunc(FuncResult result)
         {
-            return Get(new AssemblyAddress_INDIRECT_LABEL(result.Func));
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(result.Func))
+            };
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitMethod(MethodResult result)
@@ -709,20 +688,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonAssembly[0];
         }
 
-        protected abstract IEnumerable<TeuchiUdonAssembly> Pop();
-        protected abstract IEnumerable<TeuchiUdonAssembly> Get(TeuchiUdonAssemblyDataAddress address);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Set(TeuchiUdonAssemblyDataAddress address);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Prepare(TeuchiUdonAssemblyDataAddress address, out TeuchiUdonAssemblyDataAddress prepared);
-
-        protected abstract IEnumerable<TeuchiUdonAssembly> Retain(int count, out IExpectHolder holder);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Expect(IExpectHolder holder, int count);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Release(IExpectHolder holder);
-
-        protected interface IExpectHolder
+        public IEnumerable<TeuchiUdonAssembly> DeclIndirectAddresses(IEnumerable<(TeuchiUdonIndirect indirect, uint address)> pairs)
         {
-            int Count { get; }
+            return pairs.SelectMany(x => new TeuchiUdonAssembly[]
+            {
+                new Assembly_DECL_DATA(x.indirect, TeuchiUdonType.UInt, new AssemblyLiteral_NULL())
+            });
         }
-
-        public abstract IEnumerable<TeuchiUdonAssembly> DeclIndirectAddresses(IEnumerable<(TeuchiUdonIndirect indirect, uint address)> pairs);
     }
 }

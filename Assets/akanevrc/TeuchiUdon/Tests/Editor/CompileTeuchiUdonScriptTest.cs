@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UnityEditor;
 using akanevrc.TeuchiUdon.Editor;
 using akanevrc.TeuchiUdon.Editor.Compiler;
@@ -12,28 +11,17 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
     {
         public readonly string testName;
         public readonly string srcAssetPath;
-        public readonly string[] binAssetPaths;
+        public readonly string binAssetPath;
 
         public CompileTeuchiUdonScriptTest(string testName)
         {
             this.testName = testName;
-            srcAssetPath  = TestUtil.GetSrcAssetPath (testName);
-            binAssetPaths = TestUtil.GetBinAssetPaths(testName).ToArray();
+            srcAssetPath  = TestUtil.GetSrcAssetPath(testName);
+            binAssetPath  = TestUtil.GetBinAssetPath(testName);
         }
 
         [Test]
-        public void TeuchiUdonCodeCompiledSimple()
-        {
-            TeuchiUdonCodeCompiled<TeuchiUdonStrategySimple>();
-        }
-
-        [Test]
-        public void TeuchiUdonCodeCompiledBuffered()
-        {
-            TeuchiUdonCodeCompiled<TeuchiUdonStrategyBuffered>();
-        }
-
-        private void TeuchiUdonCodeCompiled<T>() where T : TeuchiUdonStrategy, new()
+        public void TeuchiUdonCodeCompiled()
         {
             var script  = AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>(srcAssetPath);
             var text    = script.text;
@@ -46,19 +34,19 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
             var program = (TeuchiUdonProgramAsset)null;
             if (expected == "")
             {
-                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, TestUtil.GetAssetPath<T>(binAssetPaths));
+                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset(srcAssetPath, binAssetPath);
             }
             else if (expected == "error")
             {
                 Assert.That
                 (
-                    () => TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, TestUtil.GetAssetPath<T>(binAssetPaths)),
+                    () => TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset(srcAssetPath, binAssetPath),
                     Throws.InvalidOperationException
                 );
             }
             else
             {
-                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset<T>(srcAssetPath, TestUtil.GetAssetPath<T>(binAssetPaths));
+                program = TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset(srcAssetPath, binAssetPath);
             }
         }
     }
