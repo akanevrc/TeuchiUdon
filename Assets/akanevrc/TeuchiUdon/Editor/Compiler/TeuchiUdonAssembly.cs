@@ -528,12 +528,4 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return $"{Label.GetFullLabel()}:";
         }
     }
-
-    public class Assembly_DUMMY : Assembly_UnaryDataAddress
-    {
-        public Assembly_DUMMY(TeuchiUdonAssemblyDataAddress address)
-            : base(TeuchiUdonAssemblyInstruction.DUMMY, 0, address)
-        {
-        }
-    }
 }

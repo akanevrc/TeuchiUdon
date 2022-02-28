@@ -79,14 +79,20 @@ namespace akanevrc.TeuchiUdon.Tests
             {
                 Assert.That(testObject, Is.Null);
             }
+            else if (expected == "!")
+            {
+                LogAssert.NoUnexpectedReceived();
+            }
             else if (expected.StartsWith("/") && expected.EndsWith("/"))
             {
                 var pattern = new Regex(expected.Substring(1, expected.Length - 2));
                 LogAssert.Expect(LogType.Log, pattern);
+                LogAssert.NoUnexpectedReceived();
             }
             else
             {
                 LogAssert.Expect(LogType.Log, expected);
+                LogAssert.NoUnexpectedReceived();
             }
         }
     }

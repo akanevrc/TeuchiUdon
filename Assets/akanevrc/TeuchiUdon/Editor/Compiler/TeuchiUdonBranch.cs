@@ -2,25 +2,23 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonEvalFunc : IIndexedLabel, IEquatable<TeuchiUdonEvalFunc>
+    public class TeuchiUdonBranch : IIndexedLabel, IEquatable<TeuchiUdonBranch>
     {
         public int Index { get; }
-        public TeuchiUdonQualifier Qualifier { get; }
 
-        public TeuchiUdonEvalFunc(int index, TeuchiUdonQualifier qualifier)
+        public TeuchiUdonBranch(int index)
         {
-            Index     = index;
-            Qualifier = qualifier;
+            Index = index;
         }
 
-        public bool Equals(TeuchiUdonEvalFunc obj)
+        public bool Equals(TeuchiUdonBranch obj)
         {
             return !object.ReferenceEquals(obj, null) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is TeuchiUdonEvalFunc evalFunc ? Equals(evalFunc) : base.Equals(obj);
+            return obj is TeuchiUdonBranch branch ? Equals(branch) : base.Equals(obj);
         }
 
         public override int GetHashCode()
@@ -28,7 +26,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Index.GetHashCode();
         }
 
-        public static bool operator ==(TeuchiUdonEvalFunc obj1, TeuchiUdonEvalFunc obj2)
+        public static bool operator ==(TeuchiUdonBranch obj1, TeuchiUdonBranch obj2)
         {
             return
                  object.ReferenceEquals(obj1, null) &&
@@ -37,19 +35,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
-        public static bool operator !=(TeuchiUdonEvalFunc obj1, TeuchiUdonEvalFunc obj2)
+        public static bool operator !=(TeuchiUdonBranch obj1, TeuchiUdonBranch obj2)
         {
             return !(obj1 == obj2);
         }
 
         public string GetLabel()
         {
-            return $"evalfunc[{Index}]";
+            return $"branch[{Index}]";
         }
 
         public string GetFullLabel()
         {
-            return $"evalfunc[{Qualifier.Qualify(">", Index.ToString())}]";
+            return $"branch[{Index}]";
         }
     }
 }

@@ -74,7 +74,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonLiteral CreateValue(int index, string value, TeuchiUdonType type)
         {
             var result = (object)null;
-            if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            if (type.LogicalTypeEquals(TeuchiUdonType.Bottom))
+            {
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
             {
                 result = Convert.ToBoolean(value);
             }

@@ -116,7 +116,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private void WriteOne(TextWriter writer, TeuchiUdonAssembly assembly, ref int indent)
         {
-            if (assembly is Assembly_NO_CODE || assembly is Assembly_DUMMY) return;
+            if (assembly is Assembly_NO_CODE) return;
 
             if (assembly is Assembly_NEW_LINE)
             {

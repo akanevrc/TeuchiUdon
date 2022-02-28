@@ -199,9 +199,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class JumpResult : StatementResult
     {
         public ExprResult Value { get; }
-        public IIndexedLabel Label { get; }
+        public ITeuchiUdonLabel Label { get; }
 
-        public JumpResult(IToken token, ExprResult value, IIndexedLabel label)
+        public JumpResult(IToken token, ExprResult value, ITeuchiUdonLabel label)
             : base(token)
         {
             Value = value;
@@ -483,6 +483,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonMethod[] Methods { get; protected set; }
         public TeuchiUdonOutValue[][] OutValuess { get; protected set; }
         public TeuchiUdonLiteral[] Literals { get; protected set; }
+        public ITeuchiUdonLabel[] Labels { get; protected set; }
 
         public OpResult(IToken token, TeuchiUdonType type, string op)
             : base(token, type)
@@ -493,12 +494,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
         protected abstract IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess();
         protected abstract IEnumerable<TeuchiUdonLiteral> GetLiterals();
+        protected abstract IEnumerable<ITeuchiUdonLabel> GetLabels();
 
         protected void Init()
         {
             Methods    = GetMethods   ().ToArray();
             OutValuess = GetOutValuess().Select(x => x.ToArray()).ToArray();
             Literals   = GetLiterals  ().ToArray();
+            Labels     = GetLabels    ().ToArray();
         }
 
         protected TeuchiUdonType GetTypeFromLogicalName(string logicalName, bool isTypeType)
@@ -590,8 +593,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             switch (Op)
             {
-                case "+":
-                    return new TeuchiUdonOutValue[0][];
                 case "-":
                 case "!":
                 case "~":
@@ -607,10 +608,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             switch (Op)
             {
-                case "+":
-                case "-":
-                case "!":
-                    return new TeuchiUdonLiteral[0];
                 case "~":
                     if (Methods[0] == null)
                     {
@@ -635,6 +632,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 default:
                     return new TeuchiUdonLiteral[0];
             }
+        }
+
+        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        {
+            return new ITeuchiUdonLabel[0];
         }
     }
 
@@ -695,6 +697,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 default:
                     return new TeuchiUdonLiteral[0];
             }
+        }
+
+        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        {
+            return new ITeuchiUdonLabel[0];
         }
     }
 
@@ -813,6 +820,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_LogicalXor" }, expr1Type, expr2Type) };
                 case "|":
                     return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_LogicalOr"  }, expr1Type, expr2Type) };
+                case "&&":
+                    return new TeuchiUdonMethod[0];
+                case "||":
+                    return new TeuchiUdonMethod[] { GetMethodFromName(TeuchiUdonType.Bool.LogicalName, true, new string[] { "op_UnaryNegation" }, expr1Type) };
+                case "??":
+                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
+                    {
+                        return new TeuchiUdonMethod[0];
+                    }
+                    else
+                    {
+                        return new TeuchiUdonMethod[] { GetMethodFromName(expr1Type, true, new string[] { "op_Equality" }, expr1Type, expr1Type) };
+                    }
                 default:
                     return new TeuchiUdonMethod[0];
             }
@@ -822,9 +842,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             switch (Op)
             {
-                case ".":
-                case "?.":
-                    return new TeuchiUdonOutValue[0][];
                 case "+":
                 case "-":
                 case "*":
@@ -841,7 +858,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "&":
                 case "^":
                 case "|":
+                case "&&":
+                case "||":
                     return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
+                case "??":
+                    return
+                        Methods
+                        .Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length))
+                        .Concat(new TeuchiUdonOutValue[][] { TeuchiUdonTables.Instance.GetOutValues(1).ToArray() });
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -851,23 +875,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             switch (Op)
             {
-                case ".":
-                case "?.":
-                case "+":
-                case "-":
-                case "*":
-                case "/":
-                case "%":
-                case "<<":
-                case ">>":
-                case "<":
-                case ">":
-                case "<=":
-                case ">=":
-                case "&":
-                case "^":
-                case "|":
-                    return new TeuchiUdonLiteral[0];
                 case "==":
                     if (Methods.Length == 1 && Methods[0] == null)
                     {
@@ -888,8 +895,50 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var index = TeuchiUdonTables.Instance.GetLiteralIndex();
                         return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
                     }
+                case "&&":
+                    {
+                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
+                    }
+                case "||":
+                    if (Methods.Length == 1 && Methods[0] == null)
+                    {
+                        return new TeuchiUdonLiteral[] { null };
+                    }
+                    else
+                    {
+                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "true", TeuchiUdonType.Bool) };
+                    }
+                case "??":
+                    if (Methods.Length == 1 && Methods[0] == null)
+                    {
+                        return new TeuchiUdonLiteral[] { null };
+                    }
+                    else
+                    {
+                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "null", TeuchiUdonType.Bottom) };
+                    }
                 default:
                     return new TeuchiUdonLiteral[0];
+            }
+        }
+
+        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        {
+            switch (Op)
+            {
+                case "&&":
+                case "||":
+                case "??":
+                {
+                    var index1 = TeuchiUdonTables.Instance.GetBranchIndex();
+                    var index2 = TeuchiUdonTables.Instance.GetBranchIndex();
+                    return new ITeuchiUdonLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
+                }
+                default:
+                    return new ITeuchiUdonLabel[0];
             }
         }
     }

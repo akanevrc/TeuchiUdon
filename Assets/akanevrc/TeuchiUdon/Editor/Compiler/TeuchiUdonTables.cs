@@ -25,9 +25,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
 
-        public Dictionary<string, string> UnaryOps { get; private set; }
-        public Dictionary<string, string> BinaryOps { get; private set; }
-
         public int VarCounter { get; private set; }
         public int OutValueCounter { get; private set; }
         public int LiteralCounter { get; private set; }
@@ -36,6 +33,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int BlockCounter { get; private set; }
         public int EvalFuncCounter { get; private set; }
         public int LetInCounter { get; private set; }
+        public int BranchCounter { get; private set; }
         public int IndirectCounter { get; private set; }
 
         private bool IsInitialized { get; set; } = false;
@@ -53,14 +51,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 LogicalTypes  = new Dictionary<TeuchiUdonType     , TeuchiUdonType>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
                 Methods       = new Dictionary<TeuchiUdonMethod   , TeuchiUdonMethod>();
                 TypeToMethods = new Dictionary<TeuchiUdonType     , Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
-                UnaryOps      = new Dictionary<string             , string>();
-                BinaryOps     = new Dictionary<string             , string>();
 
                 InitInternalTypes();
                 InitExternalTypes();
                 InitQualifiers();
                 InitMethods();
-                //InitOps();
 
                 IsInitialized = true;
             }
@@ -83,6 +78,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             BlockCounter    = 0;
             EvalFuncCounter = 0;
             LetInCounter    = 0;
+            BranchCounter   = 0;
             IndirectCounter = 0;
         }
 
@@ -266,37 +262,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Types[t];
         }
 
-        public void InitOps()
-        {
-            UnaryOps.Add("--", "op_Decrement");
-            UnaryOps.Add("++", "op_Increment");
-            UnaryOps.Add("-" , "op_UnaryMinus");
-            UnaryOps.Add("!" , "op_UnaryNegation");
-            UnaryOps.Add("+" , "op_UnaryPlus");
-
-            BinaryOps.Add("&&", "op_ConditionalAnd");
-            BinaryOps.Add("||", "op_ConditionalOr");
-            BinaryOps.Add("^^", "op_ConditionalXor");
-            BinaryOps.Add("+" , "op_Addition");
-            BinaryOps.Add("/" , "op_Division");
-            BinaryOps.Add("==", "op_Equality");
-            BinaryOps.Add(">=", "op_GreaterThanOrEqual");
-            BinaryOps.Add(">" , "op_GreaterThan");
-            BinaryOps.Add("!=", "op_Inequality");
-            BinaryOps.Add("<<", "op_LeftShift");
-            BinaryOps.Add("<=", "op_LessThanOrEqual");
-            BinaryOps.Add("<" , "op_LessThan");
-            BinaryOps.Add("&" , "op_LogicalAnd");
-            BinaryOps.Add("|" , "op_LogicalOr");
-            BinaryOps.Add("^" , "op_LogicalXor");
-            BinaryOps.Add("*" , "op_Multiplication");
-            BinaryOps.Add("*" , "op_Multiply");
-            BinaryOps.Add("%" , "op_Modulus");
-            BinaryOps.Add("%" , "op_Remainder");
-            BinaryOps.Add(">>", "op_RightShift");
-            BinaryOps.Add("-" , "op_Subtraction");
-        }
-
         public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(TeuchiUdonMethod query)
         {
             if (!TypeToMethods.ContainsKey(query.Type)) return new TeuchiUdonMethod[0];
@@ -395,6 +360,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int GetLetInIndex()
         {
             return LetInCounter++;
+        }
+
+        public int GetBranchIndex()
+        {
+            return BranchCounter++;
         }
 
         public int GetIndirectIndex()

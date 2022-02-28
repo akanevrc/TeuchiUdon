@@ -20,6 +20,8 @@ MonoBehaviour:
 
     str2:%SystemString,"ng"
 
+    jump:%SystemUInt32,0
+
     .data_end
 
     .code_start
@@ -46,6 +48,8 @@ MonoBehaviour:
     PUSH,str2
 
     EXTERN,"UnityEngineDebug.__Log__SystemObject__SystemVoid"
+
+    JUMP_IF_FALSE,0x0000004C
 
     JUMP,0xFFFFFFFC
 
