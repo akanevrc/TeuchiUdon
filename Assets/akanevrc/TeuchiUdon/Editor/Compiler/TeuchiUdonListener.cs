@@ -1109,12 +1109,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            var type       = expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type) ? expr1.Inner.Type : expr2.Inner.Type;
+            var infix      = new InfixResult(context.Start, type, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
         public override void ExitConditionalExpr([NotNull] ConditionalExprContext context)
         {
+            var exprs = context.expr().Select(x => x.result).ToArray();
+            if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
+
+            if
+            (
+                !exprs[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool) ||
+                !exprs[1].Inner.Type.IsAssignableFrom(exprs[2].Inner.Type) &&
+                !exprs[2].Inner.Type.IsAssignableFrom(exprs[1].Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
+
+            var type        = exprs[1].Inner.Type.IsAssignableFrom(exprs[2].Inner.Type) ? exprs[1].Inner.Type : exprs[2].Inner.Type;
+            var conditional = new ConditionalResult(context.Start, type, exprs[0], exprs[1], exprs[2]);
+            context.result  = new ExprResult(conditional.Token, conditional);
         }
 
         public override void ExitAssignExpr([NotNull] AssignExprContext context)

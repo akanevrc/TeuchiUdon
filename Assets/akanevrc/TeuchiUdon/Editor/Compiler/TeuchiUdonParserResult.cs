@@ -938,6 +938,28 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class ConditionalResult : TypedResult
+    {
+        public ExprResult Condition { get; }
+        public ExprResult Expr1 { get; }
+        public ExprResult Expr2 { get; }
+        public ITeuchiUdonLabel[] Labels { get; }
+
+        public ConditionalResult(IToken token, TeuchiUdonType type, ExprResult condition, ExprResult expr1, ExprResult expr2)
+            : base(token, type)
+        {
+            Condition = condition;
+            Expr1     = expr1;
+            Expr2     = expr2;
+
+            var index1 = TeuchiUdonTables.Instance.GetBranchIndex();
+            var index2 = TeuchiUdonTables.Instance.GetBranchIndex();
+            Labels     = new ITeuchiUdonLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
+        }
+
+        public override TeuchiUdonVar[] LeftValues { get; } = new TeuchiUdonVar[0];
+    }
+
     public class LetInBindResult : TypedResult
     {
         public TeuchiUdonLetIn LetIn { get; }

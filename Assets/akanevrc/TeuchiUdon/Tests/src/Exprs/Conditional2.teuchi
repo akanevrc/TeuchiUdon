@@ -1,0 +1,2 @@
+// 200
+UnityEngine.Debug.Log(false ? 100 : 200);

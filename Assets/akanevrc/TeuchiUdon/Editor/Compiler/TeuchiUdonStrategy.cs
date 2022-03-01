@@ -153,6 +153,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             else if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
             else if (result is PostfixResult          postfix         ) return VisitPostfix         (postfix);
             else if (result is InfixResult            infix           ) return VisitInfix           (infix);
+            else if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
             else if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
             else if (result is FuncResult             func            ) return VisitFunc            (func);
             else if (result is MethodResult           method          ) return VisitMethod          (method);
@@ -775,6 +776,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(label1)
                 .Concat(tmpValue)
                 .Concat(label2);
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitConditional(ConditionalResult result)
+        {
+            return
+                VisitExpr(result.Condition)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) })
+                .Concat(VisitExpr(result.Expr1))
+                .Concat(new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(result.Labels[1])),
+                        new Assembly_LABEL(result.Labels[0])
+                    })
+                .Concat(VisitExpr(result.Expr2))
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_LABEL(result.Labels[1]) });
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLetInBind(LetInBindResult result)
