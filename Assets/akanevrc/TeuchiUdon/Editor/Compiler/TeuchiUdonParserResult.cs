@@ -823,7 +823,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "&&":
                     return new TeuchiUdonMethod[0];
                 case "||":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(TeuchiUdonType.Bool.LogicalName, true, new string[] { "op_UnaryNegation" }, expr1Type) };
+                    return new TeuchiUdonMethod[0];
                 case "??":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
                     {
@@ -901,11 +901,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
                     }
                 case "||":
-                    if (Methods.Length == 1 && Methods[0] == null)
-                    {
-                        return new TeuchiUdonLiteral[] { null };
-                    }
-                    else
                     {
                         var index = TeuchiUdonTables.Instance.GetLiteralIndex();
                         return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "true", TeuchiUdonType.Bool) };

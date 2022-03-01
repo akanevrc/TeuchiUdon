@@ -650,13 +650,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         );
                 case "||":
                     return
-                        result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
                         EvalInfixConditionalOrMethod
                         (
-                            result.Methods[0],
                             VisitExpr(result.Expr1).ToArray(),
                             VisitExpr(result.Expr2).ToArray(),
-                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
                             new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
                             new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
                             new TeuchiUdonAssembly[] { new Assembly_JUMP         (new AssemblyAddress_CODE_LABEL(result.Labels[1])) },
@@ -725,10 +722,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalOrMethod
         (
-            TeuchiUdonMethod method,
             IEnumerable<TeuchiUdonAssembly> value1,
             IEnumerable<TeuchiUdonAssembly> value2,
-            IEnumerable<TeuchiUdonAssembly> outValue,
             IEnumerable<TeuchiUdonAssembly> literal,
             IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
             IEnumerable<TeuchiUdonAssembly> jump,
@@ -737,18 +732,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         )
         {
             return
-                method.SortAlongParams(new TeuchiUdonAssembly[][] { value1.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
-                .SelectMany(x => x)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(method)
-                })
-                .Concat(outValue)
+                value1
                 .Concat(jumpIfFalse)
-                .Concat(value2)
+                .Concat(literal)
                 .Concat(jump)
                 .Concat(label1)
-                .Concat(literal)
+                .Concat(value2)
                 .Concat(label2);
         }
 
