@@ -159,7 +159,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 identifiers
                 .Zip(Types  , (i, t) => (i, t))
                 .Zip(indices, (x, n) => (x.i, x.t, n))
-                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.i.Name, x.t)).ToArray();
+                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.i.Name, x.t, false)).ToArray();
             Identifiers = identifiers.ToArray();
             Qualifieds  = qualifieds .ToArray();
 
@@ -361,7 +361,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
-        public override TeuchiUdonVar[] LeftValues => new TeuchiUdonVar[] { Var };
+        public override TeuchiUdonVar[] LeftValues => Var.Mut ? new TeuchiUdonVar[] { Var } : new TeuchiUdonVar[0];
     }
 
     public class EvalTypeResult : TypedResult

@@ -37,6 +37,7 @@ IN        : 'in'       ;
 IS        : 'is'       ;
 LET       : 'let'      ;
 MODULE    : 'module'   ;
+MUT       : 'mut'      ;
 NAMEOF    : 'nameof'   ;
 NAMESPACE : 'namespace';
 NEW       : 'new'      ;

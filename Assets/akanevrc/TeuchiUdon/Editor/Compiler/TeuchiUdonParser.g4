@@ -44,7 +44,7 @@ exprAttr
 
 varBind
     returns [VarBindResult result, int tableIndex]
-    : varDecl[true] '=' expr
+    : 'mut'? varDecl[true] '=' expr
     ;
 
 varDecl[bool isActual]

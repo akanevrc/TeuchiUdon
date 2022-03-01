@@ -8,18 +8,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
         public TeuchiUdonType Type { get; }
+        public bool Mut { get; }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name)
-            : this(-1, qualifier, name, null)
+            : this(-1, qualifier, name, null, false)
         {
         }
 
-        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type)
+        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, bool mut)
         {
             Index     = index;
             Qualifier = qualifier;
             Name      = name;
             Type      = type;
+            Mut       = mut;
         }
 
         public bool Equals(TeuchiUdonVar obj)

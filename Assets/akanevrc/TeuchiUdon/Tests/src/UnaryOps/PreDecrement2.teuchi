@@ -1,4 +1,4 @@
 // 99
-x = 100;
+mut x = 100;
 --x;
 UnityEngine.Debug.Log(x);

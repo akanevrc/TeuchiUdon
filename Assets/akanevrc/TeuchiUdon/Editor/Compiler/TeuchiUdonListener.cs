@@ -269,6 +269,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             TeuchiUdonQualifierStack.Instance.Pop();
 
+            var mut   = context.MUT() != null;
             var index = context.tableIndex;
             var qual  = TeuchiUdonQualifierStack.Instance.Peek();
 
@@ -279,8 +280,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = expr.Inner.Type;
                 if (v.Type.IsAssignableFrom(t))
                 {
-                    
-                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type) };
+                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type, mut) };
                 }
                 else
                 {
@@ -298,7 +298,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         vars = varDecl.Vars
                             .Zip(ts, (v, t) => (v, t))
-                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type))
+                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type, mut))
                             .ToArray();
                     }
                     else
@@ -312,6 +312,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variables");
                     vars = new TeuchiUdonVar[0];
                 }
+            }
+
+            if (mut && vars.Any(x => x.Type.LogicalTypeNameEquals(TeuchiUdonType.Func)))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function variable cannot be mutable");
             }
 
             context.result = new VarBindResult(context.Start, index, qual, vars, varDecl, expr);
