@@ -19,11 +19,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Parser = parser;
         }
 
+        public override void EnterEveryRule([NotNull] ParserRuleContext context)
+        {
+            if (context is TopStatementContext || context is StatementContext)
+            {
+                TeuchiUdonOutValuePool.Instance.PushScope();
+            }
+        }
+
         public override void ExitEveryRule([NotNull] ParserRuleContext context)
         {
             if (context is TopStatementContext || context is StatementContext)
             {
-                TeuchiUdonTables.Instance.ResetOutValueIndex();
+                TeuchiUdonOutValuePool.Instance.PopScope();
             }
         }
 
@@ -33,12 +41,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             TeuchiUdonAssemblyWriter.Instance.PushDataPart
             (
-                TeuchiUdonStrategy.Instance.GetDataPartFromTables()
+                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromTables(),
+                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromOutValuePool()
             );
             TeuchiUdonAssemblyWriter.Instance.PushCodePart
             (
-                TeuchiUdonStrategy.Instance.GetCodePartFromTables(),
-                TeuchiUdonStrategy.Instance.GetCodePartFromResult(body == null ? (TeuchiUdonParserResult)new UnitResult(null) : (TeuchiUdonParserResult)body)
+                TeuchiUdonCompilerStrategy.Instance.GetCodePartFromTables(),
+                TeuchiUdonCompilerStrategy.Instance.GetCodePartFromResult(body == null ? (TeuchiUdonParserResult)new UnitResult(null) : (TeuchiUdonParserResult)body)
             );
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);

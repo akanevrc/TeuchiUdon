@@ -31,11 +31,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public void PushDataPart(params IEnumerable<TeuchiUdonAssembly>[] assembliess)
         {
-            if (assembliess.Length >= 1) DataPart.AddRange(assembliess[0]);
-            for (var i = 1; i < assembliess.Length; i++)
+            foreach (var asms in assembliess)
             {
-                if (assembliess[i - 1].Any()) DataPart.Add(new Assembly_NEW_LINE());
-                DataPart.AddRange(assembliess[i]);
+                DataPart.AddRange(asms);
             }
         }
 
@@ -77,7 +75,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                 }
             }
-            PushDataPart(TeuchiUdonStrategy.Instance.DeclIndirectAddresses(TeuchiUdonTables.Instance.Indirects.Select(x => (x.Key, x.Value))));
+            PushDataPart(TeuchiUdonCompilerStrategy.Instance.DeclIndirectAddresses(TeuchiUdonTables.Instance.Indirects.Select(x => (x.Key, x.Value))));
 
             foreach (var asm in DataPart)
             {

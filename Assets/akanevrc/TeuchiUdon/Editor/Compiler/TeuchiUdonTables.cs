@@ -19,22 +19,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> ExportedVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
-        public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
 
-        public int VarCounter { get; private set; }
-        public int OutValueCounter { get; private set; }
-        public int LiteralCounter { get; private set; }
-        public int FuncCounter { get; private set; }
-        public int VarBindCounter { get; private set; }
-        public int BlockCounter { get; private set; }
-        public int EvalFuncCounter { get; private set; }
-        public int LetInCounter { get; private set; }
-        public int BranchCounter { get; private set; }
-        public int IndirectCounter { get; private set; }
+        private int VarCounter { get; set; }
+        private int LiteralCounter { get; set; }
+        private int FuncCounter { get; set; }
+        private int VarBindCounter { get; set; }
+        private int BlockCounter { get; set; }
+        private int EvalFuncCounter { get; set; }
+        private int LetInCounter { get; set; }
+        private int BranchCounter { get; set; }
+        private int IndirectCounter { get; set; }
 
         private bool IsInitialized { get; set; } = false;
 
@@ -64,14 +62,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             UnbufferedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
             ExportedVars   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
             SyncedVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
-            OutValues      = new Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue>();
             Literals       = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
             This           = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs          = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
             Indirects      = new Dictionary<TeuchiUdonIndirect, uint>();
 
             VarCounter      = 0;
-            OutValueCounter = 0;
             LiteralCounter  = 0;
             FuncCounter     = 0;
             VarBindCounter  = 0;
@@ -312,24 +308,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int GetVarIndex()
         {
             return VarCounter++;
-        }
-
-        public IEnumerable<TeuchiUdonOutValue> GetOutValues(int count)
-        {
-            for (var i = 0; i < count; i++)
-            {
-                var o = new TeuchiUdonOutValue(OutValueCounter++);
-                if (!OutValues.ContainsKey(o))
-                {
-                    OutValues.Add(o, o);
-                }
-                yield return o;
-            }
-        }
-
-        public void ResetOutValueIndex()
-        {
-            OutValueCounter = 0;
         }
 
         public int GetLiteralIndex()
