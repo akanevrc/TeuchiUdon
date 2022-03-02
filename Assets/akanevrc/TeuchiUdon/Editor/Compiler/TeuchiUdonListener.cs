@@ -1141,6 +1141,58 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitAssignExpr([NotNull] AssignExprContext context)
         {
+            var op    = context.op?.Text;
+            var exprs = context.expr();
+            if (op == null || exprs.Length != 2) return;
+
+            var expr1 = exprs[0]?.result;
+            var expr2 = exprs[1]?.result;
+            if (expr1 == null || expr2 == null) return;
+
+            switch (op)
+            {
+                case "<-":
+                case "??<-":
+                    if (expr1.Inner.LeftValues.Length == 0 || !expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type))
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
+                        return;
+                    }
+                    break;
+                case "+<-":
+                case "-<-":
+                case "*<-":
+                case "/<-":
+                case "%<-":
+                case "&<-":
+                case "^<-":
+                case "|<-":
+                    if (expr1.Inner.LeftValues.Length == 0 || !expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type))
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
+                        return;
+                    }
+                    break;
+                case "<<<-":
+                case ">><-":
+                    if (expr1.Inner.LeftValues.Length == 0 || !expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int))
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
+                        return;
+                    }
+                    break;
+                case "&&<-":
+                case "||<-":
+                    if (expr1.Inner.LeftValues.Length == 0 || !expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool) || !expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
+                        return;
+                    }
+                    break;
+            }
+
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Unit, op, expr1, expr2);
+            context.result = new ExprResult(infix.Token, infix);
         }
 
         public override void EnterLetInBindExpr([NotNull] LetInBindExprContext context)

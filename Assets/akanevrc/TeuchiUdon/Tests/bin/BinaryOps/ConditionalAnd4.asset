@@ -19,7 +19,7 @@ MonoBehaviour:
     .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        JUMP_IF_FALSE,
     branch[0]\r\n        PUSH, literal[1]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     PUSH, literal[2]\r\n        JUMP, branch[1]\r\n        branch[0]:\r\n       
-    PUSH, literal[2]\r\n        branch[1]:\r\n        POP\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+    PUSH, literal[0]\r\n        branch[1]:\r\n        POP\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -59,7 +59,7 @@ MonoBehaviour:
       Data: 2|System.Boolean, mscorlib
     - Name: 
       Entry: 5
-      Data: true
+      Data: false
     - Name: 
       Entry: 8
       Data: 
@@ -127,7 +127,7 @@ MonoBehaviour:
       Data: 6|System.Boolean, mscorlib
     - Name: 
       Entry: 5
-      Data: false
+      Data: true
     - Name: 
       Entry: 8
       Data: 

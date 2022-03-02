@@ -639,7 +639,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         );
                 case "&&":
                     return
-                        EvalInfixConditionalAndMethod
+                        EvalInfixConditionalAnd
                         (
                             VisitExpr(result.Expr1).ToArray(),
                             VisitExpr(result.Expr2).ToArray(),
@@ -651,7 +651,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         );
                 case "||":
                     return
-                        EvalInfixConditionalOrMethod
+                        EvalInfixConditionalOr
                         (
                             VisitExpr(result.Expr1).ToArray(),
                             VisitExpr(result.Expr2).ToArray(),
@@ -678,6 +678,76 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[0]) },
                             new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[1]) }
                         );
+                case "<-":
+                    return
+                        EvalInfixAssign
+                        (
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2)
+                        );
+                case "+<-":
+                case "*<-":
+                case "&<-":
+                case "^<-":
+                case "|<-":
+                    return
+                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalInfixAssignCommutativeMethod
+                        (
+                            result.Methods[0],
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) }
+                        );
+                case "-<-":
+                case "/<-":
+                case "%<-":
+                case "<<<-":
+                case ">><-":
+                    return
+                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
+                        EvalInfixAssignNoncommutativeMethod
+                        (
+                            result.Methods[0],
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[1][0])) }
+                        );
+                case "&&<-":
+                    return
+                        EvalInfixConditionalAndAssign
+                        (
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
+                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[0]) }
+                        );
+                case "||<-":
+                    return
+                        EvalInfixConditionalOrAssign
+                        (
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
+                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_JUMP         (new AssemblyAddress_CODE_LABEL(result.Labels[1])) },
+                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[0]) },
+                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[1]) }
+                        );
+                case "??<-":
+                    return
+                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 0 ? EvalInfixAssign(VisitExpr(result.Expr1), VisitExpr(result.Expr2)) :
+                        EvalInfixCoalescingAssignMethod
+                        (
+                            result.Methods[0],
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_LABEL(result.Labels[0]) }
+                        );
                 default:
                     return new TeuchiUdonAssembly[0];
             }
@@ -700,7 +770,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(outValues.SelectMany(x => x));
         }
 
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalAndMethod
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalAnd
         (
             IEnumerable<TeuchiUdonAssembly> value1,
             IEnumerable<TeuchiUdonAssembly> value2,
@@ -721,7 +791,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(label2);
         }
 
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalOrMethod
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalOr
         (
             IEnumerable<TeuchiUdonAssembly> value1,
             IEnumerable<TeuchiUdonAssembly> value2,
@@ -776,6 +846,128 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(label1)
                 .Concat(tmpValue)
                 .Concat(label2);
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixAssign
+        (
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2
+        )
+        {
+            return
+                value2
+                .Concat(value1)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() });
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixAssignCommutativeMethod
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            IEnumerable<TeuchiUdonAssembly> outValue
+        )
+        {
+            return
+                method.SortAlongParams(new TeuchiUdonAssembly[][] { value2.ToArray(), value1.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
+                .SelectMany(x => x)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(method)
+                })
+                .Concat(outValue)
+                .Concat(value1)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() });
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixAssignNoncommutativeMethod
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            IEnumerable<TeuchiUdonAssembly> outValue,
+            IEnumerable<TeuchiUdonAssembly> tmpValue
+        )
+        {
+            return
+                value2
+                .Concat(tmpValue)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
+                .Concat(
+                    method.SortAlongParams(new TeuchiUdonAssembly[][] { value1.ToArray(), tmpValue.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
+                    .SelectMany(x => x)
+                )
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(method)
+                })
+                .Concat(outValue)
+                .Concat(value1)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() });
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalAndAssign
+        (
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
+            IEnumerable<TeuchiUdonAssembly> label
+        )
+        {
+            return
+                value1
+                .Concat(jumpIfFalse)
+                .Concat(value2)
+                .Concat(value1)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
+                .Concat(label);
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalOrAssign
+        (
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
+            IEnumerable<TeuchiUdonAssembly> jump,
+            IEnumerable<TeuchiUdonAssembly> label1,
+            IEnumerable<TeuchiUdonAssembly> label2
+        )
+        {
+            return
+                value1
+                .Concat(jumpIfFalse)
+                .Concat(jump)
+                .Concat(label1)
+                .Concat(value2)
+                .Concat(value1)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
+                .Concat(label2);
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixCoalescingAssignMethod
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            IEnumerable<TeuchiUdonAssembly> outValue,
+            IEnumerable<TeuchiUdonAssembly> literal,
+            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
+            IEnumerable<TeuchiUdonAssembly> label
+        )
+        {
+            return
+                method.SortAlongParams(new TeuchiUdonAssembly[][] { value1.ToArray(), literal.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
+                .SelectMany(x => x)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(method)
+                })
+                .Concat(outValue)
+                .Concat(jumpIfFalse)
+                .Concat(value2)
+                .Concat(value1)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
+                .Concat(label);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitConditional(ConditionalResult result)

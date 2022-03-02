@@ -1,2 +1,2 @@
 // /GameObject/
-UnityEngine.Debug.Log(null ?? this);
+UnityEngine.Debug.Log(this ?? null);

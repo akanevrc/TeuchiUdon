@@ -1,2 +1,2 @@
-// ok
-null ?? { UnityEngine.Debug.Log("ok"); this };
+// !
+this ?? { UnityEngine.Debug.Log("ok"); null };

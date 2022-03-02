@@ -51,16 +51,8 @@ namespace akanevrc.TeuchiUdon.Tests
         public IEnumerator TeuchiUdonCodeCompiledAndAssemblyRunCorrectly()
         {
             var srcHandle = TestUtil.LoadAsset<TeuchiUdonScript>(srcAddress);
-            var binHandle = TestUtil.LoadAsset<TeuchiUdonProgramAsset>(binAddress);
             yield return srcHandle;
-            yield return binHandle;
-            script  = srcHandle.Result;
-            program = binHandle.Result;
-
-            testObject = new GameObject();
-            SceneManager.MoveGameObjectToScene(testObject, SceneManager.GetActiveScene());
-            var udonBehaviour = testObject.AddComponent<UdonBehaviour>();
-            TestUtil.InitUdonBehaviour(udonBehaviour, program.SerializedProgramAsset);
+            script = srcHandle.Result;
 
             var text    = script.text;
             var lineEnd = text.IndexOf("\n");
@@ -69,15 +61,22 @@ namespace akanevrc.TeuchiUdon.Tests
             if (!line.Contains("//")) Assert.Fail("expected value not set");
             var expected = line.Replace("//", "").Trim();
 
+            if (expected == "error") yield break;
+
+            var binHandle = TestUtil.LoadAsset<TeuchiUdonProgramAsset>(binAddress);
+            yield return binHandle;
+            program = binHandle.Result;
+
+            testObject = new GameObject();
+            SceneManager.MoveGameObjectToScene(testObject, SceneManager.GetActiveScene());
+            var udonBehaviour = testObject.AddComponent<UdonBehaviour>();
+            TestUtil.InitUdonBehaviour(udonBehaviour, program.SerializedProgramAsset);
+
             udonBehaviour.RunProgram("_start");
 
             if (expected == "")
             {
                 Assert.That(testObject, Is.Not.Null);
-            }
-            else if (expected == "error")
-            {
-                Assert.That(testObject, Is.Null);
             }
             else if (expected == "!")
             {

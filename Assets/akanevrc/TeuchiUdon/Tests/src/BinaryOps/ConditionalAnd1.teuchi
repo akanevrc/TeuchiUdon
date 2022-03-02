@@ -1,2 +1,2 @@
-// False
-UnityEngine.Debug.Log(false && true);
+// True
+UnityEngine.Debug.Log(true && true);

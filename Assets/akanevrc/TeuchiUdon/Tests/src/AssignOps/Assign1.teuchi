@@ -1,0 +1,4 @@
+// 200
+mut x = 100;
+x <- 200;
+UnityEngine.Debug.Log(x);

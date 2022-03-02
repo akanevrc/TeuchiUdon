@@ -1,2 +1,2 @@
-// !
-true || { UnityEngine.Debug.Log("ok"); false };
+// True
+UnityEngine.Debug.Log(false || true);
