@@ -11,7 +11,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         Out
     }
 
-    public class TeuchiUdonMethod : IEquatable<TeuchiUdonMethod>, ITeuchiUdonTypeArg
+    public class TeuchiUdonMethod : ITeuchiUdonTypeArg, ITeuchiUdonLeftValue, IEquatable<TeuchiUdonMethod>
     {
         public TeuchiUdonType Type { get; }
         public string Name { get; }
@@ -20,6 +20,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonType[] AllParamTypes { get; }
         public TeuchiUdonMethodParamInOut[] AllParamInOuts { get; }
         public string UdonName { get; }
+
+        public TeuchiUdonMethod(TeuchiUdonType type, string name)
+            : this(type, name, null, null, null, null, null)
+        {
+        }
 
         public TeuchiUdonMethod(TeuchiUdonType type, string name, IEnumerable<TeuchiUdonType> inTypes)
             : this(type, name, inTypes, null, null, null, null)

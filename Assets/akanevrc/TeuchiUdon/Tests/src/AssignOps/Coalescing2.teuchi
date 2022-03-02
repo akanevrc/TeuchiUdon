@@ -1,4 +1,0 @@
-// /GameObject/
-mut x = this;
-x ??<- null;
-UnityEngine.Debug.Log(x);

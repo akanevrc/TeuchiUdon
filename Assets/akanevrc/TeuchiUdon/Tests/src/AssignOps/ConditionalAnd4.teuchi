@@ -1,3 +1,0 @@
-// !
-mut x = false;
-x &&<- { UnityEngine.Debug.Log("ok"); true };

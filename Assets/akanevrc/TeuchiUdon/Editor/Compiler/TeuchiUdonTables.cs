@@ -260,16 +260,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(TeuchiUdonMethod query)
         {
+            return GetMostCompatibleMethodsCore(query, query.InTypes.Length, false);
+        }
+
+        public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethodsWithoutInTypes(TeuchiUdonMethod query, int inTypeCount)
+        {
+            return GetMostCompatibleMethodsCore(query, inTypeCount, true);
+        }
+
+        private IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethodsCore(TeuchiUdonMethod query, int inTypeCount, bool withoutInTypes)
+        {
             if (!TypeToMethods.ContainsKey(query.Type)) return new TeuchiUdonMethod[0];
             var methodToMethods = TypeToMethods[query.Type];
 
             if (!methodToMethods.ContainsKey(query.Name)) return new TeuchiUdonMethod[0];
             var argsToMethods = methodToMethods[query.Name];
 
-            if (!argsToMethods.ContainsKey(query.InTypes.Length)) return new TeuchiUdonMethod[0];
-            var methods = argsToMethods[query.InTypes.Length];
+            if (!argsToMethods.ContainsKey(inTypeCount)) return new TeuchiUdonMethod[0];
+            var methods = argsToMethods[inTypeCount];
 
             if (methods.Count == 0) return new TeuchiUdonMethod[0];
+            if (withoutInTypes) return methods;
 
             var justCountToMethods = new Dictionary<int, List<TeuchiUdonMethod>>();
             foreach (var method in methods)

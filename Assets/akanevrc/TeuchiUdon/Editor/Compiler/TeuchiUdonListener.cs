@@ -690,24 +690,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             break;
                         }
 
-                        var qg = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetGetterName(varCandidate2.Identifier.Name), new TeuchiUdonType[0]);
-                        var g  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qg).ToArray();
-                        var qs = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetSetterName(varCandidate2.Identifier.Name), new TeuchiUdonType[] { type1 });
-                        var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qs).ToArray();
-                        if (g.Length == 1 && s.Length == 1)
+                        var qg = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetGetterName(varCandidate2.Identifier.Name));
+                        var g  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qg, 0).ToArray();
+                        var qs = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetSetterName(varCandidate2.Identifier.Name));
+                        var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 1).ToArray();
+                        if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            throw new NotImplementedException();
-                            //break;
+                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], s[0], varCandidate2.Identifier);
+                            break;
                         }
-                        else if (g.Length == 1)
+                        else if (g.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            throw new NotImplementedException();
-                            //break;
+                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], varCandidate2.Identifier);
+                            break;
                         }
                         else if (s.Length == 1)
                         {
-                            throw new NotImplementedException();
-                            //break;
+                            eval = new EvalSetterResult(varCandidate2.Token, s[0], varCandidate2.Identifier);
+                            break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
                         {
@@ -730,24 +730,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             break;
                         }
 
-                        var qg = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetGetterName(varCandidate2.Identifier.Name), new TeuchiUdonType[0]);
-                        var g  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qg).ToArray();
-                        var qs = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetSetterName(varCandidate2.Identifier.Name), new TeuchiUdonType[] { type1 });
-                        var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qs).ToArray();
-                        if (g.Length == 1 && s.Length == 1)
+                        var qg = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetGetterName(varCandidate2.Identifier.Name));
+                        var g  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qg, 1).ToArray();
+                        var qs = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetSetterName(varCandidate2.Identifier.Name));
+                        var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 2).ToArray();
+                        if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            throw new NotImplementedException();
-                            //break;
+                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], s[0], varCandidate2.Identifier);
+                            break;
                         }
-                        else if (g.Length == 1)
+                        else if (g.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            throw new NotImplementedException();
-                            //break;
+                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], varCandidate2.Identifier);
+                            break;
                         }
                         else if (s.Length == 1)
                         {
-                            throw new NotImplementedException();
-                            //break;
+                            eval = new EvalSetterResult(varCandidate2.Token, s[0], varCandidate2.Identifier);
+                            break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
                         {
@@ -827,10 +827,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     evalFunc = new BottomResult(token);
                 }
             }
-            else if (type.LogicalTypeNameEquals(TeuchiUdonType.Method))
+            else if (type.LogicalTypeNameEquals(TeuchiUdonType.Method) && expr.Inner.Instance != null)
             {
-                var argTypes = args.Select(x => x.Inner.Type).ToArray();
-                var ms       = type.GetMostCompatibleMethods(argTypes).ToArray();
+                var instanceType = expr.Inner.Instance.Inner.Type.RealType == null ? new TeuchiUdonType[0] : new TeuchiUdonType[] { expr.Inner.Instance.Inner.Type };
+                var inTypes      = instanceType.Concat(args.Select(x => x.Inner.Type));
+                var ms           = type.GetMostCompatibleMethods(inTypes).ToArray();
                 if (ms.Length == 0)
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"method is not defined");
@@ -864,31 +865,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override void ExitPostfixExpr([NotNull] PostfixExprContext context)
-        {
-            var op   = context.op?.Text;
-            var expr = context.expr()?.result;
-            if (op == null || expr == null) return;
-
-            if ((op == "++" || op == "--") && expr.Inner.LeftValues.Length != 1)
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"operand of '{op}' must be a left value");
-            }
-
-            var postfix    = new PostfixResult(context.Start, expr.Inner.Type, op, expr);
-            context.result = new ExprResult(postfix.Token, postfix);
-        }
-
         public override void ExitPrefixExpr([NotNull] PrefixExprContext context)
         {
             var op   = context.op?.Text;
             var expr = context.expr()?.result;
             if (op == null || expr == null) return;
-
-            if ((op == "++" || op == "--") && expr.Inner.LeftValues.Length != 1)
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"operand of '{op}' must be a left value");
-            }
             
             var prefix     = new PrefixResult(context.Start, expr.Inner.Type, op, expr);
             context.result = new ExprResult(prefix.Token, prefix);
@@ -1149,46 +1130,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr2 = exprs[1]?.result;
             if (expr1 == null || expr2 == null) return;
 
-            switch (op)
+            if (expr1.Inner.LeftValues.Length != 1 || !expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type))
             {
-                case "<-":
-                case "??<-":
-                    if (expr1.Inner.LeftValues.Length == 0 || !expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type))
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
-                        return;
-                    }
-                    break;
-                case "+<-":
-                case "-<-":
-                case "*<-":
-                case "/<-":
-                case "%<-":
-                case "&<-":
-                case "^<-":
-                case "|<-":
-                    if (expr1.Inner.LeftValues.Length == 0 || !expr1.Inner.Type.LogicalTypeEquals(expr2.Inner.Type))
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
-                        return;
-                    }
-                    break;
-                case "<<<-":
-                case ">><-":
-                    if (expr1.Inner.LeftValues.Length == 0 || !expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int))
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
-                        return;
-                    }
-                    break;
-                case "&&<-":
-                case "||<-":
-                    if (expr1.Inner.LeftValues.Length == 0 || !expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool) || !expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
-                        return;
-                    }
-                    break;
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
+                return;
             }
 
             var infix      = new InfixResult(context.Start, TeuchiUdonType.Unit, op, expr1, expr2);

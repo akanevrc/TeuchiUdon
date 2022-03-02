@@ -1,4 +1,0 @@
-// 16
-mut x = 64;
-x >><- 2;
-UnityEngine.Debug.Log(x);

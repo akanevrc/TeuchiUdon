@@ -122,43 +122,42 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitResult(TeuchiUdonParserResult result)
         {
-                 if (result is BodyResult             body            ) return VisitBody            (body);
-            else if (result is TopBindResult          topBind         ) return VisitTopBind         (topBind);
-            else if (result is TopExprResult          topExpr         ) return VisitTopExpr         (topExpr);
-            else if (result is InitVarAttrResult      initVarAttr     ) return VisitInitVarAttr     (initVarAttr);
-            else if (result is ExportVarAttrResult    exportVarAttr   ) return VisitExportVarAttr   (exportVarAttr);
-            else if (result is SyncVarAttrResult      syncVarAttr     ) return VisitSyncVarAttr     (syncVarAttr);
-            else if (result is InitExprAttrResult     initExprAttr    ) return VisitInitExprAttr    (initExprAttr);
-            else if (result is VarBindResult          varBind         ) return VisitVarBind         (varBind);
-            else if (result is VarDeclResult          varDecl         ) return VisitVarDecl         (varDecl);
-            else if (result is IdentifierResult       identifier      ) return VisitIdentifier      (identifier);
-            else if (result is JumpResult             jump            ) return VisitJump            (jump);
-            else if (result is LetBindResult          letBind         ) return VisitLetBind         (letBind);
-            else if (result is ExprResult             expr            ) return VisitExpr            (expr);
-            else if (result is BottomResult           bottom          ) return VisitBottom          (bottom);
-            else if (result is UnknownTypeResult      unknownType     ) return VisitUnknownType     (unknownType);
-            else if (result is UnitResult             unit            ) return VisitUnit            (unit);
-            else if (result is BlockResult            block           ) return VisitBlock           (block);
-            else if (result is ParenResult            paren           ) return VisitParen           (paren);
-            else if (result is LiteralResult          literal         ) return VisitLiteral         (literal);
-            else if (result is ThisResult             ths             ) return VisitThis            (ths);
-            else if (result is EvalVarResult          evalVar         ) return VisitEvalVar         (evalVar);
-            else if (result is EvalTypeResult         evalType        ) return VisitEvalType        (evalType);
-            else if (result is EvalQualifierResult    evalQualifier   ) return VisitEvalQualifier   (evalQualifier);
-            else if (result is EvalGetterResult       evalGetter      ) return VisitEvalGetter      (evalGetter);
-            else if (result is EvalGetterSetterResult evalGetterSetter) return VisitEvalGetterSetter(evalGetterSetter);
-            else if (result is EvalFuncResult         evalFunc        ) return VisitEvalFunc        (evalFunc);
-            else if (result is EvalMethodResult       evalMethod      ) return VisitEvalMethod      (evalMethod);
-            else if (result is EvalVarCandidateResult evalVarCandidate) return VisitEvalVarCandidate(evalVarCandidate);
-            else if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
-            else if (result is PostfixResult          postfix         ) return VisitPostfix         (postfix);
-            else if (result is InfixResult            infix           ) return VisitInfix           (infix);
-            else if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
-            else if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
-            else if (result is FuncResult             func            ) return VisitFunc            (func);
-            else if (result is MethodResult           method          ) return VisitMethod          (method);
-            else if (result is SetterResult           setter          ) return VisitSetter          (setter);
-            else throw new InvalidOperationException("unsupported parser result type");
+            if (result is BodyResult             body            ) return VisitBody            (body);
+            if (result is TopBindResult          topBind         ) return VisitTopBind         (topBind);
+            if (result is TopExprResult          topExpr         ) return VisitTopExpr         (topExpr);
+            if (result is InitVarAttrResult      initVarAttr     ) return VisitInitVarAttr     (initVarAttr);
+            if (result is ExportVarAttrResult    exportVarAttr   ) return VisitExportVarAttr   (exportVarAttr);
+            if (result is SyncVarAttrResult      syncVarAttr     ) return VisitSyncVarAttr     (syncVarAttr);
+            if (result is InitExprAttrResult     initExprAttr    ) return VisitInitExprAttr    (initExprAttr);
+            if (result is VarBindResult          varBind         ) return VisitVarBind         (varBind);
+            if (result is VarDeclResult          varDecl         ) return VisitVarDecl         (varDecl);
+            if (result is IdentifierResult       identifier      ) return VisitIdentifier      (identifier);
+            if (result is JumpResult             jump            ) return VisitJump            (jump);
+            if (result is LetBindResult          letBind         ) return VisitLetBind         (letBind);
+            if (result is ExprResult             expr            ) return VisitExpr            (expr);
+            if (result is BottomResult           bottom          ) return VisitBottom          (bottom);
+            if (result is UnknownTypeResult      unknownType     ) return VisitUnknownType     (unknownType);
+            if (result is UnitResult             unit            ) return VisitUnit            (unit);
+            if (result is BlockResult            block           ) return VisitBlock           (block);
+            if (result is ParenResult            paren           ) return VisitParen           (paren);
+            if (result is LiteralResult          literal         ) return VisitLiteral         (literal);
+            if (result is ThisResult             ths             ) return VisitThis            (ths);
+            if (result is EvalVarResult          evalVar         ) return VisitEvalVar         (evalVar);
+            if (result is EvalTypeResult         evalType        ) return VisitEvalType        (evalType);
+            if (result is EvalQualifierResult    evalQualifier   ) return VisitEvalQualifier   (evalQualifier);
+            if (result is EvalGetterResult       evalGetter      ) return VisitEvalGetter      (evalGetter);
+            if (result is EvalSetterResult       evalSetter      ) return VisitEvalSetter      (evalSetter);
+            if (result is EvalGetterSetterResult evalGetterSetter) return VisitEvalGetterSetter(evalGetterSetter);
+            if (result is EvalFuncResult         evalFunc        ) return VisitEvalFunc        (evalFunc);
+            if (result is EvalMethodResult       evalMethod      ) return VisitEvalMethod      (evalMethod);
+            if (result is EvalVarCandidateResult evalVarCandidate) return VisitEvalVarCandidate(evalVarCandidate);
+            if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
+            if (result is InfixResult            infix           ) return VisitInfix           (infix);
+            if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
+            if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
+            if (result is FuncResult             func            ) return VisitFunc            (func);
+            if (result is MethodResult           method          ) return VisitMethod          (method);
+            throw new InvalidOperationException("unsupported parser result type");
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitBody(BodyResult result)
@@ -387,12 +386,43 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalGetter(EvalGetterResult result)
         {
+            var instance = result.Instance == null ? new TeuchiUdonAssembly[0] : VisitExpr(result.Instance).ToArray();
+
+            return
+                result.Method.SortAlongParams
+                (
+                    instance.Length == 0 ? new TeuchiUdonAssembly[0][] : new TeuchiUdonAssembly[][] { instance },
+                    result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                )
+                .SelectMany(x => x)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(result.Method)
+                })
+                .Concat(result.OutValues.SelectMany(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }));
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitEvalSetter(EvalSetterResult result)
+        {
             return new TeuchiUdonAssembly[0];
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalGetterSetter(EvalGetterSetterResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            var instance = result.Instance == null ? new TeuchiUdonAssembly[0] : VisitExpr(result.Instance).ToArray();
+
+            return
+                result.Getter.SortAlongParams
+                (
+                    instance.Length == 0 ? new TeuchiUdonAssembly[0][] : new TeuchiUdonAssembly[][] { instance },
+                    result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
+                )
+                .SelectMany(x => x)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(result.Getter)
+                })
+                .Concat(result.OutValues.SelectMany(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalFunc(EvalFuncResult result)
@@ -415,10 +445,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalMethod(EvalMethodResult result)
         {
+            var instance = result.Instance == null ? new TeuchiUdonAssembly[0] : VisitExpr(result.Instance).ToArray();
+
             return
                 result.Method.SortAlongParams
                 (
-                    result.Args.Select(x => VisitExpr(x)),
+                    instance.Length == 0 ?
+                        result.Args.Select(x => VisitExpr(x)) :
+                        new TeuchiUdonAssembly[][] { instance }.Concat(result.Args.Select(x => VisitExpr(x))),
                     result.OutValues.Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                 )
                 .SelectMany(x => x)
@@ -444,7 +478,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "!":
                     return
                         result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalPrefixMethod
+                        EvalPrefix
                         (
                             result.Methods[0],
                             new TeuchiUdonAssembly[][]
@@ -456,7 +490,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "~":
                     return
                         result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalPrefixMethod
+                        EvalPrefix
                         (
                             result.Methods[0],
                             new TeuchiUdonAssembly[][]
@@ -466,32 +500,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             },
                             result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) })
                         );
-                case "++":
-                case "--":
-                    return
-                        result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalPrefixAssignMethod
-                        (
-                            result.Methods[0],
-                            new TeuchiUdonAssembly[][]
-                            {
-                                VisitExpr(result.Expr).ToArray(),
-                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) }
-                            },
-                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.Expr.Inner.LeftValues.Select(x => new TeuchiUdonAssembly[]
-                                {
-                                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                                    new Assembly_COPY()
-                                }
-                            )
-                        );
                 default:
                     return new TeuchiUdonAssembly[0];
             }
         }
 
-        private IEnumerable<TeuchiUdonAssembly> EvalPrefixMethod
+        private IEnumerable<TeuchiUdonAssembly> EvalPrefix
         (
             TeuchiUdonMethod method,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
@@ -506,87 +520,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new Assembly_EXTERN(method)
                 })
                 .Concat(outValues.SelectMany(x => x));
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalPrefixAssignMethod
-        (
-            TeuchiUdonMethod method,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> setValues
-        )
-        {
-            return
-                method.SortAlongParams
-                (
-                    inValues,
-                    outValues
-                )
-                .SelectMany(x => x)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(method)
-                })
-                .Concat(outValues.SelectMany(x => x))
-                .Concat(setValues.SelectMany(x => x))
-                .Concat(outValues.SelectMany(x => x));
-        }
-
-        protected IEnumerable<TeuchiUdonAssembly> VisitPostfix(PostfixResult result)
-        {
-            switch (result.Op)
-            {
-                case "++":
-                case "--":
-                    return
-                        result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalPostfixAssignMethod
-                        (
-                            result.Methods[0],
-                            new TeuchiUdonAssembly[][]
-                            {
-                                VisitExpr(result.Expr).ToArray()
-                            },
-                            new TeuchiUdonAssembly[][]
-                            {
-                                new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) }
-                            },
-                            result.TmpValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.OutValuess[0].Select(x => new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)) }),
-                            result.Expr.Inner.LeftValues.Select(x => new TeuchiUdonAssembly[]
-                                {
-                                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(x)),
-                                    new Assembly_COPY()
-                                }
-                            )
-                        );
-                default:
-                    return new TeuchiUdonAssembly[0];
-            }
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalPostfixAssignMethod
-        (
-            TeuchiUdonMethod method,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> argValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> tmpValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> outValues,
-            IEnumerable<IEnumerable<TeuchiUdonAssembly>> setValues
-        )
-        {
-            return
-                inValues
-                .Zip(tmpValues, (i, t) => (i, t))
-                .SelectMany(x => x.i.Concat(x.t).Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() }))
-                .Concat(method.SortAlongParams(tmpValues.Concat(argValues), outValues).SelectMany(x => x))
-                .Concat(new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_EXTERN(method)
-                    })
-                .Concat(outValues.SelectMany(x => x))
-                .Concat(setValues.SelectMany(x => x))
-                .Concat(tmpValues.SelectMany(x => x));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitInfix(InfixResult result)
@@ -612,7 +545,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "|":
                     return
                         result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalInfixMethod
+                        EvalInfix
                         (
                             result.Methods[0],
                             new TeuchiUdonAssembly[][]
@@ -627,7 +560,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return
                         result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
                         result.Methods.Length == 0 ? new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) } :
-                        EvalInfixMethod
+                        EvalInfix
                         (
                             result.Methods[0],
                             new TeuchiUdonAssembly[][]
@@ -665,7 +598,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return
                         result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
                         result.Methods.Length == 0 ? VisitExpr(result.Expr2) :
-                        EvalInfixCoalescingMethod
+                        EvalInfixCoalescing
                         (
                             result.Methods[0],
                             VisitExpr(result.Expr1).ToArray(),
@@ -679,81 +612,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[1]) }
                         );
                 case "<-":
+                {
                     return
+                        result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
                         EvalInfixAssign
                         (
                             VisitExpr(result.Expr1),
                             VisitExpr(result.Expr2)
-                        );
-                case "+<-":
-                case "*<-":
-                case "&<-":
-                case "^<-":
-                case "|<-":
-                    return
-                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalInfixAssignCommutativeMethod
+                        ) :
+                        result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonMethod m ?
+                        EvalInfixAssignMethod
                         (
-                            result.Methods[0],
-                            VisitExpr(result.Expr1),
-                            VisitExpr(result.Expr2),
-                            new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) }
-                        );
-                case "-<-":
-                case "/<-":
-                case "%<-":
-                case "<<<-":
-                case ">><-":
-                    return
-                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalInfixAssignNoncommutativeMethod
-                        (
-                            result.Methods[0],
-                            VisitExpr(result.Expr1),
-                            VisitExpr(result.Expr2),
-                            new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
-                            new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[1][0])) }
-                        );
-                case "&&<-":
-                    return
-                        EvalInfixConditionalAndAssign
-                        (
-                            VisitExpr(result.Expr1),
-                            VisitExpr(result.Expr2),
-                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
-                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[0]) }
-                        );
-                case "||<-":
-                    return
-                        EvalInfixConditionalOrAssign
-                        (
-                            VisitExpr(result.Expr1),
-                            VisitExpr(result.Expr2),
-                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
-                            new TeuchiUdonAssembly[] { new Assembly_JUMP         (new AssemblyAddress_CODE_LABEL(result.Labels[1])) },
-                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[0]) },
-                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[1]) }
-                        );
-                case "??<-":
-                    return
-                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
-                        result.Methods.Length == 0 ? EvalInfixAssign(VisitExpr(result.Expr1), VisitExpr(result.Expr2)) :
-                        EvalInfixCoalescingAssignMethod
-                        (
-                            result.Methods[0],
-                            VisitExpr(result.Expr1),
-                            VisitExpr(result.Expr2),
-                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
-                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
-                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
-                            new TeuchiUdonAssembly[] { new Assembly_LABEL(result.Labels[0]) }
-                        );
+                            VisitExpr(result.Expr1.Inner.Instance),
+                            new TeuchiUdonAssembly[] { new Assembly_EXTERN(m) },
+                            VisitExpr(result.Expr2)
+                        ) :
+                        new TeuchiUdonAssembly[0];
+                }
                 default:
                     return new TeuchiUdonAssembly[0];
             }
         }
 
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixMethod
+        private IEnumerable<TeuchiUdonAssembly> EvalInfix
         (
             TeuchiUdonMethod method,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
@@ -812,7 +693,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(label2);
         }
 
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixCoalescingMethod
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixCoalescing
         (
             TeuchiUdonMethod method,
             IEnumerable<TeuchiUdonAssembly> value1,
@@ -860,114 +741,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() });
         }
 
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixAssignCommutativeMethod
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixAssignMethod
         (
-            TeuchiUdonMethod method,
-            IEnumerable<TeuchiUdonAssembly> value1,
-            IEnumerable<TeuchiUdonAssembly> value2,
-            IEnumerable<TeuchiUdonAssembly> outValue
+            IEnumerable<TeuchiUdonAssembly> instance,
+            IEnumerable<TeuchiUdonAssembly> setterMethod,
+            IEnumerable<TeuchiUdonAssembly> value2
         )
         {
             return
-                method.SortAlongParams(new TeuchiUdonAssembly[][] { value2.ToArray(), value1.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
-                .SelectMany(x => x)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(method)
-                })
-                .Concat(outValue)
-                .Concat(value1)
-                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() });
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixAssignNoncommutativeMethod
-        (
-            TeuchiUdonMethod method,
-            IEnumerable<TeuchiUdonAssembly> value1,
-            IEnumerable<TeuchiUdonAssembly> value2,
-            IEnumerable<TeuchiUdonAssembly> outValue,
-            IEnumerable<TeuchiUdonAssembly> tmpValue
-        )
-        {
-            return
-                value2
-                .Concat(tmpValue)
-                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
-                .Concat(
-                    method.SortAlongParams(new TeuchiUdonAssembly[][] { value1.ToArray(), tmpValue.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
-                    .SelectMany(x => x)
-                )
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(method)
-                })
-                .Concat(outValue)
-                .Concat(value1)
-                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() });
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalAndAssign
-        (
-            IEnumerable<TeuchiUdonAssembly> value1,
-            IEnumerable<TeuchiUdonAssembly> value2,
-            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
-            IEnumerable<TeuchiUdonAssembly> label
-        )
-        {
-            return
-                value1
-                .Concat(jumpIfFalse)
+                instance
                 .Concat(value2)
-                .Concat(value1)
-                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
-                .Concat(label);
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixConditionalOrAssign
-        (
-            IEnumerable<TeuchiUdonAssembly> value1,
-            IEnumerable<TeuchiUdonAssembly> value2,
-            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
-            IEnumerable<TeuchiUdonAssembly> jump,
-            IEnumerable<TeuchiUdonAssembly> label1,
-            IEnumerable<TeuchiUdonAssembly> label2
-        )
-        {
-            return
-                value1
-                .Concat(jumpIfFalse)
-                .Concat(jump)
-                .Concat(label1)
-                .Concat(value2)
-                .Concat(value1)
-                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
-                .Concat(label2);
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> EvalInfixCoalescingAssignMethod
-        (
-            TeuchiUdonMethod method,
-            IEnumerable<TeuchiUdonAssembly> value1,
-            IEnumerable<TeuchiUdonAssembly> value2,
-            IEnumerable<TeuchiUdonAssembly> outValue,
-            IEnumerable<TeuchiUdonAssembly> literal,
-            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
-            IEnumerable<TeuchiUdonAssembly> label
-        )
-        {
-            return
-                method.SortAlongParams(new TeuchiUdonAssembly[][] { value1.ToArray(), literal.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
-                .SelectMany(x => x)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_EXTERN(method)
-                })
-                .Concat(outValue)
-                .Concat(jumpIfFalse)
-                .Concat(value2)
-                .Concat(value1)
-                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
-                .Concat(label);
+                .Concat(setterMethod);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitConditional(ConditionalResult result)
@@ -1010,11 +794,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitMethod(MethodResult result)
-        {
-            return new TeuchiUdonAssembly[0];
-        }
-
-        protected IEnumerable<TeuchiUdonAssembly> VisitSetter(SetterResult result)
         {
             return new TeuchiUdonAssembly[0];
         }
