@@ -247,16 +247,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if
             (
                 varDecl == null ||
-                varDecl is SingleVarDeclContext s && s.identifier() == null ||
-                varDecl is TupleVarDeclContext  t && t.identifier().Any(x => x == null)
+                varDecl is SingleVarDeclContext s && s.qualifiedVar()?.identifier() == null ||
+                varDecl is TupleVarDeclContext  t && t.qualifiedVar().Any(x => x?.identifier() == null)
             ) return;
 
             var index          = TeuchiUdonTables.Instance.GetVarBindIndex();
             context.tableIndex = index;
             var qual           = TeuchiUdonQualifierStack.Instance.Peek();
             var varNames       =
-                varDecl is SingleVarDeclContext sv ? new string[] { sv.identifier().GetText() } :
-                varDecl is TupleVarDeclContext  tv ? tv.identifier().Select(x => x.GetText()).ToArray() : new string[0];
+                varDecl is SingleVarDeclContext sv ? new string[] { sv.qualifiedVar()?.identifier()?.GetText() ?? "" } :
+                varDecl is TupleVarDeclContext  tv ? tv.qualifiedVar().Select(x => x?.identifier()?.GetText() ?? "").ToArray() : new string[0];
             var scope   = new TeuchiUdonScope(new TeuchiUdonVarBind(index, qual, varNames), TeuchiUdonScopeMode.VarBind);
             TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
@@ -324,50 +324,41 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
         {
-            var identifiers = new IdentifierResult[0];
-            var qualifieds  = new ExprResult[0];
-
-            context.result  = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
+            var qualifiedVars = new QualifiedVarResult[0];
+            context.result    = ExitVarDecl(context.Start, qualifiedVars, context.isActual);
         }
 
         public override void ExitSingleVarDecl([NotNull] SingleVarDeclContext context)
         {
-            var identifier = context.identifier()?.result;
-            if (identifier == null) return;
+            var qualifiedVar = context.qualifiedVar()?.result;
+            if (qualifiedVar == null) return;
 
-            var identifiers = new IdentifierResult[] { identifier };
-            var expr        = context.expr()?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false };
-
-            if (!expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type))
+            if (!qualifiedVar.Qualified.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type))
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"qualified type {expr.Inner.Type} is not a type");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"qualified type {qualifiedVar.Qualified.Inner.Type} is not a type");
             }
 
-            var qualifieds = new ExprResult[] { expr };
-            context.result = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
+            var qualifiedVars = new QualifiedVarResult[] { qualifiedVar };
+            context.result    = ExitVarDecl(context.Start, qualifiedVars, context.isActual);
         }
 
         public override void ExitTupleVarDecl([NotNull] TupleVarDeclContext context)
         {
-            var identifiers = context.identifier().Select(x => x .result);
-            if (identifiers.Any(x => x == null)) return;
+            var qualifiedVars = context.qualifiedVar().Select(x => x.result);
+            if (qualifiedVars.Any(x => x == null)) return;
 
-            var qualifieds = context.expr()
-                .Select(x => x?.result ?? new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false })
-                .ToArray();
-
-            foreach (var q in qualifieds)
+            foreach (var q in qualifiedVars)
             {
-                if (!q.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type))
+                if (!q.Qualified.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type))
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"qualified type {q.Inner.Type} is not a type");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"qualified type {q.Qualified.Inner.Type} is not a type");
                 }
             }
 
-            context.result = ExitVarDecl(context.Start, identifiers, qualifieds, context.isActual);
+            context.result = ExitVarDecl(context.Start, qualifiedVars, context.isActual);
         }
 
-        private VarDeclResult ExitVarDecl(IToken token, IEnumerable<IdentifierResult> identifiers, IEnumerable<ExprResult> qualifieds, bool isActual)
+        private VarDeclResult ExitVarDecl(IToken token, IEnumerable<QualifiedVarResult> qualifiedVars, bool isActual)
         {
             var oldQual = (TeuchiUdonQualifier)null;
             if (isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
@@ -376,7 +367,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             if (isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
 
-            return new VarDeclResult(token, qualifier, identifiers, qualifieds);
+            return new VarDeclResult(token, qualifier, qualifiedVars);
+        }
+
+        public override void ExitQualifiedVar([NotNull] QualifiedVarContext context)
+        {
+            var identifier = context.identifier()?.result;
+            var qualified  = context.expr      ()?.result;
+            if (identifier == null) return;
+
+            if (qualified == null)
+            {
+                qualified = new ExprResult(context.Start, new UnknownTypeResult(context.Start)) { ReturnsValue = false };
+            }
+            else
+            {
+                qualified.ReturnsValue = false;
+            }
+
+            context.result = new QualifiedVarResult(context.Start, identifier, qualified);
         }
 
         public override void ExitIdentifier([NotNull] IdentifierContext context)
@@ -777,60 +786,70 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr = context.expr()?.result;
             if (expr == null) return;
 
-            var args       = new ExprResult[] { new ExprResult(context.Start, new UnitResult(context.Start)) };
+            var args       = new ArgExprResult[0];
             context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
         public override void ExitEvalSingleFuncExpr([NotNull] EvalSingleFuncExprContext context)
         {
-            var exprs = context.expr().Select(x => x.result).ToArray();
-            if (exprs.Length != 2) return;
+            var expr = context.expr   ()?.result;
+            var arg  = context.argExpr()?.result;
+            if (expr == null || arg == null) return;
 
-            var expr       = exprs[0];
-            var args       = exprs.Skip(1);
+            var args = new ArgExprResult[] { arg };
             context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
         public override void ExitEvalTupleFuncExpr([NotNull] EvalTupleFuncExprContext context)
         {
-            var exprs = context.expr().Select(x => x.result).ToArray();
-            if (exprs.Length < 3) return;
+            var expr = context.expr   ()?.result;
+            var args = context.argExpr().Select(x => x?.result).ToArray();
+            if (expr == null || args.Length < 2) return;
 
-            var expr       = exprs[0];
-            var args       = exprs.Skip(1);
             context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
-        private ExprResult ExitEvalFuncExpr(IToken token, ExprResult expr, IEnumerable<ExprResult> args)
+        private ExprResult ExitEvalFuncExpr(IToken token, ExprResult expr, IEnumerable<ArgExprResult> argExprs)
         {
             var index    = TeuchiUdonTables.Instance.GetEvalFuncIndex();
             var type     = expr.Inner.Type;
+            var args     = argExprs.Select(x => x.Expr);
+            var argRefs  = argExprs.Select(x => x.Ref);
             var evalFunc = (TypedResult)null;
 
             if (type.LogicalTypeNameEquals(TeuchiUdonType.Func))
             {
-                var qual     = TeuchiUdonQualifierStack.Instance.Peek();
-                var argTypes = args.Select(x => x.Inner.Type).ToArray();
-                var iType    =
-                    argTypes.Length == 0 ? TeuchiUdonType.Unit :
-                    argTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(argTypes) :
-                    argTypes[0];
-                var oType    = TeuchiUdonType.Unknown;
-                if (type.IsAssignableFromFunc(TeuchiUdonType.Func.ApplyArgsAsFunc(iType, oType)))
+                if (argRefs.Any(x => x))
                 {
-                    var outType = type.GetArgAsFuncOutType();
-                    evalFunc    = new EvalFuncResult(token, outType, index, qual, expr, args);
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of func cannot be ref");
+                    evalFunc = new BottomResult(token);
                 }
                 else
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of func is not compatible");
-                    evalFunc = new BottomResult(token);
+                    var qual     = TeuchiUdonQualifierStack.Instance.Peek();
+                    var argTypes = argExprs.Select(x => x.Expr.Inner.Type).ToArray();
+                    var iType    =
+                        argTypes.Length == 0 ? TeuchiUdonType.Unit :
+                        argTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(argTypes) :
+                        argTypes[0];
+                    var oType    = TeuchiUdonType.Unknown;
+                    if (type.IsAssignableFromFunc(TeuchiUdonType.Func.ApplyArgsAsFunc(iType, oType)))
+                    {
+                        var outType = type.GetArgAsFuncOutType();
+                        evalFunc    = new EvalFuncResult(token, outType, index, qual, expr, args);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of func is not compatible");
+                        evalFunc = new BottomResult(token);
+                    }
                 }
             }
             else if (type.LogicalTypeNameEquals(TeuchiUdonType.Method) && expr.Inner.Instance != null)
             {
                 var instanceType = expr.Inner.Instance.Inner.Type.RealType == null ? new TeuchiUdonType[0] : new TeuchiUdonType[] { expr.Inner.Instance.Inner.Type };
                 var inTypes      = instanceType.Concat(args.Select(x => x.Inner.Type));
+                var inRefs       = instanceType.Select(_ => false).Concat(argRefs);
                 var ms           = type.GetMostCompatibleMethods(inTypes).ToArray();
                 if (ms.Length == 0)
                 {
@@ -839,12 +858,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else if (ms.Length == 1)
                 {
-                    var method  = ms[0];
-                    var outType =
-                        method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
-                        method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
-                        method.OutTypes[0];
-                    evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                    var method = ms[0];
+                    var inMuts = instanceType.Select(_ => false).Concat(args.Select(x => x.Inner.LeftValues.Length == 1));
+                    if
+                    (
+                        method.InParamInOuts.Select(x => x == TeuchiUdonMethodParamInOut.InOut).SequenceEqual(inRefs) &&
+                        inMuts.Zip(inRefs, (m, r) => (m, r)).Select(x => x.m && x.r).SequenceEqual(inRefs)
+                    )
+                    {
+                        var outType =
+                            method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
+                            method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
+                            method.OutTypes[0];
+                        evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"ref mark of method is not compatible");
+                        evalFunc = new BottomResult(token);
+                    }
                 }
                 else
                 {
@@ -864,12 +896,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else if (ms.Length == 1)
                 {
-                    var method  = ms[0];
-                    var outType =
-                        method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
-                        method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
-                        method.OutTypes[0];
-                    evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                    var method = ms[0];
+                    var inMuts = args.Select(x => x.Inner.LeftValues.Length == 1);
+                    if
+                    (
+                        method.InParamInOuts.Select(x => x == TeuchiUdonMethodParamInOut.InOut).SequenceEqual(argRefs) &&
+                        inMuts.Zip(argRefs, (m, r) => (m, r)).Select(x => x.m && x.r).SequenceEqual(argRefs)
+                    )
+                    {
+                        var outType =
+                            method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
+                            method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
+                            method.OutTypes[0];
+                        evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"ref mark of ctor is not compatible");
+                        evalFunc = new BottomResult(token);
+                    }
                 }
                 else
                 {
@@ -884,6 +929,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             return new ExprResult(evalFunc.Token, evalFunc);
+        }
+
+        public override void ExitArgExpr([NotNull] ArgExprContext context)
+        {
+            var expr = context.expr()?.result;
+            var rf   = context.REF() != null;
+            if (expr == null) return;
+
+            context.result = new ArgExprResult(context.Start, expr, rf);
         }
 
         public override void ExitNameOfExpr([NotNull] NameOfExprContext context)

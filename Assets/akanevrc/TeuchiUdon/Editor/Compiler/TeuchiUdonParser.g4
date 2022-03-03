@@ -49,9 +49,14 @@ varBind
 
 varDecl[bool isActual]
     returns [VarDeclResult result]
-    : '(' ')'                                                      #UnitVarDecl
-    | identifier (':' expr)?                                       #SingleVarDecl
-    | '(' identifier (':' expr)? (',' identifier (':' expr)?)* ')' #TupleVarDecl
+    : '(' ')'                                  #UnitVarDecl
+    | qualifiedVar                             #SingleVarDecl
+    | '(' qualifiedVar (',' qualifiedVar)* ')' #TupleVarDecl
+    ;
+
+qualifiedVar
+    returns [QualifiedVarResult result]
+    : identifier (':' expr)?
     ;
 
 identifier
@@ -81,8 +86,8 @@ expr
     | identifier                                    #EvalVarExpr
     | expr op=('.' | '?.') expr                     #AccessExpr
     | expr '(' ')'                                  #EvalUnitFuncExpr
-    | expr '(' expr ')'                             #EvalSingleFuncExpr
-    | expr '(' expr (',' expr)+ ')'                 #EvalTupleFuncExpr
+    | expr '(' argExpr ')'                          #EvalSingleFuncExpr
+    | expr '(' argExpr (',' argExpr)+ ')'           #EvalTupleFuncExpr
     | 'nameof' '(' identifier ')'                   #NameOfExpr
     | expr op=('++' | '--')                         #PostfixExpr
     | op=('+' | '-' | '!' | '~' | '++' | '--') expr #PrefixExpr
@@ -102,6 +107,11 @@ expr
     |<assoc=right> expr op='<-' expr                #AssignExpr
     | 'let' varBind 'in' expr                       #LetInBindExpr
     | varDecl[false] '->' expr                      #FuncExpr
+    ;
+
+argExpr
+    returns [ArgExprResult result]
+    : 'ref'? expr
     ;
 
 literal

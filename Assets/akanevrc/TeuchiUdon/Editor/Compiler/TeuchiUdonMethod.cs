@@ -19,6 +19,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonType[] OutTypes { get; }
         public TeuchiUdonType[] AllParamTypes { get; }
         public TeuchiUdonMethodParamInOut[] AllParamInOuts { get; }
+        public TeuchiUdonMethodParamInOut[] InParamInOuts { get; }
         public string UdonName { get; }
 
         public TeuchiUdonMethod(TeuchiUdonType type, string name)
@@ -48,6 +49,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             OutTypes       = outTypes      ?.ToArray();
             AllParamTypes  = allParamTypes ?.ToArray();
             AllParamInOuts = allParamInOuts?.ToArray();
+            InParamInOuts  = allParamInOuts?.Where(x => x != TeuchiUdonMethodParamInOut.Out).ToArray();
             UdonName       = udonName;
         }
 

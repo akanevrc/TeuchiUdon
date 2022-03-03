@@ -131,6 +131,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is InitExprAttrResult     initExprAttr    ) return VisitInitExprAttr    (initExprAttr);
             if (result is VarBindResult          varBind         ) return VisitVarBind         (varBind);
             if (result is VarDeclResult          varDecl         ) return VisitVarDecl         (varDecl);
+            if (result is QualifiedVarResult     qualifiedVar    ) return VisitQualifiedVar    (qualifiedVar);
             if (result is IdentifierResult       identifier      ) return VisitIdentifier      (identifier);
             if (result is JumpResult             jump            ) return VisitJump            (jump);
             if (result is LetBindResult          letBind         ) return VisitLetBind         (letBind);
@@ -151,6 +152,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is EvalFuncResult         evalFunc        ) return VisitEvalFunc        (evalFunc);
             if (result is EvalMethodResult       evalMethod      ) return VisitEvalMethod      (evalMethod);
             if (result is EvalVarCandidateResult evalVarCandidate) return VisitEvalVarCandidate(evalVarCandidate);
+            if (result is ArgExprResult          argExpr         ) return VisitArgExpr         (argExpr);
             if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
             if (result is InfixResult            infix           ) return VisitInfix           (infix);
             if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
@@ -267,6 +269,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitVarDecl(VarDeclResult result)
+        {
+            return new TeuchiUdonAssembly[0];
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitQualifiedVar(QualifiedVarResult result)
         {
             return new TeuchiUdonAssembly[0];
         }
@@ -464,6 +471,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalVarCandidate(EvalVarCandidateResult result)
+        {
+            return new TeuchiUdonAssembly[0];
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitArgExpr(ArgExprResult result)
         {
             return new TeuchiUdonAssembly[0];
         }

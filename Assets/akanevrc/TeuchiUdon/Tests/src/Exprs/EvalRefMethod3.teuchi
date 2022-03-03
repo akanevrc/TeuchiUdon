@@ -1,0 +1,4 @@
+// error
+mut x = 0;
+int.TryParse("100", x);
+UnityEngine.Debug.Log(x);

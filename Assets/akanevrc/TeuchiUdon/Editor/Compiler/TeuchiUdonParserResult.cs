@@ -147,21 +147,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public TeuchiUdonVar[] Vars { get; }
         public TeuchiUdonType[] Types { get; }
-        public IdentifierResult[] Identifiers { get; }
-        public ExprResult[] Qualifieds { get; }
+        public QualifiedVarResult[] QualifiedVars { get; }
 
-        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<IdentifierResult> identifiers, IEnumerable<ExprResult> qualifieds)
+        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<QualifiedVarResult> qualifiedVars)
             : base(token)
         {
-            Types       = qualifieds .Select(x => x.Inner.Type.GetArgAsType()).ToArray();
-            var indices = identifiers.Select(_ => TeuchiUdonTables.Instance.GetVarIndex()).ToArray();
+            Types       = qualifiedVars.Select(x => x.Qualified.Inner.Type.GetArgAsType()).ToArray();
+            var indices = qualifiedVars.Select(_ => TeuchiUdonTables.Instance.GetVarIndex()).ToArray();
             Vars =
-                identifiers
-                .Zip(Types  , (i, t) => (i, t))
-                .Zip(indices, (x, n) => (x.i, x.t, n))
-                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.i.Name, x.t, false)).ToArray();
-            Identifiers = identifiers.ToArray();
-            Qualifieds  = qualifieds .ToArray();
+                qualifiedVars
+                .Zip(Types  , (q, t) => (q, t))
+                .Zip(indices, (x, n) => (x.q, x.t, n))
+                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.t, false)).ToArray();
+            QualifiedVars = qualifiedVars.ToArray();
 
             foreach (var v in Vars)
             {
@@ -174,6 +172,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     TeuchiUdonTables.Instance.Vars.Add(v, v);
                 }
             }
+        }
+    }
+
+    public class QualifiedVarResult : TeuchiUdonParserResult
+    {
+        public IdentifierResult Identifier { get; }
+        public ExprResult Qualified { get; }
+
+        public QualifiedVarResult(IToken token, IdentifierResult identifier, ExprResult qualified)
+            : base(token)
+        {
+            Identifier = identifier;
+            Qualified  = qualified;
         }
     }
 
@@ -974,5 +985,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+    }
+
+    public class ArgExprResult : TeuchiUdonParserResult
+    {
+        public ExprResult Expr { get; }
+        public bool Ref { get; }
+
+        public ArgExprResult(IToken token, ExprResult expr, bool rf)
+            : base(token)
+        {
+            Expr = expr;
+            Ref  = rf;
+        }
     }
 }
