@@ -852,6 +852,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     evalFunc = new BottomResult(token);
                 }
             }
+            else if (type.LogicalTypeNameEquals(TeuchiUdonType.Type))
+            {
+                var inTypes = args.Select(x => x.Inner.Type);
+                var qm      = new TeuchiUdonMethod(type, "ctor", inTypes);
+                var ms      = TeuchiUdonTables.Instance.GetMostCompatibleMethods(qm).ToArray();
+                if (ms.Length == 0)
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"ctor is not defined");
+                    evalFunc = new BottomResult(token);
+                }
+                else if (ms.Length == 1)
+                {
+                    var method  = ms[0];
+                    var outType =
+                        method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
+                        method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
+                        method.OutTypes[0];
+                    evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of ctor is nondeterministic");
+                    evalFunc = new BottomResult(token);
+                }
+            }
             else
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"expression is not a function or method");

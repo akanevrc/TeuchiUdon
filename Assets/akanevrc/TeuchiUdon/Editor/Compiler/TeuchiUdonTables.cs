@@ -133,7 +133,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var udonTypeName = GetUdonTypeName(def.type);
                         var typeNames    = def.type.FullName.Split(new string[] { "." }, StringSplitOptions.None);
                         var qualNames    = typeNames.Take(typeNames.Length - 1).Select(x => new TeuchiUdonScope(x, TeuchiUdonScopeMode.Type)).ToArray();
-                        var typeName     = typeNames.Last().Replace("[]", "");
+                        var typeName     = typeNames.Last();
                         var realType     = def.type.IsArray ? def.type.GetElementType() : def.type;
                         var qual         = new TeuchiUdonQualifier(qualNames, qualNames);
                         var type         = new TeuchiUdonType(qual, typeName, udonTypeName, udonTypeName, realType);
@@ -223,6 +223,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                                 x.parameterType == UdonNodeParameter.ParameterType.IN_OUT ? TeuchiUdonMethodParamInOut.InOut : TeuchiUdonMethodParamInOut.Out);
                         var method = new TeuchiUdonMethod(instanceType, methodName, inTypes, outTypes, allParamTypes, allParamInOuts, def.fullName);
 
+                        if (method.UdonName.StartsWith("Const_"   )) continue;
+                        if (method.UdonName.StartsWith("Variable_")) continue;
+                        if (method.UdonName.StartsWith("Event_"))
+                        {
+                            continue;
+                        }
+                        if (instanceType.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) continue;
+
                         if (!Methods.ContainsKey(method))
                         {
                             Methods.Add(method, method);
@@ -232,13 +240,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         {
                             TypeToMethods.Add(instanceType, new Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>());
                         }
-                        var methodToMethods = TypeToMethods[instanceType];
+                        var nameToMethods = TypeToMethods[instanceType];
 
-                        if (!methodToMethods.ContainsKey(methodName))
+                        if (!nameToMethods.ContainsKey(methodName))
                         {
-                            methodToMethods.Add(methodName, new Dictionary<int, List<TeuchiUdonMethod>>());
+                            nameToMethods.Add(methodName, new Dictionary<int, List<TeuchiUdonMethod>>());
                         }
-                        var argsToMethods = methodToMethods[methodName];
+                        var argsToMethods = nameToMethods[methodName];
 
                         if (!argsToMethods.ContainsKey(inTypes.Length))
                         {

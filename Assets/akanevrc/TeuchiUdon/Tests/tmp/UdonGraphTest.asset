@@ -54,7 +54,8 @@ MonoBehaviour:
       flowUIDs: []
       nodeValues:
       - unityObjectValue: {fileID: 0}
-        stringValue: 
+        stringValue: System.Object[], mscorlib, Version=4.0.0.0, Culture=neutral,
+          PublicKeyToken=b77a5c561934e089|{}
       - unityObjectValue: {fileID: 0}
         stringValue: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089|newVariable
       - unityObjectValue: {fileID: 0}
@@ -79,13 +80,13 @@ MonoBehaviour:
     updateOrder: 0
   graphElementData:
   - type: 5
-    uid: 4a8ddf06-6f8c-47db-b9ea-9cd320c2fb66
+    uid: 62a8371e-0e41-4e8f-aed6-844e046dcac1
     jsonData: '{"visible":true,"layout":{"serializedVersion":"2","x":0.0,"y":338.0,"width":200.0,"height":150.0}}'
   - type: 4
     uid: e09695ce-c5f3-4a00-ae48-400ce9171985
     jsonData: '{"visible":false,"layout":{"serializedVersion":"2","x":0.0,"y":23.0,"width":200.0,"height":100.0}}'
   viewTransform:
-    position: {x: 267, y: 131}
+    position: {x: 293, y: 104}
     scale: 1
   version: 1.0.0
   showAssembly: 1

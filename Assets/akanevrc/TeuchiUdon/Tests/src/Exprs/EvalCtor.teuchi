@@ -1,0 +1,2 @@
+// 100
+UnityEngine.Debug.Log(UnityEngine.Vector3(100.0, 200.0, 300.0).x);
