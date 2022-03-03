@@ -539,8 +539,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (result.Op)
             {
                 case ".":
+                    return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
                 case "?.":
-                   return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
+                    return
+                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 0 ? new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) } :
+                        EvalInfixCoalescingAccess
+                        (
+                            result.Methods[0],
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[1][0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
+                            new TeuchiUdonAssembly[] { new Assembly_JUMP         (new AssemblyAddress_CODE_LABEL(result.Labels[1])) },
+                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[0]) },
+                            new TeuchiUdonAssembly[] { new Assembly_LABEL        (result.Labels[1]) }
+                        );
                 case "+":
                 case "-":
                 case "*":
@@ -586,8 +602,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return
                         EvalInfixConditionalAnd
                         (
-                            VisitExpr(result.Expr1).ToArray(),
-                            VisitExpr(result.Expr2).ToArray(),
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
                             new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
                             new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
                             new TeuchiUdonAssembly[] { new Assembly_JUMP         (new AssemblyAddress_CODE_LABEL(result.Labels[1])) },
@@ -598,8 +614,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return
                         EvalInfixConditionalOr
                         (
-                            VisitExpr(result.Expr1).ToArray(),
-                            VisitExpr(result.Expr2).ToArray(),
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
                             new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
                             new TeuchiUdonAssembly[] { new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(result.Labels[0])) },
                             new TeuchiUdonAssembly[] { new Assembly_JUMP         (new AssemblyAddress_CODE_LABEL(result.Labels[1])) },
@@ -613,8 +629,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         EvalInfixCoalescing
                         (
                             result.Methods[0],
-                            VisitExpr(result.Expr1).ToArray(),
-                            VisitExpr(result.Expr2).ToArray(),
+                            VisitExpr(result.Expr1),
+                            VisitExpr(result.Expr2),
                             new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])) },
                             new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.OutValuess[1][0])) },
                             new TeuchiUdonAssembly[] { new Assembly_PUSH         (new AssemblyAddress_DATA_LABEL(result.Literals[0])) },
@@ -738,6 +754,42 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(jump)
                 .Concat(label1)
                 .Concat(tmpValue)
+                .Concat(label2);
+        }
+
+        private IEnumerable<TeuchiUdonAssembly> EvalInfixCoalescingAccess
+        (
+            TeuchiUdonMethod method,
+            IEnumerable<TeuchiUdonAssembly> value1,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            IEnumerable<TeuchiUdonAssembly> outValue,
+            IEnumerable<TeuchiUdonAssembly> tmpValue,
+            IEnumerable<TeuchiUdonAssembly> literal,
+            IEnumerable<TeuchiUdonAssembly> jumpIfFalse,
+            IEnumerable<TeuchiUdonAssembly> jump,
+            IEnumerable<TeuchiUdonAssembly> label1,
+            IEnumerable<TeuchiUdonAssembly> label2
+        )
+        {
+            return
+                value1
+                .Concat(tmpValue)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_COPY() })
+                .Concat
+                (
+                    method.SortAlongParams(new TeuchiUdonAssembly[][] { tmpValue.ToArray(), literal.ToArray() }, new TeuchiUdonAssembly[][] { outValue.ToArray() })
+                    .SelectMany(x => x)
+                )
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_EXTERN(method)
+                })
+                .Concat(outValue)
+                .Concat(jumpIfFalse)
+                .Concat(literal)
+                .Concat(jump)
+                .Concat(label1)
+                .Concat(value2)
                 .Concat(label2);
         }
 

@@ -624,6 +624,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             eval      = new EvalTypeResult(varCandidate1.Token, outer, type, varCandidate1.Identifier);
                             break;
                         }
+
+                        var qv = new TeuchiUdonVar(qual, varCandidate1.Identifier.Name);
+                        if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                        {
+                            var v    = TeuchiUdonTables.Instance.Vars[qv];
+                            var type = v.Type;
+                            eval     = new EvalVarResult(varCandidate1.Token, type, v, varCandidate1.Identifier);
+                            break;
+                        }
                     }
 
                     if (eval == null)
