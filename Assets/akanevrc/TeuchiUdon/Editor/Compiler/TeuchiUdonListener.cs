@@ -19,30 +19,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Parser = parser;
         }
 
-        public override void EnterEveryRule([NotNull] ParserRuleContext context)
-        {
-            if (context is TopStatementContext || context is StatementContext)
-            {
-                TeuchiUdonOutValuePool.Instance.PushScope();
-            }
-        }
-
-        public override void ExitEveryRule([NotNull] ParserRuleContext context)
-        {
-            if (context is TopStatementContext || context is StatementContext)
-            {
-                TeuchiUdonOutValuePool.Instance.PopScope();
-            }
-        }
-
         public override void ExitTarget([NotNull] TargetContext context)
         {
             var body = context.body()?.result;
 
             TeuchiUdonAssemblyWriter.Instance.PushDataPart
             (
-                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromTables(),
-                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromOutValuePool()
+                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromTables()
             );
             TeuchiUdonAssemblyWriter.Instance.PushCodePart
             (

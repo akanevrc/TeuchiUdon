@@ -20,12 +20,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> ExportedVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
+        public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
 
         private int VarCounter { get; set; }
+        private int OutValueCounter { get; set; }
         private int LiteralCounter { get; set; }
         private int FuncCounter { get; set; }
         private int VarBindCounter { get; set; }
@@ -64,12 +66,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             UnbufferedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
             ExportedVars   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
             SyncedVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
+            OutValues      = new Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue>();
             Literals       = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
             This           = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs          = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
             Indirects      = new Dictionary<TeuchiUdonIndirect, uint>();
 
             VarCounter      = 0;
+            OutValueCounter = 0;
             LiteralCounter  = 0;
             FuncCounter     = 0;
             VarBindCounter  = 0;
@@ -375,6 +379,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int GetIndirectIndex()
         {
             return IndirectCounter++;
+        }
+
+        public IEnumerable<TeuchiUdonOutValue> GetOutValues(int count)
+        {
+            var outValues = Enumerable.Range(OutValueCounter, count).Select(x => new TeuchiUdonOutValue(x)).ToArray();
+            OutValueCounter += count;
+            foreach (var o in outValues)
+            {
+                OutValues.Add(o, o);
+            }
+            return outValues;
         }
 
         public static string GetUdonTypeName(Type type)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
@@ -420,7 +419,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type)
         {
             Method     = method;
-            OutValues  = TeuchiUdonOutValuePool.Instance.RetainOutValues(method.OutTypes.Length).ToArray();
+            OutValues  = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
             Identifier = identifier;
         }
 
@@ -454,7 +453,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Getter     = getter;
             Setter     = setter;
-            OutValues  = TeuchiUdonOutValuePool.Instance.RetainOutValues(getter.OutTypes.Length).ToArray();
+            OutValues  = TeuchiUdonTables.Instance.GetOutValues(getter.OutTypes.Length).ToArray();
             Identifier = identifier;
         }
 
@@ -472,7 +471,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type)
         {
             EvalFunc = new TeuchiUdonEvalFunc(index, qualifier);
-            OutValue = TeuchiUdonOutValuePool.Instance.RetainOutValues(1).First();
+            OutValue = TeuchiUdonTables.Instance.GetOutValues(1).First();
             Expr     = expr;
             Args     = args.ToArray();
         }
@@ -493,7 +492,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Method    = method;
             Expr      = expr;
             Args      = args.ToArray();
-            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(method.OutTypes.Length).ToArray();
+            OutValues = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
 
             Instance = expr.Inner.Instance;
         }
@@ -629,7 +628,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "-":
                 case "!":
                 case "~":
-                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(x.OutTypes.Length));
+                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -832,13 +831,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "&&":
                 case "||":
                 case "<-":
-                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(x.OutTypes.Length));
+                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
                 case "?.":
                 case "??":
                     return
                         Methods
-                        .Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(x.OutTypes.Length))
-                        .Concat(new TeuchiUdonOutValue[][] { TeuchiUdonOutValuePool.Instance.RetainOutValues(1).ToArray() });
+                        .Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length))
+                        .Concat(new TeuchiUdonOutValue[][] { TeuchiUdonTables.Instance.GetOutValues(1).ToArray() });
                 default:
                     return new TeuchiUdonOutValue[0][];
             }

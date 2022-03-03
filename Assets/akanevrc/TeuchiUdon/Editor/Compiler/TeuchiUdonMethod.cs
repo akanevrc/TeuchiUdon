@@ -86,35 +86,5 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return $"{Type}.{Name}({string.Join<TeuchiUdonType>(", ", InTypes)})";
         }
-
-        public IEnumerable<T> SortAlongParams<T>(IEnumerable<T> inTypes, IEnumerable<T> outTypes)
-        {
-            var inTypesArr  = inTypes .ToArray();
-            var outTypesArr = outTypes.ToArray();
-
-            if
-            (
-                inTypesArr .Length != AllParamInOuts.Count(x => x == TeuchiUdonMethodParamInOut.In || x == TeuchiUdonMethodParamInOut.InOut) ||
-                outTypesArr.Length != AllParamInOuts.Count(x => x == TeuchiUdonMethodParamInOut.Out)
-            )
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(null, $"invalid param count");
-                yield break;
-            }
-
-            var i = 0;
-            var o = 0;
-            for (var p = 0; p < AllParamInOuts.Length; p++)
-            {
-                if (AllParamInOuts[p] == TeuchiUdonMethodParamInOut.In || AllParamInOuts[p] == TeuchiUdonMethodParamInOut.InOut)
-                {
-                    yield return inTypesArr[i++];
-                }
-                else
-                {
-                    yield return outTypesArr[o++];
-                }
-            }
-        }
     }
 }
