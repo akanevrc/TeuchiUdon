@@ -104,7 +104,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else if (init == null)
                 {
-                    init = "_start";
+                    init = "Start";
                 }
                 
                 if (sync != TeuchiUdonSyncMode.Disable)
@@ -176,7 +176,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             if (init == null)
             {
-                init = "_start";
+                init = "Start";
             }
 
             expr.ReturnsValue = false;

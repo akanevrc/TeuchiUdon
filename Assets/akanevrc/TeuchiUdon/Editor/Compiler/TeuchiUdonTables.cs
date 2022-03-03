@@ -15,6 +15,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonType, TeuchiUdonType> LogicalTypes { get; private set; }
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
         public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
+        public Dictionary<string, TeuchiUdonMethod> Events { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> ExportedVars { get; private set; }
@@ -49,6 +50,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 LogicalTypes  = new Dictionary<TeuchiUdonType     , TeuchiUdonType>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
                 Methods       = new Dictionary<TeuchiUdonMethod   , TeuchiUdonMethod>();
                 TypeToMethods = new Dictionary<TeuchiUdonType     , Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
+                Events        = new Dictionary<string             , TeuchiUdonMethod>();
 
                 InitInternalTypes();
                 InitExternalTypes();
@@ -76,6 +78,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             LetInCounter    = 0;
             BranchCounter   = 0;
             IndirectCounter = 0;
+
+            var e = Events.Values.ToArray();
         }
 
         private void InitInternalTypes()
@@ -227,6 +231,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         if (method.UdonName.StartsWith("Variable_")) continue;
                         if (method.UdonName.StartsWith("Event_"))
                         {
+                            if (!Events.ContainsKey(methodName))
+                            {
+                                Events.Add(methodName, method);
+                            }
                             continue;
                         }
                         if (instanceType.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) continue;
@@ -382,6 +390,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static string GetSetterName(string name)
         {
             return $"set_{name}";
+        }
+
+        public static string GetEventName(string name)
+        {
+            return name.Length <= 1 ? name : $"_{char.ToLower(name[0])}{name.Substring(1)}";
+        }
+
+        public static string GetVarNameFromEventName(string name)
+        {
+            return name.Length <= 1 ? name : $"{char.ToUpper(name[1])}{name.Substring(2)}";
+        }
+
+        public static bool IsValidVarName(string name)
+        {
+            return name.Length >= 1 && !name.StartsWith("_");
         }
 
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()

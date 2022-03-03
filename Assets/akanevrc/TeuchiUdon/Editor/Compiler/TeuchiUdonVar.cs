@@ -64,12 +64,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetLabel()
         {
-            return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Name}]";
+            if (Qualifier == TeuchiUdonQualifier.Top && TeuchiUdonTables.Instance.Events.ContainsKey(Name))
+            {
+                return TeuchiUdonTables.GetEventName(Name);
+            }
+            else
+            {
+                return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Name}]";
+            }
         }
 
         public string GetFullLabel()
         {
-            return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Qualifier.Qualify(">", Name)}]";
+            if (Qualifier == TeuchiUdonQualifier.Top && TeuchiUdonTables.Instance.Events.ContainsKey(Name))
+            {
+                return TeuchiUdonTables.GetEventName(Name);
+            }
+            else
+            {
+                return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Qualifier.Qualify(">", Name)}]";
+            }
         }
     }
 }

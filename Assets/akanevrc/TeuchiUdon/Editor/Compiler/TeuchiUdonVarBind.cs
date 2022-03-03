@@ -60,7 +60,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VarNames.Length == 0 ? Index.ToString() :
-                VarNames.Length == 1 ? VarNames[0]      : $"[{string.Join(">", VarNames)}]";
+                VarNames.Length == 1 ? GetVarName(VarNames[0]) :
+                $"[{string.Join(">", VarNames.Select(x => GetVarName(x)))}]";
+        }
+
+        private string GetVarName(string name)
+        {
+            return TeuchiUdonTables.Instance.Events.ContainsKey(name) ? TeuchiUdonTables.GetEventName(name) : name;
         }
     }
 }

@@ -163,9 +163,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             foreach (var v in Vars)
             {
-                if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+                if (!TeuchiUdonTables.IsValidVarName(v.Name))
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"{v.Name} conflicts with another variable");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"'{v.Name}' is invalid variable name");
+                }
+                else if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"'{v.Name}' conflicts with another variable");
                 }
                 else
                 {
