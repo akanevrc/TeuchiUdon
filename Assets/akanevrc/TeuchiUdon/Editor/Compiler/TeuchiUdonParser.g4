@@ -78,35 +78,34 @@ statement
 
 expr
     returns [ExprResult result, int tableIndex]
-    : '{' (statement ';')* '}'                      #UnitBlockExpr
-    | '{' (statement ';')* expr '}'                 #ValueBlockExpr
-    | '(' expr ')'                                  #ParenExpr
-    | literal                                       #LiteralExpr
-    | thisLiteral                                   #ThisLiteralExpr
-    | identifier                                    #EvalVarExpr
-    | expr op=('.' | '?.') expr                     #AccessExpr
-    | expr '(' ')'                                  #EvalUnitFuncExpr
-    | expr '(' argExpr ')'                          #EvalSingleFuncExpr
-    | expr '(' argExpr (',' argExpr)+ ')'           #EvalTupleFuncExpr
-    | 'nameof' '(' identifier ')'                   #NameOfExpr
-    | expr op=('++' | '--')                         #PostfixExpr
-    | op=('+' | '-' | '!' | '~' | '++' | '--') expr #PrefixExpr
-    | expr op='..' expr                             #RangeExpr
-    | expr op=('*' | '/' | '%') expr                #MultiplicationExpr
-    | expr op=('+' | '-') expr                      #AdditionExpr
-    | expr op=('<<' | '>>') expr                    #ShiftExpr
-    | expr op=('<' | '>' | '<=' | '>=') expr        #RelationExpr
-    | expr op=('==' | '!=') expr                    #EqualityExpr
-    | expr op='&' expr                              #LogicalAndExpr
-    | expr op='^' expr                              #LogicalXorExpr
-    | expr op='|' expr                              #LogicalOrExpr
-    | expr op='&&' expr                             #ConditionalAndExpr
-    | expr op='||' expr                             #ConditionalOrExpr
-    | expr op='??' expr                             #CoalescingExpr
-    |<assoc=right> expr '?' expr ':' expr           #ConditionalExpr
-    |<assoc=right> expr op='<-' expr                #AssignExpr
-    | 'let' varBind 'in' expr                       #LetInBindExpr
-    | varDecl[false] '->' expr                      #FuncExpr
+    : '{' (statement ';')* '}'               #UnitBlockExpr
+    | '{' (statement ';')* expr '}'          #ValueBlockExpr
+    | '(' expr ')'                           #ParenExpr
+    | literal                                #LiteralExpr
+    | thisLiteral                            #ThisLiteralExpr
+    | identifier                             #EvalVarExpr
+    | expr op=('.' | '?.') expr              #AccessExpr
+    | expr '(' ')'                           #EvalUnitFuncExpr
+    | expr '(' argExpr ')'                   #EvalSingleFuncExpr
+    | expr '(' argExpr (',' argExpr)+ ')'    #EvalTupleFuncExpr
+    | 'nameof' '(' identifier ')'            #NameOfExpr
+    | op=('+' | '-' | '!' | '~') expr        #PrefixExpr
+    | expr op='..' expr                      #RangeExpr
+    | expr op=('*' | '/' | '%') expr         #MultiplicationExpr
+    | expr op=('+' | '-') expr               #AdditionExpr
+    | expr op=('<<' | '>>') expr             #ShiftExpr
+    | expr op=('<' | '>' | '<=' | '>=') expr #RelationExpr
+    | expr op=('==' | '!=') expr             #EqualityExpr
+    | expr op='&' expr                       #LogicalAndExpr
+    | expr op='^' expr                       #LogicalXorExpr
+    | expr op='|' expr                       #LogicalOrExpr
+    | expr op='&&' expr                      #ConditionalAndExpr
+    | expr op='||' expr                      #ConditionalOrExpr
+    | expr op='??' expr                      #CoalescingExpr
+    |<assoc=right> expr '?' expr ':' expr    #ConditionalExpr
+    |<assoc=right> expr op='<-' expr         #AssignExpr
+    | 'let' varBind 'in' expr                #LetInBindExpr
+    | varDecl[false] '->' expr               #FuncExpr
     ;
 
 argExpr

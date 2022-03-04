@@ -87,8 +87,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.Init(parser);
                 TeuchiUdonTables             .Instance.Init();
                 TeuchiUdonQualifierStack     .Instance.Init();
+                TeuchiUdonOutValuePool       .Instance.Init();
                 TeuchiUdonAssemblyWriter     .Instance.Init();
-                TeuchiUdonCompilerStrategy           .Instance.Init();
+                TeuchiUdonCompilerStrategy   .Instance.Init();
 
                 try
                 {

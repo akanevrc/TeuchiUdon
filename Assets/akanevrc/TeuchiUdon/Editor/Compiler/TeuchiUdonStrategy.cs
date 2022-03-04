@@ -38,13 +38,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                     }))
-                .Concat(TeuchiUdonTables.Instance.OutValues.Values.SelectMany(x =>
-                    x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                    new TeuchiUdonAssembly[0] :
-                    new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
-                    }))
                 .Concat(TeuchiUdonTables.Instance.Literals.Values.Except(TeuchiUdonTables.Instance.ExportedVars.Values).SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
@@ -66,6 +59,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_DECL_DATA(x.Return, x.Type, new AssemblyLiteral_NULL())
                     }));
+        }
+
+        public IEnumerable<TeuchiUdonAssembly> GetDataPartFromOutValuePool()
+        {
+            return
+                TeuchiUdonOutValuePool.Instance.OutValues.Values.SelectMany(x =>
+                x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                new TeuchiUdonAssembly[0] :
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
+                });
         }
 
         public IEnumerable<TeuchiUdonAssembly> GetCodePartFromTables()

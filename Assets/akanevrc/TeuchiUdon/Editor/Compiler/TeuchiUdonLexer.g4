@@ -92,8 +92,6 @@ WILDCARD                  : '_'   ;
 INTERR                    : '?'   ;
 OP_COALESCING             : '??'  ;
 OP_COALESCING_ACCESS      : '?.'  ;
-OP_INC                    : '++'  ;
-OP_DEC                    : '--'  ;
 OP_AND                    : '&&'  ;
 OP_OR                     : '||'  ;
 OP_ARROW                  : '->'  ;

@@ -4,18 +4,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonOutValue : IIndexedLabel, IEquatable<TeuchiUdonOutValue>
     {
+        public TeuchiUdonQualifier Qualifier { get; }
         public int Index { get; }
         public TeuchiUdonType Type { get; }
 
-        public TeuchiUdonOutValue(int index)
+        public TeuchiUdonOutValue(TeuchiUdonQualifier qualifier, int index)
         {
-            Index = index;
-            Type  = TeuchiUdonType.Any;
+            Qualifier = qualifier;
+            Index     = index;
+            Type      = TeuchiUdonType.Any;
         }
 
         public bool Equals(TeuchiUdonOutValue obj)
         {
-            return !object.ReferenceEquals(obj, null) && Index == obj.Index;
+            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
@@ -49,7 +51,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetFullLabel()
         {
-            return $"out[{Index}]";
+            return $"out[{Qualifier.Qualify(">", Index.ToString())}]";
         }
     }
 }

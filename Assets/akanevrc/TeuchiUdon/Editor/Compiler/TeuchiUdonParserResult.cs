@@ -415,11 +415,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonOutValue[] OutValues { get; }
         public IdentifierResult Identifier { get; }
 
-        public EvalGetterResult(IToken token, TeuchiUdonType type,  TeuchiUdonMethod method, IdentifierResult identifier)
+        public EvalGetterResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod method, IdentifierResult identifier)
             : base(token, type)
         {
             Method     = method;
-            OutValues  = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
+            OutValues  = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes.Length).ToArray();
             Identifier = identifier;
         }
 
@@ -448,12 +448,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonOutValue[] OutValues { get; }
         public IdentifierResult Identifier { get; }
 
-        public EvalGetterSetterResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod getter, TeuchiUdonMethod setter, IdentifierResult identifier)
+        public EvalGetterSetterResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod getter, TeuchiUdonMethod setter, IdentifierResult identifier)
             : base(token, type)
         {
             Getter     = getter;
             Setter     = setter;
-            OutValues  = TeuchiUdonTables.Instance.GetOutValues(getter.OutTypes.Length).ToArray();
+            OutValues  = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), getter.OutTypes.Length).ToArray();
             Identifier = identifier;
         }
 
@@ -471,7 +471,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type)
         {
             EvalFunc = new TeuchiUdonEvalFunc(index, qualifier);
-            OutValue = TeuchiUdonTables.Instance.GetOutValues(1).First();
+            OutValue = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), 1).First();
             Expr     = expr;
             Args     = args.ToArray();
         }
@@ -486,13 +486,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult[] Args { get; }
         public TeuchiUdonOutValue[] OutValues { get; }
 
-        public EvalMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonMethod method, ExprResult expr, IEnumerable<ExprResult> args)
+        public EvalMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod method, ExprResult expr, IEnumerable<ExprResult> args)
             : base(token, type)
         {
             Method    = method;
             Expr      = expr;
             Args      = args.ToArray();
-            OutValues = TeuchiUdonTables.Instance.GetOutValues(method.OutTypes.Length).ToArray();
+            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes.Length).ToArray();
 
             Instance = expr.Inner.Instance;
         }
@@ -515,16 +515,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public abstract class OpResult : TypedResult
     {
+        public TeuchiUdonQualifier Qualifier { get; }
         public string Op { get; }
         public TeuchiUdonMethod[] Methods { get; protected set; }
         public TeuchiUdonOutValue[][] OutValuess { get; protected set; }
         public TeuchiUdonLiteral[] Literals { get; protected set; }
         public ITeuchiUdonLabel[] Labels { get; protected set; }
 
-        public OpResult(IToken token, TeuchiUdonType type, string op)
+        public OpResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op)
             : base(token, type)
         {
-            Op = op;
+            Qualifier = qualifier;
+            Op        = op;
         }
 
         protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
@@ -585,8 +587,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public ExprResult Expr { get; }
 
-        public UnaryOpResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
-            : base(token, type, op)
+        public UnaryOpResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op, ExprResult expr)
+            : base(token, type, qualifier, op)
         {
             Expr = expr;
             Init();
@@ -595,8 +597,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class PrefixResult : UnaryOpResult
     {
-        public PrefixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr)
-            : base(token, type, op, expr)
+        public PrefixResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op, ExprResult expr)
+            : base(token, type, qualifier, op, expr)
         {
         }
 
@@ -628,7 +630,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "-":
                 case "!":
                 case "~":
-                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
+                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.OutTypes.Length));
                 default:
                     return new TeuchiUdonOutValue[0][];
             }
@@ -664,8 +666,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult Expr1 { get; }
         public ExprResult Expr2 { get; }
 
-        public BinaryOpResult(IToken token, TeuchiUdonType type, string op, ExprResult expr1, ExprResult expr2)
-            : base(token, type, op)
+        public BinaryOpResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op, ExprResult expr1, ExprResult expr2)
+            : base(token, type, qualifier, op)
         {
             Expr1 = expr1;
             Expr2 = expr2;
@@ -675,8 +677,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class InfixResult : BinaryOpResult
     {
-        public InfixResult(IToken token, TeuchiUdonType type, string op, ExprResult expr1, ExprResult expr2)
-            : base(token, type, op, expr1, expr2)
+        public InfixResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op, ExprResult expr1, ExprResult expr2)
+            : base(token, type, qualifier, op, expr1, expr2)
         {
             if (op == "." || op == "?.")
             {
@@ -831,13 +833,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "&&":
                 case "||":
                 case "<-":
-                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length));
+                    return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.OutTypes.Length));
                 case "?.":
                 case "??":
                     return
                         Methods
-                        .Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonTables.Instance.GetOutValues(x.OutTypes.Length))
-                        .Concat(new TeuchiUdonOutValue[][] { TeuchiUdonTables.Instance.GetOutValues(1).ToArray() });
+                        .Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.OutTypes.Length))
+                        .Concat(new TeuchiUdonOutValue[][] { TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), 1).ToArray() });
                 default:
                     return new TeuchiUdonOutValue[0][];
             }

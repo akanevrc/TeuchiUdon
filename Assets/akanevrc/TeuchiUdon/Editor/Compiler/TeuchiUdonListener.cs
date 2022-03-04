@@ -19,13 +19,30 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Parser = parser;
         }
 
+        public override void EnterEveryRule([NotNull] ParserRuleContext context)
+        {
+            if (context is TopStatementContext || context is StatementContext || context is ExprContext && context.Parent is FuncExprContext)
+            {
+                TeuchiUdonOutValuePool.Instance.PushScope(TeuchiUdonQualifierStack.Instance.Peek().GetFuncQualifier());
+            }
+        }
+
+        public override void ExitEveryRule([NotNull] ParserRuleContext context)
+        {
+            if (context is TopStatementContext || context is StatementContext || context is ExprContext && context.Parent is FuncExprContext)
+            {
+                TeuchiUdonOutValuePool.Instance.PopScope(TeuchiUdonQualifierStack.Instance.Peek().GetFuncQualifier());
+            }
+        }
+
         public override void ExitTarget([NotNull] TargetContext context)
         {
             var body = context.body()?.result;
 
             TeuchiUdonAssemblyWriter.Instance.PushDataPart
             (
-                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromTables()
+                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromTables(),
+                TeuchiUdonCompilerStrategy.Instance.GetDataPartFromOutValuePool()
             );
             TeuchiUdonAssemblyWriter.Instance.PushCodePart
             (
@@ -583,6 +600,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr2 = exprs[1]?.result;
             if (expr1 == null || expr2 == null) return;
 
+            var qualifier = TeuchiUdonQualifierStack.Instance.Peek();
+
             if (expr1.Inner is EvalVarCandidateResult varCandidate1)
             {
                 var eval = (TypedResult)null;
@@ -697,12 +716,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 1).ToArray();
                         if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], s[0], varCandidate2.Identifier);
+                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0], varCandidate2.Identifier);
                             break;
                         }
                         else if (g.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], varCandidate2.Identifier);
+                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], varCandidate2.Identifier);
                             break;
                         }
                         else if (s.Length == 1)
@@ -737,12 +756,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 2).ToArray();
                         if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], s[0], varCandidate2.Identifier);
+                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0], varCandidate2.Identifier);
                             break;
                         }
                         else if (g.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], g[0], varCandidate2.Identifier);
+                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], varCandidate2.Identifier);
                             break;
                         }
                         else if (s.Length == 1)
@@ -769,7 +788,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(expr1.Token, $"invalid '{op}' operator");
             }
 
-            var infix      = new InfixResult(expr1.Token, expr2.Inner.Type, op, expr1, expr2);
+            var infix      = new InfixResult(expr1.Token, expr2.Inner.Type, qualifier, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -807,6 +826,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var type     = expr.Inner.Type;
             var args     = argExprs.Select(x => x.Expr);
             var argRefs  = argExprs.Select(x => x.Ref);
+            var qual     = TeuchiUdonQualifierStack.Instance.Peek();
             var evalFunc = (TypedResult)null;
 
             if (type.LogicalTypeNameEquals(TeuchiUdonType.Func))
@@ -818,7 +838,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else
                 {
-                    var qual     = TeuchiUdonQualifierStack.Instance.Peek();
                     var argTypes = argExprs.Select(x => x.Expr.Inner.Type).ToArray();
                     var iType    =
                         argTypes.Length == 0 ? TeuchiUdonType.Unit :
@@ -862,7 +881,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
                             method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
                             method.OutTypes[0];
-                        evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                        evalFunc = new EvalMethodResult(token, outType, qual, method, expr, args);
                     }
                     else
                     {
@@ -900,7 +919,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             method.OutTypes.Length == 0 ? TeuchiUdonType.Unit :
                             method.OutTypes.Length >= 2 ? TeuchiUdonType.Tuple.ApplyArgsAsTuple(method.OutTypes) :
                             method.OutTypes[0];
-                        evalFunc = new EvalMethodResult(token, outType, method, expr, args);
+                        evalFunc = new EvalMethodResult(token, outType, qual, method, expr, args);
                     }
                     else
                     {
@@ -942,7 +961,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr = context.expr()?.result;
             if (op == null || expr == null) return;
             
-            var prefix     = new PrefixResult(context.Start, expr.Inner.Type, op, expr);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var prefix     = new PrefixResult(context.Start, expr.Inner.Type, qual, op, expr);
             context.result = new ExprResult(prefix.Token, prefix);
         }
 
@@ -966,7 +986,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -986,7 +1007,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1006,7 +1028,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1026,7 +1049,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1046,7 +1070,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1066,7 +1091,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1086,7 +1112,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1106,7 +1133,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, expr1.Inner.Type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, expr1.Inner.Type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1126,7 +1154,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1146,7 +1175,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Bool, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1167,7 +1197,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var type       = expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type) ? expr1.Inner.Type : expr2.Inner.Type;
-            var infix      = new InfixResult(context.Start, type, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 
@@ -1207,7 +1238,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var infix      = new InfixResult(context.Start, TeuchiUdonType.Unit, op, expr1, expr2);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var infix      = new InfixResult(context.Start, TeuchiUdonType.Unit, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
         }
 

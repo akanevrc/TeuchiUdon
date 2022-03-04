@@ -82,5 +82,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             return null;
         }
+
+        public TeuchiUdonQualifier GetFuncQualifier()
+        {
+            var func = (TeuchiUdonFunc)LastScope(TeuchiUdonScopeMode.Func)?.Label;
+            return func == null ? TeuchiUdonQualifier.Top : func.Qualifier;
+        }
     }
 }
