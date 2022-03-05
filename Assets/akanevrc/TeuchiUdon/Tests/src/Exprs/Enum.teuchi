@@ -1,0 +1,2 @@
+// Saturday
+UnityEngine.Debug.Log(System.DayOfWeek.Saturday);

@@ -735,6 +735,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             eval = new BottomResult(varCandidate2.Token);
                             break;
                         }
+
+                        if (t.RealType.IsEnum)
+                        {
+                            var name  = varCandidate2.Identifier.Name;
+                            var index = Array.IndexOf(t.RealType.GetEnumNames(), name);
+                            if (index >= 0)
+                            {
+                                var value = t.RealType.GetEnumValues().GetValue(index);
+                                eval = new LiteralResult(varCandidate2.Token, t, TeuchiUdonTables.Instance.GetLiteralIndex(), name, value);
+                                break;
+                            }
+                            else
+                            {
+                                TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate2.Token, $"'{name}' is not enum value");
+                                eval = new BottomResult(varCandidate2.Token);
+                                break;
+                            }
+                        }
                     }
                     else
                     {

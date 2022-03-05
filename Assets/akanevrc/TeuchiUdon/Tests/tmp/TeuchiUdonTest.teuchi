@@ -1,18 +1,14 @@
 @export
-radius = 4.0;
+radius = 0.1;
 @export
-acceleration = 4.0;
+velocity = 6.2832;
 
-mut velocity = 0.0;
-mut radian   = 0.0;
+mut angle = 0.0;
 
-getX = radian : float -> UnityEngine.Mathf.Cos(radian) * radius;
-getZ = radian : float -> UnityEngine.Mathf.Sin(radian) * radius;
+deltaAngle = velocity : float -> UnityEngine.Time.deltaTime * velocity;
+getAngle   = angle    : float -> UnityEngine.Quaternion.AngleAxis(angle, UnityEngine.Vector3.up);
 
-Start  = () -> this.transform.position <- UnityEngine.Vector3(getX(radian), 0.0, getZ(radian));
 Update = () -> {
-    velocity <- velocity + UnityEngine.Time.deltaTime * acceleration;
-    radian   <- radian   + UnityEngine.Time.deltaTime * velocity;
-
-    this.transform.position <- UnityEngine.Vector3(getX(radian), 0.0, getZ(radian));
+    angle <- angle + deltaAngle(velocity);
+    this.transform.rotation <- getAngle(angle);
 };
