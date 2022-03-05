@@ -1,0 +1,2 @@
+// (2.0, 2.0, 2.0)
+UnityEngine.Debug.Log(UnityEngine.Vector3(1.0, 1.0, 1.0) * 2.0);
