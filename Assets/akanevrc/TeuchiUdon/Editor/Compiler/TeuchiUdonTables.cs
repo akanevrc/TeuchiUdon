@@ -80,8 +80,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             LetInCounter    = 0;
             BranchCounter   = 0;
             IndirectCounter = 0;
-
-            var e = Events.Values.ToArray();
         }
 
         private void InitInternalTypes()
