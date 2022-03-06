@@ -418,7 +418,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
         {
             return
-                ExportedVars           .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Value.Type       .RealType))
+                ExportedVars           .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Key.Type         .RealType))
                 .Concat(Literals.Values.Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
                 .Concat(Indirects      .Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
         }
