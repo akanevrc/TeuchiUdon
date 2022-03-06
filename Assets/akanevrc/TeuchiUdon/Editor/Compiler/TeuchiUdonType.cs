@@ -144,9 +144,30 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         LogicalTypeNameEquals(TeuchiUdonType.Any    ) ||
                     obj.LogicalTypeNameEquals(TeuchiUdonType.Bottom ) ||
                     LogicalTypeEquals(obj) ||
-                    RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType)
+                    RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType) ||
+                    IsAssignableFromTuple(obj) ||
+                    IsAssignableFromFunc (obj)
                 );
         }
+
+        private bool IsAssignableFromTuple(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Tuple) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Tuple)) return false;
+
+            return GetArgsAsTuple().Zip(obj.GetArgsAsTuple(), (t, o) => (t, o)).All(x => x.t.IsAssignableFrom(x.o));
+        }
+
+        private bool IsAssignableFromFunc(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Func) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Func)) return false;
+
+            return
+                    GetArgAsFuncInType ().IsAssignableFrom(obj.GetArgAsFuncInType ()) &&
+                obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
+        }
+
 
         protected TeuchiUdonType ApplyArgs(IEnumerable<ITeuchiUdonTypeArg> args)
         {
@@ -218,15 +239,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Args.Cast<TeuchiUdonMethod>();
         }
 
-        public bool IsAssignableFromFunc(TeuchiUdonType obj)
+        public static TeuchiUdonType ToOneType(IEnumerable<TeuchiUdonType> types)
         {
-            if (obj == null) return false;
-            if (!LogicalTypeNameEquals(TeuchiUdonType.Func) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Func)) return false;
-            if (Args.Length != 2 || obj.Args.Length != 2) return false;
-
+            var count = types.Count();
             return
-                    GetArgAsFuncInType ().IsAssignableFrom(obj.GetArgAsFuncInType ()) &&
-                obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
+                count == 0 ? TeuchiUdonType.Unit :
+                count == 1 ? types.First() :
+                TeuchiUdonType.Tuple.ApplyArgsAsTuple(types);
         }
 
         public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(IEnumerable<TeuchiUdonType> inTypes)

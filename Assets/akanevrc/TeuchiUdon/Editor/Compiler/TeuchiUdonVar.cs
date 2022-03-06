@@ -11,26 +11,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
+        public string LogicalName { get; }
         public TeuchiUdonType Type { get; }
         public bool Mut { get; }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name)
-            : this(-1, qualifier, name, null, false)
+            : this(-1, qualifier, name, null, null, false)
         {
         }
 
-        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, bool mut)
+        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, string logicalName, TeuchiUdonType type, bool mut)
         {
-            Index     = index;
-            Qualifier = qualifier;
-            Name      = name;
-            Type      = type;
-            Mut       = mut;
+            Index       = index;
+            Qualifier   = qualifier;
+            Name        = name;
+            LogicalName = logicalName;
+            Type        = type;
+            Mut         = mut;
         }
 
         public bool Equals(TeuchiUdonVar obj)
         {
-            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Name == obj.Name;
+            return
+                !object.ReferenceEquals(obj, null) && (Qualifier == obj.Qualifier && Name == obj.Name || LogicalName != null && LogicalName == obj.LogicalName);
         }
 
         public override bool Equals(object obj)
@@ -64,7 +67,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetLabel()
         {
-            if (Qualifier == TeuchiUdonQualifier.Top && TeuchiUdonTables.Instance.Events.ContainsKey(Name))
+            if (LogicalName != null)
+            {
+                return LogicalName;
+            }
+            else if (TeuchiUdonTables.Instance.Events.ContainsKey(Name) && Qualifier == TeuchiUdonQualifier.Top)
             {
                 return TeuchiUdonTables.GetEventName(Name);
             }
@@ -76,7 +83,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetFullLabel()
         {
-            if (Qualifier == TeuchiUdonQualifier.Top && TeuchiUdonTables.Instance.Events.ContainsKey(Name))
+            if (LogicalName != null)
+            {
+                return LogicalName;
+            }
+            else if (TeuchiUdonTables.Instance.Events.ContainsKey(Name) && Qualifier == TeuchiUdonQualifier.Top)
             {
                 return TeuchiUdonTables.GetEventName(Name);
             }

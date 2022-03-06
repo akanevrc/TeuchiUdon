@@ -12,3 +12,5 @@ Update = () -> {
     angle <- angle + deltaAngle(velocity);
     this.transform.rotation <- getAngle(angle);
 };
+
+OnPlayerJoined = x : VRC.SDKBase.VRCPlayerApi -> ();

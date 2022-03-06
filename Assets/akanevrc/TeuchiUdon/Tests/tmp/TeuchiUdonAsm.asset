@@ -18,17 +18,20 @@ MonoBehaviour:
     radius: %SystemSingle, null\r\n    velocity: %SystemSingle, null\r\n    angle:
     %SystemSingle, null\r\n    deltaAngle: %SystemUInt32, null\r\n    var[deltaAngle>func[0]>velocity]:
     %SystemSingle, null\r\n    getAngle: %SystemUInt32, null\r\n    var[getAngle>func[1]>angle]:
-    %SystemSingle, null\r\n    _update: %SystemUInt32, null\r\n    literal[2]: %SystemSingle,
-    null\r\n    literal[this]: %UnityEngineGameObject, this\r\n    return[func[deltaAngle>0]]:
-    %SystemUInt32, null\r\n    return[func[getAngle>1]]: %SystemUInt32, null\r\n   
-    return[func[_update>2]]: %SystemUInt32, null\r\n    out[deltaAngle>0]: %SystemObject,
-    null\r\n    out[deltaAngle>1]: %SystemObject, null\r\n    out[getAngle>0]: %SystemObject,
-    null\r\n    out[getAngle>1]: %SystemObject, null\r\n    out[_update>0]: %SystemObject,
-    null\r\n    out[_update>1]: %SystemObject, null\r\n    out[_update>2]: %SystemObject,
-    null\r\n    indirect[topcall[_update]]: %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]:
-    %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>2]]: %SystemUInt32,
-    null\r\n    indirect[func[deltaAngle>0]]: %SystemUInt32, null\r\n    indirect[func[getAngle>1]]:
-    %SystemUInt32, null\r\n    indirect[func[_update>2]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    %SystemSingle, null\r\n    _update: %SystemUInt32, null\r\n    _onPlayerJoined:
+    %SystemUInt32, null\r\n    onPlayerJoinedPlayer: %VRCSDKBaseVRCPlayerApi, null\r\n   
+    literal[2]: %SystemSingle, null\r\n    literal[this]: %UnityEngineGameObject,
+    this\r\n    return[func[deltaAngle>0]]: %SystemUInt32, null\r\n    return[func[getAngle>1]]:
+    %SystemUInt32, null\r\n    return[func[_update>2]]: %SystemUInt32, null\r\n   
+    return[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n    out[deltaAngle>0]:
+    %SystemObject, null\r\n    out[deltaAngle>1]: %SystemObject, null\r\n    out[getAngle>0]:
+    %SystemObject, null\r\n    out[getAngle>1]: %SystemObject, null\r\n    out[_update>0]:
+    %SystemObject, null\r\n    out[_update>1]: %SystemObject, null\r\n    out[_update>2]:
+    %SystemObject, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]: %SystemUInt32,
+    null\r\n    indirect[evalfunc[_update>func[2]>block[0]>2]]: %SystemUInt32, null\r\n   
+    indirect[func[deltaAngle>0]]: %SystemUInt32, null\r\n    indirect[func[getAngle>1]]:
+    %SystemUInt32, null\r\n    indirect[func[_update>2]]: %SystemUInt32, null\r\n   
+    indirect[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
     func[deltaAngle>0]:\r\n        PUSH, return[func[deltaAngle>0]]\r\n        COPY\r\n       
     PUSH, var[deltaAngle>func[0]>velocity]\r\n        COPY\r\n        PUSH, out[deltaAngle>0]\r\n       
     EXTERN, \"UnityEngineTime.__get_deltaTime__SystemSingle\"\r\n        PUSH, out[deltaAngle>0]\r\n       
@@ -51,13 +54,15 @@ MonoBehaviour:
     COPY\r\n        PUSH, angle\r\n        PUSH, indirect[evalfunc[_update>func[2]>block[0]>2]]\r\n       
     JUMP_INDIRECT, out[_update>2]\r\n        evalfunc[_update>func[2]>block[0]>2]:\r\n       
     EXTERN, \"UnityEngineTransform.__set_rotation__UnityEngineQuaternion__SystemVoid\"\r\n       
-    JUMP_INDIRECT, return[func[_update>2]]\r\n\r\n    .export _start\r\n    _start:\r\n       
-    PUSH, indirect[func[deltaAngle>0]]\r\n        PUSH, deltaAngle\r\n        COPY\r\n       
-    PUSH, indirect[func[getAngle>1]]\r\n        PUSH, getAngle\r\n        COPY\r\n       
-    PUSH, indirect[func[_update>2]]\r\n        PUSH, _update\r\n        COPY\r\n       
-    PUSH, literal[2]\r\n        PUSH, angle\r\n        COPY\r\n        JUMP, 0xFFFFFFFC\r\n\r\n   
-    .export _update\r\n    _update:\r\n        PUSH, indirect[topcall[_update]]\r\n       
-    JUMP_INDIRECT, _update\r\n        topcall[_update]:\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+    JUMP_INDIRECT, return[func[_update>2]]\r\n\r\n    func[_onPlayerJoined>3]:\r\n       
+    PUSH, return[func[_onPlayerJoined>3]]\r\n        COPY\r\n        PUSH, onPlayerJoinedPlayer\r\n       
+    COPY\r\n        JUMP_INDIRECT, return[func[_onPlayerJoined>3]]\r\n\r\n    .export
+    _start\r\n    _start:\r\n        PUSH, indirect[func[deltaAngle>0]]\r\n       
+    PUSH, deltaAngle\r\n        COPY\r\n        PUSH, indirect[func[getAngle>1]]\r\n       
+    PUSH, getAngle\r\n        COPY\r\n        PUSH, indirect[func[_update>2]]\r\n       
+    PUSH, _update\r\n        COPY\r\n        PUSH, indirect[func[_onPlayerJoined>3]]\r\n       
+    PUSH, _onPlayerJoined\r\n        COPY\r\n        PUSH, literal[2]\r\n       
+    PUSH, angle\r\n        COPY\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -81,7 +86,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 11
+      Data: 12
     - Name: 
       Entry: 7
       Data: 
@@ -221,7 +226,29 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: indirect[topcall[_update]]
+      Data: literal[3]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 6
+      Data: 
+    - Name: Item2
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: indirect[evalfunc[_update>func[2]>block[0]>1]]
     - Name: $v
       Entry: 7
       Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
@@ -231,7 +258,7 @@ MonoBehaviour:
       Data: 6|System.UInt32, mscorlib
     - Name: 
       Entry: 3
-      Data: 472
+      Data: 240
     - Name: 
       Entry: 8
       Data: 
@@ -255,34 +282,6 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: indirect[evalfunc[_update>func[2]>block[0]>1]]
-    - Name: $v
-      Entry: 7
-      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
-        mscorlib
-    - Name: Item1
-      Entry: 7
-      Data: 8|System.UInt32, mscorlib
-    - Name: 
-      Entry: 3
-      Data: 240
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: Item2
-      Entry: 9
-      Data: 7
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 1
       Data: indirect[evalfunc[_update>func[2]>block[0]>2]]
     - Name: $v
       Entry: 7
@@ -290,7 +289,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 9|System.UInt32, mscorlib
+      Data: 8|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 352
@@ -318,7 +317,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 10|System.UInt32, mscorlib
+      Data: 9|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 0
@@ -346,7 +345,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 11|System.UInt32, mscorlib
+      Data: 10|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 88
@@ -374,10 +373,38 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 12|System.UInt32, mscorlib
+      Data: 11|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 176
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 9
+      Data: 7
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: indirect[func[_onPlayerJoined>3]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 12|System.UInt32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 368
     - Name: 
       Entry: 8
       Data: 

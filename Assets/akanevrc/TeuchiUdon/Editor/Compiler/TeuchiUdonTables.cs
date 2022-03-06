@@ -213,19 +213,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var instanceDef = def.parameters
                             .FirstOrDefault(x => x.parameterType == UdonNodeParameter.ParameterType.IN && x.name == "instance");
                         var instanceType = instanceDef == null ? TeuchiUdonType.Type.ApplyArgAsType(type) : GetTeuchiUdonType(instanceDef.type);
+                        var allParamTypes = def.parameters
+                            .Select(x => GetTeuchiUdonType(x.type));
                         var inTypes = def.parameters
                             .Where(x => x.parameterType == UdonNodeParameter.ParameterType.IN || x.parameterType == UdonNodeParameter.ParameterType.IN_OUT)
                             .Select(x => GetTeuchiUdonType(x.type)).ToArray();
                         var outTypes = def.parameters
                             .Where(x => x.parameterType == UdonNodeParameter.ParameterType.OUT)
                             .Select(x => GetTeuchiUdonType(x.type));
-                        var allParamTypes = def.parameters
-                            .Select(x => GetTeuchiUdonType(x.type));
                         var allParamInOuts = def.parameters
                             .Select(x =>
                                 x.parameterType == UdonNodeParameter.ParameterType.IN     ? TeuchiUdonMethodParamInOut.In    :
                                 x.parameterType == UdonNodeParameter.ParameterType.IN_OUT ? TeuchiUdonMethodParamInOut.InOut : TeuchiUdonMethodParamInOut.Out);
-                        var method = new TeuchiUdonMethod(instanceType, methodName, inTypes, outTypes, allParamTypes, allParamInOuts, def.fullName);
+                        var allParamUdonNames = def.parameters.Select(x => x.name);
+                        var method = new TeuchiUdonMethod(instanceType, methodName, allParamTypes, inTypes, outTypes, allParamInOuts, def.fullName, allParamUdonNames);
 
                         if (method.UdonName.StartsWith("Const_"   )) continue;
                         if (method.UdonName.StartsWith("Variable_")) continue;
@@ -400,6 +401,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static string GetVarNameFromEventName(string name)
         {
             return name.Length <= 1 ? name : $"{char.ToUpper(name[1])}{name.Substring(2)}";
+        }
+
+        public static string GetEventParamName(string eventName, string paramName)
+        {
+            var ev    = eventName.Length == 0 ? eventName : $"{char.ToLower(eventName[0])}{eventName.Substring(1)}";
+            var param = paramName.Length == 0 ? paramName : $"{char.ToUpper(paramName[0])}{paramName.Substring(1)}";
+            return $"{ev}{param}";
         }
 
         public static bool IsValidVarName(string name)

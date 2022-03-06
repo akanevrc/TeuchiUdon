@@ -23,13 +23,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
-                        new Assembly_EXPORT_DATA(new TextLabel(x.Name))
+                        new Assembly_EXPORT_DATA(new TextLabel(x.GetFullLabel()))
                     })
                 .Concat(TeuchiUdonTables.Instance.SyncedVars.SelectMany(x => x.Key.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
-                        new Assembly_SYNC_DATA(new TextLabel(x.Key.Name), TeuchiUdonAssemblySyncMode.Create(x.Value))
+                        new Assembly_SYNC_DATA(new TextLabel(x.Key.GetFullLabel()), TeuchiUdonAssemblySyncMode.Create(x.Value))
                     }))
                 .Concat(TeuchiUdonTables.Instance.Vars.Values.SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
@@ -167,7 +167,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var topFuncs = result.TopStatements
                 .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
-                .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].Name, x: (TopBindResult)x));
+                .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].GetFullLabel(), x: (TopBindResult)x));
             var topStats = result.TopStatements
                 .Where(x => !(x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func)))
                 .Select(x => x is TopBindResult topBind ? (name: topBind.Init, x) : x is TopExprResult topExpr ? (name: topExpr.Init, x) : (name: null, x))

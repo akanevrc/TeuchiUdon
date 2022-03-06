@@ -88,5 +88,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var func = (TeuchiUdonFunc)LastScope(TeuchiUdonScopeMode.Func)?.Label;
             return func == null ? TeuchiUdonQualifier.Top : func.Qualifier;
         }
+
+        public TeuchiUdonVarBind GetFuncVarBind()
+        {
+            var varBind = Logical.Reverse().SkipWhile(x => x.Mode != TeuchiUdonScopeMode.Func).Skip(1).FirstOrDefault()?.Label;
+            return varBind as TeuchiUdonVarBind;
+        }
     }
 }

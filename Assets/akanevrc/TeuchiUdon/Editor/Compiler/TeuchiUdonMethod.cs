@@ -15,20 +15,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public TeuchiUdonType Type { get; }
         public string Name { get; }
+        public TeuchiUdonType[] AllParamTypes { get; }
         public TeuchiUdonType[] InTypes { get; }
         public TeuchiUdonType[] OutTypes { get; }
-        public TeuchiUdonType[] AllParamTypes { get; }
         public TeuchiUdonMethodParamInOut[] AllParamInOuts { get; }
         public TeuchiUdonMethodParamInOut[] InParamInOuts { get; }
         public string UdonName { get; }
+        public string[] AllParamUdonNames { get; }
+        public string[] InParamUdonNames { get; }
+        public string[] OutParamUdonNames { get; }
 
         public TeuchiUdonMethod(TeuchiUdonType type, string name)
-            : this(type, name, null, null, null, null, null)
+            : this(type, name, null, null, null, null, null, null)
         {
         }
 
         public TeuchiUdonMethod(TeuchiUdonType type, string name, IEnumerable<TeuchiUdonType> inTypes)
-            : this(type, name, inTypes, null, null, null, null)
+            : this(type, name, null, inTypes, null, null, null, null)
         {
         }
 
@@ -36,21 +39,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             TeuchiUdonType type,
             string name,
+            IEnumerable<TeuchiUdonType> allParamTypes,
             IEnumerable<TeuchiUdonType> inTypes,
             IEnumerable<TeuchiUdonType> outTypes,
-            IEnumerable<TeuchiUdonType> allParamTypes,
             IEnumerable<TeuchiUdonMethodParamInOut> allParamInOuts,
-            string udonName
+            string udonName,
+            IEnumerable<string> allParamUdonNames
         )
         {
-            Type           = type;
-            Name           = name;
-            InTypes        = inTypes       ?.ToArray();
-            OutTypes       = outTypes      ?.ToArray();
-            AllParamTypes  = allParamTypes ?.ToArray();
-            AllParamInOuts = allParamInOuts?.ToArray();
-            InParamInOuts  = allParamInOuts?.Where(x => x != TeuchiUdonMethodParamInOut.Out).ToArray();
-            UdonName       = udonName;
+            Type              = type;
+            Name              = name;
+            AllParamTypes     = allParamTypes ?.ToArray();
+            InTypes           = inTypes       ?.ToArray();
+            OutTypes          = outTypes      ?.ToArray();
+            AllParamInOuts    = allParamInOuts?.ToArray();
+            InParamInOuts     = allParamInOuts?.Where(x => x != TeuchiUdonMethodParamInOut.Out).ToArray();
+            UdonName          = udonName;
+            AllParamUdonNames = allParamUdonNames?.ToArray();
+            InParamUdonNames  = allParamUdonNames?.Zip(allParamInOuts, (un, io) => (un, io)).Where(x => x.io != TeuchiUdonMethodParamInOut.Out).Select(x => x.un).ToArray();
+            OutParamUdonNames = allParamUdonNames?.Zip(allParamInOuts, (un, io) => (un, io)).Where(x => x.io == TeuchiUdonMethodParamInOut.Out).Select(x => x.un).ToArray();
         }
 
         public bool Equals(TeuchiUdonMethod obj)
