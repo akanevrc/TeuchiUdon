@@ -72,18 +72,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var attrs   = context.varAttr().Select(x => x.result);
             if (varBind == null || attrs.Any(x => x == null)) return;
 
-            var (init, export, sync) = ExtractFromVarAttrs(attrs);
+            var (export, sync) = ExtractFromVarAttrs(attrs);
 
-            if (varBind.Vars.Length != 1 && (init != null || export || sync != TeuchiUdonSyncMode.Disable))
+            if (varBind.Vars.Length != 1 && (export || sync != TeuchiUdonSyncMode.Disable))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"tuple cannot be specified with any attributes");
             }
             else if (varBind.Vars.Length == 1 && varBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
             {
-                if (init != null)
-                {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @init");
-                }
                 if (sync != TeuchiUdonSyncMode.Disable)
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @sync, @linear, or @smooth");
@@ -93,7 +89,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 if (export)
                 {
-                    if (init == null && varBind.Expr.Inner is LiteralResult literal)
+                    if (varBind.Expr.Inner is LiteralResult literal)
                     {
                         TeuchiUdonTables.Instance.ExportedVars.Add(varBind.Vars[0], literal.Literal);
                     }
@@ -101,10 +97,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"exported valiable cannot be bound non-literal expression");
                     }
-                }
-                else if (init == null)
-                {
-                    init = "Start";
                 }
                 
                 if (sync != TeuchiUdonSyncMode.Disable)
@@ -117,29 +109,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
 
-            context.result = new TopBindResult(context.Start, varBind, init, export, sync);
+            context.result = new TopBindResult(context.Start, varBind, export, sync);
         }
 
-        private (string init, bool export, TeuchiUdonSyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
+        private (bool export, TeuchiUdonSyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
         {
-            var init   = (string)null;
             var export = false;
             var sync   = TeuchiUdonSyncMode.Disable;
 
             foreach (var attr in attrs)
             {
-                if (attr is InitVarAttrResult initAttr)
-                {
-                    if (init == null)
-                    {
-                        init = initAttr.Identifier.Name;
-                    }
-                    else
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(initAttr.Token, $"multiple @init detected");
-                    }
-                }
-                else if (attr is ExportVarAttrResult exportAttr)
+                if (attr is ExportVarAttrResult exportAttr)
                 {
                     if (!export)
                     {
@@ -163,54 +143,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
 
-            return (init, export, sync);
+            return (export, sync);
         }
 
         public override void ExitExprTopStatement([NotNull] ExprTopStatementContext context)
         {
             var expr  = context.expr()?.result;
-            var attrs = context.exprAttr().Select(x => x.result);
-            if (expr == null || attrs.Any(x => x == null)) return;
-
-            var init = ExtractFromExprAttrs(attrs);
-
-            if (init == null)
-            {
-                init = "Start";
-            }
+            if (expr == null) return;
 
             expr.ReturnsValue = false;
-            context.result = new TopExprResult(context.Start, expr, init);
-        }
-
-        private string ExtractFromExprAttrs(IEnumerable<ExprAttrResult> attrs)
-        {
-            var init = (string)null;
-
-            foreach (var attr in attrs)
-            {
-                if (attr is InitExprAttrResult initAttr)
-                {
-                    if (init == null)
-                    {
-                        init = initAttr.Identifier.Name;
-                    }
-                    else
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(initAttr.Token, $"multiple @init detected");
-                    }
-                }
-            }
-
-            return init;
-        }
-
-        public override void ExitInitVarAttr([NotNull] InitVarAttrContext context)
-        {
-            var identifier = context.identifier()?.result;
-            if (identifier == null) return;
-
-            context.result = new InitVarAttrResult(context.Start, identifier);
+            context.result = new TopExprResult(context.Start, expr);
         }
 
         public override void ExitExportVarAttr([NotNull] ExportVarAttrContext context)
@@ -231,14 +173,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitSmoothVarAttr([NotNull] SmoothVarAttrContext context)
         {
             context.result = new SyncVarAttrResult(context.Start, TeuchiUdonSyncMode.Smooth);
-        }
-
-        public override void ExitInitExprAttr([NotNull] InitExprAttrContext context)
-        {
-            var identifier = context.identifier()?.result;
-            if (identifier == null) return;
-
-            context.result = new InitExprAttrResult(context.Start, identifier);
         }
 
         public override void EnterVarBind([NotNull] VarBindContext context)

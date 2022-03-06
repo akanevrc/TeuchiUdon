@@ -36,15 +36,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TopBindResult : TopStatementResult
     {
         public VarBindResult VarBind { get; }
-        public string Init { get; }
         public bool Export { get; }
         public TeuchiUdonSyncMode Sync { get; }
 
-        public TopBindResult(IToken token, VarBindResult varBind, string init, bool export, TeuchiUdonSyncMode sync)
+        public TopBindResult(IToken token, VarBindResult varBind, bool export, TeuchiUdonSyncMode sync)
             : base(token)
         {
             VarBind = varBind;
-            Init    = init;
             Export  = export;
             Sync    = sync;
         }
@@ -53,13 +51,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TopExprResult : TopStatementResult
     {
         public ExprResult Expr { get; }
-        public string Init { get; }
 
-        public TopExprResult(IToken token, ExprResult expr, string init)
+        public TopExprResult(IToken token, ExprResult expr)
             : base(token)
         {
             Expr = expr;
-            Init = init;
         }
     }
 

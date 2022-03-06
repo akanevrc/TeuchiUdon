@@ -1,7 +1,5 @@
 @export
-radius = 0.1;
-@export
-velocity = 6.2832;
+velocity = 360.0;
 
 mut angle = 0.0;
 

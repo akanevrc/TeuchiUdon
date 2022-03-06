@@ -25,21 +25,15 @@ body
 topStatement
     returns [TopStatementResult result]
     : varAttr* varBind ';' #VarBindTopStatement
-    | exprAttr* expr ';'   #ExprTopStatement
+    | expr ';'             #ExprTopStatement
     ;
 
 varAttr
     returns [VarAttrResult result]
-    : '@init' '(' identifier ')' #InitVarAttr
-    | '@export'                  #ExportVarAttr
-    | '@sync'                    #SyncVarAttr
-    | '@linear'                  #LinearVarAttr
-    | '@smooth'                  #SmoothVarAttr
-    ;
-
-exprAttr
-    returns [ExprAttrResult result]
-    : '@init' '(' identifier ')' #InitExprAttr
+    : '@export' #ExportVarAttr
+    | '@sync'   #SyncVarAttr
+    | '@linear' #LinearVarAttr
+    | '@smooth' #SmoothVarAttr
     ;
 
 varBind

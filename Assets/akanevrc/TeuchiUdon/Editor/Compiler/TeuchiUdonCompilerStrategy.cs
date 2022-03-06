@@ -38,7 +38,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_DECL_DATA(x, x.Type, new AssemblyLiteral_NULL())
                     }))
-                .Concat(TeuchiUdonTables.Instance.Literals.Values.Except(TeuchiUdonTables.Instance.ExportedVars.Values).SelectMany(x =>
+                .Concat(TeuchiUdonTables.Instance.Literals.Values.SelectMany(x =>
                     x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
@@ -165,55 +165,56 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitBody(BodyResult result)
         {
+            var startVarName   = "Start";
+            var startEventName = TeuchiUdonTables.GetEventName(startVarName);
+
             var topFuncs = result.TopStatements
                 .Where(x => x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
-                .Select(x => (name: ((TopBindResult)x).VarBind.Vars[0].GetFullLabel(), x: (TopBindResult)x));
+                .Select(x => (eventName: ((TopBindResult)x).VarBind.Vars[0].GetFullLabel(), result: (TopBindResult)x))
+                .Select(x => (varName: TeuchiUdonTables.GetVarNameFromEventName(x.eventName), eventName: x.eventName, result: x.result))
+                .ToArray();
             var topStats = result.TopStatements
-                .Where(x => !(x is TopBindResult topBind && topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func)))
-                .Select(x => x is TopBindResult topBind ? (name: topBind.Init, x) : x is TopExprResult topExpr ? (name: topExpr.Init, x) : (name: null, x))
-                .Where(x => x.name != null);
+                .Where(x => !(x is TopBindResult topBind && (topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func) || topBind.Export)))
+                .ToArray();
 
-            var topFuncStats = new Dictionary<string, List<TopStatementResult>>();
-            var startEvent   = TeuchiUdonTables.GetEventName("Start");
+            var topFuncStats = new Dictionary<string, (string eventName, List<TopStatementResult> stats)>();
             foreach (var func in topFuncs)
             {
-                if (!topFuncStats.ContainsKey(startEvent))
+                if (!topFuncStats.ContainsKey(startVarName))
                 {
-                    topFuncStats.Add(startEvent, new List<TopStatementResult>());
+                    topFuncStats.Add(startVarName, (startEventName, new List<TopStatementResult>()));
                 }
-                topFuncStats[startEvent].Add(func.x);
+                topFuncStats[startVarName].stats.Add(func.result);
 
-                if (TeuchiUdonTables.Instance.Events.ContainsKey(func.name))
+                if (TeuchiUdonTables.Instance.Events.ContainsKey(func.varName))
                 {
-                    var eventName = TeuchiUdonTables.GetEventName(func.name);
-                    if (!topFuncStats.ContainsKey(eventName))
+                    if (!topFuncStats.ContainsKey(func.varName))
                     {
-                        topFuncStats.Add(eventName, new List<TopStatementResult>());
+                        topFuncStats.Add(func.varName, (func.eventName, new List<TopStatementResult>()));
                     }
                 }
-                else if (func.x.Export && !topFuncStats.ContainsKey(func.name))
+                else if (func.result.Export && !topFuncStats.ContainsKey(func.varName))
                 {
-                    topFuncStats.Add(func.name, new List<TopStatementResult>());
+                    topFuncStats.Add(func.varName, (func.eventName, new List<TopStatementResult>()));
                 }
             }
             foreach (var stat in topStats)
             {
-                if (TeuchiUdonTables.Instance.Events.ContainsKey(stat.name))
+                if (TeuchiUdonTables.Instance.Events.ContainsKey(startVarName))
                 {
-                    var eventName = TeuchiUdonTables.GetEventName(stat.name);
-                    if (!topFuncStats.ContainsKey(eventName))
+                    if (!topFuncStats.ContainsKey(startVarName))
                     {
-                        topFuncStats.Add(eventName, new List<TopStatementResult>());
+                        topFuncStats.Add(startVarName, (startEventName, new List<TopStatementResult>()));
                     }
-                    topFuncStats[eventName].Add(stat.x);
+                    topFuncStats[startVarName].stats.Add(stat);
                 }
                 else
                 {
-                    if (!topFuncStats.ContainsKey(stat.name))
+                    if (!topFuncStats.ContainsKey(startVarName))
                     {
-                        topFuncStats.Add(stat.name, new List<TopStatementResult>());
+                        topFuncStats.Add(startVarName, (startEventName, new List<TopStatementResult>()));
                     }
-                    topFuncStats[stat.name].Add(stat.x);
+                    topFuncStats[startVarName].stats.Add(stat);
                 }
             }
 
@@ -222,22 +223,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 topFuncStats.Select(x =>
                     new TeuchiUdonAssembly[]
                     {
-                        new Assembly_EXPORT_CODE(new TextLabel(x.Key)),
-                        new Assembly_LABEL      (new TextLabel(x.Key)),
+                        new Assembly_EXPORT_CODE(new TextLabel(x.Value.eventName)),
+                        new Assembly_LABEL      (new TextLabel(x.Value.eventName)),
                         new Assembly_INDENT(1)
                     }
-                    .Concat(x.Value.SelectMany(y => VisitResult(y)))
-                    .Concat(TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, TeuchiUdonTables.GetVarNameFromEventName(x.Key))) ?
+                    .Concat(x.Value.stats.SelectMany(y => VisitResult(y)))
+                    .Concat(TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)) ?
                         new TeuchiUdonAssembly[]
                         {
-                            new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(new TextLabel($"topcall[{x.Key}]")))
-                        }
-                        .Concat(new TeuchiUdonAssembly[]
-                            {
-                                new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, TeuchiUdonTables.GetVarNameFromEventName(x.Key))])),
-                                new Assembly_LABEL(new TextLabel($"topcall[{x.Key}]"))
-                            }
-                        ) :
+                            new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(new TextLabel($"topcall[{x.Value.eventName}]"))),
+                            new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, x.Key)])),
+                            new Assembly_LABEL(new TextLabel($"topcall[{x.Value.eventName}]"))
+                        } :
                         new TeuchiUdonAssembly[0]
                     )
                     .Concat(new TeuchiUdonAssembly[]
