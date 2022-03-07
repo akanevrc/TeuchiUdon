@@ -144,36 +144,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonType[] Types { get; }
         public QualifiedVarResult[] QualifiedVars { get; }
 
-        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<QualifiedVarResult> qualifiedVars, IEnumerable<string> logicalNames)
+        public VarDeclResult(IToken token, TeuchiUdonQualifier qualifier, IEnumerable<QualifiedVarResult> qualifiedVars)
             : base(token)
         {
             Types       = qualifiedVars.Select(x => x.Qualified.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type) ? x.Qualified.Inner.Type.GetArgAsType() : TeuchiUdonType.Unknown).ToArray();
             var indices = qualifiedVars.Select(_ => TeuchiUdonTables.Instance.GetVarIndex()).ToArray();
-            if (logicalNames == null)
-            {
-                Vars =
-                    qualifiedVars
-                    .Zip(Types  , (q, t) => (q, t))
-                    .Zip(indices, (x, n) => (x.q, x.t, n))
-                    .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, null, x.t, false)).ToArray();
-            }
-            else
-            {
-                Vars =
-                    qualifiedVars
-                    .Zip(Types       , (q, t) => (q, t))
-                    .Zip(indices     , (x, n) => (x.q, x.t, n))
-                    .Zip(logicalNames, (x, l) => (x.q, x.t, x.n, l))
-                    .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.l, x.t, false)).ToArray();
-            }
+            Vars =
+                qualifiedVars
+                .Zip(Types  , (q, t) => (q, t))
+                .Zip(indices, (x, n) => (x.q, x.t, n))
+                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.t, false)).ToArray();
             QualifiedVars = qualifiedVars.ToArray();
 
             foreach (var v in Vars)
             {
-                var realName = v.LogicalName == null ? v.Name : v.LogicalName;
-                if (!TeuchiUdonTables.IsValidVarName(realName))
+                if (!TeuchiUdonTables.IsValidVarName(v.Name))
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"'{realName}' is invalid variable name");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"'{v.Name}' is invalid variable name");
                 }
                 else if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
                 {

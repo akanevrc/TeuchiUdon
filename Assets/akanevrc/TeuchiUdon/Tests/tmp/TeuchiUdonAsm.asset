@@ -18,26 +18,26 @@ MonoBehaviour:
     null\r\n    angle: %SystemSingle, null\r\n    deltaAngle: %SystemUInt32, null\r\n   
     var[deltaAngle>func[0]>velocity]: %SystemSingle, null\r\n    getAngle: %SystemUInt32,
     null\r\n    var[getAngle>func[1]>angle]: %SystemSingle, null\r\n    _update:
-    %SystemUInt32, null\r\n    _onPlayerJoined: %SystemUInt32, null\r\n    onPlayerJoinedPlayer:
-    %VRCSDKBaseVRCPlayerApi, null\r\n    literal[0]: %SystemSingle, null\r\n    literal[1]:
-    %SystemSingle, null\r\n    literal[this]: %UnityEngineGameObject, this\r\n   
-    return[func[deltaAngle>0]]: %SystemUInt32, null\r\n    return[func[getAngle>1]]:
-    %SystemUInt32, null\r\n    return[func[_update>2]]: %SystemUInt32, null\r\n   
-    return[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n    out[deltaAngle>0]:
-    %SystemObject, null\r\n    out[deltaAngle>1]: %SystemObject, null\r\n    out[getAngle>0]:
-    %SystemObject, null\r\n    out[getAngle>1]: %SystemObject, null\r\n    out[_update>0]:
-    %SystemObject, null\r\n    out[_update>1]: %SystemObject, null\r\n    out[_update>2]:
-    %SystemObject, null\r\n    indirect[topcall[_update]]: %SystemUInt32, null\r\n   
-    indirect[topcall[_onPlayerJoined]]: %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]:
-    %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>2]]: %SystemUInt32,
-    null\r\n    indirect[func[deltaAngle>0]]: %SystemUInt32, null\r\n    indirect[func[getAngle>1]]:
-    %SystemUInt32, null\r\n    indirect[func[_update>2]]: %SystemUInt32, null\r\n   
-    indirect[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    func[deltaAngle>0]:\r\n        PUSH, return[func[deltaAngle>0]]\r\n        COPY\r\n       
-    PUSH, var[deltaAngle>func[0]>velocity]\r\n        COPY\r\n        PUSH, out[deltaAngle>0]\r\n       
-    EXTERN, \"UnityEngineTime.__get_deltaTime__SystemSingle\"\r\n        PUSH, out[deltaAngle>0]\r\n       
-    PUSH, var[deltaAngle>func[0]>velocity]\r\n        PUSH, out[deltaAngle>1]\r\n       
-    EXTERN, \"SystemSingle.__op_Multiplication__SystemSingle_SystemSingle__SystemSingle\"\r\n       
+    %SystemUInt32, null\r\n    _onPlayerJoined: %SystemUInt32, null\r\n    var[_onPlayerJoined>func[3]>x]:
+    %VRCSDKBaseVRCPlayerApi, null\r\n    onPlayerJoinedPlayer: %VRCSDKBaseVRCPlayerApi,
+    null\r\n    literal[0]: %SystemSingle, null\r\n    literal[1]: %SystemSingle,
+    null\r\n    literal[this]: %UnityEngineGameObject, this\r\n    return[func[deltaAngle>0]]:
+    %SystemUInt32, null\r\n    return[func[getAngle>1]]: %SystemUInt32, null\r\n   
+    return[func[_update>2]]: %SystemUInt32, null\r\n    return[func[_onPlayerJoined>3]]:
+    %SystemUInt32, null\r\n    out[deltaAngle>0]: %SystemObject, null\r\n    out[deltaAngle>1]:
+    %SystemObject, null\r\n    out[getAngle>0]: %SystemObject, null\r\n    out[getAngle>1]:
+    %SystemObject, null\r\n    out[_update>0]: %SystemObject, null\r\n    out[_update>1]:
+    %SystemObject, null\r\n    out[_update>2]: %SystemObject, null\r\n    indirect[topcall[_update]]:
+    %SystemUInt32, null\r\n    indirect[topcall[_onPlayerJoined]]: %SystemUInt32,
+    null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]: %SystemUInt32, null\r\n   
+    indirect[evalfunc[_update>func[2]>block[0]>2]]: %SystemUInt32, null\r\n    indirect[func[deltaAngle>0]]:
+    %SystemUInt32, null\r\n    indirect[func[getAngle>1]]: %SystemUInt32, null\r\n   
+    indirect[func[_update>2]]: %SystemUInt32, null\r\n    indirect[func[_onPlayerJoined>3]]:
+    %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n    func[deltaAngle>0]:\r\n       
+    PUSH, return[func[deltaAngle>0]]\r\n        COPY\r\n        PUSH, var[deltaAngle>func[0]>velocity]\r\n       
+    COPY\r\n        PUSH, out[deltaAngle>0]\r\n        EXTERN, \"UnityEngineTime.__get_deltaTime__SystemSingle\"\r\n       
+    PUSH, out[deltaAngle>0]\r\n        PUSH, var[deltaAngle>func[0]>velocity]\r\n       
+    PUSH, out[deltaAngle>1]\r\n        EXTERN, \"SystemSingle.__op_Multiplication__SystemSingle_SystemSingle__SystemSingle\"\r\n       
     PUSH, out[deltaAngle>1]\r\n        JUMP_INDIRECT, return[func[deltaAngle>0]]\r\n\r\n   
     func[getAngle>1]:\r\n        PUSH, return[func[getAngle>1]]\r\n        COPY\r\n       
     PUSH, var[getAngle>func[1]>angle]\r\n        COPY\r\n        PUSH, var[getAngle>func[1]>angle]\r\n       
@@ -56,19 +56,19 @@ MonoBehaviour:
     JUMP_INDIRECT, out[_update>2]\r\n        evalfunc[_update>func[2]>block[0]>2]:\r\n       
     EXTERN, \"UnityEngineTransform.__set_rotation__UnityEngineQuaternion__SystemVoid\"\r\n       
     JUMP_INDIRECT, return[func[_update>2]]\r\n\r\n    func[_onPlayerJoined>3]:\r\n       
-    PUSH, return[func[_onPlayerJoined>3]]\r\n        COPY\r\n        PUSH, onPlayerJoinedPlayer\r\n       
+    PUSH, return[func[_onPlayerJoined>3]]\r\n        COPY\r\n        PUSH, var[_onPlayerJoined>func[3]>x]\r\n       
     COPY\r\n        JUMP_INDIRECT, return[func[_onPlayerJoined>3]]\r\n\r\n    .export
-    _start\r\n    _start:\r\n        PUSH, indirect[func[deltaAngle>0]]\r\n       
-    PUSH, deltaAngle\r\n        COPY\r\n        PUSH, indirect[func[getAngle>1]]\r\n       
-    PUSH, getAngle\r\n        COPY\r\n        PUSH, indirect[func[_update>2]]\r\n       
-    PUSH, _update\r\n        COPY\r\n        PUSH, indirect[func[_onPlayerJoined>3]]\r\n       
-    PUSH, _onPlayerJoined\r\n        COPY\r\n        PUSH, literal[1]\r\n       
-    PUSH, angle\r\n        COPY\r\n        JUMP, 0xFFFFFFFC\r\n\r\n    .export _update\r\n   
-    _update:\r\n        PUSH, indirect[topcall[_update]]\r\n        JUMP_INDIRECT,
-    _update\r\n        topcall[_update]:\r\n        JUMP, 0xFFFFFFFC\r\n\r\n    .export
-    _onPlayerJoined\r\n    _onPlayerJoined:\r\n        PUSH, indirect[topcall[_onPlayerJoined]]\r\n       
-    JUMP_INDIRECT, _onPlayerJoined\r\n        topcall[_onPlayerJoined]:\r\n       
-    JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+    _update\r\n    _update:\r\n        PUSH, indirect[topcall[_update]]\r\n       
+    JUMP_INDIRECT, _update\r\n        topcall[_update]:\r\n        JUMP, 0xFFFFFFFC\r\n\r\n   
+    .export _onPlayerJoined\r\n    _onPlayerJoined:\r\n        PUSH, onPlayerJoinedPlayer\r\n       
+    PUSH, indirect[topcall[_onPlayerJoined]]\r\n        JUMP_INDIRECT, _onPlayerJoined\r\n       
+    topcall[_onPlayerJoined]:\r\n        JUMP, 0xFFFFFFFC\r\n\r\n    .export _start\r\n   
+    _start:\r\n        PUSH, literal[1]\r\n        PUSH, angle\r\n        COPY\r\n       
+    PUSH, indirect[func[deltaAngle>0]]\r\n        PUSH, deltaAngle\r\n        COPY\r\n       
+    PUSH, indirect[func[getAngle>1]]\r\n        PUSH, getAngle\r\n        COPY\r\n       
+    PUSH, indirect[func[_update>2]]\r\n        PUSH, _update\r\n        COPY\r\n       
+    PUSH, indirect[func[_onPlayerJoined>3]]\r\n        PUSH, _onPlayerJoined\r\n       
+    COPY\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -214,7 +214,7 @@ MonoBehaviour:
       Data: 5|System.UInt32, mscorlib
     - Name: 
       Entry: 3
-      Data: 524
+      Data: 416
     - Name: 
       Entry: 8
       Data: 
@@ -248,7 +248,7 @@ MonoBehaviour:
       Data: 7|System.UInt32, mscorlib
     - Name: 
       Entry: 3
-      Data: 548
+      Data: 448
     - Name: 
       Entry: 8
       Data: 

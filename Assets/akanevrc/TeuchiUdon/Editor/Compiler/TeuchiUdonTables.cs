@@ -398,11 +398,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return name.Length <= 1 ? name : $"_{char.ToLower(name[0])}{name.Substring(1)}";
         }
 
-        public static string GetVarNameFromEventName(string name)
-        {
-            return name.Length <= 1 ? name : $"{char.ToUpper(name[1])}{name.Substring(2)}";
-        }
-
         public static string GetEventParamName(string eventName, string paramName)
         {
             var ev    = eventName.Length == 0 ? eventName : $"{char.ToLower(eventName[0])}{eventName.Substring(1)}";

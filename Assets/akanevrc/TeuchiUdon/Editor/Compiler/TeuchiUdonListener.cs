@@ -87,6 +87,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
+                if (varBind.Vars.Length == 1 && TeuchiUdonTables.Instance.Events.ContainsKey(varBind.Vars[0].Name))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"event must be function");
+                }
+
                 if (export)
                 {
                     if (varBind.Expr.Inner is LiteralResult literal)
@@ -214,7 +219,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = expr.Inner.Type;
                 if (v.Type.IsAssignableFrom(t))
                 {
-                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.LogicalName, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type, mut) };
+                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type, mut) };
                 }
                 else
                 {
@@ -232,7 +237,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         vars = varDecl.Vars
                             .Zip(ts, (v, t) => (v, t))
-                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.LogicalName, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type, mut))
+                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type, mut))
                             .ToArray();
                     }
                     else
@@ -288,35 +293,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             if (isActual) TeuchiUdonQualifierStack.Instance.Push(oldQual);
 
-            if (!isActual)
-            {
-                var varBind = qualifier.GetFuncVarBind();
-                if (varBind != null && varBind.Qualifier == TeuchiUdonQualifier.Top && varBind.VarNames.Length == 1 && TeuchiUdonTables.Instance.Events.ContainsKey(varBind.VarNames[0]))
-                {
-                    var ev   = TeuchiUdonTables.Instance.Events[varBind.VarNames[0]];
-                    var args = qualifiedVars.ToArray();
-                    if (ev.OutTypes.Length != args.Length || args.Any(x => !x.Qualified.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type)))
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
-                    }
-                    else
-                    {
-                        var evTypes  = TeuchiUdonType.ToOneType(ev.OutTypes);
-                        var argTypes = TeuchiUdonType.ToOneType(args.Select(x => x.Qualified.Inner.Type.GetArgAsType()));
-                        if (!evTypes.IsAssignableFrom(argTypes))
-                        {
-                            TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
-                        }
-                        else
-                        {
-                            var logicalNames = ev.OutParamUdonNames.Select(x => TeuchiUdonTables.GetEventParamName(ev.Name, x));
-                            return new VarDeclResult(token, qualifier, qualifiedVars, logicalNames); 
-                        }
-                    }
-                }
-            }
-
-            return new VarDeclResult(token, qualifier, qualifiedVars, null);
+            return new VarDeclResult(token, qualifier, qualifiedVars);
         }
 
         public override void ExitQualifiedVar([NotNull] QualifiedVarContext context)
@@ -1197,12 +1174,54 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             TeuchiUdonQualifierStack.Instance.Pop();
 
+            var qual    = TeuchiUdonQualifierStack.Instance.Peek();
             var inType  = TeuchiUdonType.ToOneType(varDecl.Types);
             var outType = expr.Inner.Type;
             var type    = TeuchiUdonType.Func.ApplyArgsAsFunc(inType, outType);
 
+            var varBind = qual.GetLast<TeuchiUdonVarBind>();
+            if (varBind != null && varBind.Qualifier == TeuchiUdonQualifier.Top && varBind.VarNames.Length == 1 && TeuchiUdonTables.Instance.Events.ContainsKey(varBind.VarNames[0]))
+            {
+                var ev   = TeuchiUdonTables.Instance.Events[varBind.VarNames[0]];
+                var args = varDecl.Vars.ToArray();
+                if (ev.OutTypes.Length != args.Length)
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
+                }
+                else
+                {
+                    var evTypes  = TeuchiUdonType.ToOneType(ev.OutTypes);
+                    var argTypes = TeuchiUdonType.ToOneType(args.Select(x => x.Type));
+                    if (evTypes.IsAssignableFrom(argTypes))
+                    {
+                        foreach (var (n, t) in ev.OutParamUdonNames.Zip(ev.OutTypes, (n, t) => (n, t)))
+                        {
+                            var name = TeuchiUdonTables.GetEventParamName(ev.Name, n);
+                            if (!TeuchiUdonTables.IsValidVarName(name))
+                            {
+                                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{name}' is invalid variable name");
+                                continue;
+                            }
+                            
+                            var v = new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), TeuchiUdonQualifier.Top, name, t, false);
+                            if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+                            {
+                                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{v.Name}' conflicts with another variable");
+                            }
+                            else
+                            {
+                                TeuchiUdonTables.Instance.Vars.Add(v, v);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
+                    }
+                }
+            }
+
             var index      = context.tableIndex;
-            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr);
             context.result = new ExprResult(func.Token, func);
         }
