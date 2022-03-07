@@ -219,7 +219,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = expr.Inner.Type;
                 if (v.Type.IsAssignableFrom(t))
                 {
-                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type, mut) };
+                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type, mut, false) };
                 }
                 else
                 {
@@ -237,7 +237,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         vars = varDecl.Vars
                             .Zip(ts, (v, t) => (v, t))
-                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type, mut))
+                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type, mut, false))
                             .ToArray();
                     }
                     else
@@ -1203,7 +1203,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                                 continue;
                             }
                             
-                            var v = new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), TeuchiUdonQualifier.Top, name, t, false);
+                            var v = new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), TeuchiUdonQualifier.Top, name, t, false, true);
                             if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
                             {
                                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{v.Name}' conflicts with another variable");

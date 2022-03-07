@@ -13,19 +13,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public string Name { get; }
         public TeuchiUdonType Type { get; }
         public bool Mut { get; }
+        public bool IsSystemVar { get; }
 
         public TeuchiUdonVar(TeuchiUdonQualifier qualifier, string name)
-            : this(-1, qualifier, name, null, false)
+            : this(-1, qualifier, name, null, false, false)
         {
         }
 
-        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, bool mut)
+        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, bool mut, bool isSystemVar)
         {
-            Index     = index;
-            Qualifier = qualifier;
-            Name      = name;
-            Type      = type;
-            Mut       = mut;
+            Index       = index;
+            Qualifier   = qualifier;
+            Name        = name;
+            Type        = type;
+            Mut         = mut;
+            IsSystemVar = isSystemVar;
         }
 
         public bool Equals(TeuchiUdonVar obj)
@@ -71,7 +73,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
-                return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Name}]";
+                return IsSystemVar ? Name : $"var[{Name}]";
             }
         }
 
@@ -83,7 +85,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
-                return Qualifier == TeuchiUdonQualifier.Top ? Name : $"var[{Qualifier.Qualify(">", Name)}]";
+                return IsSystemVar ? Name : $"var[{Qualifier.Qualify(">", Name)}]";
             }
         }
     }

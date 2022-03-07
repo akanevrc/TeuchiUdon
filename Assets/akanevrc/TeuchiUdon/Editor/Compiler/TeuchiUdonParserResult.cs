@@ -153,7 +153,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 qualifiedVars
                 .Zip(Types  , (q, t) => (q, t))
                 .Zip(indices, (x, n) => (x.q, x.t, n))
-                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.t, false)).ToArray();
+                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.t, false, false)).ToArray();
             QualifiedVars = qualifiedVars.ToArray();
 
             foreach (var v in Vars)
