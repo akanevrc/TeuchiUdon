@@ -43,7 +43,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		BYTE_ORDER_MARK=1, SINGLE_LINE_COMMENT=2, DELIMITED_COMMENT=3, NEWLINE=4, 
 		WS=5, TAB=6, AS=7, BREAK=8, CASE=9, CONTINUE=10, DATA=11, ELSE=12, HIDING=13, 
 		IMPORT=14, IF=15, IN=16, IS=17, LET=18, MODULE=19, MUT=20, NAMEOF=21, 
-		NEWTYPE=22, OF=23, REF=24, RETURN=25, THEN=26, TYPE=27, YIELD=28, EXPORT=29, 
+		NEWTYPE=22, OF=23, REF=24, RETURN=25, THEN=26, TYPE=27, YIELD=28, PUBLIC=29, 
 		SYNC=30, LINEAR=31, SMOOTH=32, NULL_LITERAL=33, BOOL_LITERAL=34, THIS_LITERAL=35, 
 		IDENTIFIER=36, LITERAL_ACCESS=37, INTEGER_LITERAL=38, HEX_INTEGER_LITERAL=39, 
 		BIN_INTEGER_LITERAL=40, REAL_LITERAL=41, CHARACTER_LITERAL=42, REGULAR_STRING=43, 
@@ -68,7 +68,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		null, "'\u00EF\u00BB\u00BF'", null, null, null, null, null, "'as'", "'break'", 
 		"'case'", "'continue'", "'data'", "'else'", "'hiding'", "'import'", "'if'", 
 		"'in'", "'is'", "'let'", "'module'", "'mut'", "'nameof'", "'newtype'", 
-		"'of'", "'ref'", "'return'", "'then'", "'type'", "'yield'", "'@export'", 
+		"'of'", "'ref'", "'return'", "'then'", "'type'", "'yield'", "'@public'", 
 		"'@sync'", "'@linear'", "'@smooth'", "'null'", null, "'this'", null, null, 
 		null, null, null, null, null, null, null, "'{'", "'}'", "'['", "']'", 
 		"'('", "')'", "'.'", "','", "':'", "';'", "'+'", "'-'", "'*'", "'/'", 
@@ -80,7 +80,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		null, "BYTE_ORDER_MARK", "SINGLE_LINE_COMMENT", "DELIMITED_COMMENT", "NEWLINE", 
 		"WS", "TAB", "AS", "BREAK", "CASE", "CONTINUE", "DATA", "ELSE", "HIDING", 
 		"IMPORT", "IF", "IN", "IS", "LET", "MODULE", "MUT", "NAMEOF", "NEWTYPE", 
-		"OF", "REF", "RETURN", "THEN", "TYPE", "YIELD", "EXPORT", "SYNC", "LINEAR", 
+		"OF", "REF", "RETURN", "THEN", "TYPE", "YIELD", "PUBLIC", "SYNC", "LINEAR", 
 		"SMOOTH", "NULL_LITERAL", "BOOL_LITERAL", "THIS_LITERAL", "IDENTIFIER", 
 		"LITERAL_ACCESS", "INTEGER_LITERAL", "HEX_INTEGER_LITERAL", "BIN_INTEGER_LITERAL", 
 		"REAL_LITERAL", "CHARACTER_LITERAL", "REGULAR_STRING", "VERBATIUM_STRING", 
@@ -156,7 +156,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			case LET:
 			case MUT:
 			case NAMEOF:
-			case EXPORT:
+			case PUBLIC:
 			case SYNC:
 			case LINEAR:
 			case SMOOTH:
@@ -253,7 +253,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 35;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-			} while ( ((((_la - 18)) & ~0x3f) == 0 && ((1L << (_la - 18)) & ((1L << (LET - 18)) | (1L << (MUT - 18)) | (1L << (NAMEOF - 18)) | (1L << (EXPORT - 18)) | (1L << (SYNC - 18)) | (1L << (LINEAR - 18)) | (1L << (SMOOTH - 18)) | (1L << (NULL_LITERAL - 18)) | (1L << (BOOL_LITERAL - 18)) | (1L << (THIS_LITERAL - 18)) | (1L << (IDENTIFIER - 18)) | (1L << (INTEGER_LITERAL - 18)) | (1L << (HEX_INTEGER_LITERAL - 18)) | (1L << (BIN_INTEGER_LITERAL - 18)) | (1L << (REAL_LITERAL - 18)) | (1L << (CHARACTER_LITERAL - 18)) | (1L << (REGULAR_STRING - 18)) | (1L << (VERBATIUM_STRING - 18)) | (1L << (OPEN_BRACE - 18)) | (1L << (OPEN_PAREN - 18)) | (1L << (PLUS - 18)) | (1L << (MINUS - 18)) | (1L << (BANG - 18)) | (1L << (TILDE - 18)))) != 0) );
+			} while ( ((((_la - 18)) & ~0x3f) == 0 && ((1L << (_la - 18)) & ((1L << (LET - 18)) | (1L << (MUT - 18)) | (1L << (NAMEOF - 18)) | (1L << (PUBLIC - 18)) | (1L << (SYNC - 18)) | (1L << (LINEAR - 18)) | (1L << (SMOOTH - 18)) | (1L << (NULL_LITERAL - 18)) | (1L << (BOOL_LITERAL - 18)) | (1L << (THIS_LITERAL - 18)) | (1L << (IDENTIFIER - 18)) | (1L << (INTEGER_LITERAL - 18)) | (1L << (HEX_INTEGER_LITERAL - 18)) | (1L << (BIN_INTEGER_LITERAL - 18)) | (1L << (REAL_LITERAL - 18)) | (1L << (CHARACTER_LITERAL - 18)) | (1L << (REGULAR_STRING - 18)) | (1L << (VERBATIUM_STRING - 18)) | (1L << (OPEN_BRACE - 18)) | (1L << (OPEN_PAREN - 18)) | (1L << (PLUS - 18)) | (1L << (MINUS - 18)) | (1L << (BANG - 18)) | (1L << (TILDE - 18)))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -338,7 +338,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 40;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EXPORT) | (1L << SYNC) | (1L << LINEAR) | (1L << SMOOTH))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PUBLIC) | (1L << SYNC) | (1L << LINEAR) | (1L << SMOOTH))) != 0)) {
 					{
 					{
 					State = 37;
@@ -406,20 +406,6 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitSyncVarAttr(this);
 		}
 	}
-	public partial class ExportVarAttrContext : VarAttrContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EXPORT() { return GetToken(TeuchiUdonParser.EXPORT, 0); }
-		public ExportVarAttrContext(VarAttrContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterExportVarAttr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitExportVarAttr(this);
-		}
-	}
 	public partial class SmoothVarAttrContext : VarAttrContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SMOOTH() { return GetToken(TeuchiUdonParser.SMOOTH, 0); }
 		public SmoothVarAttrContext(VarAttrContext context) { CopyFrom(context); }
@@ -432,6 +418,20 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
 			if (typedListener != null) typedListener.ExitSmoothVarAttr(this);
+		}
+	}
+	public partial class PublicVarAttrContext : VarAttrContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PUBLIC() { return GetToken(TeuchiUdonParser.PUBLIC, 0); }
+		public PublicVarAttrContext(VarAttrContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterPublicVarAttr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitPublicVarAttr(this);
 		}
 	}
 	public partial class LinearVarAttrContext : VarAttrContext {
@@ -457,12 +457,12 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			State = 55;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
-			case EXPORT:
-				_localctx = new ExportVarAttrContext(_localctx);
+			case PUBLIC:
+				_localctx = new PublicVarAttrContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 51;
-				Match(EXPORT);
+				Match(PUBLIC);
 				}
 				break;
 			case SYNC:

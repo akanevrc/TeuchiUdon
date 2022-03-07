@@ -92,19 +92,19 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ExportVarAttr</c>
+	/// Enter a parse tree produced by the <c>PublicVarAttr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context) { }
+	public virtual void EnterPublicVarAttr([NotNull] TeuchiUdonParser.PublicVarAttrContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by the <c>ExportVarAttr</c>
+	/// Exit a parse tree produced by the <c>PublicVarAttr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context) { }
+	public virtual void ExitPublicVarAttr([NotNull] TeuchiUdonParser.PublicVarAttrContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>SyncVarAttr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.

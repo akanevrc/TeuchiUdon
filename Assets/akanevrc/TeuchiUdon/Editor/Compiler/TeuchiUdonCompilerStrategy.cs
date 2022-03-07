@@ -19,7 +19,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
         {
             return
-                TeuchiUdonTables.Instance.ExportedVars.Keys.SelectMany(x => x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                TeuchiUdonTables.Instance.PublicVars.Keys.SelectMany(x => x.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                     new TeuchiUdonAssembly[0] :
                     new TeuchiUdonAssembly[]
                     {
@@ -127,7 +127,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is TopBindResult          topBind         ) return VisitTopBind         (topBind);
             if (result is TopExprResult          topExpr         ) return VisitTopExpr         (topExpr);
             if (result is InitVarAttrResult      initVarAttr     ) return VisitInitVarAttr     (initVarAttr);
-            if (result is ExportVarAttrResult    exportVarAttr   ) return VisitExportVarAttr   (exportVarAttr);
+            if (result is PublicVarAttrResult    publicVarAttr   ) return VisitPublicVarAttr   (publicVarAttr);
             if (result is SyncVarAttrResult      syncVarAttr     ) return VisitSyncVarAttr     (syncVarAttr);
             if (result is InitExprAttrResult     initExprAttr    ) return VisitInitExprAttr    (initExprAttr);
             if (result is VarBindResult          varBind         ) return VisitVarBind         (varBind);
@@ -169,7 +169,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Where(x =>
                     x is TopBindResult topBind &&
                     topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func) &&
-                    (TeuchiUdonTables.Instance.Events.ContainsKey(topBind.VarBind.Vars[0].Name) || topBind.Export)
+                    (TeuchiUdonTables.Instance.Events.ContainsKey(topBind.VarBind.Vars[0].Name) || topBind.Public)
                 )
                 .Cast<TopBindResult>()
                 .Select(x =>
@@ -183,7 +183,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Where(x =>
                     !(x is TopBindResult topBind) ||
                     topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func) ||
-                    !topBind.Export
+                    !topBind.Public
                 )
                 .ToArray();
 
@@ -274,7 +274,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonAssembly[0];
         }
 
-        protected IEnumerable<TeuchiUdonAssembly> VisitExportVarAttr(ExportVarAttrResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitPublicVarAttr(PublicVarAttrResult result)
         {
             return new TeuchiUdonAssembly[0];
         }

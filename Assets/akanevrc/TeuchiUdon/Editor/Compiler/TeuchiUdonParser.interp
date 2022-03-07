@@ -28,7 +28,7 @@ null
 'then'
 'type'
 'yield'
-'@export'
+'@public'
 '@sync'
 '@linear'
 '@smooth'
@@ -115,7 +115,7 @@ RETURN
 THEN
 TYPE
 YIELD
-EXPORT
+PUBLIC
 SYNC
 LINEAR
 SMOOTH

@@ -43,7 +43,7 @@ THEN     : 'then'     ;
 TYPE     : 'type'     ;
 YIELD    : 'yield'    ;
 
-EXPORT : '@export';
+PUBLIC : '@public';
 SYNC   : '@sync'  ;
 LINEAR : '@linear';
 SMOOTH : '@smooth';

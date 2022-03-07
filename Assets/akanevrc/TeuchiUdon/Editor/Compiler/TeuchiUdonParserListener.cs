@@ -79,17 +79,17 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExprTopStatement([NotNull] TeuchiUdonParser.ExprTopStatementContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ExportVarAttr</c>
+	/// Enter a parse tree produced by the <c>PublicVarAttr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context);
+	void EnterPublicVarAttr([NotNull] TeuchiUdonParser.PublicVarAttrContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>ExportVarAttr</c>
+	/// Exit a parse tree produced by the <c>PublicVarAttr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitExportVarAttr([NotNull] TeuchiUdonParser.ExportVarAttrContext context);
+	void ExitPublicVarAttr([NotNull] TeuchiUdonParser.PublicVarAttrContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>SyncVarAttr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.varAttr"/>.

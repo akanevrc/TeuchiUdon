@@ -36,14 +36,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TopBindResult : TopStatementResult
     {
         public VarBindResult VarBind { get; }
-        public bool Export { get; }
+        public bool Public { get; }
         public TeuchiUdonSyncMode Sync { get; }
 
-        public TopBindResult(IToken token, VarBindResult varBind, bool export, TeuchiUdonSyncMode sync)
+        public TopBindResult(IToken token, VarBindResult varBind, bool pub, TeuchiUdonSyncMode sync)
             : base(token)
         {
             VarBind = varBind;
-            Export  = export;
+            Public  = pub;
             Sync    = sync;
         }
     }
@@ -78,9 +78,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class ExportVarAttrResult : VarAttrResult
+    public class PublicVarAttrResult : VarAttrResult
     {
-        public ExportVarAttrResult(IToken token)
+        public PublicVarAttrResult(IToken token)
             : base(token)
         {
         }

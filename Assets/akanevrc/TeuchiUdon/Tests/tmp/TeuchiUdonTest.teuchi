@@ -1,4 +1,4 @@
-@export
+@public
 velocity = 360.0;
 
 mut angle = 0.0;

@@ -18,7 +18,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<string, TeuchiUdonMethod> Events { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
-        public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> ExportedVars { get; private set; }
+        public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> PublicVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
@@ -63,7 +63,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             Vars           = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
             UnbufferedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
-            ExportedVars   = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
+            PublicVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
             SyncedVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
             Literals       = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
             This           = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
@@ -413,7 +413,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
         {
             return
-                ExportedVars           .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Key.Type         .RealType))
+                PublicVars             .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Key.Type         .RealType))
                 .Concat(Literals.Values.Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
                 .Concat(Indirects      .Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
         }

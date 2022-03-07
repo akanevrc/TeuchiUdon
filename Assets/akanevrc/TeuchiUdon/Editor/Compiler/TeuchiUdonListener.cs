@@ -72,9 +72,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var attrs   = context.varAttr().Select(x => x.result);
             if (varBind == null || attrs.Any(x => x == null)) return;
 
-            var (export, sync) = ExtractFromVarAttrs(attrs);
+            var (pub, sync) = ExtractFromVarAttrs(attrs);
 
-            if (varBind.Vars.Length != 1 && (export || sync != TeuchiUdonSyncMode.Disable))
+            if (varBind.Vars.Length != 1 && (pub || sync != TeuchiUdonSyncMode.Disable))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"tuple cannot be specified with any attributes");
             }
@@ -92,15 +92,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"event must be function");
                 }
 
-                if (export)
+                if (pub)
                 {
                     if (varBind.Expr.Inner is LiteralResult literal)
                     {
-                        TeuchiUdonTables.Instance.ExportedVars.Add(varBind.Vars[0], literal.Literal);
+                        TeuchiUdonTables.Instance.PublicVars.Add(varBind.Vars[0], literal.Literal);
                     }
                     else
                     {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"exported valiable cannot be bound non-literal expression");
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"public valiable cannot be bound non-literal expression");
                     }
                 }
                 
@@ -108,31 +108,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     TeuchiUdonTables.Instance.SyncedVars.Add(varBind.Vars[0], sync);
                 }
-                if (export || sync != TeuchiUdonSyncMode.Disable)
+                if (pub || sync != TeuchiUdonSyncMode.Disable)
                 {
                     TeuchiUdonTables.Instance.UnbufferedVars.Add(varBind.Vars[0], varBind.Vars[0]);
                 }
             }
 
-            context.result = new TopBindResult(context.Start, varBind, export, sync);
+            context.result = new TopBindResult(context.Start, varBind, pub, sync);
         }
 
-        private (bool export, TeuchiUdonSyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
+        private (bool pub, TeuchiUdonSyncMode sync) ExtractFromVarAttrs(IEnumerable<VarAttrResult> attrs)
         {
-            var export = false;
-            var sync   = TeuchiUdonSyncMode.Disable;
+            var pub  = false;
+            var sync = TeuchiUdonSyncMode.Disable;
 
             foreach (var attr in attrs)
             {
-                if (attr is ExportVarAttrResult exportAttr)
+                if (attr is PublicVarAttrResult publicAttr)
                 {
-                    if (!export)
+                    if (!pub)
                     {
-                        export = true;
+                        pub = true;
                     }
                     else
                     {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(exportAttr.Token, $"multiple @export detected");
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(publicAttr.Token, $"multiple @public detected");
                     }
                 }
                 else if (attr is SyncVarAttrResult syncAttr)
@@ -148,7 +148,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
 
-            return (export, sync);
+            return (pub, sync);
         }
 
         public override void ExitExprTopStatement([NotNull] ExprTopStatementContext context)
@@ -160,9 +160,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new TopExprResult(context.Start, expr);
         }
 
-        public override void ExitExportVarAttr([NotNull] ExportVarAttrContext context)
+        public override void ExitPublicVarAttr([NotNull] PublicVarAttrContext context)
         {
-            context.result = new ExportVarAttrResult(context.Start);
+            context.result = new PublicVarAttrResult(context.Start);
         }
 
         public override void ExitSyncVarAttr([NotNull] SyncVarAttrContext context)
