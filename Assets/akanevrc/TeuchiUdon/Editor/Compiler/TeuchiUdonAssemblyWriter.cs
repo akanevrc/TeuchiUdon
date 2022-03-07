@@ -54,6 +54,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             DataAddress   = 0;
             CodeAddress   = 0;
 
+            for (var i = 0; i < CodePart.Count - 1; i++)
+            {
+                if (CodePart[i] is Assembly_LABEL && CodePart[i + 1] is Assembly_LABEL)
+                {
+                    CodePart.Insert(i + 1, new Assembly_NOP());
+                }
+            }
+
             foreach (var asm in CodePart)
             {
                 if (asm is Assembly_LABEL label && !CodeAddresses.ContainsKey(label.Label))
