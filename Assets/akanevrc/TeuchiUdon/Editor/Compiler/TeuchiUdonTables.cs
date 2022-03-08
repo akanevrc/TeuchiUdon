@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using VRC.Udon.Editor;
 using VRC.Udon.Graph;
 
@@ -380,7 +381,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static string GetUdonTypeName(Type type)
         {
-            return type.FullName.Replace(".", "").Replace("[]", "Array");
+            var name = type.FullName;
+            name = name.Replace(".", "");
+            name = name.Replace("+", "");
+            name = Regex.Replace(name, "`.*$"   , "");
+            name = Regex.Replace(name, @"\[.*\]", "");
+            name = $"{name}{(type.IsGenericType ? string.Join("", type.GenericTypeArguments.Select(x => GetUdonTypeName(x))) : "")}";
+            name = $"{name}{(type.IsArray ? "Array" : "")}";
+            return name;
         }
 
         public static string GetGetterName(string name)
