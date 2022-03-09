@@ -18,15 +18,15 @@ MonoBehaviour:
     %SystemString, null\r\n    var[f>func[0]>y]: %SystemString, null\r\n    literal[0]:
     %SystemString, null\r\n    literal[1]: %SystemString, null\r\n    return[func[f>0]]:
     %SystemUInt32, null\r\n    out[0]: %SystemObject, null\r\n    indirect[func[f>0]]:
-    %SystemUInt32, null\r\n    indirect[evalfunc[1]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    %SystemUInt32, null\r\n    indirect[evalfunc[0]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
     func[f>0]:\r\n        PUSH, return[func[f>0]]\r\n        COPY\r\n        PUSH,
     var[f>func[0]>y]\r\n        COPY\r\n        PUSH, var[f>func[0]>x]\r\n       
     COPY\r\n        PUSH, var[f>func[0]>y]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP_INDIRECT, return[func[f>0]]\r\n\r\n    .export _start\r\n    _start:\r\n       
     PUSH, indirect[func[f>0]]\r\n        PUSH, var[f]\r\n        COPY\r\n       
     PUSH, var[f]\r\n        PUSH, out[0]\r\n        COPY\r\n        PUSH, literal[0]\r\n       
-    PUSH, literal[1]\r\n        PUSH, indirect[evalfunc[1]]\r\n        JUMP_INDIRECT,
-    out[0]\r\n        evalfunc[1]:\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+    PUSH, literal[1]\r\n        PUSH, indirect[evalfunc[0]]\r\n        JUMP_INDIRECT,
+    out[0]\r\n        evalfunc[0]:\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -152,7 +152,7 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: indirect[evalfunc[1]]
+      Data: indirect[evalfunc[0]]
     - Name: $v
       Entry: 7
       Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],

@@ -1,0 +1,4 @@
+// ok
+obj : object = object.cast("ok");
+str : string = string.cast(obj);
+UnityEngine.Debug.Log(str);

@@ -1,0 +1,2 @@
+// Single
+UnityEngine.Debug.Log(float.cast(100).GetType().Name);

@@ -509,20 +509,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
     }
 
-    public abstract class OpResult : TypedResult
+    public abstract class ExternResult : TypedResult
     {
         public TeuchiUdonQualifier Qualifier { get; }
-        public string Op { get; }
         public TeuchiUdonMethod[] Methods { get; protected set; }
         public TeuchiUdonOutValue[][] OutValuess { get; protected set; }
         public TeuchiUdonLiteral[] Literals { get; protected set; }
         public ITeuchiUdonLabel[] Labels { get; protected set; }
 
-        public OpResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op)
+        public ExternResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier)
             : base(token, type)
         {
             Qualifier = qualifier;
-            Op        = op;
         }
 
         protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
@@ -538,26 +536,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Labels     = GetLabels    ().ToArray();
         }
 
-        protected TeuchiUdonType GetTypeFromLogicalName(string logicalName, bool isTypeType)
+        protected TeuchiUdonMethod GetMethodFromName(IEnumerable<TeuchiUdonType> types, bool isTypeType, IEnumerable<string> methodNames, IEnumerable<TeuchiUdonType> inTypes)
         {
-            var qt = new TeuchiUdonType(logicalName);
-            if (!TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt))
+            foreach (var t in types)
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"type '{logicalName}' is not defined");
-                return TeuchiUdonType.Bottom;
-            }
-
-            var type = TeuchiUdonTables.Instance.LogicalTypes[qt];
-            return isTypeType ? TeuchiUdonType.Type.ApplyArgAsType(type) : type;
-        }
-
-        protected TeuchiUdonMethod GetMethodFromName(IEnumerable<string> logicalTypeNames, bool isTypeType, IEnumerable<string> methodNames, IEnumerable<string> inTypeNames)
-        {
-            var inTypes = inTypeNames.Select(x => GetTypeFromLogicalName(x, false)).ToArray();
-
-            foreach (var logical in logicalTypeNames)
-            {
-                var type = GetTypeFromLogicalName(logical, isTypeType);
+                var type = isTypeType ? TeuchiUdonType.Type.ApplyArgAsType(t) : t;
 
                 foreach (var name in methodNames)
                 {
@@ -572,14 +555,148 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     else
                     {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"arguments of operator '{Op}' is nondeterministic");
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"arguments of '{name}' is nondeterministic");
                         return null;
                     }
                 }
             }
 
-            TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"operator '{Op}' is not defined");
+            TeuchiUdonLogicalErrorHandler.Instance.ReportError(Token, $"method is not defined");
             return null;
+        }
+    }
+
+    public class TypeCastResult : TypedResult
+    {
+        public ExprResult Expr { get; }
+        public ExprResult Arg { get; }
+
+        public TypeCastResult(IToken token, TeuchiUdonType type, ExprResult expr, ExprResult arg)
+            : base(token, type)
+        {
+            Expr = expr;
+            Arg  = arg;
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+    }
+
+    public class ConvertCastResult : ExternResult
+    {
+        public ExprResult Expr { get; }
+        public ExprResult Arg { get; }
+
+        public ConvertCastResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult expr, ExprResult arg)
+            : base(token, type, qualifier)
+        {
+            Expr = expr;
+            Arg  = arg;
+            Init();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+
+        protected override IEnumerable<TeuchiUdonMethod> GetMethods()
+        {
+            var methodName = ToConvertMethodName(Expr.Inner.Type.GetArgAsType());
+            return new TeuchiUdonMethod[]
+            {
+                GetMethodFromName(new TeuchiUdonType[] { new TeuchiUdonType("SystemConvert") }, true, new string[] { methodName }, new TeuchiUdonType[] { Arg.Inner.Type })
+            };
+        }
+
+        private string ToConvertMethodName(TeuchiUdonType type)
+        {
+            if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            {
+                return "ToBoolean";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
+            {
+                return "ToByte";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Char))
+            {
+                return "ToChar";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.DateTime))
+            {
+                return "ToDateTime";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Decimal))
+            {
+                return "ToDecimal";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Double))
+            {
+                return "ToDouble";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Short))
+            {
+                return "ToInt16";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Int))
+            {
+                return "ToInt32";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Long))
+            {
+                return "ToInt64";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.SByte))
+            {
+                return "ToSByte";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Float))
+            {
+                return "ToSingle";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.String))
+            {
+                return "ToString";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UShort))
+            {
+                return "ToUInt16";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UInt))
+            {
+                return "ToUInt32";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.ULong))
+            {
+                return "ToUInt64";
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        protected override IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess()
+        {
+            return Methods.Select(x => x == null ? new TeuchiUdonOutValue[0] : TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.OutTypes.Length));
+        }
+
+        protected override IEnumerable<TeuchiUdonLiteral> GetLiterals()
+        {
+            return new TeuchiUdonLiteral[0];
+        }
+
+        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        {
+            return new ITeuchiUdonLabel[0];
+        }
+    }
+
+    public abstract class OpResult : ExternResult
+    {
+        public string Op { get; }
+
+        public OpResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op)
+            : base(token, type, qualifier)
+        {
+            Op = op;
         }
     }
 
@@ -606,18 +723,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<TeuchiUdonMethod> GetMethods()
         {
-            var exprType = Expr.Inner.Type.LogicalName;
+            var exprType = Expr.Inner.Type;
 
             switch (Op)
             {
                 case "+":
                     return new TeuchiUdonMethod[0];
                 case "-":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { exprType }, true, new string[] { "op_UnaryMinus"    }, new string[] { exprType }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { exprType }, true, new string[] { "op_UnaryMinus"    }, new TeuchiUdonType[] { exprType }) };
                 case "!":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { exprType }, true, new string[] { "op_UnaryNegation" }, new string[] { exprType }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { exprType }, true, new string[] { "op_UnaryNegation" }, new TeuchiUdonType[] { exprType }) };
                 case "~":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { exprType }, true, new string[] { "op_LogicalXor"    }, new string[] { exprType, exprType }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { exprType }, true, new string[] { "op_LogicalXor"    }, new TeuchiUdonType[] { exprType, exprType }) };
                 default:
                     return new TeuchiUdonMethod[0];
             }
@@ -641,15 +758,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (Op)
             {
                 case "~":
-                    if (Methods[0] == null)
-                    {
-                        return new TeuchiUdonLiteral[] { null };
-                    }
-                    else
-                    {
-                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
-                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateMask(index, Expr.Inner.Type) };
-                    }
+                {
+                    var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                    return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateMask(index, Expr.Inner.Type) };
+                }
                 default:
                     return new TeuchiUdonLiteral[0];
             }
@@ -691,9 +803,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<TeuchiUdonMethod> GetMethods()
         {
-            var expr1Type  = Expr1.Inner.Type.LogicalName;
-            var expr2Type  = Expr2.Inner.Type.LogicalName;
-            var objectType = TeuchiUdonType.Object.LogicalName;
+            var expr1Type  = Expr1.Inner.Type;
+            var expr2Type  = Expr2.Inner.Type;
+            var objectType = TeuchiUdonType.Object;
 
             switch (Op)
             {
@@ -706,57 +818,57 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, objectType }, true, new string[] { "op_Equality" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, objectType }, true, new string[] { "op_Equality" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                 case "+":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_Addition"                      }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_Addition"                      }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "-":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_Subtraction"                   }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_Subtraction"                   }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "*":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_Multiplication", "op_Multiply" }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_Multiplication", "op_Multiply" }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "/":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_Division"                      }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_Division"                      }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "%":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_Modulus", "op_Remainder"       }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_Modulus", "op_Remainder"       }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "<<":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_LeftShift"                     }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_LeftShift"                     }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case ">>":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_RightShift"                    }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_RightShift"                    }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "<":
                     if (Expr1.Inner.Type.IsAssignableFrom(Expr2.Inner.Type))
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type }, true, new string[] { "op_LessThan" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type }, true, new string[] { "op_LessThan" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr2Type }, true, new string[] { "op_LessThan" }, new string[] { expr2Type, expr2Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr2Type }, true, new string[] { "op_LessThan" }, new TeuchiUdonType[] { expr2Type, expr2Type }) };
                     }
                 case ">":
                     if (Expr1.Inner.Type.IsAssignableFrom(Expr2.Inner.Type))
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type }, true, new string[] { "op_GreaterThan" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type }, true, new string[] { "op_GreaterThan" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr2Type }, true, new string[] { "op_GreaterThan" }, new string[] { expr2Type, expr2Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr2Type }, true, new string[] { "op_GreaterThan" }, new TeuchiUdonType[] { expr2Type, expr2Type }) };
                     }
                 case "<=":
                     if (Expr1.Inner.Type.IsAssignableFrom(Expr2.Inner.Type))
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type }, true, new string[] { "op_LessThanOrEqual" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type }, true, new string[] { "op_LessThanOrEqual" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr2Type }, true, new string[] { "op_LessThanOrEqual" }, new string[] { expr2Type, expr2Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr2Type }, true, new string[] { "op_LessThanOrEqual" }, new TeuchiUdonType[] { expr2Type, expr2Type }) };
                     }
                 case ">=":
                     if (Expr1.Inner.Type.IsAssignableFrom(Expr2.Inner.Type))
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type }, true, new string[] { "op_GreaterThanOrEqual" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type }, true, new string[] { "op_GreaterThanOrEqual" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr2Type }, true, new string[] { "op_GreaterThanOrEqual" }, new string[] { expr2Type, expr2Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr2Type }, true, new string[] { "op_GreaterThanOrEqual" }, new TeuchiUdonType[] { expr2Type, expr2Type }) };
                     }
                 case "==":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
@@ -765,11 +877,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     else if (Expr1.Inner.Type.IsAssignableFrom(Expr2.Inner.Type))
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, objectType }, true, new string[] { "op_Equality" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, objectType }, true, new string[] { "op_Equality" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr2Type, objectType }, true, new string[] { "op_Equality" }, new string[] { expr2Type, expr2Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr2Type, objectType }, true, new string[] { "op_Equality" }, new TeuchiUdonType[] { expr2Type, expr2Type }) };
                     }
                 case "!=":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
@@ -778,18 +890,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     else if (Expr1.Inner.Type.IsAssignableFrom(Expr2.Inner.Type))
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, objectType }, true, new string[] { "op_Inequality" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, objectType }, true, new string[] { "op_Inequality" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr2Type, objectType }, true, new string[] { "op_Inequality" }, new string[] { expr2Type, expr2Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr2Type, objectType }, true, new string[] { "op_Inequality" }, new TeuchiUdonType[] { expr2Type, expr2Type }) };
                     }
                 case "&":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_LogicalAnd" }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_LogicalAnd" }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "^":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_LogicalXor" }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_LogicalXor" }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "|":
-                    return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, expr2Type }, true, new string[] { "op_LogicalOr"  }, new string[] { expr1Type, expr2Type }) };
+                    return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, expr2Type }, true, new string[] { "op_LogicalOr"  }, new TeuchiUdonType[] { expr1Type, expr2Type }) };
                 case "&&":
                     return new TeuchiUdonMethod[0];
                 case "||":
@@ -801,7 +913,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                     else
                     {
-                        return new TeuchiUdonMethod[] { GetMethodFromName(new string[] { expr1Type, objectType }, true, new string[] { "op_Equality" }, new string[] { expr1Type, expr1Type }) };
+                        return new TeuchiUdonMethod[] { GetMethodFromName(new TeuchiUdonType[] { expr1Type, objectType }, true, new string[] { "op_Equality" }, new TeuchiUdonType[] { expr1Type, expr1Type }) };
                     }
                 case "<-":
                     return new TeuchiUdonMethod[0];
@@ -851,46 +963,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (Op)
             {
                 case "==":
-                    if (Methods.Length == 1 && Methods[0] == null)
-                    {
-                        return new TeuchiUdonLiteral[] { null };
-                    }
-                    else
-                    {
-                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
-                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "true", TeuchiUdonType.Bool) };
-                    }
+                {
+                    var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                    return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "true", TeuchiUdonType.Bool) };
+                }
                 case "!=":
-                    if (Methods.Length == 1 && Methods[0] == null)
-                    {
-                        return new TeuchiUdonLiteral[] { null };
-                    }
-                    else
-                    {
-                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
-                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
-                    }
+                {
+                    var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                    return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
+                }
                 case "&&":
-                    {
-                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
-                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
-                    }
+                {
+                    var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                    return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "false", TeuchiUdonType.Bool) };
+                }
                 case "||":
-                    {
-                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
-                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "true", TeuchiUdonType.Bool) };
-                    }
+                {
+                    var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                    return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "true", TeuchiUdonType.Bool) };
+                }
                 case "?.":
                 case "??":
-                    if (Methods.Length == 1 && Methods[0] == null)
-                    {
-                        return new TeuchiUdonLiteral[] { null };
-                    }
-                    else
-                    {
-                        var index = TeuchiUdonTables.Instance.GetLiteralIndex();
-                        return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "null", TeuchiUdonType.Bottom) };
-                    }
+                {
+                    var index = TeuchiUdonTables.Instance.GetLiteralIndex();
+                    return new TeuchiUdonLiteral[] { TeuchiUdonLiteral.CreateValue(index, "null", TeuchiUdonType.Bottom) };
+                }
                 default:
                     return new TeuchiUdonLiteral[0];
             }

@@ -740,6 +740,61 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(infix.Token, infix);
         }
 
+        public override void ExitCastExpr([NotNull] CastExprContext context)
+        {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+
+            var type = exprs[0].Inner.Type;
+            if (!type.LogicalTypeNameEquals(TeuchiUdonType.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression is not a type");
+                return;
+            }
+
+            var type1 = type.GetArgAsType();
+            var type2 = exprs[1].Inner.Type;
+            if (type1.IsAssignableFrom(type2) || type2.IsAssignableFrom(type1))
+            {
+                var cast       = new TypeCastResult(context.Start, type1, exprs[0], exprs[1]);
+                context.result = new ExprResult(cast.Token, cast);
+            }
+            else if (IsValidConvertType(type1) && IsValidConvertType(type2))
+            {
+                var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+                var cast       = new ConvertCastResult(context.Start, type1, qual, exprs[0], exprs[1]);
+                context.result = new ExprResult(cast.Token, cast);
+            }
+            else
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"specified type cannot be cast");
+                return;
+            }
+        }
+
+        private bool IsValidConvertType(TeuchiUdonType type)
+        {
+            return new TeuchiUdonType[]
+            {
+                TeuchiUdonType.Bool,
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.Char,
+                TeuchiUdonType.DateTime,
+                TeuchiUdonType.Decimal,
+                TeuchiUdonType.Double,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.Int,
+                TeuchiUdonType.Long,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.String,
+                TeuchiUdonType.UShort,
+                TeuchiUdonType.UInt,
+                TeuchiUdonType.ULong
+            }
+            .Any(x => type.LogicalTypeEquals(x));
+        }
+
         public override void ExitEvalUnitFuncExpr([NotNull] EvalUnitFuncExprContext context)
         {
             var expr = context.expr()?.result;
@@ -770,7 +825,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private ExprResult ExitEvalFuncExpr(IToken token, ExprResult expr, IEnumerable<ArgExprResult> argExprs)
         {
-            var index    = TeuchiUdonTables.Instance.GetEvalFuncIndex();
             var type     = expr.Inner.Type;
             var args     = argExprs.Select(x => x.Expr);
             var argRefs  = argExprs.Select(x => x.Ref);
@@ -792,6 +846,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     if (type.IsAssignableFrom(TeuchiUdonType.Func.ApplyArgsAsFunc(iType, oType)))
                     {
                         var outType = type.GetArgAsFuncOutType();
+                        var index   = TeuchiUdonTables.Instance.GetEvalFuncIndex();
                         evalFunc    = new EvalFuncResult(token, outType, index, qual, expr, args);
                     }
                     else

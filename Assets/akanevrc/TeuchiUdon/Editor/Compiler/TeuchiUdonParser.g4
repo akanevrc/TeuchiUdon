@@ -79,6 +79,7 @@ expr
     | thisLiteral                            #ThisLiteralExpr
     | identifier                             #EvalVarExpr
     | expr op=('.' | '?.') expr              #AccessExpr
+    | expr '.' 'cast' '(' expr ')'           #CastExpr
     | expr '(' ')'                           #EvalUnitFuncExpr
     | expr '(' argExpr ')'                   #EvalSingleFuncExpr
     | expr '(' argExpr (',' argExpr)+ ')'    #EvalTupleFuncExpr

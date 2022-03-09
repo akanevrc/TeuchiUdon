@@ -205,5 +205,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             return literal;
         }
+
+        public static TeuchiUdonLiteral CreateDotNetType(int index, TeuchiUdonType type)
+        {
+            return new TeuchiUdonLiteral(index, $"typeof({type.LogicalName})", TeuchiUdonType.DotNetType, type.RealType);
+        }
     }
 }

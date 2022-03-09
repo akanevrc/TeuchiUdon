@@ -153,13 +153,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is EvalFuncResult         evalFunc        ) return VisitEvalFunc        (evalFunc);
             if (result is EvalMethodResult       evalMethod      ) return VisitEvalMethod      (evalMethod);
             if (result is EvalVarCandidateResult evalVarCandidate) return VisitEvalVarCandidate(evalVarCandidate);
-            if (result is ArgExprResult          argExpr         ) return VisitArgExpr         (argExpr);
+            if (result is TypeCastResult         typeCast        ) return VisitTypeCast        (typeCast);
+            if (result is ConvertCastResult      convertCast     ) return VisitConvertCast     (convertCast);
             if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
             if (result is InfixResult            infix           ) return VisitInfix           (infix);
             if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
             if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
             if (result is FuncResult             func            ) return VisitFunc            (func);
             if (result is MethodResult           method          ) return VisitMethod          (method);
+            if (result is ArgExprResult          argExpr         ) return VisitArgExpr         (argExpr);
             throw new InvalidOperationException("unsupported parser result type");
         }
 
@@ -480,9 +482,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonAssembly[0];
         }
 
-        protected IEnumerable<TeuchiUdonAssembly> VisitArgExpr(ArgExprResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitTypeCast(TypeCastResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return VisitExpr(result.Expr).Concat(VisitExpr(result.Arg));
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitConvertCast(ConvertCastResult result)
+        {
+            return
+                result.Methods.Any(x => x == null) ? new TeuchiUdonAssembly[0] :
+                VisitExpr(result.Expr)
+                .Concat(VisitExpr(result.Arg))
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0])),
+                    new Assembly_EXTERN(result.Methods[0]),
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.OutValuess[0][0]))
+                });
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitPrefix(PrefixResult result)
@@ -503,7 +519,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         );
                 case "~":
                     return
-                        result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
                         EvalPrefix
                         (
                             result.Methods[0],
@@ -541,7 +557,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
                 case "?.":
                     return
-                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 1 && result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
                         result.Methods.Length == 0 ? new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) } :
                         EvalInfixCoalescingAccess
                         (
@@ -581,7 +597,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "==":
                 case "!=":
                     return
-                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 1 && result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
                         result.Methods.Length == 0 ? new TeuchiUdonAssembly[] { new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(result.Literals[0])) } :
                         EvalInfix
                         (
@@ -615,7 +631,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         );
                 case "??":
                     return
-                        result.Methods.Length == 1 && result.Methods[0] == null || result.Literals[0] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods.Length == 1 && result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
                         result.Methods.Length == 0 ? VisitExpr(result.Expr2) :
                         EvalInfixCoalescing
                         (
@@ -846,6 +862,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitMethod(MethodResult result)
+        {
+            return new TeuchiUdonAssembly[0];
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitArgExpr(ArgExprResult result)
         {
             return new TeuchiUdonAssembly[0];
         }

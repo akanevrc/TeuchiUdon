@@ -23,6 +23,7 @@ TAB     : (Tab)+        -> skip;
 AS       : 'as'       ;
 BREAK    : 'break'    ;
 CASE     : 'case'     ;
+CAST     : 'cast'     ;
 CONTINUE : 'continue' ;
 DATA     : 'data'     ;
 ELSE     : 'else'     ;
