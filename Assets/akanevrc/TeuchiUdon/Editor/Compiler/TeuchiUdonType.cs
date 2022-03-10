@@ -6,6 +6,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public interface ITeuchiUdonTypeArg
     {
+        string GetLogicalName();
     }
 
     public class TeuchiUdonType : ITeuchiUdonTypeArg, IEquatable<TeuchiUdonType>
@@ -17,7 +18,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Qual { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "qual", "qual", null, null);
         public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "type", null, null);
         public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
-        public static TeuchiUdonType Array { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array", "array", null, null);
         public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
         public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
@@ -117,6 +117,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return $"{Qualifier.Qualify(".", Name)}{(Args.Length == 0 ? "" : $"[{string.Join(", ", Args.Select(x => x.ToString()))}]")}";
         }
 
+        public string GetLogicalName()
+        {
+            return LogicalName;
+        }
+
         public string GetRealName()
         {
             if (RealName == null)
@@ -191,11 +196,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return ApplyArgs(types);
         }
 
-        public TeuchiUdonType ApplyArgAsArray(TeuchiUdonType type)
-        {
-            return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
-        }
-
         public TeuchiUdonType ApplyArgAsList(TeuchiUdonType type)
         {
             return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
@@ -224,11 +224,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<TeuchiUdonType> GetArgsAsTuple()
         {
             return Args.Cast<TeuchiUdonType>();
-        }
-
-        public TeuchiUdonType GetArgAsArray()
-        {
-            return (TeuchiUdonType)Args[0];
         }
 
         public TeuchiUdonType GetArgAsList()

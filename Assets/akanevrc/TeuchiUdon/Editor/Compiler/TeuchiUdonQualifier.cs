@@ -56,6 +56,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return string.Join<TeuchiUdonScope>(".", Logical);
         }
 
+        public string GetLogicalName()
+        {
+            return string.Join<TeuchiUdonScope>("", Logical);
+        }
+
         public string Qualify(string separator, string text)
         {
             return string.Join(separator, Logical.Select(x => x.ToString()).Concat(new string[] { text }));

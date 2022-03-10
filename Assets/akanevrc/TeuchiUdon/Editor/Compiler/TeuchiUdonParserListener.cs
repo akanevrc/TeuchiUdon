@@ -433,6 +433,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitEvalSingleFuncExpr([NotNull] TeuchiUdonParser.EvalSingleFuncExprContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>EvalSingleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterEvalSingleKeyExpr([NotNull] TeuchiUdonParser.EvalSingleKeyExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EvalSingleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitEvalSingleKeyExpr([NotNull] TeuchiUdonParser.EvalSingleKeyExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>AccessExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -492,6 +504,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitRelationExpr([NotNull] TeuchiUdonParser.RelationExprContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>EvalTupleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterEvalTupleKeyExpr([NotNull] TeuchiUdonParser.EvalTupleKeyExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EvalTupleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitEvalTupleKeyExpr([NotNull] TeuchiUdonParser.EvalTupleKeyExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>RangeExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.

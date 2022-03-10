@@ -506,6 +506,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitEvalSingleFuncExpr([NotNull] TeuchiUdonParser.EvalSingleFuncExprContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>EvalSingleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterEvalSingleKeyExpr([NotNull] TeuchiUdonParser.EvalSingleKeyExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EvalSingleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitEvalSingleKeyExpr([NotNull] TeuchiUdonParser.EvalSingleKeyExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>AccessExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -575,6 +589,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitRelationExpr([NotNull] TeuchiUdonParser.RelationExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>EvalTupleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterEvalTupleKeyExpr([NotNull] TeuchiUdonParser.EvalTupleKeyExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EvalTupleKeyExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitEvalTupleKeyExpr([NotNull] TeuchiUdonParser.EvalTupleKeyExprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>RangeExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.

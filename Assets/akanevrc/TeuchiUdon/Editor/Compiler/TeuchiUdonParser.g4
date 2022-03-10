@@ -83,6 +83,8 @@ expr
     | expr '(' ')'                           #EvalUnitFuncExpr
     | expr '(' argExpr ')'                   #EvalSingleFuncExpr
     | expr '(' argExpr (',' argExpr)+ ')'    #EvalTupleFuncExpr
+    | expr '[' expr ']'                      #EvalSingleKeyExpr
+    | expr '[' expr (',' expr)+ ']'          #EvalTupleKeyExpr
     | 'nameof' '(' identifier ')'            #NameOfExpr
     | op=('+' | '-' | '!' | '~') expr        #PrefixExpr
     | expr op='..' expr                      #RangeExpr

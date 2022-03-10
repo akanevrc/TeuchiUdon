@@ -93,5 +93,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return $"{Type}.{Name}({string.Join<TeuchiUdonType>(", ", InTypes)})";
         }
+
+        public string GetLogicalName()
+        {
+            return $"{Type.GetLogicalName()}{Name}{string.Join("", InTypes.Select(x => x.GetLogicalName()))}";
+        }
     }
 }

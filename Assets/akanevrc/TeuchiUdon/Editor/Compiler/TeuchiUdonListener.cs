@@ -496,7 +496,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         var v    = TeuchiUdonTables.Instance.Vars[qv];
                         var type = v.Type;
-                        evalVar  = new EvalVarResult(context.Start, type, v, identifier);
+                        evalVar  = new EvalVarResult(context.Start, type, v);
                         break;
                     }
 
@@ -505,7 +505,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         var type  = TeuchiUdonTables.Instance.Types[qt];
                         var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
-                        evalVar   = new EvalTypeResult(context.Start, outer, type, identifier);
+                        evalVar   = new EvalTypeResult(context.Start, outer, type);
+                        break;
+                    }
+
+                    if
+                    (
+                        TeuchiUdonTables.Instance.GenericRootTypes.ContainsKey(qt) &&
+                        (context.Parent is EvalSingleKeyExprContext || context.Parent is EvalTupleKeyExprContext)
+                    )
+                    {
+                        var type  = TeuchiUdonTables.Instance.GenericRootTypes[qt];
+                        var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
+                        evalVar   = new EvalTypeResult(context.Start, outer, type);
                         break;
                     }
                 }
@@ -542,7 +554,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         var v    = TeuchiUdonTables.Instance.Vars[qv];
                         var type = v.Type;
-                        eval     = new EvalVarResult(varCandidate1.Token, type, v, varCandidate1.Identifier);
+                        eval     = new EvalVarResult(varCandidate1.Token, type, v);
                         break;
                     }
 
@@ -551,7 +563,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         var type  = TeuchiUdonTables.Instance.Types[qt];
                         var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
-                        eval      = new EvalTypeResult(varCandidate1.Token, outer, type, varCandidate1.Identifier);
+                        eval      = new EvalTypeResult(varCandidate1.Token, outer, type);
+                        break;
+                    }
+
+                    if
+                    (
+                        TeuchiUdonTables.Instance.GenericRootTypes.ContainsKey(qt) &&
+                        (context.Parent is EvalSingleKeyExprContext || context.Parent is EvalTupleKeyExprContext)
+                    )
+                    {
+                        var type  = TeuchiUdonTables.Instance.GenericRootTypes[qt];
+                        var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
+                        eval      = new EvalTypeResult(varCandidate1.Token, outer, type);
                         break;
                     }
                 }
@@ -562,7 +586,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     var q    = TeuchiUdonTables.Instance.Qualifiers[newQual];
                     var type = TeuchiUdonType.Qual.ApplyArgAsQual(q);
-                    eval     = new EvalQualifierResult(varCandidate1.Token, type, q, varCandidate1.Identifier);
+                    eval     = new EvalQualifierResult(varCandidate1.Token, type, q);
                 }
 
                 if (eval == null)
@@ -588,7 +612,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         {
                             var v    = TeuchiUdonTables.Instance.Vars[qv];
                             var type = v.Type;
-                            eval     = new EvalVarResult(varCandidate2.Token, type, v, varCandidate2.Identifier);
+                            eval     = new EvalVarResult(varCandidate2.Token, type, v);
                             break;
                         }
 
@@ -597,7 +621,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         {
                             var type  = TeuchiUdonTables.Instance.Types[qt];
                             var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
-                            eval      = new EvalTypeResult(varCandidate2.Token, outer, type, varCandidate2.Identifier);
+                            eval      = new EvalTypeResult(varCandidate2.Token, outer, type);
+                            break;
+                        }
+
+                        if
+                        (
+                            TeuchiUdonTables.Instance.GenericRootTypes.ContainsKey(qt) &&
+                            (context.Parent is EvalSingleKeyExprContext || context.Parent is EvalTupleKeyExprContext)
+                        )
+                        {
+                            var type  = TeuchiUdonTables.Instance.GenericRootTypes[qt];
+                            var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
+                            eval      = new EvalTypeResult(varCandidate2.Token, outer, type);
                             break;
                         }
 
@@ -607,7 +643,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         {
                             var q    = TeuchiUdonTables.Instance.Qualifiers[appended];
                             var type = TeuchiUdonType.Qual.ApplyArgAsQual(q);
-                            eval     = new EvalQualifierResult(varCandidate2.Token, type, q, varCandidate2.Identifier);
+                            eval     = new EvalQualifierResult(varCandidate2.Token, type, q);
                             break;
                         }
                     }
@@ -621,7 +657,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         {
                             var type  = TeuchiUdonTables.Instance.Types[qt];
                             var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
-                            eval      = new EvalTypeResult(varCandidate2.Token, outer, type, varCandidate2.Identifier);
+                            eval      = new EvalTypeResult(varCandidate2.Token, outer, type);
+                            break;
+                        }
+
+                        if
+                        (
+                            TeuchiUdonTables.Instance.GenericRootTypes.ContainsKey(qt) &&
+                            (context.Parent is EvalSingleKeyExprContext || context.Parent is EvalTupleKeyExprContext)
+                        )
+                        {
+                            var type  = TeuchiUdonTables.Instance.GenericRootTypes[qt];
+                            var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
+                            eval      = new EvalTypeResult(varCandidate2.Token, outer, type);
                             break;
                         }
 
@@ -643,17 +691,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 1).ToArray();
                         if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0], varCandidate2.Identifier);
+                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0]);
                             break;
                         }
                         else if (g.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], varCandidate2.Identifier);
+                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0]);
                             break;
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, s[0], varCandidate2.Identifier);
+                            eval = new EvalSetterResult(varCandidate2.Token, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
@@ -701,17 +749,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 2).ToArray();
                         if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0], varCandidate2.Identifier);
+                            eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0]);
                             break;
                         }
                         else if (g.Length == 1 && g[0].OutTypes.Length == 1)
                         {
-                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], varCandidate2.Identifier);
+                            eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0]);
                             break;
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, s[0], varCandidate2.Identifier);
+                            eval = new EvalSetterResult(varCandidate2.Token, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
@@ -940,6 +988,74 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (expr == null) return;
 
             context.result = new ArgExprResult(context.Start, expr, rf);
+        }
+
+        public override void ExitEvalSingleKeyExpr([NotNull] EvalSingleKeyExprContext context)
+        {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+
+            var args       = exprs.Skip(1);
+            var evalKey    = ExitEvalKeyExpr(context.Start, exprs[0], args);
+            context.result = new ExprResult(evalKey.Token, evalKey);
+        }
+
+        public override void ExitEvalTupleKeyExpr([NotNull] EvalTupleKeyExprContext context)
+        {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length >= 1 || exprs.Any(x => x == null)) return;
+
+            var args       = exprs.Skip(1);
+            var evalKey    = ExitEvalKeyExpr(context.Start, exprs[0], args);
+            context.result = new ExprResult(evalKey.Token, evalKey);
+        }
+
+        private TypedResult ExitEvalKeyExpr(IToken token, ExprResult expr, IEnumerable<ExprResult> args)
+        {
+            if (expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type) && args.All(x => x.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type)))
+            {
+                var exprType = expr.Inner.Type.GetArgAsType();
+                if (!TeuchiUdonTables.Instance.GenericRootTypes.ContainsKey(exprType))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                    return new BottomResult(token);
+                }
+
+                var argTypes = args.Select(x => x.Inner.Type.GetArgAsType());
+                if (exprType.LogicalTypeEquals(TeuchiUdonType.List))
+                {
+                    var qt = new TeuchiUdonType(TeuchiUdonType.List.LogicalName, argTypes);
+                    if (TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt))
+                    {
+                        var type = TeuchiUdonTables.Instance.LogicalTypes[qt];
+                        return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                        return new BottomResult(token);
+                    }
+                }
+                else
+                {
+                    var qt = new TeuchiUdonType(TeuchiUdonTables.GetGenericTypeName(exprType, argTypes), argTypes);
+                    if (TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt))
+                    {
+                        var type = TeuchiUdonTables.Instance.LogicalTypes[qt];
+                        return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                        return new BottomResult(token);
+                    }
+                }
+            }
+            else
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                return new BottomResult(token);
+            }
         }
 
         public override void ExitNameOfExpr([NotNull] NameOfExprContext context)
