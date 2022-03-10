@@ -649,20 +649,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "<-":
                 {
                     return
+                        result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) || result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                            new TeuchiUdonAssembly[0] :
                         result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
-                        EvalInfixAssign
-                        (
-                            VisitExpr(result.Expr1),
-                            VisitExpr(result.Expr2)
-                        ) :
+                            EvalInfixAssign
+                            (
+                                VisitExpr(result.Expr1),
+                                VisitExpr(result.Expr2)
+                            ) :
                         result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonMethod m ?
-                        EvalInfixAssignMethod
-                        (
-                            VisitExpr(result.Expr1.Inner.Instance),
-                            new TeuchiUdonAssembly[] { new Assembly_EXTERN(m) },
-                            VisitExpr(result.Expr2)
-                        ) :
-                        new TeuchiUdonAssembly[0];
+                            EvalInfixAssignMethod
+                            (
+                                VisitExpr(result.Expr1.Inner.Instance),
+                                new TeuchiUdonAssembly[] { new Assembly_EXTERN(m) },
+                                VisitExpr(result.Expr2)
+                            ) :
+                            new TeuchiUdonAssembly[0];
                 }
                 default:
                     return new TeuchiUdonAssembly[0];
