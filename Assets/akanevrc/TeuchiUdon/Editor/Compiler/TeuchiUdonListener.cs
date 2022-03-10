@@ -535,6 +535,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (expr1.Inner is EvalVarCandidateResult varCandidate1)
             {
                 var eval = (TypedResult)null;
+                foreach (var qual in TeuchiUdonQualifierStack.Instance.Qualifiers)
+                {
+                    var qv = new TeuchiUdonVar(qual, varCandidate1.Identifier.Name);
+                    if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                    {
+                        var v    = TeuchiUdonTables.Instance.Vars[qv];
+                        var type = v.Type;
+                        eval     = new EvalVarResult(varCandidate1.Token, type, v, varCandidate1.Identifier);
+                        break;
+                    }
+
+                    var qt = new TeuchiUdonType(qual, varCandidate1.Identifier.Name);
+                    if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
+                    {
+                        var type  = TeuchiUdonTables.Instance.Types[qt];
+                        var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
+                        eval      = new EvalTypeResult(varCandidate1.Token, outer, type, varCandidate1.Identifier);
+                        break;
+                    }
+                }
 
                 var scopes  = new TeuchiUdonScope[] { new TeuchiUdonScope(new TextLabel(varCandidate1.Identifier.Name)) };
                 var newQual = new TeuchiUdonQualifier(scopes);
@@ -544,36 +564,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     var type = TeuchiUdonType.Qual.ApplyArgAsQual(q);
                     eval     = new EvalQualifierResult(varCandidate1.Token, type, q, varCandidate1.Identifier);
                 }
-                else
+
+                if (eval == null)
                 {
-                    foreach (var qual in TeuchiUdonQualifierStack.Instance.Qualifiers)
-                    {
-                        var qt = new TeuchiUdonType(qual, varCandidate1.Identifier.Name);
-                        if (TeuchiUdonTables.Instance.Types.ContainsKey(qt))
-                        {
-                            var type  = TeuchiUdonTables.Instance.Types[qt];
-                            var outer = TeuchiUdonType.Type.ApplyArgAsType(type);
-                            eval      = new EvalTypeResult(varCandidate1.Token, outer, type, varCandidate1.Identifier);
-                            break;
-                        }
-
-                        var qv = new TeuchiUdonVar(qual, varCandidate1.Identifier.Name);
-                        if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
-                        {
-                            var v    = TeuchiUdonTables.Instance.Vars[qv];
-                            var type = v.Type;
-                            eval     = new EvalVarResult(varCandidate1.Token, type, v, varCandidate1.Identifier);
-                            break;
-                        }
-                    }
-
-                    if (eval == null)
-                    {
-                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate1.Token, $"'{varCandidate1.Identifier.Name}' is not defined");
-                        eval = new BottomResult(varCandidate1.Token);
-                    }
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate1.Token, $"'{varCandidate1.Identifier.Name}' is not defined");
+                    eval = new BottomResult(varCandidate1.Token);
                 }
-
+                
                 expr1 = new ExprResult(eval.Token, eval);
             }
             var type1 = expr1.Inner.Type;
@@ -585,14 +582,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     if (type1.LogicalTypeNameEquals(TeuchiUdonType.Qual))
                     {
-                        var qual     = type1.GetArgAsQual();
-                        var scope    = new TeuchiUdonScope(new TextLabel(varCandidate2.Identifier.Name));
-                        var appended = qual.Append(scope);
-                        if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(appended))
+                        var qual = type1.GetArgAsQual();
+                        var qv   = new TeuchiUdonVar(qual, varCandidate2.Identifier.Name);
+                        if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
                         {
-                            var q    = TeuchiUdonTables.Instance.Qualifiers[appended];
-                            var type = TeuchiUdonType.Qual.ApplyArgAsQual(q);
-                            eval     = new EvalQualifierResult(varCandidate2.Token, type, q, varCandidate2.Identifier);
+                            var v    = TeuchiUdonTables.Instance.Vars[qv];
+                            var type = v.Type;
+                            eval     = new EvalVarResult(varCandidate2.Token, type, v, varCandidate2.Identifier);
                             break;
                         }
 
@@ -605,12 +601,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             break;
                         }
 
-                        var qv   = new TeuchiUdonVar(qual, varCandidate2.Identifier.Name);
-                        if (TeuchiUdonTables.Instance.Vars.ContainsKey(qv))
+                        var scope    = new TeuchiUdonScope(new TextLabel(varCandidate2.Identifier.Name));
+                        var appended = qual.Append(scope);
+                        if (TeuchiUdonTables.Instance.Qualifiers.ContainsKey(appended))
                         {
-                            var v    = TeuchiUdonTables.Instance.Vars[qv];
-                            var type = v.Type;
-                            eval     = new EvalVarResult(varCandidate2.Token, type, v, varCandidate2.Identifier);
+                            var q    = TeuchiUdonTables.Instance.Qualifiers[appended];
+                            var type = TeuchiUdonType.Qual.ApplyArgAsQual(q);
+                            eval     = new EvalQualifierResult(varCandidate2.Token, type, q, varCandidate2.Identifier);
                             break;
                         }
                     }
