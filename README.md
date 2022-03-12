@@ -12,3 +12,11 @@ This project is currently in progress.
 
 TeuchiUdon uses [ANTLR](https://www.antlr.org/) parser generator and its runtime for C#.
 Thanks a lot!
+
+ANTLR Compilation Usage:
+
+```console
+# on project folder
+$ antlr4 -package akanevrc.TeuchiUdon.Editor.Compiler ./Assets/akanevrc/TeuchiUdon/Editor/Compiler/TeuchiUdonLexer.g4
+$ antlr4 -package akanevrc.TeuchiUdon.Editor.Compiler ./Assets/akanevrc/TeuchiUdon/Editor/Compiler/TeuchiUdonParser.g4
+```
