@@ -209,9 +209,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class JumpResult : StatementResult
     {
         public ExprResult Value { get; }
-        public ITeuchiUdonLabel Label { get; }
+        public ITypedLabel Label { get; }
 
-        public JumpResult(IToken token, ExprResult value, ITeuchiUdonLabel label)
+        public JumpResult(IToken token, ExprResult value, ITypedLabel label)
             : base(token)
         {
             Value = value;
@@ -314,6 +314,81 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Expr.Inner.LeftValues;
+    }
+
+    public class ListCtorResult : TypedResult
+    {
+        public ListExprResult[] Exprs { get; }
+        public TeuchiUdonOutValue[] OutValues { get; }
+
+        public ListCtorResult(IToken token, TeuchiUdonType type, IEnumerable<ListExprResult> exprs)
+            : base(token, type)
+        {
+            Exprs = exprs.ToArray();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+    }
+
+    public abstract class ListExprResult : TeuchiUdonParserResult
+    {
+        public TeuchiUdonType Type { get; }
+
+        public ListExprResult(IToken token, TeuchiUdonType type)
+            : base(token)
+        {
+            Type = type;
+        }
+    }
+
+    public class ElementListExprResult : ListExprResult
+    {
+        public ExprResult Expr { get; }
+
+        public ElementListExprResult(IToken token, TeuchiUdonType type, ExprResult expr)
+            : base(token, type)
+        {
+            Expr = expr;
+        }
+    }
+
+    public class RangeListExprResult : ListExprResult
+    {
+        public ExprResult FromExpr { get; }
+        public ExprResult ToExpr { get; }
+
+        public RangeListExprResult(IToken token, TeuchiUdonType type, ExprResult fromExpr, ExprResult toExpr)
+            : base(token, type)
+        {
+            FromExpr = fromExpr;
+            ToExpr   = toExpr;
+        }
+    }
+
+    public class SteppedRangeListExprResult : ListExprResult
+    {
+        public ExprResult FromExpr { get; }
+        public ExprResult ToExpr { get; }
+        public ExprResult StepExpr { get; }
+
+        public SteppedRangeListExprResult(IToken token, TeuchiUdonType type, ExprResult fromExpr, ExprResult toExpr, ExprResult stepExpr)
+            : base(token, type)
+        {
+            FromExpr = fromExpr;
+            ToExpr   = toExpr;
+            StepExpr = stepExpr;
+        }
+    }
+
+    public class SpreadListExprResult : ListExprResult
+    {
+        public ExprResult Expr { get; }
+
+        public SpreadListExprResult(IToken token, TeuchiUdonType type, ExprResult expr)
+            : base(token, type)
+        {
+            Expr = expr;
+        }
     }
 
     public class LiteralResult : TypedResult
@@ -495,6 +570,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+    }
+
+    public class ArgExprResult : TeuchiUdonParserResult
+    {
+        public ExprResult Expr { get; }
+        public bool Ref { get; }
+
+        public ArgExprResult(IToken token, ExprResult expr, bool rf)
+            : base(token)
+        {
+            Expr = expr;
+            Ref  = rf;
+        }
     }
 
     public abstract class ExternResult : TypedResult
@@ -1076,18 +1164,5 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
-    }
-
-    public class ArgExprResult : TeuchiUdonParserResult
-    {
-        public ExprResult Expr { get; }
-        public bool Ref { get; }
-
-        public ArgExprResult(IToken token, ExprResult expr, bool rf)
-            : base(token)
-        {
-            Expr = expr;
-            Ref  = rf;
-        }
     }
 }

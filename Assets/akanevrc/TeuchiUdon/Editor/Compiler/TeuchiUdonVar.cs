@@ -6,7 +6,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
     }
 
-    public class TeuchiUdonVar : IIndexedLabel, ITeuchiUdonLeftValue, IEquatable<TeuchiUdonVar>
+    public class TeuchiUdonVar : ITypedLabel, ITeuchiUdonLeftValue, IEquatable<TeuchiUdonVar>
     {
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }

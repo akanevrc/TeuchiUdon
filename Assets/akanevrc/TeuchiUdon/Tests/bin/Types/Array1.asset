@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
-  m_Name: List1
+  m_Name: Array1
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 5e0dbce8f0523514cb0483234f608afc,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 12a66c60f315f7644802ac21738328fe,
     type: 2}
-  udonAssembly: ".data_start\r\n    var[list]: %SystemObjectArray, null\r\n    literal[0]:
-    %SystemObject, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
-    _start:\r\n        PUSH, literal[0]\r\n        PUSH, var[list]\r\n        COPY\r\n       
+  udonAssembly: ".data_start\r\n    literal[0]: %SystemInt32, null\r\n    out[0]:
+    %SystemObject, null\r\n    out[1]: %SystemObject, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, out[0]\r\n       
+    EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
+    PUSH, out[0]\r\n        PUSH, out[1]\r\n        EXTERN, \"SystemInt32Array.__get_Length__SystemInt32\"\r\n       
+    PUSH, out[1]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
@@ -53,14 +56,20 @@ MonoBehaviour:
       Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
         mscorlib
     - Name: Item1
-      Entry: 6
+      Entry: 7
+      Data: 2|System.Int32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 10
+    - Name: 
+      Entry: 8
       Data: 
     - Name: Item2
       Entry: 7
-      Data: 2|System.RuntimeType, mscorlib
+      Data: 3|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: System.Object, mscorlib
+      Data: System.Int32, mscorlib
     - Name: 
       Entry: 8
       Data: 

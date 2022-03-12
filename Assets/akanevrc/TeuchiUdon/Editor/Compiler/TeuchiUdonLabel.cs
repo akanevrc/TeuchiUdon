@@ -13,10 +13,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         int Index { get; }
     }
 
-    public class InvalidLabel : IIndexedLabel
+    public interface ITypedLabel : IIndexedLabel
+    {
+        TeuchiUdonType Type { get; }
+    }
+
+    public class InvalidLabel : ITypedLabel
     {
         public static InvalidLabel Instance = new InvalidLabel();
         public int Index { get; } = -1;
+        public TeuchiUdonType Type { get; } = TeuchiUdonType.Bottom;
         public string GetLabel() => "[invalid]";
         public string GetFullLabel() => "[invalid]";
         protected InvalidLabel()
@@ -28,6 +34,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public TeuchiUdonQualifier Qualifier { get; }
         public string Text { get; }
+        public TeuchiUdonType Type { get; }
 
         public TextLabel(string text)
             : this(TeuchiUdonQualifier.Top, text)

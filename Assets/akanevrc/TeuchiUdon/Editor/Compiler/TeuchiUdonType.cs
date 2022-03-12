@@ -18,7 +18,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Qual { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "qual", "qual", null, null);
         public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "type", null, null);
         public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
+        public static TeuchiUdonType Array { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array", "array", null, null);
         public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
+        public static TeuchiUdonType Buffer { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "buffer", "buffer", "SystemObjectArray", typeof(object[]));
         public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
@@ -153,6 +155,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     LogicalTypeEquals(obj) ||
                     RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType) ||
                     IsAssignableFromTuple(obj) ||
+                    IsAssignableFromArray(obj) ||
+                    IsAssignableFromList (obj) ||
                     IsAssignableFromFunc (obj)
                 );
         }
@@ -163,6 +167,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (!LogicalTypeNameEquals(TeuchiUdonType.Tuple) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Tuple)) return false;
 
             return GetArgsAsTuple().Zip(obj.GetArgsAsTuple(), (t, o) => (t, o)).All(x => x.t.IsAssignableFrom(x.o));
+        }
+
+        private bool IsAssignableFromArray(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Array) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Array)) return false;
+
+            return GetArgAsArray().IsAssignableFrom(obj.GetArgAsArray());
+        }
+
+        private bool IsAssignableFromList(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.List) || !obj.LogicalTypeNameEquals(TeuchiUdonType.List)) return false;
+
+            return GetArgAsList().IsAssignableFrom(obj.GetArgAsList());
         }
 
         private bool IsAssignableFromFunc(TeuchiUdonType obj)
@@ -196,6 +216,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return ApplyArgs(types);
         }
 
+        public TeuchiUdonType ApplyArgAsArray(TeuchiUdonType type)
+        {
+            return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
+        }
+
         public TeuchiUdonType ApplyArgAsList(TeuchiUdonType type)
         {
             return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
@@ -224,6 +249,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<TeuchiUdonType> GetArgsAsTuple()
         {
             return Args.Cast<TeuchiUdonType>();
+        }
+
+        public TeuchiUdonType GetArgAsArray()
+        {
+            return (TeuchiUdonType)Args[0];
         }
 
         public TeuchiUdonType GetArgAsList()

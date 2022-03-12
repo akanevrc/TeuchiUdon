@@ -338,6 +338,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExprStatement([NotNull] TeuchiUdonParser.ExprStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>UnitListCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterUnitListCtorExpr([NotNull] TeuchiUdonParser.UnitListCtorExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>UnitListCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitUnitListCtorExpr([NotNull] TeuchiUdonParser.UnitListCtorExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>ThisLiteralExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -534,6 +548,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAccessExpr([NotNull] TeuchiUdonParser.AccessExprContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>SingleListCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSingleListCtorExpr([NotNull] TeuchiUdonParser.SingleListCtorExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SingleListCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSingleListCtorExpr([NotNull] TeuchiUdonParser.SingleListCtorExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>EvalUnitFuncExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -576,6 +604,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitNameOfExpr([NotNull] TeuchiUdonParser.NameOfExprContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>TupleListCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTupleListCtorExpr([NotNull] TeuchiUdonParser.TupleListCtorExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>TupleListCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTupleListCtorExpr([NotNull] TeuchiUdonParser.TupleListCtorExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>RelationExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -603,20 +645,6 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitEvalTupleKeyExpr([NotNull] TeuchiUdonParser.EvalTupleKeyExprContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by the <c>RangeExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterRangeExpr([NotNull] TeuchiUdonParser.RangeExprContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>RangeExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitRangeExpr([NotNull] TeuchiUdonParser.RangeExprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>ConditionalExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
@@ -783,6 +811,62 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitArgExpr([NotNull] TeuchiUdonParser.ArgExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ElementListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterElementListExpr([NotNull] TeuchiUdonParser.ElementListExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ElementListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitElementListExpr([NotNull] TeuchiUdonParser.ElementListExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>RangeListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterRangeListExpr([NotNull] TeuchiUdonParser.RangeListExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>RangeListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitRangeListExpr([NotNull] TeuchiUdonParser.RangeListExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SteppedRangeListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSteppedRangeListExpr([NotNull] TeuchiUdonParser.SteppedRangeListExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SteppedRangeListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSteppedRangeListExpr([NotNull] TeuchiUdonParser.SteppedRangeListExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>SpreadListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSpreadListExpr([NotNull] TeuchiUdonParser.SpreadListExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>SpreadListExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.listExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSpreadListExpr([NotNull] TeuchiUdonParser.SpreadListExprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>UnitLiteral</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.

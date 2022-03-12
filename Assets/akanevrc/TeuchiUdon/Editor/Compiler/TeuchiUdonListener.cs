@@ -348,7 +348,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no func exists for return");
             }
 
-            var label = scope == null ? (IIndexedLabel)InvalidLabel.Instance : (IIndexedLabel)((TeuchiUdonFunc)scope.Label).Return;
+            var label = scope == null ? (ITypedLabel)InvalidLabel.Instance : (ITypedLabel)((TeuchiUdonFunc)scope.Label).Return;
             return new JumpResult(token, value, label);
         }
 
@@ -441,6 +441,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var type       = expr.Inner.Type;
             var paren      = new ParenResult(context.Start, type, expr);
             context.result = new ExprResult(paren.Token, paren);
+        }
+
+        public override void ExitUnitListCtorExpr([NotNull] UnitListCtorExprContext context)
+        {
+        }
+
+        public override void ExitSingleListCtorExpr([NotNull] SingleListCtorExprContext context)
+        {
+        }
+
+        public override void ExitTupleListCtorExpr([NotNull] TupleListCtorExprContext context)
+        {
+        }
+
+        public override void ExitElementListExpr([NotNull] ElementListExprContext context)
+        {
+        }
+
+        public override void ExitRangeListExpr([NotNull] RangeListExprContext context)
+        {
+        }
+
+        public override void ExitSteppedRangeListExpr([NotNull] SteppedRangeListExprContext context)
+        {
+        }
+
+        public override void ExitSpreadListExpr([NotNull] SpreadListExprContext context)
+        {
         }
 
         public override void EnterLiteralExpr([NotNull] LiteralExprContext context)
@@ -990,6 +1018,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ArgExprResult(context.Start, expr, rf);
         }
 
+        public override void ExitNameOfExpr([NotNull] NameOfExprContext context)
+        {
+        }
+
         public override void ExitEvalSingleKeyExpr([NotNull] EvalSingleKeyExprContext context)
         {
             var exprs = context.expr().Select(x => x?.result).ToArray();
@@ -1022,12 +1054,33 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
 
                 var argTypes = args.Select(x => x.Inner.Type.GetArgAsType());
-                if (exprType.LogicalTypeEquals(TeuchiUdonType.List))
+                if (exprType.LogicalTypeEquals(TeuchiUdonType.Array))
                 {
-                    var qt = new TeuchiUdonType(TeuchiUdonType.List.LogicalName, argTypes);
+                    var qt = new TeuchiUdonType(TeuchiUdonType.Array.LogicalName, argTypes);
                     if (TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt))
                     {
                         var type = TeuchiUdonTables.Instance.LogicalTypes[qt];
+                        return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                        return new BottomResult(token);
+                    }
+                }
+                else if (exprType.LogicalTypeEquals(TeuchiUdonType.List))
+                {
+                    if (argTypes.All(x => x.RealType != null))
+                    {
+                        var type = new TeuchiUdonType
+                        (
+                            TeuchiUdonQualifier.Top,
+                            TeuchiUdonType.List.Name,
+                            argTypes,
+                            TeuchiUdonType.List.LogicalName,
+                            TeuchiUdonType.Buffer.GetRealName(),
+                            TeuchiUdonType.Buffer.RealType
+                        );
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }
                     else
@@ -1058,10 +1111,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override void ExitNameOfExpr([NotNull] NameOfExprContext context)
-        {
-        }
-
         public override void ExitPrefixExpr([NotNull] PrefixExprContext context)
         {
             var op   = context.op?.Text;
@@ -1071,10 +1120,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             var prefix     = new PrefixResult(context.Start, expr.Inner.Type, qual, op, expr);
             context.result = new ExprResult(prefix.Token, prefix);
-        }
-
-        public override void ExitRangeExpr([NotNull] RangeExprContext context)
-        {
         }
 
         public override void ExitMultiplicationExpr([NotNull] MultiplicationExprContext context)

@@ -1,0 +1,2 @@
+// 10
+UnityEngine.Debug.Log(array[int](10).Length);

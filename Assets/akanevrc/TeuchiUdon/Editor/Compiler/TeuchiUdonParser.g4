@@ -75,6 +75,9 @@ expr
     : '{' (statement ';')* '}'               #UnitBlockExpr
     | '{' (statement ';')* expr '}'          #ValueBlockExpr
     | '(' expr ')'                           #ParenExpr
+    | '[' ']'                                #UnitListCtorExpr
+    | '[' listExpr ']'                       #SingleListCtorExpr
+    | '[' listExpr (',' listExpr) ']'        #TupleListCtorExpr
     | literal                                #LiteralExpr
     | thisLiteral                            #ThisLiteralExpr
     | identifier                             #EvalVarExpr
@@ -83,11 +86,10 @@ expr
     | expr '(' ')'                           #EvalUnitFuncExpr
     | expr '(' argExpr ')'                   #EvalSingleFuncExpr
     | expr '(' argExpr (',' argExpr)+ ')'    #EvalTupleFuncExpr
+    | 'nameof' '(' identifier ')'            #NameOfExpr
     | expr '[' expr ']'                      #EvalSingleKeyExpr
     | expr '[' expr (',' expr)+ ']'          #EvalTupleKeyExpr
-    | 'nameof' '(' identifier ')'            #NameOfExpr
     | op=('+' | '-' | '!' | '~') expr        #PrefixExpr
-    | expr op='..' expr                      #RangeExpr
     | expr op=('*' | '/' | '%') expr         #MultiplicationExpr
     | expr op=('+' | '-') expr               #AdditionExpr
     | expr op=('<<' | '>>') expr             #ShiftExpr
@@ -108,6 +110,14 @@ expr
 argExpr
     returns [ArgExprResult result]
     : 'ref'? expr
+    ;
+
+listExpr
+    returns [ListExprResult result]
+    : expr                     #ElementListExpr
+    | expr '..' expr           #RangeListExpr
+    | expr '..' expr '..' expr #SteppedRangeListExpr
+    | '...' expr               #SpreadListExpr
     ;
 
 literal

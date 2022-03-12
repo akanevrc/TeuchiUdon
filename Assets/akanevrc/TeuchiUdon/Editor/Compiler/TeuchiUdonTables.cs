@@ -95,6 +95,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Unit,
                 TeuchiUdonType.Object,
                 TeuchiUdonType.DotNetType,
+                TeuchiUdonType.Buffer,
                 TeuchiUdonType.Bool,
                 TeuchiUdonType.Byte,
                 TeuchiUdonType.SByte,
@@ -125,6 +126,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Qual,
                 TeuchiUdonType.Type,
                 TeuchiUdonType.Tuple,
+                TeuchiUdonType.Array,
                 TeuchiUdonType.List,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Method
@@ -164,15 +166,41 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var argTypes = type.GenericTypeArguments.Select(x => RegisterAndGetType(x)).ToArray();
 
             var qual = new TeuchiUdonQualifier(scopes, scopes);
-            var t    = new TeuchiUdonType(qual, typeName, argTypes, udonTypeName, udonTypeName, type);
+            var t    = (TeuchiUdonType)null;
+            if (type.IsArray)
+            {
+                var elemType = RegisterAndGetType(type.GetElementType());
+                t = new TeuchiUdonType
+                (
+                    TeuchiUdonQualifier.Top,
+                    TeuchiUdonType.Array.Name,
+                    new TeuchiUdonType[] { elemType },
+                    TeuchiUdonType.Array.LogicalName,
+                    udonTypeName,
+                    type
+                );
 
-            if (!Types.ContainsKey(t))
-            {
-                Types.Add(t, t);
+                if (!Types.ContainsKey(t))
+                {
+                    Types.Add(t, t);
+                }
+                if (!LogicalTypes.ContainsKey(t))
+                {
+                    LogicalTypes.Add(t, t);
+                }
             }
-            if (!LogicalTypes.ContainsKey(t))
+            else
             {
-                LogicalTypes.Add(t, t);
+                t = new TeuchiUdonType(qual, typeName, argTypes, udonTypeName, udonTypeName, type);
+
+                if (!Types.ContainsKey(t))
+                {
+                    Types.Add(t, t);
+                }
+                if (!LogicalTypes.ContainsKey(t))
+                {
+                    LogicalTypes.Add(t, t);
+                }
             }
 
             if (argTypes.Length != 0)
@@ -183,29 +211,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 if (!GenericRootTypes.ContainsKey(genericRoot))
                 {
                     GenericRootTypes.Add(genericRoot, genericRoot);
-                }
-            }
-
-            if (type.IsArray)
-            {
-                var elemType  = RegisterAndGetType(type.GetElementType());
-                var arrayType = new TeuchiUdonType
-                (
-                    TeuchiUdonQualifier.Top,
-                    TeuchiUdonType.List.Name,
-                    new TeuchiUdonType[] { elemType },
-                    TeuchiUdonType.List.LogicalName,
-                    udonTypeName,
-                    type
-                );
-
-                if (!Types.ContainsKey(arrayType))
-                {
-                    Types.Add(arrayType, arrayType);
-                }
-                if (!LogicalTypes.ContainsKey(arrayType))
-                {
-                    LogicalTypes.Add(arrayType, arrayType);
                 }
             }
 
