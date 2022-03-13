@@ -16,7 +16,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> ExportData(ITypedLabel label)
+        protected override IEnumerable<TeuchiUdonAssembly> ExportData(IDataLabel label)
         {
             return FilterUnitType(label.Type, new TeuchiUdonAssembly[]
             {
@@ -24,7 +24,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             });
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> SyncData(ITypedLabel label, TeuchiUdonSyncMode mode)
+        protected override IEnumerable<TeuchiUdonAssembly> SyncData(IDataLabel label, TeuchiUdonSyncMode mode)
         {
             return FilterUnitType(label.Type, new TeuchiUdonAssembly[]
             {
@@ -32,7 +32,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             });
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> DeclData(ITypedLabel label, TeuchiUdonAssemblyLiteral literal)
+        protected override IEnumerable<TeuchiUdonAssembly> DeclData(IDataLabel label, TeuchiUdonAssemblyLiteral literal)
         {
             return FilterUnitType(label.Type, new TeuchiUdonAssembly[]
             {
@@ -48,9 +48,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> Get(ITeuchiUdonLabel label)
+        protected override IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label)
         {
-            return label is ITypedLabel t ?
+            return label is IDataLabel t ?
                 FilterUnitType(t.Type, new TeuchiUdonAssembly[]
                 {
                     new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(t))
@@ -61,17 +61,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 };
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> Indirect(ITeuchiUdonLabel label)
+        protected override IEnumerable<TeuchiUdonAssembly> Set(IDataLabel label)
         {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(label))
-            };
-        }
-
-        protected override IEnumerable<TeuchiUdonAssembly> Set(ITeuchiUdonLabel label)
-        {
-            return label is ITypedLabel t ?
+            return label is IDataLabel t ?
                 FilterUnitType(t.Type, new TeuchiUdonAssembly[]
                 {
                     new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(t)),
@@ -84,7 +76,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 };
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> Jump(ITeuchiUdonLabel label)
+        protected override IEnumerable<TeuchiUdonAssembly> Indirect(ICodeLabel label)
+        {
+            return new TeuchiUdonAssembly[]
+            {
+                new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(label))
+            };
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> Jump(IDataLabel label)
         {
             return new TeuchiUdonAssembly[]
             {
@@ -118,16 +118,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 new TeuchiUdonAssembly[]
                 {
-                    new Assembly_EXPORT_CODE(new TextLabel(eventName)),
-                    new Assembly_LABEL      (new TextLabel(eventName)),
+                    new Assembly_EXPORT_CODE(new TextCodeLabel(eventName)),
+                    new Assembly_LABEL      (new TextCodeLabel(eventName)),
                     new Assembly_INDENT(1)
                 }
-                .Concat(stats.SelectMany(y => VisitResult(y)))
+                .Concat(stats.SelectMany(x => VisitResult(x)))
                 .Concat(v?.Type.LogicalTypeNameEquals(TeuchiUdonType.Func) ?? false ?
                     EvalFunc
                     (
-                        ev.OutParamUdonNames.Select(y => Get(new TextLabel(TeuchiUdonTables.GetEventParamName(varName, y)))),
-                        new TextLabel($"topcall[{eventName}]"),
+                        ev.OutParamUdonNames
+                            .Zip(ev.OutTypes, (n, t) => (n, t))
+                            .Select(x => Get(new TextDataLabel(TeuchiUdonTables.GetEventParamName(varName, x.n), x.t))),
+                        new TextCodeLabel($"topcall[{eventName}]"),
                         v
                     ) :
                     new TeuchiUdonAssembly[0]
@@ -142,8 +144,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<TeuchiUdonAssembly> EvalFunc
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> args,
-            ITeuchiUdonLabel evalFunc,
-            ITypedLabel funcAddress
+            ICodeLabel evalFunc,
+            IDataLabel funcAddress
         )
         {
             return
@@ -178,8 +180,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> condition,
             IEnumerable<TeuchiUdonAssembly> truePart,
             IEnumerable<TeuchiUdonAssembly> falsePart,
-            ITeuchiUdonLabel label1,
-            ITeuchiUdonLabel label2
+            ICodeLabel label1,
+            ICodeLabel label2
         )
         {
             return

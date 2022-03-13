@@ -195,7 +195,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
         }
 
-
         protected TeuchiUdonType ApplyArgs(IEnumerable<ITeuchiUdonTypeArg> args)
         {
             return new TeuchiUdonType(Qualifier, Name, args, LogicalName, RealName, RealType);

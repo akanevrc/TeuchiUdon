@@ -2,13 +2,13 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonIndirect : ITypedLabel, IEquatable<TeuchiUdonIndirect>
+    public class TeuchiUdonIndirect : IIndexedLabel, IDataLabel, IEquatable<TeuchiUdonIndirect>
     {
         public int Index { get; }
-        public ITeuchiUdonLabel Label { get; }
+        public ICodeLabel Label { get; }
         public TeuchiUdonType Type { get; } = TeuchiUdonType.UInt;
 
-        public TeuchiUdonIndirect(int index, ITeuchiUdonLabel label)
+        public TeuchiUdonIndirect(int index, ICodeLabel label)
         {
             Index = index;
             Label = label;

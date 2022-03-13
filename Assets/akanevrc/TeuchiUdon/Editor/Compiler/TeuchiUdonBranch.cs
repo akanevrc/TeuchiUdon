@@ -2,7 +2,7 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonBranch : IIndexedLabel, IEquatable<TeuchiUdonBranch>
+    public class TeuchiUdonBranch : IIndexedLabel, ICodeLabel, IEquatable<TeuchiUdonBranch>
     {
         public int Index { get; }
 

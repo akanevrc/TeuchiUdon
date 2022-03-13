@@ -130,9 +130,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class AssemblyAddress_DATA_LABEL : TeuchiUdonAssemblyDataAddress
     {
-        public ITeuchiUdonLabel Label { get; }
+        public IDataLabel Label { get; }
 
-        public AssemblyAddress_DATA_LABEL(ITeuchiUdonLabel label)
+        public AssemblyAddress_DATA_LABEL(IDataLabel label)
         {
             Label = label;
         }
@@ -147,7 +147,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public TeuchiUdonIndirect Indirect { get; }
 
-        public AssemblyAddress_INDIRECT_LABEL(ITeuchiUdonLabel label)
+        public AssemblyAddress_INDIRECT_LABEL(ICodeLabel label)
         {
             var index = TeuchiUdonTables.Instance.GetIndirectIndex();
             Indirect  = new TeuchiUdonIndirect(index, label);
@@ -166,9 +166,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class AssemblyAddress_CODE_LABEL : TeuchiUdonAssemblyCodeAddress
     {
-        public ITeuchiUdonLabel Label { get; }
+        public ICodeLabel Label { get; }
 
-        public AssemblyAddress_CODE_LABEL(ITeuchiUdonLabel label)
+        public AssemblyAddress_CODE_LABEL(ICodeLabel label)
         {
             Label = label;
         }
@@ -445,9 +445,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class Assembly_EXPORT_DATA : TeuchiUdonAssembly
     {
-        public ITeuchiUdonLabel Data { get; }
+        public IDataLabel Data { get; }
 
-        public Assembly_EXPORT_DATA(ITeuchiUdonLabel data)
+        public Assembly_EXPORT_DATA(IDataLabel data)
             : base(TeuchiUdonAssemblyInstruction.EXPORT_DATA, 0)
         {
             Data = data;
@@ -461,10 +461,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class Assembly_SYNC_DATA : TeuchiUdonAssembly
     {
-        public ITeuchiUdonLabel Data { get; }
+        public IDataLabel Data { get; }
         public TeuchiUdonAssemblySyncMode SyncMode { get; }
 
-        public Assembly_SYNC_DATA(ITeuchiUdonLabel data, TeuchiUdonAssemblySyncMode syncMode)
+        public Assembly_SYNC_DATA(IDataLabel data, TeuchiUdonAssemblySyncMode syncMode)
             : base(TeuchiUdonAssemblyInstruction.SYNC_DATA, 0)
         {
             Data     = data;
@@ -479,11 +479,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class Assembly_DECL_DATA : TeuchiUdonAssembly
     {
-        public ITeuchiUdonLabel Data { get; }
+        public IDataLabel Data { get; }
         public TeuchiUdonType Type { get; }
         public TeuchiUdonAssemblyLiteral Literal { get; }
 
-        public Assembly_DECL_DATA(ITeuchiUdonLabel data, TeuchiUdonType type, TeuchiUdonAssemblyLiteral literal)
+        public Assembly_DECL_DATA(IDataLabel data, TeuchiUdonType type, TeuchiUdonAssemblyLiteral literal)
             : base(TeuchiUdonAssemblyInstruction.DECL_DATA, 1)
         {
             Data    = data;
@@ -499,9 +499,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class Assembly_EXPORT_CODE : TeuchiUdonAssembly
     {
-        public ITeuchiUdonLabel Code { get; }
+        public ICodeLabel Code { get; }
 
-        public Assembly_EXPORT_CODE(ITeuchiUdonLabel code)
+        public Assembly_EXPORT_CODE(ICodeLabel code)
             : base(TeuchiUdonAssemblyInstruction.EXPORT_CODE, 0)
         {
             Code = code;
@@ -515,9 +515,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class Assembly_LABEL : TeuchiUdonAssembly
     {
-        public ITeuchiUdonLabel Label { get; }
+        public ICodeLabel Label { get; }
 
-        public Assembly_LABEL(ITeuchiUdonLabel label)
+        public Assembly_LABEL(ICodeLabel label)
             : base(TeuchiUdonAssemblyInstruction.LABEL, 0)
         {
             Label = label;

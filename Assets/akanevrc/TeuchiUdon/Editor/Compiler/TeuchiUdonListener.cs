@@ -348,7 +348,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no func exists for return");
             }
 
-            var label = scope == null ? (ITypedLabel)InvalidLabel.Instance : (ITypedLabel)((TeuchiUdonFunc)scope.Label).Return;
+            var label = scope == null ? (IDataLabel)InvalidLabel.Instance : (IDataLabel)((TeuchiUdonFunc)scope.Label).Return;
             return new JumpResult(token, value, label);
         }
 

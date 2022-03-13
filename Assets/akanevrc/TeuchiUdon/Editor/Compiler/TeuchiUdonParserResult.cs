@@ -209,9 +209,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class JumpResult : StatementResult
     {
         public ExprResult Value { get; }
-        public ITypedLabel Label { get; }
+        public IDataLabel Label { get; }
 
-        public JumpResult(IToken token, ExprResult value, ITypedLabel label)
+        public JumpResult(IToken token, ExprResult value, IDataLabel label)
             : base(token)
         {
             Value = value;
@@ -591,7 +591,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonMethod[] Methods { get; protected set; }
         public TeuchiUdonOutValue[][] OutValuess { get; protected set; }
         public TeuchiUdonLiteral[] Literals { get; protected set; }
-        public ITeuchiUdonLabel[] Labels { get; protected set; }
+        public ICodeLabel[] Labels { get; protected set; }
 
         public ExternResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier)
             : base(token, type)
@@ -602,7 +602,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonMethod> GetMethods();
         protected abstract IEnumerable<IEnumerable<TeuchiUdonOutValue>> GetOutValuess();
         protected abstract IEnumerable<TeuchiUdonLiteral> GetLiterals();
-        protected abstract IEnumerable<ITeuchiUdonLabel> GetLabels();
+        protected abstract IEnumerable<ICodeLabel> GetLabels();
 
         protected void Init()
         {
@@ -759,9 +759,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonLiteral[0];
         }
 
-        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        protected override IEnumerable<ICodeLabel> GetLabels()
         {
-            return new ITeuchiUdonLabel[0];
+            return new ICodeLabel[0];
         }
     }
 
@@ -843,9 +843,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        protected override IEnumerable<ICodeLabel> GetLabels()
         {
-            return new ITeuchiUdonLabel[0];
+            return new ICodeLabel[0];
         }
     }
 
@@ -1069,7 +1069,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<ITeuchiUdonLabel> GetLabels()
+        protected override IEnumerable<ICodeLabel> GetLabels()
         {
             switch (Op)
             {
@@ -1080,10 +1080,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     var index1 = TeuchiUdonTables.Instance.GetBranchIndex();
                     var index2 = TeuchiUdonTables.Instance.GetBranchIndex();
-                    return new ITeuchiUdonLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
+                    return new ICodeLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
                 }
                 default:
-                    return new ITeuchiUdonLabel[0];
+                    return new ICodeLabel[0];
             }
         }
     }
@@ -1093,7 +1093,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult Condition { get; }
         public ExprResult Expr1 { get; }
         public ExprResult Expr2 { get; }
-        public ITeuchiUdonLabel[] Labels { get; }
+        public ICodeLabel[] Labels { get; }
 
         public ConditionalResult(IToken token, TeuchiUdonType type, ExprResult condition, ExprResult expr1, ExprResult expr2)
             : base(token, type)
@@ -1104,7 +1104,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var index1 = TeuchiUdonTables.Instance.GetBranchIndex();
             var index2 = TeuchiUdonTables.Instance.GetBranchIndex();
-            Labels     = new ITeuchiUdonLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
+            Labels     = new ICodeLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];

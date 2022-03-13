@@ -10,8 +10,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private List<TeuchiUdonAssembly> DataPart { get; set; }
         private List<TeuchiUdonAssembly> CodePart { get; set; }
-        private Dictionary<ITeuchiUdonLabel, uint> DataAddresses { get; set; }
-        private Dictionary<ITeuchiUdonLabel, uint> CodeAddresses { get; set; }
+        private Dictionary<IDataLabel, uint> DataAddresses { get; set; }
+        private Dictionary<ICodeLabel, uint> CodeAddresses { get; set; }
         private uint DataAddress { get; set; }
         private uint CodeAddress { get; set; }
 
@@ -23,8 +23,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             DataPart      = new List<TeuchiUdonAssembly>();
             CodePart      = new List<TeuchiUdonAssembly>();
-            DataAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
-            CodeAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
+            DataAddresses = new Dictionary<IDataLabel, uint>();
+            CodeAddresses = new Dictionary<ICodeLabel, uint>();
             DataAddress   = 0;
             CodeAddress   = 0;
         }
@@ -49,8 +49,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public void Prepare()
         {
-            DataAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
-            CodeAddresses = new Dictionary<ITeuchiUdonLabel, uint>();
+            DataAddresses = new Dictionary<IDataLabel, uint>();
+            CodeAddresses = new Dictionary<ICodeLabel, uint>();
             DataAddress   = 0;
             CodeAddress   = 0;
 

@@ -10,21 +10,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        protected abstract IEnumerable<TeuchiUdonAssembly> ExportData(ITypedLabel label);
-        protected abstract IEnumerable<TeuchiUdonAssembly> SyncData(ITypedLabel label, TeuchiUdonSyncMode mode);
-        protected abstract IEnumerable<TeuchiUdonAssembly> DeclData(ITypedLabel label, TeuchiUdonAssemblyLiteral literal);
+        protected abstract IEnumerable<TeuchiUdonAssembly> ExportData(IDataLabel label);
+        protected abstract IEnumerable<TeuchiUdonAssembly> SyncData(IDataLabel label, TeuchiUdonSyncMode mode);
+        protected abstract IEnumerable<TeuchiUdonAssembly> DeclData(IDataLabel label, TeuchiUdonAssemblyLiteral literal);
         protected abstract IEnumerable<TeuchiUdonAssembly> Pop();
-        protected abstract IEnumerable<TeuchiUdonAssembly> Get(ITeuchiUdonLabel label);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Indirect(ITeuchiUdonLabel label);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Set(ITeuchiUdonLabel label);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Jump(ITeuchiUdonLabel label);
+        protected abstract IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label);
+        protected abstract IEnumerable<TeuchiUdonAssembly> Set(IDataLabel label);
+        protected abstract IEnumerable<TeuchiUdonAssembly> Jump(IDataLabel label);
+        protected abstract IEnumerable<TeuchiUdonAssembly> Indirect(ICodeLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Func(TeuchiUdonFunc func);
         protected abstract IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, TeuchiUdonMethod ev, List<TopStatementResult> stats);
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalFunc
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> args,
-            ITeuchiUdonLabel evalFunc,
-            ITypedLabel funcAddress
+            ICodeLabel evalFunc,
+            IDataLabel funcAddress
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalMethod
         (
@@ -37,8 +37,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> condition,
             IEnumerable<TeuchiUdonAssembly> truePart,
             IEnumerable<TeuchiUdonAssembly> falsePart,
-            ITeuchiUdonLabel label1,
-            ITeuchiUdonLabel label2
+            ICodeLabel label1,
+            ICodeLabel label2
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalAssign(IEnumerable<TeuchiUdonAssembly> value1, IEnumerable<TeuchiUdonAssembly> value2);
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalSetterAssign
