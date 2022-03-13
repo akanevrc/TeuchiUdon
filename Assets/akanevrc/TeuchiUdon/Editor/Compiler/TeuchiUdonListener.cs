@@ -1035,7 +1035,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitEvalTupleKeyExpr([NotNull] EvalTupleKeyExprContext context)
         {
             var exprs = context.expr().Select(x => x?.result).ToArray();
-            if (exprs.Length >= 1 || exprs.Any(x => x == null)) return;
+            if (exprs.Length < 2 || exprs.Any(x => x == null)) return;
 
             var args       = exprs.Skip(1);
             var evalKey    = ExitEvalKeyExpr(context.Start, exprs[0], args);

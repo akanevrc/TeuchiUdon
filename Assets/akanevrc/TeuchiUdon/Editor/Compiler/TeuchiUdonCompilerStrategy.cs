@@ -18,26 +18,47 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<TeuchiUdonAssembly> ExportData(IDataLabel label)
         {
-            return FilterUnitType(label.Type, new TeuchiUdonAssembly[]
-            {
-                new Assembly_EXPORT_DATA(label)
-            });
+            return new TeuchiUdonDataLabelWrapper
+            (
+                label,
+                false,
+                l => new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_EXPORT_DATA(l)
+                    },
+                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
+            )
+            .Compile();
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> SyncData(IDataLabel label, TeuchiUdonSyncMode mode)
         {
-            return FilterUnitType(label.Type, new TeuchiUdonAssembly[]
-            {
-                new Assembly_SYNC_DATA(label, TeuchiUdonAssemblySyncMode.Create(mode))
-            });
+            return new TeuchiUdonDataLabelWrapper
+            (
+                label,
+                false,
+                l => new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_SYNC_DATA(l, TeuchiUdonAssemblySyncMode.Create(mode))
+                    },
+                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
+            )
+            .Compile();
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> DeclData(IDataLabel label, TeuchiUdonAssemblyLiteral literal)
         {
-            return FilterUnitType(label.Type, new TeuchiUdonAssembly[]
-            {
-                new Assembly_DECL_DATA(label, label.Type, literal)
-            });
+            return new TeuchiUdonDataLabelWrapper
+            (
+                label,
+                false,
+                l => new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_DECL_DATA(l, l.Type, literal)
+                    },
+                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
+            )
+            .Compile();
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Pop()
@@ -50,30 +71,32 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label)
         {
-            return label is IDataLabel t ?
-                FilterUnitType(t.Type, new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(t))
-                }) :
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(label))
-                };
+            return new TeuchiUdonDataLabelWrapper
+            (
+                label,
+                false,
+                l => new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(l))
+                    },
+                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
+            ).Compile();
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Set(IDataLabel label)
         {
-            return label is IDataLabel t ?
-                FilterUnitType(t.Type, new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(t)),
-                    new Assembly_COPY()
-                }) :
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(label)),
-                    new Assembly_COPY()
-                };
+            return new TeuchiUdonDataLabelWrapper
+            (
+                label,
+                true,
+                l => new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(l)),
+                        new Assembly_COPY()
+                    },
+                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
+            )
+            .Compile();
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Indirect(ICodeLabel label)
@@ -100,7 +123,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 new Assembly_INDENT(1),
             }
             .Concat(Set(func.Return))
-            .Concat(func.Vars.Reverse().SelectMany(y => FilterUnitType(y.Type, Set(y))))
+            .Concat(func.Vars.Reverse().SelectMany(x => Set(x)))
             .Concat(VisitResult(func.Expr))
             .Concat(new TeuchiUdonAssembly[]
             {
@@ -222,11 +245,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 instance
                 .Concat(value2)
                 .Concat(new TeuchiUdonAssembly[] { new Assembly_EXTERN(setterMethod) });
-        }
-
-        private IEnumerable<TeuchiUdonAssembly> FilterUnitType(TeuchiUdonType type, IEnumerable<TeuchiUdonAssembly> asm)
-        {
-            return type.LogicalTypeEquals(TeuchiUdonType.Unit) ? new TeuchiUdonAssembly[0] : asm;
         }
     }
 }

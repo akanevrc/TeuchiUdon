@@ -1,2 +1,2 @@
 //
-list : System.Collections.Generic.List[System.Collections.Generic.KeyValuePair[unityobject, unityobject]] = null;
+list : System.Collections.Generic.List[System.Collections.Generic.KeyValuePair[UnityEngine.AnimationClip, UnityEngine.AnimationClip]] = null;
