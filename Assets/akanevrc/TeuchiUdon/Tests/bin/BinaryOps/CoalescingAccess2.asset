@@ -21,10 +21,10 @@ MonoBehaviour:
     _start:\r\n        PUSH, literal[0]\r\n        PUSH, literal[1]\r\n        PUSH,
     literal[1]\r\n        PUSH, out[0]\r\n        EXTERN, \"SystemDateTime.__ctor__SystemInt32_SystemInt32_SystemInt32__SystemDateTime\"\r\n       
     PUSH, out[0]\r\n        PUSH, var[x]\r\n        COPY\r\n        PUSH, var[x]\r\n       
-    PUSH, out[1]\r\n        COPY\r\n        PUSH, out[1]\r\n        PUSH, literal[3]\r\n       
-    PUSH, out[2]\r\n        EXTERN, \"SystemDateTime.__op_Equality__SystemDateTime_SystemDateTime__SystemBoolean\"\r\n       
-    PUSH, out[2]\r\n        JUMP_IF_FALSE, branch[0]\r\n        PUSH, literal[3]\r\n       
-    JUMP, branch[1]\r\n        branch[0]:\r\n        PUSH, out[1]\r\n        PUSH,
+    PUSH, out[2]\r\n        COPY\r\n        PUSH, out[2]\r\n        PUSH, literal[3]\r\n       
+    PUSH, out[1]\r\n        EXTERN, \"SystemDateTime.__op_Equality__SystemDateTime_SystemDateTime__SystemBoolean\"\r\n       
+    PUSH, out[1]\r\n        JUMP_IF_FALSE, branch[0]\r\n        PUSH, literal[3]\r\n       
+    JUMP, branch[1]\r\n        branch[0]:\r\n        PUSH, out[2]\r\n        PUSH,
     out[0]\r\n        EXTERN, \"SystemDateTime.__get_Year__SystemInt32\"\r\n       
     PUSH, out[0]\r\n        branch[1]:\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"

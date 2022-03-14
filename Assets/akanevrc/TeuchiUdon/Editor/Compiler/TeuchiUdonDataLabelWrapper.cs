@@ -25,17 +25,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         )
         {
             Label          = label;
-            AssemblyLabels = CreateAssemblyLabels(label);
+            AssemblyLabels = CreateAssemblyLabels(label).ToDictionary(x => x.name, x => x.label);
             Reverse        = reverse;
             LabelFunc      = labelFunc;
             ListFunc       = listFunc;
         }
 
-        private Dictionary<string, IDataLabel> CreateAssemblyLabels(IDataLabel label)
+        private IEnumerable<(string name, IDataLabel label)> CreateAssemblyLabels(IDataLabel label)
         {
             if (label.Type.LogicalTypeEquals(TeuchiUdonType.Unit))
             {
-                return new Dictionary<string, IDataLabel>();
+                return new (string, IDataLabel)[0];
             }
             else if (label.Type.RealType == null)
             {
@@ -44,20 +44,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.Tuple))
             {
                 return label.Type.GetArgsAsTuple()
-                    .Select((x, i) => CreateOneAssemblyLabel(label, i.ToString(), x))
-                    .ToDictionary(x => x.name, x => x.label);
+                    .Select((x, i) => CreateOneAssemblyLabel(label, i.ToString(), x));
             }
             else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.List))
             {
-                return new (string name, IDataLabel label)[] {
+                return new (string, IDataLabel)[] {
                     CreateOneAssemblyLabel(label, "buffer", TeuchiUdonType.Buffer),
                     CreateOneAssemblyLabel(label, "length", TeuchiUdonType.Int)
-                }
-                .ToDictionary(x => x.name, x => x.label);
+                };
             }
             else
             {
-                return new Dictionary<string, IDataLabel>() { [""] = label };
+                return new (string, IDataLabel)[] { ("", label) };
             }
         }
 
