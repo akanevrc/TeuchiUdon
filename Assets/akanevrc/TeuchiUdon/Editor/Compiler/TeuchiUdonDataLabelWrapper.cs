@@ -50,9 +50,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.List))
             {
                 return new (string name, IDataLabel label)[] {
-                    CreateOneAssemblyLabel(label, "buffer"  , TeuchiUdonType.Buffer),
-                    CreateOneAssemblyLabel(label, "length"  , TeuchiUdonType.Int),
-                    CreateOneAssemblyLabel(label, "capacity", TeuchiUdonType.Int)
+                    CreateOneAssemblyLabel(label, "buffer", TeuchiUdonType.Buffer),
+                    CreateOneAssemblyLabel(label, "length", TeuchiUdonType.Int)
                 }
                 .ToDictionary(x => x.name, x => x.label);
             }

@@ -203,26 +203,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> condition,
             IEnumerable<TeuchiUdonAssembly> truePart,
             IEnumerable<TeuchiUdonAssembly> falsePart,
-            ICodeLabel label1,
-            ICodeLabel label2
+            ICodeLabel label0,
+            ICodeLabel label1
         )
         {
             return
                 condition
                 .Concat(new TeuchiUdonAssembly[]
                 {
-                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label1))
+                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label0))
                 })
                 .Concat(truePart)
                 .Concat(new TeuchiUdonAssembly[]
                 {
-                    new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label2)),
-                    new Assembly_LABEL(label1)
+                    new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label1)),
+                    new Assembly_LABEL(label0)
                 })
                 .Concat(falsePart)
                 .Concat(new TeuchiUdonAssembly[]
                 {
-                    new Assembly_LABEL(label2)
+                    new Assembly_LABEL(label1)
                 });
         }
 

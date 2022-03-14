@@ -37,8 +37,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> condition,
             IEnumerable<TeuchiUdonAssembly> truePart,
             IEnumerable<TeuchiUdonAssembly> falsePart,
-            ICodeLabel label1,
-            ICodeLabel label2
+            ICodeLabel label0,
+            ICodeLabel label1
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalAssign(IEnumerable<TeuchiUdonAssembly> value1, IEnumerable<TeuchiUdonAssembly> value2);
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalSetterAssign
@@ -377,9 +377,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitConvertCast(ConvertCastResult result)
         {
             return
-                result.Methods.Any(x => x == null) ? new TeuchiUdonAssembly[0] :
+                result.Methods.Values.Any(x => x == null) ? new TeuchiUdonAssembly[0] :
                 VisitExpr(result.Expr)
-                .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Arg) }, result.OutValuess[0], result.Methods[0]));
+                .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Arg) }, result.OutValuess["convert"], result.Methods["convert"]));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitPrefix(PrefixResult result)
@@ -391,12 +391,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "-":
                 case "!":
                     return
-                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr) }, result.OutValuess[0], result.Methods[0]);
+                        result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr) }, result.OutValuess["op"], result.Methods["op"]);
                 case "~":
                     return
-                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr), Get(result.Literals[0]) }, result.OutValuess[0], result.Methods[0]);
+                        result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr), Get(result.Literals["mask"]) }, result.OutValuess["op"], result.Methods["op"]);
                 default:
                     return new TeuchiUdonAssembly[0];
             }
@@ -410,17 +410,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
                 case "?.":
                     return
-                        result.Methods.Length == 1 && result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        result.Methods.Length == 0 ? Get(result.Literals[0]) :
+                         result.Methods.ContainsKey("==") && result.Methods["=="] == null ? new TeuchiUdonAssembly[0] :
+                        !result.Methods.ContainsKey("==") ? Get(result.Literals["null"]) :
                         IfElse
                         (
                             VisitExpr(result.Expr1)
-                            .Concat(Set(result.OutValuess[1][0]))
-                            .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(result.OutValuess[1][0]), Get(result.Literals[0]) }, result.OutValuess[0], result.Methods[0])),
-                            Get(result.Literals[0]),
-                            Get(result.OutValuess[1][0]).Concat(VisitExpr(result.Expr2)),
-                            result.Labels[0],
-                            result.Labels[1]
+                            .Concat(Set(result.OutValuess["tmp"][0]))
+                            .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(result.OutValuess["tmp"][0]), Get(result.Literals["null"]) }, result.OutValuess["=="], result.Methods["=="])),
+                            Get(result.Literals["null"]),
+                            Get(result.OutValuess["tmp"][0]).Concat(VisitExpr(result.Expr2)),
+                            result.Labels["0"],
+                            result.Labels["1"]
                         );
                 case "+":
                 case "-":
@@ -437,47 +437,51 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "^":
                 case "|":
                     return
-                        result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess[0], result.Methods[0]);
+                        result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess["op"], result.Methods["op"]);
                 case "==":
+                    return
+                         result.Methods.ContainsKey("op") && result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        !result.Methods.ContainsKey("op") ? Get(result.Literals["true"]) :
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess["op"], result.Methods["op"]);
                 case "!=":
                     return
-                        result.Methods.Length == 1 && result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        result.Methods.Length == 0 ? Get(result.Literals[0]) :
-                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess[0], result.Methods[0]);
+                         result.Methods.ContainsKey("op") && result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        !result.Methods.ContainsKey("op") ? Get(result.Literals["false"]) :
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess["op"], result.Methods["op"]);
                 case "&&":
                     return
                         IfElse
                         (
                             VisitExpr(result.Expr1),
                             VisitExpr(result.Expr2),
-                            Get(result.Literals[0]),
-                            result.Labels[0],
-                            result.Labels[1]
+                            Get(result.Literals["false"]),
+                            result.Labels["0"],
+                            result.Labels["1"]
                         );
                 case "||":
                     return
                         IfElse
                         (
                             VisitExpr(result.Expr1),
-                            Get(result.Literals[0]),
+                            Get(result.Literals["true"]),
                             VisitExpr(result.Expr2),
-                            result.Labels[0],
-                            result.Labels[1]
+                            result.Labels["0"],
+                            result.Labels["1"]
                         );
                 case "??":
                     return
-                        result.Methods.Length == 1 && result.Methods[0] == null ? new TeuchiUdonAssembly[0] :
-                        result.Methods.Length == 0 ? VisitExpr(result.Expr2) :
+                         result.Methods.ContainsKey("==") && result.Methods["=="] == null ? new TeuchiUdonAssembly[0] :
+                        !result.Methods.ContainsKey("==") ? VisitExpr(result.Expr2) :
                         IfElse
                         (
                             VisitExpr(result.Expr1)
-                            .Concat(Set(result.OutValuess[1][0]))
-                            .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(result.OutValuess[1][0]), Get(result.Literals[0]) }, result.OutValuess[0], result.Methods[0])),
+                            .Concat(Set(result.OutValuess["tmp"][0]))
+                            .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(result.OutValuess["tmp"][0]), Get(result.Literals["null"]) }, result.OutValuess["=="], result.Methods["=="])),
                             VisitExpr(result.Expr2),
-                            Get(result.OutValuess[1][0]),
-                            result.Labels[0],
-                            result.Labels[1]
+                            Get(result.OutValuess["tmp"][0]),
+                            result.Labels["0"],
+                            result.Labels["1"]
                         );
                 case "<-":
                 {
