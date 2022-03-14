@@ -40,7 +40,7 @@ namespace akanevrc.TeuchiUdon.Tests.Utils
 
         private static string GetAssetPath(string testName, string prefix, string ext, string folderPath)
         {
-            var splitted = testName.Split(new string[] { "/" }, System.StringSplitOptions.None);
+            var splitted = testName.Split(new char[] { '/' });
             var fileName = $"{Path.GetFileName(testName)}{ext}";
             if (splitted.Length >= 2)
             {

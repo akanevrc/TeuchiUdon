@@ -6,20 +6,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonQualifier : ITeuchiUdonTypeArg, IEquatable<TeuchiUdonQualifier>
     {
-        public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(Array.Empty<TeuchiUdonScope>(), Array.Empty<TeuchiUdonScope>());
+        public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(Array.Empty<TeuchiUdonScope>());
 
         public TeuchiUdonScope[] Logical { get; }
-        public TeuchiUdonScope[] Real { get; }
 
         public TeuchiUdonQualifier(IEnumerable<TeuchiUdonScope> logical)
-            : this(logical, null)
-        {
-        }
-
-        public TeuchiUdonQualifier(IEnumerable<TeuchiUdonScope> logical, IEnumerable<TeuchiUdonScope> real)
         {
             Logical = logical?.ToArray();
-            Real    = real   ?.ToArray();
         }
 
         public bool Equals(TeuchiUdonQualifier obj)
@@ -75,8 +68,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonQualifier Append(TeuchiUdonScope logical, TeuchiUdonScope real)
         {
             var l = logical == null ? Logical : Logical.Concat(new TeuchiUdonScope[] { logical });
-            var r = real    == null ? Real    : Real   .Concat(new TeuchiUdonScope[] { real    });
-            return new TeuchiUdonQualifier(l, r);
+            return new TeuchiUdonQualifier(l);
         }
 
         public TeuchiUdonScope LastScope(TeuchiUdonScopeMode mode)

@@ -33,13 +33,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private IEnumerable<(string name, IDataLabel label)> CreateAssemblyLabels(IDataLabel label)
         {
-            if (label.Type.LogicalTypeEquals(TeuchiUdonType.Unit))
+            if (label.Type.RealType == null)
             {
                 return Enumerable.Empty<(string, IDataLabel)>();
-            }
-            else if (label.Type.RealType == null)
-            {
-                throw new InvalidOperationException("no real type");
             }
             else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.Tuple))
             {

@@ -384,15 +384,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             if (!LogicalTypeNameEquals(TeuchiUdonType.Method)) return Enumerable.Empty<TeuchiUdonMethod>();
 
-            var methods = GetArgsAsMethod().ToArray();
+            var it      = inTypes.ToArray();
+            var methods = GetArgsAsMethod()
+                .Where(x => x.InTypes.Length == it.Length)
+                .ToArray();
             if (methods.Length == 0) return Enumerable.Empty<TeuchiUdonMethod>();
 
-            var it = inTypes.ToArray();
             var justCountToMethods = new Dictionary<int, List<TeuchiUdonMethod>>();
             foreach (var method in methods)
             {
-                if (method.InTypes.Length != it.Length) continue;
-
                 var isCompatible = true;
                 var justCount    = 0;
                 foreach (var (m, i) in method.InTypes.Zip(it, (m, i) => (m, i)))

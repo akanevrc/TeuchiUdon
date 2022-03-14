@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using VRC.Udon.Editor;
 using VRC.Udon.Graph;
 
@@ -16,7 +15,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonType, TeuchiUdonType> LogicalTypes { get; private set; }
         public Dictionary<TeuchiUdonType, TeuchiUdonType> GenericRootTypes { get; private set; }
         public Dictionary<TeuchiUdonMethod, TeuchiUdonMethod> Methods { get; private set; }
-        public Dictionary<TeuchiUdonType, Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>> TypeToMethods { get; private set; }
+        public Dictionary<TeuchiUdonType, Dictionary<string, List<TeuchiUdonMethod>>> TypeToMethods { get; private set; }
         public Dictionary<string, TeuchiUdonMethod> Events { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
@@ -53,13 +52,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 LogicalTypes     = new Dictionary<TeuchiUdonType     , TeuchiUdonType>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
                 GenericRootTypes = new Dictionary<TeuchiUdonType     , TeuchiUdonType>();
                 Methods          = new Dictionary<TeuchiUdonMethod   , TeuchiUdonMethod>();
-                TypeToMethods    = new Dictionary<TeuchiUdonType     , Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
+                TypeToMethods    = new Dictionary<TeuchiUdonType     , Dictionary<string, List<TeuchiUdonMethod>>>(TeuchiUdonTypeLogicalEqualityComparer.Instance);
                 Events           = new Dictionary<string             , TeuchiUdonMethod>();
 
                 InitInternalTypes();
-                InitExternalTypes();
+                InitExternalTypesAndMethods();
                 InitQualifiers();
-                InitMethods();
 
                 IsInitialized = true;
             }
@@ -138,7 +136,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        private void InitExternalTypes()
+        private void InitExternalTypesAndMethods()
         {
             var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
             foreach (var topReg in topRegistries)
@@ -149,8 +147,69 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         if (def.type == null) continue;
 
-                        RegisterAndGetType(def.type);
-                        foreach (var t in def.parameters.Select(x => x.type)) RegisterAndGetType(t);
+                        var type = RegisterAndGetType(def.type);
+                        var qual = type.Qualifier;
+
+                        var methodName    = def.name.Substring(def.name.LastIndexOf(' ') + 1);
+                        var allParamTypes =
+                            def.parameters
+                            .Select(x => RegisterAndGetType(x.type))
+                            .ToArray();
+                        var allParamInOuts =
+                            def.parameters
+                            .Select(x =>
+                                x.parameterType == UdonNodeParameter.ParameterType.IN     ? TeuchiUdonMethodParamInOut.In    :
+                                x.parameterType == UdonNodeParameter.ParameterType.IN_OUT ? TeuchiUdonMethodParamInOut.InOut : TeuchiUdonMethodParamInOut.Out
+                            )
+                            .ToArray();
+                        var inTypes =
+                            allParamTypes
+                            .Zip(allParamInOuts, (t, p) => (t, p))
+                            .Where(x => x.p == TeuchiUdonMethodParamInOut.In || x.p == TeuchiUdonMethodParamInOut.InOut)
+                            .Select(x => x.t)
+                            .ToArray();
+                        var outTypes =
+                            allParamTypes
+                            .Zip(allParamInOuts, (t, p) => (t, p))
+                            .Where(x => x.p == TeuchiUdonMethodParamInOut.Out)
+                            .Select(x => x.t)
+                            .ToArray();
+                        var instanceDef =
+                            allParamTypes
+                            .Zip(def.parameters, (t, p) => (t, p))
+                            .FirstOrDefault(x => x.p.parameterType == UdonNodeParameter.ParameterType.IN && x.p.name == "instance");
+                        var instanceType = instanceDef.t == null ? TeuchiUdonType.Type.ApplyArgAsType(type) : instanceDef.t;
+                        var allParamUdonNames = def.parameters.Select(x => x.name);
+                        var method = new TeuchiUdonMethod(instanceType, methodName, allParamTypes, inTypes, outTypes, allParamInOuts, def.fullName, allParamUdonNames);
+
+                        if (method.UdonName.StartsWith("Const_"   )) continue;
+                        if (method.UdonName.StartsWith("Variable_")) continue;
+                        if (method.UdonName.StartsWith("Event_"))
+                        {
+                            if (!Events.ContainsKey(methodName))
+                            {
+                                Events.Add(methodName, method);
+                            }
+                            continue;
+                        }
+                        if (instanceType.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) continue;
+
+                        if (!Methods.ContainsKey(method))
+                        {
+                            Methods.Add(method, method);
+                        }
+
+                        if (!TypeToMethods.ContainsKey(instanceType))
+                        {
+                            TypeToMethods.Add(instanceType, new Dictionary<string, List<TeuchiUdonMethod>>());
+                        }
+                        var nameToMethods = TypeToMethods[instanceType];
+
+                        if (!nameToMethods.ContainsKey(methodName))
+                        {
+                            nameToMethods.Add(methodName, new List<TeuchiUdonMethod>());
+                        }
+                        nameToMethods[methodName].Add(method);
                     }
                 }
             }
@@ -159,14 +218,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private TeuchiUdonType RegisterAndGetType(Type type)
         {
             var udonTypeName = GetUdonTypeName(type);
-            
-            var typeName = GetTypeName(type);
-            var scopes   = GetQualifierScopes(type);
 
-            var argTypes = type.GenericTypeArguments.Select(x => RegisterAndGetType(x)).ToArray();
-
-            var qual = new TeuchiUdonQualifier(scopes, scopes);
-            var t    = (TeuchiUdonType)null;
+            var t = (TeuchiUdonType)null;
             if (type.IsArray)
             {
                 var elemType = RegisterAndGetType(type.GetElementType());
@@ -191,6 +244,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
+                var typeName = GetTypeName(type);
+                var argTypes = type.GenericTypeArguments.Select(x => RegisterAndGetType(x)).ToArray();
+                var scopes   = GetQualifierScopes(type);
+                var qual     = new TeuchiUdonQualifier(scopes);
+
                 t = new TeuchiUdonType(qual, typeName, argTypes, udonTypeName, udonTypeName, type);
 
                 if (!Types.ContainsKey(t))
@@ -201,16 +259,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     LogicalTypes.Add(t, t);
                 }
-            }
 
-            if (argTypes.Length != 0)
-            {
-                var genericName = qual.Qualify("", typeName);
-                var genericRoot = new TeuchiUdonType(qual, typeName, genericName, null, null);
-
-                if (!GenericRootTypes.ContainsKey(genericRoot))
+                if (argTypes.Length != 0)
                 {
-                    GenericRootTypes.Add(genericRoot, genericRoot);
+                    var genericName = qual.Qualify("", typeName);
+                    var genericRoot = new TeuchiUdonType(qual, typeName, genericName, null, null);
+
+                    if (!GenericRootTypes.ContainsKey(genericRoot))
+                    {
+                        GenericRootTypes.Add(genericRoot, genericRoot);
+                    }
                 }
             }
 
@@ -219,11 +277,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private static string GetUdonTypeName(Type type)
         {
-            var name = type.FullName;
+            var genericIndex = type.FullName.IndexOf('`');
+            var arrayIndex   = type.FullName.IndexOf('[');
+            var index        = genericIndex == -1 ? arrayIndex : arrayIndex == -1 ? genericIndex : genericIndex < arrayIndex ? genericIndex : arrayIndex;
+            var name         = index == -1 ? type.FullName : type.FullName.Substring(0, index);
             name = name.Replace(".", "");
             name = name.Replace("+", "");
-            name = Regex.Replace(name, "`.*$"   , "");
-            name = Regex.Replace(name, @"\[.*\]", "");
             name = $"{name}{(type.IsGenericType ? string.Join("", type.GenericTypeArguments.Select(x => GetUdonTypeName(x))) : "")}";
             name = $"{name}{(type.IsArray ? "Array" : "")}";
             return name;
@@ -231,17 +290,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private static string GetTypeName(Type type)
         {
-            var name = type.Name;
-            name = Regex.Replace(name, "`.*$"   , "");
-            name = Regex.Replace(name, @"\[.*\]", "");
+            var genericIndex = type.Name.IndexOf('`');
+            var arrayIndex   = type.Name.IndexOf('[');
+            var index        = genericIndex == -1 ? arrayIndex : arrayIndex == -1 ? genericIndex : genericIndex < arrayIndex ? genericIndex : arrayIndex;
+            var name         = index == -1 ? type.Name : type.Name.Substring(0, index);
             name = $"{name}{(type.IsArray ? "Array" : "")}";
             return name;
         }
 
         private static IEnumerable<TeuchiUdonScope> GetQualifierScopes(Type type)
         {
-            var typeName  = Regex.Replace(type.FullName, "`.*$"  , "");
-            var qualNames = typeName.Split(new string[] { ".", "+" }, StringSplitOptions.None);
+            var genericIndex = type.FullName.IndexOf('`');
+            var typeName     = genericIndex == -1 ? type.FullName : type.FullName.Substring(0, genericIndex);
+            var qualNames    = typeName.Split(new char[] { '.', '+' });
             return qualNames.Take(qualNames.Length - 1).Select(x => new TeuchiUdonScope(x, TeuchiUdonScopeMode.Type));
         }
 
@@ -252,81 +313,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 for (var i = 1; i <= t.Qualifier.Logical.Length; i++)
                 {
                     var names = t.Qualifier.Logical.Take(i);
-                    var qual  = new TeuchiUdonQualifier(names, names);
+                    var qual  = new TeuchiUdonQualifier(names);
                     if (!Qualifiers.ContainsKey(qual)) Qualifiers.Add(qual, qual);
-                }
-            }
-        }
-
-        private void InitMethods()
-        {
-            var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
-            foreach (var topReg in topRegistries)
-            {
-                foreach (var reg in topReg.Value)
-                {
-                    foreach (var def in reg.Value.GetNodeDefinitions())
-                    {
-                        if (def.type == null) continue;
-
-                        var type = RegisterAndGetType(def.type);
-                        var qual = type.Qualifier;
-
-                        var methodNames  = def.name.Split(new string[] { " " }, StringSplitOptions.None);
-                        var methodName   = methodNames[methodNames.Length - 1];
-                        var instanceDef = def.parameters
-                            .FirstOrDefault(x => x.parameterType == UdonNodeParameter.ParameterType.IN && x.name == "instance");
-                        var instanceType = instanceDef == null ? TeuchiUdonType.Type.ApplyArgAsType(type) : RegisterAndGetType(instanceDef.type);
-                        var allParamTypes = def.parameters
-                            .Select(x => RegisterAndGetType(x.type));
-                        var inTypes = def.parameters
-                            .Where(x => x.parameterType == UdonNodeParameter.ParameterType.IN || x.parameterType == UdonNodeParameter.ParameterType.IN_OUT)
-                            .Select(x => RegisterAndGetType(x.type)).ToArray();
-                        var outTypes = def.parameters
-                            .Where(x => x.parameterType == UdonNodeParameter.ParameterType.OUT)
-                            .Select(x => RegisterAndGetType(x.type));
-                        var allParamInOuts = def.parameters
-                            .Select(x =>
-                                x.parameterType == UdonNodeParameter.ParameterType.IN     ? TeuchiUdonMethodParamInOut.In    :
-                                x.parameterType == UdonNodeParameter.ParameterType.IN_OUT ? TeuchiUdonMethodParamInOut.InOut : TeuchiUdonMethodParamInOut.Out);
-                        var allParamUdonNames = def.parameters.Select(x => x.name);
-                        var method = new TeuchiUdonMethod(instanceType, methodName, allParamTypes, inTypes, outTypes, allParamInOuts, def.fullName, allParamUdonNames);
-
-                        if (method.UdonName.StartsWith("Const_"   )) continue;
-                        if (method.UdonName.StartsWith("Variable_")) continue;
-                        if (method.UdonName.StartsWith("Event_"))
-                        {
-                            if (!Events.ContainsKey(methodName))
-                            {
-                                Events.Add(methodName, method);
-                            }
-                            continue;
-                        }
-                        if (instanceType.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) continue;
-
-                        if (!Methods.ContainsKey(method))
-                        {
-                            Methods.Add(method, method);
-                        }
-
-                        if (!TypeToMethods.ContainsKey(instanceType))
-                        {
-                            TypeToMethods.Add(instanceType, new Dictionary<string, Dictionary<int, List<TeuchiUdonMethod>>>());
-                        }
-                        var nameToMethods = TypeToMethods[instanceType];
-
-                        if (!nameToMethods.ContainsKey(methodName))
-                        {
-                            nameToMethods.Add(methodName, new Dictionary<int, List<TeuchiUdonMethod>>());
-                        }
-                        var argsToMethods = nameToMethods[methodName];
-
-                        if (!argsToMethods.ContainsKey(inTypes.Length))
-                        {
-                            argsToMethods.Add(inTypes.Length, new List<TeuchiUdonMethod>());
-                        }
-                        argsToMethods[inTypes.Length].Add(method);
-                    }
                 }
             }
         }
@@ -347,12 +335,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var methodToMethods = TypeToMethods[query.Type];
 
             if (!methodToMethods.ContainsKey(query.Name)) return Enumerable.Empty<TeuchiUdonMethod>();
-            var argsToMethods = methodToMethods[query.Name];
+            var methods = methodToMethods[query.Name]
+                .Where(x => x.InTypes.Length == inTypeCount)
+                .ToArray();
 
-            if (!argsToMethods.ContainsKey(inTypeCount)) return Enumerable.Empty<TeuchiUdonMethod>();
-            var methods = argsToMethods[inTypeCount];
-
-            if (methods.Count == 0) return Enumerable.Empty<TeuchiUdonMethod>();
+            if (methods.Length == 0) return Enumerable.Empty<TeuchiUdonMethod>();
             if (withoutInTypes) return methods;
 
             var justCountToMethods = new Dictionary<int, List<TeuchiUdonMethod>>();

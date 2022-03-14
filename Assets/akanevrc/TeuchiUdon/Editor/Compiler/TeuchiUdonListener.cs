@@ -708,7 +708,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         )
                         {
                             var ms   = TeuchiUdonTables.Instance.TypeToMethods[type1][varCandidate2.Identifier.Name];
-                            var type = TeuchiUdonType.Method.ApplyArgsAsMethod(ms.Values.SelectMany(x => x));
+                            var type = TeuchiUdonType.Method.ApplyArgsAsMethod(ms);
                             eval     = new MethodResult(varCandidate2.Token, type, varCandidate2.Identifier);
                             break;
                         }
@@ -766,7 +766,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         )
                         {
                             var ms   = TeuchiUdonTables.Instance.TypeToMethods[type1][varCandidate2.Identifier.Name];
-                            var type = TeuchiUdonType.Method.ApplyArgsAsMethod(ms.Values.SelectMany(x => x));
+                            var type = TeuchiUdonType.Method.ApplyArgsAsMethod(ms);
                             eval     = new MethodResult(varCandidate2.Token, type, varCandidate2.Identifier);
                             break;
                         }
