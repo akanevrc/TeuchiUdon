@@ -195,7 +195,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var qual           = TeuchiUdonQualifierStack.Instance.Peek();
             var varNames       =
                 varDecl is SingleVarDeclContext sv ? new string[] { sv.qualifiedVar()?.identifier()?.GetText() ?? "" } :
-                varDecl is TupleVarDeclContext  tv ? tv.qualifiedVar().Select(x => x?.identifier()?.GetText() ?? "").ToArray() : new string[0];
+                varDecl is TupleVarDeclContext  tv ? tv.qualifiedVar().Select(x => x?.identifier()?.GetText() ?? "").ToArray() : Enumerable.Empty<string>();
             var scope   = new TeuchiUdonScope(new TeuchiUdonVarBind(index, qual, varNames), TeuchiUdonScopeMode.VarBind);
             TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
@@ -224,7 +224,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 else
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variable");
-                    vars = new TeuchiUdonVar[0];
+                    vars = Array.Empty<TeuchiUdonVar>();
                 }
             }
             else if (varDecl.Vars.Length >= 2)
@@ -243,13 +243,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     else
                     {
                         TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variables");
-                        vars = new TeuchiUdonVar[0];
+                        vars = Array.Empty<TeuchiUdonVar>();
                     }
                 }
                 else
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variables");
-                    vars = new TeuchiUdonVar[0];
+                    vars = Array.Empty<TeuchiUdonVar>();
                 }
             }
 
@@ -263,7 +263,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
         {
-            var qualifiedVars = new QualifiedVarResult[0];
+            var qualifiedVars = Enumerable.Empty<QualifiedVarResult>();
             context.result    = ExitVarDecl(context.Start, qualifiedVars, context.isActual);
         }
 
@@ -873,7 +873,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr = context.expr()?.result;
             if (expr == null) return;
 
-            var args       = new ArgExprResult[0];
+            var args       = Enumerable.Empty<ArgExprResult>();
             context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
 
@@ -931,7 +931,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else if (type.LogicalTypeNameEquals(TeuchiUdonType.Method) && expr.Inner.Instance != null)
             {
-                var instanceType = expr.Inner.Instance.Inner.Type.RealType == null ? new TeuchiUdonType[0] : new TeuchiUdonType[] { expr.Inner.Instance.Inner.Type };
+                var instanceType = expr.Inner.Instance.Inner.Type.RealType == null ? Enumerable.Empty<TeuchiUdonType>() : new TeuchiUdonType[] { expr.Inner.Instance.Inner.Type };
                 var inTypes      = instanceType.Concat(args.Select(x => x.Inner.Type));
                 var inRefs       = instanceType.Select(_ => false).Concat(argRefs);
                 var ms           = type.GetMostCompatibleMethods(inTypes).ToArray();

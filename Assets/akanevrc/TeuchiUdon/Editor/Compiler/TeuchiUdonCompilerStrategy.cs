@@ -155,7 +155,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         new TextCodeLabel($"topcall[{eventName}]"),
                         v
                     ) :
-                    new TeuchiUdonAssembly[0]
+                    Enumerable.Empty<TeuchiUdonAssembly>()
                 )
                 .Concat(new TeuchiUdonAssembly[]
                 {

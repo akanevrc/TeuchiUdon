@@ -343,16 +343,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethodsCore(TeuchiUdonMethod query, int inTypeCount, bool withoutInTypes)
         {
-            if (!TypeToMethods.ContainsKey(query.Type)) return new TeuchiUdonMethod[0];
+            if (!TypeToMethods.ContainsKey(query.Type)) return Enumerable.Empty<TeuchiUdonMethod>();
             var methodToMethods = TypeToMethods[query.Type];
 
-            if (!methodToMethods.ContainsKey(query.Name)) return new TeuchiUdonMethod[0];
+            if (!methodToMethods.ContainsKey(query.Name)) return Enumerable.Empty<TeuchiUdonMethod>();
             var argsToMethods = methodToMethods[query.Name];
 
-            if (!argsToMethods.ContainsKey(inTypeCount)) return new TeuchiUdonMethod[0];
+            if (!argsToMethods.ContainsKey(inTypeCount)) return Enumerable.Empty<TeuchiUdonMethod>();
             var methods = argsToMethods[inTypeCount];
 
-            if (methods.Count == 0) return new TeuchiUdonMethod[0];
+            if (methods.Count == 0) return Enumerable.Empty<TeuchiUdonMethod>();
             if (withoutInTypes) return methods;
 
             var justCountToMethods = new Dictionary<int, List<TeuchiUdonMethod>>();
@@ -386,7 +386,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 if (justCountToMethods.ContainsKey(i)) return justCountToMethods[i];
             }
 
-            return new TeuchiUdonMethod[0];
+            return Enumerable.Empty<TeuchiUdonMethod>();
         }
 
         public int GetVarIndex()

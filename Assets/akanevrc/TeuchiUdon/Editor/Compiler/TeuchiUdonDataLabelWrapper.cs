@@ -35,7 +35,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             if (label.Type.LogicalTypeEquals(TeuchiUdonType.Unit))
             {
-                return new (string, IDataLabel)[0];
+                return Enumerable.Empty<(string, IDataLabel)>();
             }
             else if (label.Type.RealType == null)
             {

@@ -6,7 +6,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonQualifier : ITeuchiUdonTypeArg, IEquatable<TeuchiUdonQualifier>
     {
-        public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(new TeuchiUdonScope[0], new TeuchiUdonScope[0]);
+        public static TeuchiUdonQualifier Top { get; } = new TeuchiUdonQualifier(Array.Empty<TeuchiUdonScope>(), Array.Empty<TeuchiUdonScope>());
 
         public TeuchiUdonScope[] Logical { get; }
         public TeuchiUdonScope[] Real { get; }

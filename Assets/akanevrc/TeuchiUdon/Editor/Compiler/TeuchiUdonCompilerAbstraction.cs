@@ -77,7 +77,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitTables()
         {
             return
-                TeuchiUdonTables.Instance.Funcs.Values.Count == 0 ? new TeuchiUdonAssembly[0] :
+                TeuchiUdonTables.Instance.Funcs.Values.Count == 0 ? Enumerable.Empty<TeuchiUdonAssembly>() :
                 TeuchiUdonTables.Instance.Funcs.Values.Select(x => Func(x))
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
@@ -178,7 +178,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             return
-                topEventStats.Count == 0 ? new TeuchiUdonAssembly[0] :
+                topEventStats.Count == 0 ? Enumerable.Empty<TeuchiUdonAssembly>() :
                 topEventStats.Select(x => Event(x.Key, x.Value.eventName, x.Value.ev, x.Value.stats))
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
@@ -200,42 +200,42 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitInitVarAttr(InitVarAttrResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitPublicVarAttr(PublicVarAttrResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitSyncVarAttr(SyncVarAttrResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitInitExprAttr(InitExprAttrResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitVarBind(VarBindResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitVarDecl(VarDeclResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitQualifiedVar(QualifiedVarResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitIdentifier(IdentifierResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitJump(JumpResult result)
@@ -256,22 +256,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitResult(result.Inner)
-                .Concat(result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ? new TeuchiUdonAssembly[0] : Pop());
+                .Concat(result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ? Enumerable.Empty<TeuchiUdonAssembly>() : Pop());
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitBottom(BottomResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitUnknownType(UnknownTypeResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitUnit(UnitResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitBlock(BlockResult result)
@@ -286,27 +286,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitListCtor(ListCtorResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
         
         protected IEnumerable<TeuchiUdonAssembly> VisitElementListExpr(ElementListExprResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitRangeListExpr(RangeListExprResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitSteppedRangeListExpr(SteppedRangeListExprResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitSpreadListExpr(SpreadListExprResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLiteral(LiteralResult result)
@@ -326,27 +326,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalType(EvalTypeResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalQualifier(EvalQualifierResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalGetter(EvalGetterResult result)
         {
-            return EvalMethod(new TeuchiUdonAssembly[0][], result.OutValues, result.Method);
+            return EvalMethod(Enumerable.Empty<TeuchiUdonAssembly[]>(), result.OutValues, result.Method);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalSetter(EvalSetterResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalGetterSetter(EvalGetterSetterResult result)
         {
-            return EvalMethod(new TeuchiUdonAssembly[0][], result.OutValues, result.Getter);
+            return EvalMethod(Enumerable.Empty<TeuchiUdonAssembly[]>(), result.OutValues, result.Getter);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalFunc(EvalFuncResult result)
@@ -366,7 +366,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalVarCandidate(EvalVarCandidateResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTypeCast(TypeCastResult result)
@@ -377,7 +377,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitConvertCast(ConvertCastResult result)
         {
             return
-                result.Methods.Values.Any(x => x == null) ? new TeuchiUdonAssembly[0] :
+                result.Methods.Values.Any(x => x == null) ? Enumerable.Empty<TeuchiUdonAssembly>() :
                 VisitExpr(result.Expr)
                 .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Arg) }, result.OutValuess["convert"], result.Methods["convert"]));
         }
@@ -391,14 +391,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "-":
                 case "!":
                     return
-                        result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods["op"] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr) }, result.OutValuess["op"], result.Methods["op"]);
                 case "~":
                     return
-                        result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods["op"] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr), Get(result.Literals["mask"]) }, result.OutValuess["op"], result.Methods["op"]);
                 default:
-                    return new TeuchiUdonAssembly[0];
+                    return Enumerable.Empty<TeuchiUdonAssembly>();
             }
         }
 
@@ -410,7 +410,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return VisitExpr(result.Expr1).Concat(VisitExpr(result.Expr2));
                 case "?.":
                     return
-                         result.Methods.ContainsKey("==") && result.Methods["=="] == null ? new TeuchiUdonAssembly[0] :
+                         result.Methods.ContainsKey("==") && result.Methods["=="] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         !result.Methods.ContainsKey("==") ? Get(result.Literals["null"]) :
                         IfElse
                         (
@@ -437,16 +437,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "^":
                 case "|":
                     return
-                        result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                        result.Methods["op"] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess["op"], result.Methods["op"]);
                 case "==":
                     return
-                         result.Methods.ContainsKey("op") && result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                         result.Methods.ContainsKey("op") && result.Methods["op"] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         !result.Methods.ContainsKey("op") ? Get(result.Literals["true"]) :
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess["op"], result.Methods["op"]);
                 case "!=":
                     return
-                         result.Methods.ContainsKey("op") && result.Methods["op"] == null ? new TeuchiUdonAssembly[0] :
+                         result.Methods.ContainsKey("op") && result.Methods["op"] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         !result.Methods.ContainsKey("op") ? Get(result.Literals["false"]) :
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Expr1), VisitExpr(result.Expr2) }, result.OutValuess["op"], result.Methods["op"]);
                 case "&&":
@@ -471,7 +471,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         );
                 case "??":
                     return
-                         result.Methods.ContainsKey("==") && result.Methods["=="] == null ? new TeuchiUdonAssembly[0] :
+                         result.Methods.ContainsKey("==") && result.Methods["=="] == null ? Enumerable.Empty<TeuchiUdonAssembly>() :
                         !result.Methods.ContainsKey("==") ? VisitExpr(result.Expr2) :
                         IfElse
                         (
@@ -487,7 +487,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     return
                         result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) || result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
-                            new TeuchiUdonAssembly[0] :
+                            Enumerable.Empty<TeuchiUdonAssembly>() :
                         result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
                             EvalAssign
                             (
@@ -501,10 +501,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                                 VisitExpr(result.Expr2),
                                 m
                             ) :
-                            new TeuchiUdonAssembly[0];
+                            Enumerable.Empty<TeuchiUdonAssembly>();
                 }
                 default:
-                    return new TeuchiUdonAssembly[0];
+                    return Enumerable.Empty<TeuchiUdonAssembly>();
             }
         }
 
@@ -536,12 +536,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitMethod(MethodResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArgExpr(ArgExprResult result)
         {
-            return new TeuchiUdonAssembly[0];
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         public IEnumerable<TeuchiUdonAssembly> DeclIndirectAddresses(IEnumerable<(TeuchiUdonIndirect indirect, uint address)> pairs)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
@@ -284,7 +285,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     (
                         key  : x.Key,
                         value: x.Value == null ?
-                            new TeuchiUdonOutValue[0] :
+                            Array.Empty<TeuchiUdonOutValue>() :
                             TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.Value.OutTypes.Length).ToArray()
                     )
                 )
@@ -341,7 +342,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class UnknownTypeResult : TypedResult
@@ -351,7 +352,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class UnitResult : TypedResult
@@ -361,7 +362,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class BlockResult : TypedResult
@@ -378,7 +379,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr       = expr;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class ParenResult : TypedResult
@@ -405,26 +406,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Init();
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
-            return new (string, TeuchiUdonMethod)[0];
+            return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
         protected override IEnumerable<(string key, int count)> GetOutValuess()
         {
-            return new (string, int)[0];
+            return Enumerable.Empty<(string, int)>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
-            return new (string, TeuchiUdonLiteral)[0];
+            return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
         }
 
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
         {
-            return new (string, ICodeLabel)[0];
+            return Enumerable.Empty<(string, ICodeLabel)>();
         }
     }
 
@@ -508,7 +509,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class ThisResult : TypedResult
@@ -530,7 +531,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalVarResult : TypedResult
@@ -543,7 +544,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Var = v;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues => Var.Mut ? new ITeuchiUdonLeftValue[] { Var } : new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues => Var.Mut ? new ITeuchiUdonLeftValue[] { Var } : Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalTypeResult : TypedResult
@@ -556,7 +557,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             InnerType = innerType;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalQualifierResult : TypedResult
@@ -569,7 +570,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Qualifier = qualifier;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalGetterResult : TypedResult
@@ -584,7 +585,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes.Length).ToArray();
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalSetterResult : TypedResult
@@ -633,7 +634,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Args     = args.ToArray();
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalMethodResult : TypedResult
@@ -654,7 +655,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Instance = expr.Inner.Instance;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class EvalVarCandidateResult : TypedResult
@@ -667,7 +668,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class ArgExprResult : TeuchiUdonParserResult
@@ -695,7 +696,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Arg  = arg;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class ConvertCastResult : ExternResult
@@ -711,7 +712,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Init();
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
@@ -801,17 +802,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, int count)> GetOutValuess()
         {
-            return new (string, int)[0];
+            return Enumerable.Empty<(string, int)>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
-            return new (string, TeuchiUdonLiteral)[0];
+            return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
         }
 
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
         {
-            return new (string, ICodeLabel)[0];
+            return Enumerable.Empty<(string, ICodeLabel)>();
         }
     }
 
@@ -845,7 +846,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
@@ -854,7 +855,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (Op)
             {
                 case "+":
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 case "-":
                     return new (string, TeuchiUdonMethod)[]
                     {
@@ -898,7 +899,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         )
                     };
                 default:
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
             }
         }
 
@@ -907,7 +908,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (Op)
             {
                 default:
-                    return new (string, int)[0];
+                    return Enumerable.Empty<(string, int)>();
             }
         }
 
@@ -921,13 +922,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         ("mask", TeuchiUdonLiteral.CreateMask(TeuchiUdonTables.Instance.GetLiteralIndex(), Expr.Inner.Type))
                     };
                 default:
-                    return new (string, TeuchiUdonLiteral)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
             }
         }
 
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
         {
-            return new (string, ICodeLabel)[0];
+            return Enumerable.Empty<(string, ICodeLabel)>();
         }
     }
 
@@ -957,7 +958,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues => Op == "." ? Expr2.Inner.LeftValues : new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues => Op == "." ? Expr2.Inner.LeftValues : Array.Empty<ITeuchiUdonLeftValue>();
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
@@ -968,11 +969,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             switch (Op)
             {
                 case ".":
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 case "?.":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
                     {
-                        return new (string, TeuchiUdonMethod)[0];
+                        return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
                     else
                     {
@@ -1179,7 +1180,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "==":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
                     {
-                        return new (string, TeuchiUdonMethod)[0];
+                        return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
                     else
                     {
@@ -1208,7 +1209,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "!=":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
                     {
-                        return new (string, TeuchiUdonMethod)[0];
+                        return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
                     else
                     {
@@ -1277,13 +1278,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         )
                     };
                 case "&&":
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 case "||":
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 case "??":
                     if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
                     {
-                        return new (string, TeuchiUdonMethod)[0];
+                        return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
                     else
                     {
@@ -1302,9 +1303,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         };
                     }
                 case "<-":
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 default:
-                    return new (string, TeuchiUdonMethod)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonMethod)>();
             }
         }
 
@@ -1316,7 +1317,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "??":
                     return new (string, int)[] { ("tmp", 1) };
                 default:
-                    return new (string, int)[0];
+                    return Enumerable.Empty<(string, int)>();
             }
         }
 
@@ -1351,7 +1352,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         ("null", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "null", TeuchiUdonType.Bottom))
                     };
                 default:
-                    return new (string, TeuchiUdonLiteral)[0];
+                    return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
             }
         }
 
@@ -1369,7 +1370,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         ("1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex()))
                     };
                 default:
-                    return new (string, ICodeLabel)[0];
+                    return Enumerable.Empty<(string, ICodeLabel)>();
             }
         }
     }
@@ -1393,7 +1394,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Labels     = new ICodeLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class LetInBindResult : TypedResult
@@ -1410,7 +1411,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr    = expr;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class FuncResult : TypedResult
@@ -1436,7 +1437,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
     public class MethodResult : TypedResult
@@ -1449,6 +1450,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Identifier = identifier;
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues { get; } = new ITeuchiUdonLeftValue[0];
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 }

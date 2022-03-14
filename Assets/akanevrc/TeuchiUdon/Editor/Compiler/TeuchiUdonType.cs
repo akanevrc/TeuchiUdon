@@ -51,7 +51,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Type RealType { get; }
 
         public TeuchiUdonType(TeuchiUdonQualifier qualifier, string name)
-            : this(qualifier, name, new TeuchiUdonType[0], null, null, null)
+            : this(qualifier, name, Enumerable.Empty<TeuchiUdonType>(), null, null, null)
         {
         }
 
@@ -61,7 +61,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public TeuchiUdonType(string logicalName)
-            : this(null, null, new TeuchiUdonType[0], logicalName, null, null)
+            : this(null, null, Enumerable.Empty<TeuchiUdonType>(), logicalName, null, null)
         {
         }
 
@@ -71,7 +71,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public TeuchiUdonType(TeuchiUdonQualifier qualifier, string name, string logicalName, string realName, Type realType)
-            : this(qualifier, name, new TeuchiUdonType[0], logicalName, realName, realType)
+            : this(qualifier, name, Enumerable.Empty<TeuchiUdonType>(), logicalName, realName, realType)
         {
         }
 
@@ -79,7 +79,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Qualifier   = qualifier;
             Name        = name;
-            Args        = args?.ToArray() ?? new TeuchiUdonType[0];
+            Args        = args?.ToArray() ?? System.Array.Empty<TeuchiUdonType>();
             LogicalName = logicalName;
             RealName    = realName;
             RealType    = realType;
@@ -382,10 +382,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(IEnumerable<TeuchiUdonType> inTypes)
         {
-            if (!LogicalTypeNameEquals(TeuchiUdonType.Method)) return new TeuchiUdonMethod[0];
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Method)) return Enumerable.Empty<TeuchiUdonMethod>();
 
             var methods = GetArgsAsMethod().ToArray();
-            if (methods.Length == 0) return new TeuchiUdonMethod[0];
+            if (methods.Length == 0) return Enumerable.Empty<TeuchiUdonMethod>();
 
             var it = inTypes.ToArray();
             var justCountToMethods = new Dictionary<int, List<TeuchiUdonMethod>>();
@@ -421,7 +421,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 if (justCountToMethods.ContainsKey(i)) return justCountToMethods[i];
             }
 
-            return new TeuchiUdonMethod[0];
+            return Enumerable.Empty<TeuchiUdonMethod>();
         }
     }
 
