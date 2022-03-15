@@ -91,6 +91,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Any,
                 TeuchiUdonType.Bottom,
                 TeuchiUdonType.Unit,
+                TeuchiUdonType.NullType,
                 TeuchiUdonType.Object,
                 TeuchiUdonType.DotNetType,
                 TeuchiUdonType.Buffer,

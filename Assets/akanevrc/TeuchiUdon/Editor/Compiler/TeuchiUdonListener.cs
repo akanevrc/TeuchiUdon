@@ -1453,7 +1453,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (context.ChildCount == 0 || context.Parent == null) return;
 
             var text       = context.GetText();
-            var type       = TeuchiUdonType.Bottom;
+            var type       = TeuchiUdonType.NullType;
             var tableIndex = ((LiteralExprContext)context.Parent).tableIndex;
             context.result = new LiteralResult(context.Start, type, tableIndex, text, null);
         }

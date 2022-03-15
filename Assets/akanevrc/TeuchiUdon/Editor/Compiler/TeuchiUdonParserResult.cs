@@ -971,7 +971,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case ".":
                     return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 case "?.":
-                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
+                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType))
                     {
                         return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
@@ -1178,7 +1178,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         )
                     };
                 case "==":
-                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
+                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType))
                     {
                         return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
@@ -1207,7 +1207,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         };
                     }
                 case "!=":
-                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
+                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType) && Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType))
                     {
                         return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
@@ -1282,7 +1282,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "||":
                     return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                 case "??":
-                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bottom))
+                    if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType))
                     {
                         return Enumerable.Empty<(string, TeuchiUdonMethod)>();
                     }
@@ -1349,7 +1349,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "??":
                     return new (string, TeuchiUdonLiteral)[]
                     {
-                        ("null", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "null", TeuchiUdonType.Bottom))
+                        ("null", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "null", TeuchiUdonType.NullType))
                     };
                 default:
                     return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
