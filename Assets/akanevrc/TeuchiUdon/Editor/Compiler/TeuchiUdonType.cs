@@ -20,7 +20,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
         public static TeuchiUdonType Array { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array", "array", null, null);
         public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
-        public static TeuchiUdonType Buffer { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "buffer", "buffer", "SystemObjectArray", typeof(object[]));
+        public static TeuchiUdonType ListNode { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "listnode", "array", "SystemObjectArray", typeof(object[])).ApplyArgAsArray(new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object)));
         public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType NullType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "nulltype", "nulltype", "SystemObject", typeof(object));
@@ -248,7 +248,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private bool IsAssignableFromBuffer(TeuchiUdonType obj)
         {
             if (obj == null) return false;
-            if (!LogicalTypeEquals(TeuchiUdonType.Buffer) || !obj.LogicalTypeEquals(TeuchiUdonType.Buffer)) return false;
+            if (!LogicalTypeEquals(TeuchiUdonType.ListNode) || !obj.LogicalTypeEquals(TeuchiUdonType.ListNode)) return false;
 
             return true;
         }
@@ -292,7 +292,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Tuple,
                 TeuchiUdonType.Array,
                 TeuchiUdonType.List,
-                TeuchiUdonType.Buffer,
+                TeuchiUdonType.ListNode,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Method
             }
@@ -395,6 +395,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             .Any(x => LogicalTypeEquals(x));
         }
 
+        public bool IsNumericType()
+        {
+            return new TeuchiUdonType[]
+            {
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.UShort,
+                TeuchiUdonType.Int,
+                TeuchiUdonType.UInt,
+                TeuchiUdonType.Long,
+                TeuchiUdonType.ULong,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.Double
+            }
+            .Any(x => LogicalTypeEquals(x));
+        }
+
         protected TeuchiUdonType ApplyArgs(IEnumerable<ITeuchiUdonTypeArg> args)
         {
             return new TeuchiUdonType(Qualifier, Name, args, LogicalName, RealName, RealType);
@@ -482,6 +500,42 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 count == 0 ? TeuchiUdonType.Unit :
                 count == 1 ? types.First() :
                 TeuchiUdonType.Tuple.ApplyArgsAsTuple(types);
+        }
+
+        public static TeuchiUdonType GetUpperType(IEnumerable<TeuchiUdonType> types)
+        {
+            if (types.Any())
+            {
+                var upper    = types.First();
+                var unknowns = new HashSet<TeuchiUdonType>();
+                foreach (var t in types.Skip(1))
+                {
+                    if (upper.IsAssignableFrom(t))
+                    {
+                    }
+                    else if (t.IsAssignableFrom(upper))
+                    {
+                        upper = t;
+                    }
+                    else if (!unknowns.Contains(t))
+                    {
+                        unknowns.Add(t);
+                    }
+                }
+
+                if (unknowns.All(x => upper.IsAssignableFrom(x)))
+                {
+                    return upper;
+                }
+                else
+                {
+                    return TeuchiUdonType.Unknown;
+                }
+            }
+            else
+            {
+                return TeuchiUdonType.Unit;
+            }
         }
 
         public IEnumerable<TeuchiUdonMethod> GetMostCompatibleMethods(IEnumerable<TeuchiUdonType> inTypes)

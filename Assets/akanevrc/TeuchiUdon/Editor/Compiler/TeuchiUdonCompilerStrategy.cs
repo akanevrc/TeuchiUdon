@@ -124,7 +124,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             .Concat(Set(func.Return))
             .Concat(func.Vars.Reverse().SelectMany(x => Set(x)))
-            .Concat(VisitResult(func.Expr))
+            .Concat(VisitExpr(func.Expr))
             .Concat(new TeuchiUdonAssembly[]
             {
                 new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(func.Return)),
@@ -145,7 +145,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new Assembly_LABEL      (new TextCodeLabel(eventName)),
                     new Assembly_INDENT(1)
                 }
-                .Concat(stats.SelectMany(x => VisitResult(x)))
+                .Concat(stats.SelectMany(x => VisitTopStatement(x)))
                 .Concat(v?.Type.LogicalTypeNameEquals(TeuchiUdonType.Func) ?? false ?
                     EvalFunc
                     (
@@ -198,34 +198,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(outValues.SelectMany(x => Get(x)));
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> IfElse
-        (
-            IEnumerable<TeuchiUdonAssembly> condition,
-            IEnumerable<TeuchiUdonAssembly> truePart,
-            IEnumerable<TeuchiUdonAssembly> falsePart,
-            ICodeLabel label0,
-            ICodeLabel label1
-        )
-        {
-            return
-                condition
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label0))
-                })
-                .Concat(truePart)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label1)),
-                    new Assembly_LABEL(label0)
-                })
-                .Concat(falsePart)
-                .Concat(new TeuchiUdonAssembly[]
-                {
-                    new Assembly_LABEL(label1)
-                });
-        }
-
         protected override IEnumerable<TeuchiUdonAssembly> EvalAssign(IEnumerable<TeuchiUdonAssembly> value1, IEnumerable<TeuchiUdonAssembly> value2)
         {
             return
@@ -245,6 +217,103 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 instance
                 .Concat(value2)
                 .Concat(new TeuchiUdonAssembly[] { new Assembly_EXTERN(setterMethod) });
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> IfElse
+        (
+            IEnumerable<TeuchiUdonAssembly> condition,
+            IEnumerable<TeuchiUdonAssembly> truePart,
+            IEnumerable<TeuchiUdonAssembly> falsePart,
+            ICodeLabel label1,
+            ICodeLabel label2
+        )
+        {
+            return
+                condition
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label1))
+                })
+                .Concat(truePart)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label2)),
+                    new Assembly_LABEL(label1)
+                })
+                .Concat(falsePart)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_LABEL(label2)
+                });
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> ListCtor
+        (
+            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> listExprs,
+            TeuchiUdonLiteral zero,
+            TeuchiUdonLiteral one,
+            TeuchiUdonLiteral two,
+            TeuchiUdonLiteral nullValue,
+            TeuchiUdonOutValue outValue1,
+            TeuchiUdonOutValue outValue2,
+            TeuchiUdonOutValue outValue3,
+            TeuchiUdonMethod ctor,
+            TeuchiUdonMethod setter
+        )
+        {
+            var i = 0;
+            return listExprs.SelectMany(x => x.elements.SelectMany(y =>
+            {
+                var ret = (IEnumerable<TeuchiUdonAssembly>)null;
+                if (i == 0)
+                {
+                    ret =
+                        new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(two)),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(outValue1)),
+                            new Assembly_EXTERN(ctor),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(outValue1)),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(zero)),
+                        }
+                        .Concat(y)
+                        .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_EXTERN(setter),
+                        });
+                }
+                else
+                {
+                    ret =
+                        new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(two)),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i % 2 == 0 ? outValue3 : outValue2)),
+                            new Assembly_EXTERN(ctor),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i == 1 ? outValue1 : i % 2 == 0 ? outValue2 : outValue3)),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(one)),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i % 2 == 0 ? outValue3 : outValue2)),
+                            new Assembly_EXTERN(setter),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i % 2 == 0 ? outValue3 : outValue2)),
+                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(zero)),
+                        }
+                        .Concat(y)
+                        .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_EXTERN(setter),
+                        });
+                }
+                i++;
+                return ret;
+            }))
+            .ToArray()
+            .Concat
+            (
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i == 0 ? (IDataLabel)nullValue : (IDataLabel)outValue1))
+                }
+            );
         }
     }
 }

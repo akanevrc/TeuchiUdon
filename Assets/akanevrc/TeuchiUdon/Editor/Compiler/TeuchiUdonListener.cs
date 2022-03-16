@@ -44,11 +44,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonCompilerStrategy.Instance.GetDataPartFromTables(),
                 TeuchiUdonCompilerStrategy.Instance.GetDataPartFromOutValuePool()
             );
-            TeuchiUdonAssemblyWriter.Instance.PushCodePart
-            (
-                TeuchiUdonCompilerStrategy.Instance.GetCodePartFromTables(),
-                TeuchiUdonCompilerStrategy.Instance.GetCodePartFromResult(body == null ? (TeuchiUdonParserResult)new UnitResult(null) : (TeuchiUdonParserResult)body)
-            );
+            if (body == null)
+            {
+                TeuchiUdonAssemblyWriter.Instance.PushCodePart
+                (
+                    TeuchiUdonCompilerStrategy.Instance.GetCodePartFromTables()
+                );
+            }
+            else
+            {
+                TeuchiUdonAssemblyWriter.Instance.PushCodePart
+                (
+                    TeuchiUdonCompilerStrategy.Instance.GetCodePartFromTables(),
+                    TeuchiUdonCompilerStrategy.Instance.GetCodePartFromResult(body)
+                );
+            }
             TeuchiUdonAssemblyWriter.Instance.Prepare();
             TeuchiUdonAssemblyWriter.Instance.WriteAll(Parser.Output);
         }
@@ -458,30 +468,124 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitUnitListCtorExpr([NotNull] UnitListCtorExprContext context)
         {
+            var qual = TeuchiUdonQualifierStack.Instance.Peek();
+            var type = new TeuchiUdonType
+            (
+                TeuchiUdonQualifier.Top,
+                TeuchiUdonType.List.Name,
+                new TeuchiUdonType[] { TeuchiUdonType.Bottom },
+                TeuchiUdonType.List.LogicalName,
+                TeuchiUdonType.Object.GetRealName(),
+                TeuchiUdonType.Object.RealType
+            );
+            var listCtor   = new ListCtorResult(context.Start, type, qual, Enumerable.Empty<ListExprResult>());
+            context.result = new ExprResult(listCtor.Token, listCtor);
         }
 
         public override void ExitSingleListCtorExpr([NotNull] SingleListCtorExprContext context)
         {
+            var listExpr = context.listExpr()?.result;
+            if (listExpr == null) return;
+
+            var qual = TeuchiUdonQualifierStack.Instance.Peek();
+            var type = new TeuchiUdonType
+            (
+                TeuchiUdonQualifier.Top,
+                TeuchiUdonType.List.Name,
+                new TeuchiUdonType[] { listExpr.Type },
+                TeuchiUdonType.List.LogicalName,
+                TeuchiUdonType.Object.GetRealName(),
+                TeuchiUdonType.Object.RealType
+            );
+            var listExprs  = new ListExprResult[] { listExpr };
+            var listCtor   = new ListCtorResult(context.Start, type, qual, listExprs);
+            context.result = new ExprResult(listCtor.Token, listCtor);
         }
 
         public override void ExitTupleListCtorExpr([NotNull] TupleListCtorExprContext context)
         {
+            var listExprs = context.listExpr().Select(x => x?.result).ToArray();
+            if (listExprs.Any(x => x == null)) return;
+
+            var elemType = TeuchiUdonType.GetUpperType(listExprs.Select(x => x.Type));
+            if (elemType.LogicalTypeEquals(TeuchiUdonType.Unknown))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"list element types are incompatible");
+                return;
+            }
+
+            var qual = TeuchiUdonQualifierStack.Instance.Peek();
+            var type = new TeuchiUdonType
+            (
+                TeuchiUdonQualifier.Top,
+                TeuchiUdonType.List.Name,
+                new TeuchiUdonType[] { elemType },
+                TeuchiUdonType.List.LogicalName,
+                TeuchiUdonType.Object.GetRealName(),
+                TeuchiUdonType.Object.RealType
+            );
+            var listCtor   = new ListCtorResult(context.Start, type, qual, listExprs);
+            context.result = new ExprResult(listCtor.Token, listCtor);
         }
 
         public override void ExitElementListExpr([NotNull] ElementListExprContext context)
         {
+            var expr = context.expr()?.result;
+            if (expr == null) return;
+
+            context.result = new ElementListExprResult(context.Start, expr.Inner.Type, expr);
         }
 
         public override void ExitRangeListExpr([NotNull] RangeListExprContext context)
         {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+
+            if (!exprs[0].Inner.Type.IsNumericType() || !exprs[1].Inner.Type.IsNumericType())
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not numeric type");
+                return;
+            }
+            else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression type is incompatible");
+                return;
+            }
+
+            context.result = new RangeListExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1]);
         }
 
         public override void ExitSteppedRangeListExpr([NotNull] SteppedRangeListExprContext context)
         {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
+
+            if (!exprs[0].Inner.Type.IsNumericType() || !exprs[1].Inner.Type.IsNumericType() || !exprs[2].Inner.Type.IsNumericType())
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not a numeric type");
+                return;
+            }
+            else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type) || !exprs[0].Inner.Type.LogicalTypeEquals(exprs[2].Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression type is incompatible");
+                return;
+            }
+
+            context.result = new SteppedRangeListExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1], exprs[2]);
         }
 
         public override void ExitSpreadListExpr([NotNull] SpreadListExprContext context)
         {
+            var expr = context.expr()?.result;
+            if (expr == null) return;
+
+            if (!expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.List))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"spread expression is not a list type");
+                return;
+            }
+
+            context.result = new SpreadListExprResult(context.Start, expr.Inner.Type.GetArgAsList(), expr);
         }
 
         public override void EnterLiteralExpr([NotNull] LiteralExprContext context)
@@ -1091,8 +1195,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             TeuchiUdonType.List.Name,
                             argTypes,
                             TeuchiUdonType.List.LogicalName,
-                            TeuchiUdonType.Buffer.GetRealName(),
-                            TeuchiUdonType.Buffer.RealType
+                            TeuchiUdonType.ListNode.GetRealName(),
+                            TeuchiUdonType.ListNode.RealType
                         );
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }

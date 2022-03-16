@@ -44,10 +44,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.List))
             {
-                return new (string, IDataLabel)[] {
-                    CreateOneAssemblyLabel(label, "buffer", TeuchiUdonType.Buffer),
-                    CreateOneAssemblyLabel(label, "length", TeuchiUdonType.Int)
-                };
+                return new (string, IDataLabel)[] { ("", label) };
             }
             else
             {

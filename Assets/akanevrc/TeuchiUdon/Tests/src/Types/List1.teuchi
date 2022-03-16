@@ -1,2 +1,2 @@
 //
-list : list[int] = null;
+list : list[int] = [];

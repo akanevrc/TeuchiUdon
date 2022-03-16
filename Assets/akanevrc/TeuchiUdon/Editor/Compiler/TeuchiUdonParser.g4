@@ -77,7 +77,7 @@ expr
     | '(' expr ')'                           #ParenExpr
     | '[' ']'                                #UnitListCtorExpr
     | '[' listExpr ']'                       #SingleListCtorExpr
-    | '[' listExpr (',' listExpr) ']'        #TupleListCtorExpr
+    | '[' listExpr (',' listExpr)+ ']'       #TupleListCtorExpr
     | literal                                #LiteralExpr
     | thisLiteral                            #ThisLiteralExpr
     | identifier                             #EvalVarExpr
