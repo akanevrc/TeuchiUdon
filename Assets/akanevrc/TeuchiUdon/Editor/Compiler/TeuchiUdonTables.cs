@@ -18,7 +18,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonType, Dictionary<string, List<TeuchiUdonMethod>>> TypeToMethods { get; private set; }
         public Dictionary<string, TeuchiUdonMethod> Events { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
-        public Dictionary<TeuchiUdonVar, TeuchiUdonVar> UnbufferedVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> PublicVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
@@ -62,14 +61,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 IsInitialized = true;
             }
 
-            Vars           = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
-            UnbufferedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
-            PublicVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
-            SyncedVars     = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
-            Literals       = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
-            This           = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
-            Funcs          = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
-            Indirects      = new Dictionary<TeuchiUdonIndirect, uint>();
+            Vars       = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
+            PublicVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
+            SyncedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
+            Literals   = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
+            This       = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
+            Funcs      = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
+            Indirects  = new Dictionary<TeuchiUdonIndirect, uint>();
 
             VarCounter      = 0;
             OutValueCounter = 0;
@@ -111,7 +109,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Char,
                 TeuchiUdonType.String,
                 TeuchiUdonType.UnityObject,
-                TeuchiUdonType.GameObject
+                TeuchiUdonType.GameObject,
+                TeuchiUdonType.Vector2,
+                TeuchiUdonType.Vector3,
+                TeuchiUdonType.Vector4,
+                TeuchiUdonType.Quaternion,
+                TeuchiUdonType.Color,
+                TeuchiUdonType.Color32,
+                TeuchiUdonType.VRCUrl
             };
 
             foreach (var t in types)

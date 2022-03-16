@@ -539,13 +539,13 @@ MonoBehaviour:
     updateOrder: 0
   graphElementData:
   - type: 5
-    uid: 4737e73c-9560-4492-9ffa-820d25dd1eb2
+    uid: b768adcf-b8c6-4452-a37e-bc0711c009fe
     jsonData: '{"visible":true,"layout":{"serializedVersion":"2","x":0.0,"y":338.0,"width":200.0,"height":150.0}}'
   - type: 4
     uid: e09695ce-c5f3-4a00-ae48-400ce9171985
     jsonData: '{"visible":false,"layout":{"serializedVersion":"2","x":0.0,"y":23.0,"width":200.0,"height":100.0}}'
   viewTransform:
-    position: {x: -93, y: 312}
-    scale: 0.57175326
+    position: {x: 64, y: 46}
+    scale: 0.8695652
   version: 1.0.0
   showAssembly: 1

@@ -43,6 +43,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType String { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "string", "SystemString", "SystemString", typeof(string));
         public static TeuchiUdonType UnityObject { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unityobject", "UnityEngineObject", "UnityEngineObject", typeof(UnityEngine.Object));
         public static TeuchiUdonType GameObject { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "gameobject", "UnityEngineGameObject", "UnityEngineGameObject", typeof(UnityEngine.GameObject));
+        public static TeuchiUdonType Vector2 { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "vector2", "UnityEngineVector2", "UnityEngineVector2", typeof(UnityEngine.Vector2));
+        public static TeuchiUdonType Vector3 { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "vector3", "UnityEngineVector3", "UnityEngineVector3", typeof(UnityEngine.Vector3));
+        public static TeuchiUdonType Vector4 { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "vector4", "UnityEngineVector4", "UnityEngineVector4", typeof(UnityEngine.Vector4));
+        public static TeuchiUdonType Quaternion { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "quaternion", "UnityEngineQuaternion", "UnityEngineQuaternion", typeof(UnityEngine.Quaternion));
+        public static TeuchiUdonType Color { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "color", "UnityEngineColor", "UnityEngineColor", typeof(UnityEngine.Color));
+        public static TeuchiUdonType Color32 { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "color32", "UnityEngineColor32", "UnityEngineColor32", typeof(UnityEngine.Color32));
+        public static TeuchiUdonType VRCUrl { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "vrcurl", "VRCSDKBaseVRCUrl", "VRCSDKBaseVRCUrl", typeof(VRC.SDKBase.VRCUrl));
 
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
@@ -272,7 +279,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType);
         }
 
-        private bool IsDotNetType()
+        public bool IsDotNetType()
         {
             return new TeuchiUdonType[]
             {
@@ -290,6 +297,102 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Method
             }
             .All(x => !LogicalTypeNameEquals(x));
+        }
+
+        public bool IsSyncableType()
+        {
+            return new TeuchiUdonType[]
+            {
+                TeuchiUdonType.Bool,
+                TeuchiUdonType.Char,
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.UShort,
+                TeuchiUdonType.Int,
+                TeuchiUdonType.UInt,
+                TeuchiUdonType.Long,
+                TeuchiUdonType.ULong,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.Double,
+                TeuchiUdonType.String,
+                TeuchiUdonType.Vector2,
+                TeuchiUdonType.Vector3,
+                TeuchiUdonType.Vector4,
+                TeuchiUdonType.Quaternion,
+                TeuchiUdonType.Color,
+                TeuchiUdonType.Color32,
+                TeuchiUdonType.VRCUrl
+            }
+            .Any(x => LogicalTypeEquals(x)) ||
+            LogicalTypeNameEquals(TeuchiUdonType.Array) &&
+            new TeuchiUdonType[]
+            {
+                TeuchiUdonType.Bool,
+                TeuchiUdonType.Char,
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.UShort,
+                TeuchiUdonType.Int,
+                TeuchiUdonType.UInt,
+                TeuchiUdonType.Long,
+                TeuchiUdonType.ULong,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.Double,
+                TeuchiUdonType.Vector2,
+                TeuchiUdonType.Vector3,
+                TeuchiUdonType.Vector4,
+                TeuchiUdonType.Quaternion,
+                TeuchiUdonType.Color,
+                TeuchiUdonType.Color32
+            }
+            .Any(x => GetArgAsArray().LogicalTypeEquals(x))
+            ;
+        }
+
+        public bool IsLinearSyncableType()
+        {
+            return new TeuchiUdonType[]
+            {
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.UShort,
+                TeuchiUdonType.Int,
+                TeuchiUdonType.UInt,
+                TeuchiUdonType.Long,
+                TeuchiUdonType.ULong,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.Double,
+                TeuchiUdonType.Vector2,
+                TeuchiUdonType.Vector3,
+                TeuchiUdonType.Quaternion,
+                TeuchiUdonType.Color,
+                TeuchiUdonType.Color32
+            }
+            .Any(x => LogicalTypeEquals(x));
+        }
+
+        public bool IsSmoothSyncableType()
+        {
+            return new TeuchiUdonType[]
+            {
+                TeuchiUdonType.Byte,
+                TeuchiUdonType.SByte,
+                TeuchiUdonType.Short,
+                TeuchiUdonType.UShort,
+                TeuchiUdonType.Int,
+                TeuchiUdonType.UInt,
+                TeuchiUdonType.Long,
+                TeuchiUdonType.ULong,
+                TeuchiUdonType.Float,
+                TeuchiUdonType.Double,
+                TeuchiUdonType.Vector2,
+                TeuchiUdonType.Vector3,
+                TeuchiUdonType.Quaternion
+            }
+            .Any(x => LogicalTypeEquals(x));
         }
 
         protected TeuchiUdonType ApplyArgs(IEnumerable<ITeuchiUdonTypeArg> args)

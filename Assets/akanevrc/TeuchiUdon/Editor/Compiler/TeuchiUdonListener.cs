@@ -74,11 +74,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var (pub, sync) = ExtractFromVarAttrs(attrs);
 
-            if (varBind.Vars.Length != 1 && (pub || sync != TeuchiUdonSyncMode.Disable))
+            if (varBind.Vars.Length != 1)
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"tuple cannot be specified with any attributes");
+                if (pub || sync != TeuchiUdonSyncMode.Disable)
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"tuple cannot be specified with any attributes");
+                }
             }
-            else if (varBind.Vars.Length == 1 && varBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
+            else if (varBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
             {
                 if (sync != TeuchiUdonSyncMode.Disable)
                 {
@@ -87,7 +90,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
-                if (varBind.Vars.Length == 1 && TeuchiUdonTables.Instance.Events.ContainsKey(varBind.Vars[0].Name))
+                var v = varBind.Vars[0];
+
+                if (TeuchiUdonTables.Instance.Events.ContainsKey(v.Name))
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"event must be function");
                 }
@@ -96,21 +101,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     if (varBind.Expr.Inner is LiteralResult literal)
                     {
-                        TeuchiUdonTables.Instance.PublicVars.Add(varBind.Vars[0], literal.Literal);
+                        TeuchiUdonTables.Instance.PublicVars.Add(v, literal.Literal);
                     }
                     else
                     {
                         TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"public valiable cannot be bound non-literal expression");
                     }
                 }
-                
-                if (sync != TeuchiUdonSyncMode.Disable)
+
+                if (sync == TeuchiUdonSyncMode.Sync && !v.Type.IsSyncableType())
                 {
-                    TeuchiUdonTables.Instance.SyncedVars.Add(varBind.Vars[0], sync);
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid valiable type to be specified with @sync");
                 }
-                if (pub || sync != TeuchiUdonSyncMode.Disable)
+                else if (sync == TeuchiUdonSyncMode.Linear && !v.Type.IsLinearSyncableType())
                 {
-                    TeuchiUdonTables.Instance.UnbufferedVars.Add(varBind.Vars[0], varBind.Vars[0]);
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid valiable type to be specified with @linear");
+                }
+                else if (sync == TeuchiUdonSyncMode.Smooth && !v.Type.IsSmoothSyncableType())
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid valiable type to be specified with @smooth");
+                }
+                else if (sync != TeuchiUdonSyncMode.Disable)
+                {
+                    TeuchiUdonTables.Instance.SyncedVars.Add(v, sync);
                 }
             }
 
