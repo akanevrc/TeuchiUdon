@@ -92,7 +92,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.NullType,
                 TeuchiUdonType.Object,
                 TeuchiUdonType.DotNetType,
-                TeuchiUdonType.ListNode,
+                TeuchiUdonType.AnyArray,
                 TeuchiUdonType.Bool,
                 TeuchiUdonType.Byte,
                 TeuchiUdonType.SByte,

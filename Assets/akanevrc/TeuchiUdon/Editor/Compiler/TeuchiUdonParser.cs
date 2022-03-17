@@ -58,11 +58,12 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	public const int
 		RULE_target = 0, RULE_body = 1, RULE_topStatement = 2, RULE_varAttr = 3, 
 		RULE_varBind = 4, RULE_varDecl = 5, RULE_qualifiedVar = 6, RULE_identifier = 7, 
-		RULE_statement = 8, RULE_expr = 9, RULE_argExpr = 10, RULE_listExpr = 11, 
+		RULE_statement = 8, RULE_expr = 9, RULE_argExpr = 10, RULE_arrayExpr = 11, 
 		RULE_literal = 12, RULE_thisLiteral = 13;
 	public static readonly string[] ruleNames = {
 		"target", "body", "topStatement", "varAttr", "varBind", "varDecl", "qualifiedVar", 
-		"identifier", "statement", "expr", "argExpr", "listExpr", "literal", "thisLiteral"
+		"identifier", "statement", "expr", "argExpr", "arrayExpr", "literal", 
+		"thisLiteral"
 	};
 
 	private static readonly string[] _LiteralNames = {
@@ -1070,19 +1071,29 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			this.tableIndex = context.tableIndex;
 		}
 	}
-	public partial class UnitListCtorExprContext : ExprContext {
+	public partial class TupleArrayCtorExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACKET() { return GetToken(TeuchiUdonParser.OPEN_BRACKET, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ArrayExprContext[] arrayExpr() {
+			return GetRuleContexts<ArrayExprContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ArrayExprContext arrayExpr(int i) {
+			return GetRuleContext<ArrayExprContext>(i);
+		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACKET() { return GetToken(TeuchiUdonParser.CLOSE_BRACKET, 0); }
-		public UnitListCtorExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(TeuchiUdonParser.COMMA); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
+			return GetToken(TeuchiUdonParser.COMMA, i);
+		}
+		public TupleArrayCtorExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterUnitListCtorExpr(this);
+			if (typedListener != null) typedListener.EnterTupleArrayCtorExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitUnitListCtorExpr(this);
+			if (typedListener != null) typedListener.ExitTupleArrayCtorExpr(this);
 		}
 	}
 	public partial class ThisLiteralExprContext : ExprContext {
@@ -1184,6 +1195,24 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitEvalVarExpr(this);
 		}
 	}
+	public partial class SingleArrayCtorExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACKET() { return GetToken(TeuchiUdonParser.OPEN_BRACKET, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ArrayExprContext arrayExpr() {
+			return GetRuleContext<ArrayExprContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACKET() { return GetToken(TeuchiUdonParser.CLOSE_BRACKET, 0); }
+		public SingleArrayCtorExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterSingleArrayCtorExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitSingleArrayCtorExpr(this);
+		}
+	}
 	public partial class EqualityExprContext : ExprContext {
 		public IToken op;
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
@@ -1232,6 +1261,21 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
 			if (typedListener != null) typedListener.ExitValueBlockExpr(this);
+		}
+	}
+	public partial class UnitArrayCtorExprContext : ExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACKET() { return GetToken(TeuchiUdonParser.OPEN_BRACKET, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACKET() { return GetToken(TeuchiUdonParser.CLOSE_BRACKET, 0); }
+		public UnitArrayCtorExprContext(ExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterUnitArrayCtorExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitUnitArrayCtorExpr(this);
 		}
 	}
 	public partial class CastExprContext : ExprContext {
@@ -1382,24 +1426,6 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			if (typedListener != null) typedListener.ExitAccessExpr(this);
 		}
 	}
-	public partial class SingleListCtorExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACKET() { return GetToken(TeuchiUdonParser.OPEN_BRACKET, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ListExprContext listExpr() {
-			return GetRuleContext<ListExprContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACKET() { return GetToken(TeuchiUdonParser.CLOSE_BRACKET, 0); }
-		public SingleListCtorExprContext(ExprContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterSingleListCtorExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitSingleListCtorExpr(this);
-		}
-	}
 	public partial class EvalUnitFuncExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
 			return GetRuleContext<ExprContext>(0);
@@ -1463,31 +1489,6 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
 			if (typedListener != null) typedListener.ExitNameOfExpr(this);
-		}
-	}
-	public partial class TupleListCtorExprContext : ExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPEN_BRACKET() { return GetToken(TeuchiUdonParser.OPEN_BRACKET, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ListExprContext[] listExpr() {
-			return GetRuleContexts<ListExprContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ListExprContext listExpr(int i) {
-			return GetRuleContext<ListExprContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CLOSE_BRACKET() { return GetToken(TeuchiUdonParser.CLOSE_BRACKET, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(TeuchiUdonParser.COMMA); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
-			return GetToken(TeuchiUdonParser.COMMA, i);
-		}
-		public TupleListCtorExprContext(ExprContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterTupleListCtorExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitTupleListCtorExpr(this);
 		}
 	}
 	public partial class RelationExprContext : ExprContext {
@@ -1862,7 +1863,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				break;
 			case 4:
 				{
-				_localctx = new UnitListCtorExprContext(_localctx);
+				_localctx = new UnitArrayCtorExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 130;
@@ -1873,26 +1874,26 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				break;
 			case 5:
 				{
-				_localctx = new SingleListCtorExprContext(_localctx);
+				_localctx = new SingleArrayCtorExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 132;
 				Match(OPEN_BRACKET);
 				State = 133;
-				listExpr();
+				arrayExpr();
 				State = 134;
 				Match(CLOSE_BRACKET);
 				}
 				break;
 			case 6:
 				{
-				_localctx = new TupleListCtorExprContext(_localctx);
+				_localctx = new TupleArrayCtorExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 136;
 				Match(OPEN_BRACKET);
 				State = 137;
-				listExpr();
+				arrayExpr();
 				State = 140;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
@@ -1902,7 +1903,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					State = 138;
 					Match(COMMA);
 					State = 139;
-					listExpr();
+					arrayExpr();
 					}
 					}
 					State = 142;
@@ -2430,21 +2431,54 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		return _localctx;
 	}
 
-	public partial class ListExprContext : ParserRuleContext {
-		public ListExprResult result;
-		public ListExprContext(ParserRuleContext parent, int invokingState)
+	public partial class ArrayExprContext : ParserRuleContext {
+		public ArrayExprResult result;
+		public ArrayExprContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_listExpr; } }
+		public override int RuleIndex { get { return RULE_arrayExpr; } }
 	 
-		public ListExprContext() { }
-		public virtual void CopyFrom(ListExprContext context) {
+		public ArrayExprContext() { }
+		public virtual void CopyFrom(ArrayExprContext context) {
 			base.CopyFrom(context);
 			this.result = context.result;
 		}
 	}
-	public partial class RangeListExprContext : ListExprContext {
+	public partial class SpreadArrayExprContext : ArrayExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SPREAD() { return GetToken(TeuchiUdonParser.OP_SPREAD, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		public SpreadArrayExprContext(ArrayExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterSpreadArrayExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitSpreadArrayExpr(this);
+		}
+	}
+	public partial class ElementArrayExprContext : ArrayExprContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		public ElementArrayExprContext(ArrayExprContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterElementArrayExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitElementArrayExpr(this);
+		}
+	}
+	public partial class RangeArrayExprContext : ArrayExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
 			return GetRuleContexts<ExprContext>();
 		}
@@ -2452,35 +2486,19 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 			return GetRuleContext<ExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RANGE() { return GetToken(TeuchiUdonParser.OP_RANGE, 0); }
-		public RangeListExprContext(ListExprContext context) { CopyFrom(context); }
+		public RangeArrayExprContext(ArrayExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterRangeListExpr(this);
+			if (typedListener != null) typedListener.EnterRangeArrayExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitRangeListExpr(this);
+			if (typedListener != null) typedListener.ExitRangeArrayExpr(this);
 		}
 	}
-	public partial class ElementListExprContext : ListExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
-			return GetRuleContext<ExprContext>(0);
-		}
-		public ElementListExprContext(ListExprContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterElementListExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitElementListExpr(this);
-		}
-	}
-	public partial class SteppedRangeListExprContext : ListExprContext {
+	public partial class SteppedRangeArrayExprContext : ArrayExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
 			return GetRuleContexts<ExprContext>();
 		}
@@ -2491,46 +2509,29 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RANGE(int i) {
 			return GetToken(TeuchiUdonParser.OP_RANGE, i);
 		}
-		public SteppedRangeListExprContext(ListExprContext context) { CopyFrom(context); }
+		public SteppedRangeArrayExprContext(ArrayExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterSteppedRangeListExpr(this);
+			if (typedListener != null) typedListener.EnterSteppedRangeArrayExpr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitSteppedRangeListExpr(this);
-		}
-	}
-	public partial class SpreadListExprContext : ListExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SPREAD() { return GetToken(TeuchiUdonParser.OP_SPREAD, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
-			return GetRuleContext<ExprContext>(0);
-		}
-		public SpreadListExprContext(ListExprContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterSpreadListExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitSpreadListExpr(this);
+			if (typedListener != null) typedListener.ExitSteppedRangeArrayExpr(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public ListExprContext listExpr() {
-		ListExprContext _localctx = new ListExprContext(Context, State);
-		EnterRule(_localctx, 22, RULE_listExpr);
+	public ArrayExprContext arrayExpr() {
+		ArrayExprContext _localctx = new ArrayExprContext(Context, State);
+		EnterRule(_localctx, 22, RULE_arrayExpr);
 		try {
 			State = 277;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,19,Context) ) {
 			case 1:
-				_localctx = new ElementListExprContext(_localctx);
+				_localctx = new ElementArrayExprContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 264;
@@ -2538,7 +2539,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				}
 				break;
 			case 2:
-				_localctx = new RangeListExprContext(_localctx);
+				_localctx = new RangeArrayExprContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
 				State = 265;
@@ -2550,7 +2551,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				}
 				break;
 			case 3:
-				_localctx = new SteppedRangeListExprContext(_localctx);
+				_localctx = new SteppedRangeArrayExprContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
 				State = 269;
@@ -2566,7 +2567,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				}
 				break;
 			case 4:
-				_localctx = new SpreadListExprContext(_localctx);
+				_localctx = new SpreadArrayExprContext(_localctx);
 				EnterOuterAlt(_localctx, 4);
 				{
 				State = 275;

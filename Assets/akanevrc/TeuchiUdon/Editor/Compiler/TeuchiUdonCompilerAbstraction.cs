@@ -47,18 +47,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel label1,
             ICodeLabel label2
         );
-        protected abstract IEnumerable<TeuchiUdonAssembly> ListCtor
+        protected abstract IEnumerable<TeuchiUdonAssembly> ArrayCtor
         (
-            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> listExprs,
+            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> arrayExprs,
             TeuchiUdonLiteral zero,
             TeuchiUdonLiteral one,
-            TeuchiUdonLiteral two,
-            TeuchiUdonLiteral nullValue,
+            TeuchiUdonLiteral length,
             TeuchiUdonOutValue outValue1,
             TeuchiUdonOutValue outValue2,
-            TeuchiUdonOutValue outValue3,
             TeuchiUdonMethod ctor,
-            TeuchiUdonMethod setter
+            TeuchiUdonMethod setter,
+            TeuchiUdonMethod addition
         );
 
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
@@ -120,7 +119,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is UnitResult             unit            ) return VisitUnit            (unit);
             if (result is BlockResult            block           ) return VisitBlock           (block);
             if (result is ParenResult            paren           ) return VisitParen           (paren);
-            if (result is ListCtorResult         listCtor        ) return VisitListCtor        (listCtor);
+            if (result is ArrayCtorResult        arrayCtor       ) return VisitArrayCtor       (arrayCtor);
             if (result is LiteralResult          literal         ) return VisitLiteral         (literal);
             if (result is ThisResult             ths             ) return VisitThis            (ths);
             if (result is EvalVarResult          evalVar         ) return VisitEvalVar         (evalVar);
@@ -143,12 +142,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             throw new NotSupportedException("unsupported parser result type");
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitListExpr(ListExprResult result)
+        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitArrayExpr(ArrayExprResult result)
         {
-            if (result is ElementListExprResult      elementListExpr     ) return VisitElementListExpr     (elementListExpr);
-            if (result is RangeListExprResult        rangeListExpr       ) return VisitRangeListExpr       (rangeListExpr);
-            if (result is SteppedRangeListExprResult steppedRangeListExpr) return VisitSteppedRangeListExpr(steppedRangeListExpr);
-            if (result is SpreadListExprResult       spreadListExpr      ) return VisitSpreadListExpr      (spreadListExpr);
+            if (result is ElementArrayExprResult      elementArrayExpr     ) return VisitElementArrayExpr     (elementArrayExpr);
+            if (result is RangeArrayExprResult        rangeArrayExpr       ) return VisitRangeArrayExpr       (rangeArrayExpr);
+            if (result is SteppedRangeArrayExprResult steppedRangeArrayExpr) return VisitSteppedRangeArrayExpr(steppedRangeArrayExpr);
+            if (result is SpreadArrayExprResult       spreadArrayExpr      ) return VisitSpreadArrayExpr      (spreadArrayExpr);
             throw new NotSupportedException("unsupported parser result type");
         }
 
@@ -262,21 +261,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return VisitExpr(result.Expr);
         }
 
-        protected IEnumerable<TeuchiUdonAssembly> VisitListCtor(ListCtorResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitArrayCtor(ArrayCtorResult result)
         {
-            return ListCtor
-            (
-                result.Exprs.Select(x => VisitListExpr(x)),
-                result.Literals["0"],
-                result.Literals["1"],
-                result.Literals["2"],
-                result.Literals["null"],
-                result.OutValuess["tmp"][0],
-                result.OutValuess["tmp"][1],
-                result.OutValuess["tmp"][2],
-                result.Methods["ctor"],
-                result.Methods["setter"]
-            );
+            return
+                result.Methods["ctor"    ] == null ||
+                result.Methods["setter"  ] == null ||
+                result.Methods["addition"] == null ?
+                    Enumerable.Empty<TeuchiUdonAssembly>() :
+                    ArrayCtor
+                    (
+                        result.Exprs.Select(x => VisitArrayExpr(x)),
+                        result.Literals["0"],
+                        result.Literals["1"],
+                        result.Literals["length"],
+                        result.OutValuess["tmp"][0],
+                        result.OutValuess["tmp"][1],
+                        result.Methods["ctor"],
+                        result.Methods["setter"],
+                        result.Methods["addition"]
+                    );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLiteral(LiteralResult result)
@@ -509,7 +512,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<TeuchiUdonAssembly>();
         }
         
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitElementListExpr(ElementListExprResult result)
+        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitElementArrayExpr(ElementArrayExprResult result)
         {
             return
             (
@@ -521,7 +524,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             );
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitRangeListExpr(RangeListExprResult result)
+        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitRangeArrayExpr(RangeArrayExprResult result)
         {
             return
             (
@@ -530,7 +533,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             );
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitSteppedRangeListExpr(SteppedRangeListExprResult result)
+        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitSteppedRangeArrayExpr(SteppedRangeArrayExprResult result)
         {
             return
             (
@@ -539,7 +542,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             );
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitSpreadListExpr(SpreadListExprResult result)
+        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitSpreadArrayExpr(SpreadArrayExprResult result)
         {
             return
             (

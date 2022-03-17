@@ -188,7 +188,7 @@ identifier
 statement
 expr
 argExpr
-listExpr
+arrayExpr
 literal
 thisLiteral
 

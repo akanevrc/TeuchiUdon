@@ -374,11 +374,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override ITeuchiUdonLeftValue[] LeftValues => Expr.Inner.LeftValues;
     }
 
-    public class ListCtorResult : ExternResult
+    public class ArrayCtorResult : ExternResult
     {
-        public ListExprResult[] Exprs { get; }
+        public ArrayExprResult[] Exprs { get; }
 
-        public ListCtorResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, IEnumerable<ListExprResult> exprs)
+        public ArrayCtorResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, IEnumerable<ArrayExprResult> exprs)
             : base(token, type, qualifier)
         {
             Exprs = exprs.ToArray();
@@ -389,34 +389,85 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
-            return new (string, TeuchiUdonMethod)[]
+            if (TeuchiUdonTables.Instance.Types.ContainsKey(Type))
             {
-                (
-                    "ctor",
-                    GetMethodFromName
+                return new (string, TeuchiUdonMethod)[]
+                {
                     (
-                        new TeuchiUdonType[] { TeuchiUdonType.ListNode },
-                        true,
-                        new string[] { "ctor" },
-                        new TeuchiUdonType[] { TeuchiUdonType.Int }
-                    )
-                ),
-                (
-                    "setter",
-                    GetMethodFromName
+                        "ctor",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { Type },
+                            true,
+                            new string[] { "ctor" },
+                            new TeuchiUdonType[] { TeuchiUdonType.Int }
+                        )
+                    ),
                     (
-                        new TeuchiUdonType[] { TeuchiUdonType.ListNode },
-                        false,
-                        new string[] { "Set" },
-                        new TeuchiUdonType[] { TeuchiUdonType.ListNode, TeuchiUdonType.Int, TeuchiUdonType.Object }
+                        "setter",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { Type },
+                            false,
+                            new string[] { "Set" },
+                            new TeuchiUdonType[] { Type, TeuchiUdonType.Int, Type.GetArgAsArray() }
+                        )
+                    ),
+                    (
+                        "addition",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { TeuchiUdonType.Int },
+                            true,
+                            new string[] { "op_Addition" },
+                            new TeuchiUdonType[] { TeuchiUdonType.Int, TeuchiUdonType.Int }
+                        )
                     )
-                )
-            };
+                };
+            }
+            else
+            {
+                return new (string, TeuchiUdonMethod)[]
+                {
+                    (
+                        "ctor",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { TeuchiUdonType.AnyArray },
+                            true,
+                            new string[] { "ctor" },
+                            new TeuchiUdonType[] { TeuchiUdonType.Int }
+                        )
+                    ),
+                    (
+                        "setter",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { TeuchiUdonType.AnyArray },
+                            false,
+                            new string[] { "Set" },
+                            new TeuchiUdonType[] { TeuchiUdonType.AnyArray, TeuchiUdonType.Int, TeuchiUdonType.Object }
+                        )
+                    ),
+                    (
+                        "addition",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { TeuchiUdonType.Int },
+                            true,
+                            new string[] { "op_Addition" },
+                            new TeuchiUdonType[] { TeuchiUdonType.Int, TeuchiUdonType.Int }
+                        )
+                    )
+                };
+            }
+
+            
         }
 
         protected override IEnumerable<(string key, int count)> GetOutValuess()
         {
-            return new (string, int)[] { ("tmp", 3) };
+            return new (string, int)[] { ("tmp", 2) };
         }
 
         protected override bool CreateOutValuesForMethods { get; } = false;
@@ -425,10 +476,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new (string, TeuchiUdonLiteral)[]
             {
-                ("0"   , TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "0"   , TeuchiUdonType.Int)),
-                ("1"   , TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "1"   , TeuchiUdonType.Int)),
-                ("2"   , TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "2"   , TeuchiUdonType.Int)),
-                ("null", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "null", TeuchiUdonType.NullType))
+                ("0"     , TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "0"                    , TeuchiUdonType.Int)),
+                ("1"     , TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "1"                    , TeuchiUdonType.Int)),
+                ("length", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), Exprs.Length.ToString(), TeuchiUdonType.Int))
             };
         }
 
@@ -438,34 +488,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public abstract class ListExprResult : TeuchiUdonParserResult
+    public abstract class ArrayExprResult : TeuchiUdonParserResult
     {
         public TeuchiUdonType Type { get; }
 
-        public ListExprResult(IToken token, TeuchiUdonType type)
+        public ArrayExprResult(IToken token, TeuchiUdonType type)
             : base(token)
         {
             Type = type;
         }
     }
 
-    public class ElementListExprResult : ListExprResult
+    public class ElementArrayExprResult : ArrayExprResult
     {
         public ExprResult Expr { get; }
 
-        public ElementListExprResult(IToken token, TeuchiUdonType type, ExprResult expr)
+        public ElementArrayExprResult(IToken token, TeuchiUdonType type, ExprResult expr)
             : base(token, type)
         {
             Expr = expr;
         }
     }
 
-    public class RangeListExprResult : ListExprResult
+    public class RangeArrayExprResult : ArrayExprResult
     {
         public ExprResult FromExpr { get; }
         public ExprResult ToExpr { get; }
 
-        public RangeListExprResult(IToken token, TeuchiUdonType type, ExprResult fromExpr, ExprResult toExpr)
+        public RangeArrayExprResult(IToken token, TeuchiUdonType type, ExprResult fromExpr, ExprResult toExpr)
             : base(token, type)
         {
             FromExpr = fromExpr;
@@ -473,13 +523,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class SteppedRangeListExprResult : ListExprResult
+    public class SteppedRangeArrayExprResult : ArrayExprResult
     {
         public ExprResult FromExpr { get; }
         public ExprResult ToExpr { get; }
         public ExprResult StepExpr { get; }
 
-        public SteppedRangeListExprResult(IToken token, TeuchiUdonType type, ExprResult fromExpr, ExprResult toExpr, ExprResult stepExpr)
+        public SteppedRangeArrayExprResult(IToken token, TeuchiUdonType type, ExprResult fromExpr, ExprResult toExpr, ExprResult stepExpr)
             : base(token, type)
         {
             FromExpr = fromExpr;
@@ -488,11 +538,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class SpreadListExprResult : ListExprResult
+    public class SpreadArrayExprResult : ArrayExprResult
     {
         public ExprResult Expr { get; }
 
-        public SpreadListExprResult(IToken token, TeuchiUdonType type, ExprResult expr)
+        public SpreadArrayExprResult(IToken token, TeuchiUdonType type, ExprResult expr)
             : base(token, type)
         {
             Expr = expr;

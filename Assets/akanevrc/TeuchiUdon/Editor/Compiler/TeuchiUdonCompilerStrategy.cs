@@ -247,73 +247,28 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 });
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> ListCtor
+        protected override IEnumerable<TeuchiUdonAssembly> ArrayCtor
         (
-            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> listExprs,
+            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> arrayExprs,
             TeuchiUdonLiteral zero,
             TeuchiUdonLiteral one,
-            TeuchiUdonLiteral two,
-            TeuchiUdonLiteral nullValue,
+            TeuchiUdonLiteral length,
             TeuchiUdonOutValue outValue1,
             TeuchiUdonOutValue outValue2,
-            TeuchiUdonOutValue outValue3,
             TeuchiUdonMethod ctor,
-            TeuchiUdonMethod setter
+            TeuchiUdonMethod setter,
+            TeuchiUdonMethod addition
         )
         {
-            var i = 0;
-            return listExprs.SelectMany(x => x.elements.SelectMany(y =>
-            {
-                var ret = (IEnumerable<TeuchiUdonAssembly>)null;
-                if (i == 0)
-                {
-                    ret =
-                        new TeuchiUdonAssembly[]
-                        {
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(two)),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(outValue1)),
-                            new Assembly_EXTERN(ctor),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(outValue1)),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(zero)),
-                        }
-                        .Concat(y)
-                        .Concat(new TeuchiUdonAssembly[]
-                        {
-                            new Assembly_EXTERN(setter),
-                        });
-                }
-                else
-                {
-                    ret =
-                        new TeuchiUdonAssembly[]
-                        {
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(two)),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i % 2 == 0 ? outValue3 : outValue2)),
-                            new Assembly_EXTERN(ctor),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i == 1 ? outValue1 : i % 2 == 0 ? outValue2 : outValue3)),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(one)),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i % 2 == 0 ? outValue3 : outValue2)),
-                            new Assembly_EXTERN(setter),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i % 2 == 0 ? outValue3 : outValue2)),
-                            new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(zero)),
-                        }
-                        .Concat(y)
-                        .Concat(new TeuchiUdonAssembly[]
-                        {
-                            new Assembly_EXTERN(setter),
-                        });
-                }
-                i++;
-                return ret;
-            }))
-            .ToArray()
-            .Concat
-            (
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(i == 0 ? (IDataLabel)nullValue : (IDataLabel)outValue1))
-                }
-            );
+            return
+                EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length) }, new TeuchiUdonOutValue[] { outValue1 }, ctor)
+                .Concat(Get(zero))
+                .Concat(Set(outValue2))
+                .Concat(arrayExprs.SelectMany(x => x.elements.SelectMany(y =>
+                    EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(outValue1), Get(outValue2), y }, Enumerable.Empty<TeuchiUdonOutValue>(), setter)
+                    .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(outValue2), Get(one) }, new TeuchiUdonOutValue[] { outValue2 }, addition))
+                )))
+                .Concat(Get(outValue1));
         }
     }
 }

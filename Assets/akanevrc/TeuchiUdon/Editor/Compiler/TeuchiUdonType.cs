@@ -19,8 +19,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "type", null, null);
         public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
         public static TeuchiUdonType Array { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array", "array", null, null);
+        public static TeuchiUdonType AnyArray { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "anyarray", "array", "SystemObjectArray", typeof(object[])).ApplyArgAsArray(new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object)));
         public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
-        public static TeuchiUdonType ListNode { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "listnode", "array", "SystemObjectArray", typeof(object[])).ApplyArgAsArray(new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object)));
         public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType NullType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "nulltype", "nulltype", "SystemObject", typeof(object));
@@ -166,7 +166,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     IsAssignableFromTuple   (obj) ||
                     IsAssignableFromArray   (obj) ||
                     IsAssignableFromList    (obj) ||
-                    IsAssignableFromBuffer  (obj) ||
                     IsAssignableFromFunc    (obj) ||
                     IsAssignableFromNullType(obj) ||
                     IsAssignableFromDotNet  (obj)
@@ -245,14 +244,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return GetArgAsList().IsAssignableFrom(obj.GetArgAsList());
         }
 
-        private bool IsAssignableFromBuffer(TeuchiUdonType obj)
-        {
-            if (obj == null) return false;
-            if (!LogicalTypeEquals(TeuchiUdonType.ListNode) || !obj.LogicalTypeEquals(TeuchiUdonType.ListNode)) return false;
-
-            return true;
-        }
-
         private bool IsAssignableFromFunc(TeuchiUdonType obj)
         {
             if (obj == null) return false;
@@ -292,7 +283,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Tuple,
                 TeuchiUdonType.Array,
                 TeuchiUdonType.List,
-                TeuchiUdonType.ListNode,
                 TeuchiUdonType.Func,
                 TeuchiUdonType.Method
             }

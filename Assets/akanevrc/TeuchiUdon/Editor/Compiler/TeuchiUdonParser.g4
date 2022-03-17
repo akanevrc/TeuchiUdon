@@ -75,9 +75,9 @@ expr
     : '{' (statement ';')* '}'               #UnitBlockExpr
     | '{' (statement ';')* expr '}'          #ValueBlockExpr
     | '(' expr ')'                           #ParenExpr
-    | '[' ']'                                #UnitListCtorExpr
-    | '[' listExpr ']'                       #SingleListCtorExpr
-    | '[' listExpr (',' listExpr)+ ']'       #TupleListCtorExpr
+    | '[' ']'                                #UnitArrayCtorExpr
+    | '[' arrayExpr ']'                      #SingleArrayCtorExpr
+    | '[' arrayExpr (',' arrayExpr)+ ']'     #TupleArrayCtorExpr
     | literal                                #LiteralExpr
     | thisLiteral                            #ThisLiteralExpr
     | identifier                             #EvalVarExpr
@@ -112,12 +112,12 @@ argExpr
     : 'ref'? expr
     ;
 
-listExpr
-    returns [ListExprResult result]
-    : expr                     #ElementListExpr
-    | expr '..' expr           #RangeListExpr
-    | expr '..' expr '..' expr #SteppedRangeListExpr
-    | '...' expr               #SpreadListExpr
+arrayExpr
+    returns [ArrayExprResult result]
+    : expr                     #ElementArrayExpr
+    | expr '..' expr           #RangeArrayExpr
+    | expr '..' expr '..' expr #SteppedRangeArrayExpr
+    | '...' expr               #SpreadArrayExpr
     ;
 
 literal

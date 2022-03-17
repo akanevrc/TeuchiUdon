@@ -466,77 +466,70 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(paren.Token, paren);
         }
 
-        public override void ExitUnitListCtorExpr([NotNull] UnitListCtorExprContext context)
+        public override void ExitUnitArrayCtorExpr([NotNull] UnitArrayCtorExprContext context)
         {
-            var qual = TeuchiUdonQualifierStack.Instance.Peek();
-            var type = new TeuchiUdonType
-            (
-                TeuchiUdonQualifier.Top,
-                TeuchiUdonType.List.Name,
-                new TeuchiUdonType[] { TeuchiUdonType.Bottom },
-                TeuchiUdonType.List.LogicalName,
-                TeuchiUdonType.Object.GetRealName(),
-                TeuchiUdonType.Object.RealType
-            );
-            var listCtor   = new ListCtorResult(context.Start, type, qual, Enumerable.Empty<ListExprResult>());
-            context.result = new ExprResult(listCtor.Token, listCtor);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var type       = GetArrayType(TeuchiUdonType.Bottom);
+            var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, Enumerable.Empty<ArrayExprResult>());
+            context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
 
-        public override void ExitSingleListCtorExpr([NotNull] SingleListCtorExprContext context)
+        public override void ExitSingleArrayCtorExpr([NotNull] SingleArrayCtorExprContext context)
         {
-            var listExpr = context.listExpr()?.result;
-            if (listExpr == null) return;
+            var arrayExpr = context.arrayExpr()?.result;
+            if (arrayExpr == null) return;
 
-            var qual = TeuchiUdonQualifierStack.Instance.Peek();
-            var type = new TeuchiUdonType
-            (
-                TeuchiUdonQualifier.Top,
-                TeuchiUdonType.List.Name,
-                new TeuchiUdonType[] { listExpr.Type },
-                TeuchiUdonType.List.LogicalName,
-                TeuchiUdonType.Object.GetRealName(),
-                TeuchiUdonType.Object.RealType
-            );
-            var listExprs  = new ListExprResult[] { listExpr };
-            var listCtor   = new ListCtorResult(context.Start, type, qual, listExprs);
-            context.result = new ExprResult(listCtor.Token, listCtor);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var type       = GetArrayType(arrayExpr.Type);
+            var arrayExprs = new ArrayExprResult[] { arrayExpr };
+            var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, arrayExprs);
+            context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
 
-        public override void ExitTupleListCtorExpr([NotNull] TupleListCtorExprContext context)
+        public override void ExitTupleArrayCtorExpr([NotNull] TupleArrayCtorExprContext context)
         {
-            var listExprs = context.listExpr().Select(x => x?.result).ToArray();
-            if (listExprs.Any(x => x == null)) return;
+            var arrayExprs = context.arrayExpr().Select(x => x?.result).ToArray();
+            if (arrayExprs.Any(x => x == null)) return;
 
-            var elemType = TeuchiUdonType.GetUpperType(listExprs.Select(x => x.Type));
+            var elemType = TeuchiUdonType.GetUpperType(arrayExprs.Select(x => x.Type));
             if (elemType.LogicalTypeEquals(TeuchiUdonType.Unknown))
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"list element types are incompatible");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"array element types are incompatible");
                 return;
             }
 
-            var qual = TeuchiUdonQualifierStack.Instance.Peek();
-            var type = new TeuchiUdonType
-            (
-                TeuchiUdonQualifier.Top,
-                TeuchiUdonType.List.Name,
-                new TeuchiUdonType[] { elemType },
-                TeuchiUdonType.List.LogicalName,
-                TeuchiUdonType.Object.GetRealName(),
-                TeuchiUdonType.Object.RealType
-            );
-            var listCtor   = new ListCtorResult(context.Start, type, qual, listExprs);
-            context.result = new ExprResult(listCtor.Token, listCtor);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            var type       = GetArrayType(elemType);
+            var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, arrayExprs);
+            context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
 
-        public override void ExitElementListExpr([NotNull] ElementListExprContext context)
+        private TeuchiUdonType GetArrayType(TeuchiUdonType elementType)
+        {
+            var qt = TeuchiUdonType.Array.ApplyArgAsArray(elementType);
+            return
+                TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt) ?
+                    TeuchiUdonTables.Instance.LogicalTypes[qt] :
+                    new TeuchiUdonType
+                    (
+                        TeuchiUdonQualifier.Top,
+                        TeuchiUdonType.Array.Name,
+                        new TeuchiUdonType[] { elementType },
+                        TeuchiUdonType.Array.LogicalName,
+                        TeuchiUdonType.AnyArray.GetRealName(),
+                        TeuchiUdonType.AnyArray.RealType
+                    );
+        }
+
+        public override void ExitElementArrayExpr([NotNull] ElementArrayExprContext context)
         {
             var expr = context.expr()?.result;
             if (expr == null) return;
 
-            context.result = new ElementListExprResult(context.Start, expr.Inner.Type, expr);
+            context.result = new ElementArrayExprResult(context.Start, expr.Inner.Type, expr);
         }
 
-        public override void ExitRangeListExpr([NotNull] RangeListExprContext context)
+        public override void ExitRangeArrayExpr([NotNull] RangeArrayExprContext context)
         {
             var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
@@ -552,10 +545,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new RangeListExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1]);
+            context.result = new RangeArrayExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1]);
         }
 
-        public override void ExitSteppedRangeListExpr([NotNull] SteppedRangeListExprContext context)
+        public override void ExitSteppedRangeArrayExpr([NotNull] SteppedRangeArrayExprContext context)
         {
             var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
@@ -571,10 +564,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new SteppedRangeListExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1], exprs[2]);
+            context.result = new SteppedRangeArrayExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1], exprs[2]);
         }
 
-        public override void ExitSpreadListExpr([NotNull] SpreadListExprContext context)
+        public override void ExitSpreadArrayExpr([NotNull] SpreadArrayExprContext context)
         {
             var expr = context.expr()?.result;
             if (expr == null) return;
@@ -585,7 +578,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new SpreadListExprResult(context.Start, expr.Inner.Type.GetArgAsList(), expr);
+            context.result = new SpreadArrayExprResult(context.Start, expr.Inner.Type.GetArgAsList(), expr);
         }
 
         public override void EnterLiteralExpr([NotNull] LiteralExprContext context)
@@ -1170,13 +1163,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return new BottomResult(token);
                 }
 
-                var argTypes = args.Select(x => x.Inner.Type.GetArgAsType());
+                var argTypes = args.Select(x => x.Inner.Type.GetArgAsType()).ToArray();
                 if (exprType.LogicalTypeEquals(TeuchiUdonType.Array))
                 {
-                    var qt = new TeuchiUdonType(TeuchiUdonType.Array.LogicalName, argTypes);
-                    if (TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt))
+                    if (argTypes.Length == 1)
                     {
-                        var type = TeuchiUdonTables.Instance.LogicalTypes[qt];
+                        var type = GetArrayType(argTypes[0]);
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }
                     else
@@ -1187,7 +1179,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else if (exprType.LogicalTypeEquals(TeuchiUdonType.List))
                 {
-                    if (argTypes.All(x => x.RealType != null))
+                    if (argTypes.Length == 1)
                     {
                         var type = new TeuchiUdonType
                         (
@@ -1195,8 +1187,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             TeuchiUdonType.List.Name,
                             argTypes,
                             TeuchiUdonType.List.LogicalName,
-                            TeuchiUdonType.ListNode.GetRealName(),
-                            TeuchiUdonType.ListNode.RealType
+                            TeuchiUdonType.AnyArray.GetRealName(),
+                            TeuchiUdonType.AnyArray.RealType
                         );
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }

@@ -1,0 +1,3 @@
+// 0
+arr : array[int] = [];
+UnityEngine.Debug.Log(arr.Length);
