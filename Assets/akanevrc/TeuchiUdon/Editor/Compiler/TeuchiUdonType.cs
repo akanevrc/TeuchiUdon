@@ -233,7 +233,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (obj == null) return false;
             if (!LogicalTypeNameEquals(TeuchiUdonType.Array) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Array)) return false;
 
-            return GetArgAsArray().IsAssignableFrom(obj.GetArgAsArray());
+            return
+                TeuchiUdonTables.Instance.Types.ContainsKey(this) && TeuchiUdonTables.Instance.Types.ContainsKey(obj) ?
+                RealType.IsAssignableFrom(obj.RealType) :
+                GetArgAsArray().IsAssignableFrom(obj.GetArgAsArray());
         }
 
         private bool IsAssignableFromList(TeuchiUdonType obj)
@@ -241,7 +244,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (obj == null) return false;
             if (!LogicalTypeNameEquals(TeuchiUdonType.List) || !obj.LogicalTypeNameEquals(TeuchiUdonType.List)) return false;
 
-            return GetArgAsList().IsAssignableFrom(obj.GetArgAsList());
+            var arrayType    =     GetArgAsListArrayType();
+            var objArrayType = obj.GetArgAsListArrayType();
+            return
+                TeuchiUdonTables.Instance.Types.ContainsKey(arrayType) && TeuchiUdonTables.Instance.Types.ContainsKey(objArrayType) ?
+                arrayType.RealType.IsAssignableFrom(objArrayType.RealType) :
+                GetArgAsListElementType().IsAssignableFrom(obj.GetArgAsListElementType());
         }
 
         private bool IsAssignableFromFunc(TeuchiUdonType obj)
@@ -430,7 +438,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public TeuchiUdonType ApplyArgAsList(TeuchiUdonType type)
         {
-            return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
+            return ApplyArgs(new ITeuchiUdonTypeArg[] { type, type.ToArrayType() });
         }
 
         public TeuchiUdonType ApplyArgsAsFunc(TeuchiUdonType inType, TeuchiUdonType outType)
@@ -463,9 +471,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return (TeuchiUdonType)Args[0];
         }
 
-        public TeuchiUdonType GetArgAsList()
+        public TeuchiUdonType GetArgAsListElementType()
         {
             return (TeuchiUdonType)Args[0];
+        }
+
+        public TeuchiUdonType GetArgAsListArrayType()
+        {
+            return (TeuchiUdonType)Args[1];
         }
 
         public TeuchiUdonType GetArgAsFuncInType()
@@ -481,6 +494,28 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<TeuchiUdonMethod> GetArgsAsMethod()
         {
             return Args.Cast<TeuchiUdonMethod>();
+        }
+
+        public TeuchiUdonType ApplyRealType(string realName, Type realType)
+        {
+            return new TeuchiUdonType(Qualifier, Name, Args, LogicalName, realName, realType);
+        }
+
+        public TeuchiUdonType ToArrayType()
+        {
+            var qt = TeuchiUdonType.Array.ApplyArgAsArray(this);
+            return
+                TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt) ?
+                    TeuchiUdonTables.Instance.LogicalTypes[qt] :
+                    new TeuchiUdonType
+                    (
+                        TeuchiUdonQualifier.Top,
+                        TeuchiUdonType.Array.Name,
+                        new TeuchiUdonType[] { this },
+                        TeuchiUdonType.Array.LogicalName,
+                        TeuchiUdonType.AnyArray.GetRealName(),
+                        TeuchiUdonType.AnyArray.RealType
+                    );
         }
 
         public static TeuchiUdonType ToOneType(IEnumerable<TeuchiUdonType> types)

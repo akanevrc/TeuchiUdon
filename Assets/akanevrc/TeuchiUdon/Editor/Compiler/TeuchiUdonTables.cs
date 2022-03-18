@@ -229,16 +229,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (type.IsArray)
             {
                 var elemType = RegisterAndGetType(type.GetElementType());
-                t = new TeuchiUdonType
-                (
-                    TeuchiUdonQualifier.Top,
-                    TeuchiUdonType.Array.Name,
-                    new TeuchiUdonType[] { elemType },
-                    TeuchiUdonType.Array.LogicalName,
-                    udonTypeName,
-                    type
-                );
-
+                t = TeuchiUdonType.Array
+                    .ApplyArgAsArray(elemType)
+                    .ApplyRealType(udonTypeName, type);
+                
                 if (!Types.ContainsKey(t))
                 {
                     Types.Add(t, t);

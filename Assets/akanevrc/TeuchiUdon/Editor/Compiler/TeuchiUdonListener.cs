@@ -469,7 +469,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override void ExitUnitArrayCtorExpr([NotNull] UnitArrayCtorExprContext context)
         {
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var type       = GetArrayType(TeuchiUdonType.Bottom);
+            var type       = TeuchiUdonType.Bottom.ToArrayType();
             var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, Enumerable.Empty<ArrayExprResult>());
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
@@ -480,7 +480,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (arrayExpr == null) return;
 
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var type       = GetArrayType(arrayExpr.Type);
+            var type       = arrayExpr.Type.ToArrayType();
             var arrayExprs = new ArrayExprResult[] { arrayExpr };
             var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, arrayExprs);
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
@@ -499,26 +499,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var type       = GetArrayType(elemType);
+            var type       = elemType.ToArrayType();
             var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, arrayExprs);
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
-        }
-
-        private TeuchiUdonType GetArrayType(TeuchiUdonType elementType)
-        {
-            var qt = TeuchiUdonType.Array.ApplyArgAsArray(elementType);
-            return
-                TeuchiUdonTables.Instance.LogicalTypes.ContainsKey(qt) ?
-                    TeuchiUdonTables.Instance.LogicalTypes[qt] :
-                    new TeuchiUdonType
-                    (
-                        TeuchiUdonQualifier.Top,
-                        TeuchiUdonType.Array.Name,
-                        new TeuchiUdonType[] { elementType },
-                        TeuchiUdonType.Array.LogicalName,
-                        TeuchiUdonType.AnyArray.GetRealName(),
-                        TeuchiUdonType.AnyArray.RealType
-                    );
         }
 
         public override void ExitElementArrayExpr([NotNull] ElementArrayExprContext context)
@@ -578,7 +561,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new SpreadArrayExprResult(context.Start, expr.Inner.Type.GetArgAsList(), expr);
+            context.result = new SpreadArrayExprResult(context.Start, expr.Inner.Type.GetArgAsListElementType(), expr);
         }
 
         public override void EnterLiteralExpr([NotNull] LiteralExprContext context)
@@ -1168,7 +1151,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     if (argTypes.Length == 1)
                     {
-                        var type = GetArrayType(argTypes[0]);
+                        var type = argTypes[0].ToArrayType();
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }
                     else
@@ -1181,15 +1164,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     if (argTypes.Length == 1)
                     {
-                        var type = new TeuchiUdonType
-                        (
-                            TeuchiUdonQualifier.Top,
-                            TeuchiUdonType.List.Name,
-                            argTypes,
-                            TeuchiUdonType.List.LogicalName,
-                            TeuchiUdonType.AnyArray.GetRealName(),
-                            TeuchiUdonType.AnyArray.RealType
-                        );
+                        var type = TeuchiUdonType.List
+                            .ApplyArgAsList(argTypes[0])
+                            .ApplyRealType(TeuchiUdonType.AnyArray.GetRealName(), TeuchiUdonType.AnyArray.RealType);
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }
                     else
