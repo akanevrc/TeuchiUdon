@@ -474,19 +474,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
 
-        public override void ExitSingleArrayCtorExpr([NotNull] SingleArrayCtorExprContext context)
-        {
-            var arrayExpr = context.arrayExpr()?.result;
-            if (arrayExpr == null) return;
-
-            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var type       = arrayExpr.Type.ToArrayType();
-            var arrayExprs = new ArrayExprResult[] { arrayExpr };
-            var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, arrayExprs);
-            context.result = new ExprResult(arrayCtor.Token, arrayCtor);
-        }
-
-        public override void ExitTupleArrayCtorExpr([NotNull] TupleArrayCtorExprContext context)
+        public override void ExitArrayCtorExpr([NotNull] ArrayCtorExprContext context)
         {
             var arrayExprs = context.arrayExpr().Select(x => x?.result).ToArray();
             if (arrayExprs.Any(x => x == null)) return;
@@ -504,12 +492,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
 
-        public override void ExitElementArrayExpr([NotNull] ElementArrayExprContext context)
+        public override void ExitElementsArrayExpr([NotNull] ElementsArrayExprContext context)
         {
-            var expr = context.expr()?.result;
-            if (expr == null) return;
+            var exprs = context.expr().Select(x => x?.result);
+            if (exprs.Any(x => x == null)) return;
 
-            context.result = new ElementArrayExprResult(context.Start, expr.Inner.Type, expr);
+            var type = TeuchiUdonType.GetUpperType(exprs.Select(x => x.Inner.Type));
+            if (type.LogicalTypeEquals(TeuchiUdonType.Unknown))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"array element types are incompatible");
+                return;
+            }
+
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new ElementsArrayExprResult(context.Start, type, qual, exprs);
         }
 
         public override void ExitRangeArrayExpr([NotNull] RangeArrayExprContext context)
@@ -528,7 +524,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new RangeArrayExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1]);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new RangeArrayExprResult(context.Start, exprs[0].Inner.Type, qual, exprs[0], exprs[1]);
         }
 
         public override void ExitSteppedRangeArrayExpr([NotNull] SteppedRangeArrayExprContext context)
@@ -547,7 +544,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new SteppedRangeArrayExprResult(context.Start, exprs[0].Inner.Type, exprs[0], exprs[1], exprs[2]);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new SteppedRangeArrayExprResult(context.Start, exprs[0].Inner.Type, qual, exprs[0], exprs[1], exprs[2]);
         }
 
         public override void ExitSpreadArrayExpr([NotNull] SpreadArrayExprContext context)
@@ -561,7 +559,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            context.result = new SpreadArrayExprResult(context.Start, expr.Inner.Type.GetArgAsListElementType(), expr);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new SpreadArrayExprResult(context.Start, expr.Inner.Type.GetArgAsListElementType(), qual, expr);
         }
 
         public override void EnterLiteralExpr([NotNull] LiteralExprContext context)

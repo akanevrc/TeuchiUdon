@@ -289,18 +289,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExprStatement([NotNull] TeuchiUdonParser.ExprStatementContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>TupleArrayCtorExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterTupleArrayCtorExpr([NotNull] TeuchiUdonParser.TupleArrayCtorExprContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>TupleArrayCtorExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitTupleArrayCtorExpr([NotNull] TeuchiUdonParser.TupleArrayCtorExprContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>ThisLiteralExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -360,18 +348,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitEvalVarExpr([NotNull] TeuchiUdonParser.EvalVarExprContext context);
-	/// <summary>
-	/// Enter a parse tree produced by the <c>SingleArrayCtorExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterSingleArrayCtorExpr([NotNull] TeuchiUdonParser.SingleArrayCtorExprContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>SingleArrayCtorExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitSingleArrayCtorExpr([NotNull] TeuchiUdonParser.SingleArrayCtorExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>EqualityExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
@@ -625,6 +601,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitAdditionExpr([NotNull] TeuchiUdonParser.AdditionExprContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>ArrayCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArrayCtorExpr([NotNull] TeuchiUdonParser.ArrayCtorExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ArrayCtorExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArrayCtorExpr([NotNull] TeuchiUdonParser.ArrayCtorExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>LetInBindExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -695,17 +683,17 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitArgExpr([NotNull] TeuchiUdonParser.ArgExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ElementArrayExpr</c>
+	/// Enter a parse tree produced by the <c>ElementsArrayExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.arrayExpr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterElementArrayExpr([NotNull] TeuchiUdonParser.ElementArrayExprContext context);
+	void EnterElementsArrayExpr([NotNull] TeuchiUdonParser.ElementsArrayExprContext context);
 	/// <summary>
-	/// Exit a parse tree produced by the <c>ElementArrayExpr</c>
+	/// Exit a parse tree produced by the <c>ElementsArrayExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.arrayExpr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitElementArrayExpr([NotNull] TeuchiUdonParser.ElementArrayExprContext context);
+	void ExitElementsArrayExpr([NotNull] TeuchiUdonParser.ElementsArrayExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>RangeArrayExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.arrayExpr"/>.

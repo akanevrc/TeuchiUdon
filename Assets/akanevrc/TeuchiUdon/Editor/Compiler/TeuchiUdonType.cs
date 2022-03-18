@@ -406,7 +406,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Long,
                 TeuchiUdonType.ULong,
                 TeuchiUdonType.Float,
-                TeuchiUdonType.Double
+                TeuchiUdonType.Double,
+                TeuchiUdonType.Decimal
             }
             .Any(x => LogicalTypeEquals(x));
         }

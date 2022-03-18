@@ -249,26 +249,57 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<TeuchiUdonAssembly> ArrayCtor
         (
-            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> arrayExprs,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> lengths,
             TeuchiUdonLiteral zero,
-            TeuchiUdonLiteral one,
-            TeuchiUdonLiteral length,
-            TeuchiUdonOutValue outValue1,
-            TeuchiUdonOutValue outValue2,
+            TeuchiUdonOutValue array,
+            TeuchiUdonOutValue counter,
             TeuchiUdonMethod ctor,
+            TeuchiUdonMethod addition
+        )
+        {
+            var ls = lengths.ToArray();
+            return
+                (
+                    ls.Length == 0 ?
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(zero) }, new TeuchiUdonOutValue[] { array }, ctor) :
+                        ls[0]
+                        .Concat(Set(counter))
+                        .Concat
+                        (
+                            ls
+                            .Skip(1)
+                            .SelectMany(x =>
+                                EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(counter), x }, new TeuchiUdonOutValue[] { counter }, addition)
+                            )
+                        )
+                        .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(counter) }, new TeuchiUdonOutValue[] { array }, ctor))
+                )
+                .Concat(Get(zero))
+                .Concat(Set(counter))
+                .Concat(elements.SelectMany(x => x))
+                .Concat(Get(array));
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> ArrayElementsCtor
+        (
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements,
+            TeuchiUdonLiteral one,
+            TeuchiUdonOutValue array,
+            TeuchiUdonOutValue counter,
             TeuchiUdonMethod setter,
             TeuchiUdonMethod addition
         )
         {
-            return
-                EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length) }, new TeuchiUdonOutValue[] { outValue1 }, ctor)
-                .Concat(Get(zero))
-                .Concat(Set(outValue2))
-                .Concat(arrayExprs.SelectMany(x => x.elements.SelectMany(y =>
-                    EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(outValue1), Get(outValue2), y }, Enumerable.Empty<TeuchiUdonOutValue>(), setter)
-                    .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(outValue2), Get(one) }, new TeuchiUdonOutValue[] { outValue2 }, addition))
-                )))
-                .Concat(Get(outValue1));
+            return elements.SelectMany(y =>
+                EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(array), Get(counter), y }, Enumerable.Empty<TeuchiUdonOutValue>(), setter)
+                .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(counter), Get(one) }, new TeuchiUdonOutValue[] { counter }, addition))
+            );
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> ArrayElementsCtorLength(TeuchiUdonLiteral length)
+        {
+            return Get(length);
         }
     }
 }

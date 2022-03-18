@@ -21,27 +21,28 @@ MonoBehaviour:
     %SystemInt32, null\r\n    literal[8]: %SystemInt32, null\r\n    out[0]: %SystemObject,
     null\r\n    out[1]: %SystemObject, null\r\n    out[2]: %SystemObject, null\r\n   
     out[3]: %SystemObject, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
-    _start:\r\n        PUSH, literal[7]\r\n        PUSH, out[2]\r\n        EXTERN,
-    \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n        PUSH, out[2]\r\n       
-    PUSH, literal[5]\r\n        PUSH, out[3]\r\n        COPY\r\n        PUSH, out[2]\r\n       
-    PUSH, out[3]\r\n        PUSH, literal[0]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
-    PUSH, out[3]\r\n        PUSH, literal[6]\r\n        PUSH, out[3]\r\n        EXTERN,
+    _start:\r\n        PUSH, literal[6]\r\n        PUSH, out[3]\r\n        COPY\r\n       
+    PUSH, out[3]\r\n        PUSH, out[2]\r\n        EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
+    PUSH, out[2]\r\n        PUSH, literal[7]\r\n        PUSH, out[3]\r\n        COPY\r\n       
+    PUSH, out[2]\r\n        PUSH, out[3]\r\n        PUSH, literal[0]\r\n        EXTERN,
+    \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n        PUSH,
+    out[3]\r\n        PUSH, literal[5]\r\n        PUSH, out[3]\r\n        EXTERN,
     \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[3]\r\n        PUSH, out[2]\r\n        PUSH, out[3]\r\n        PUSH,
     literal[1]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
-    PUSH, out[3]\r\n        PUSH, literal[6]\r\n        PUSH, out[3]\r\n        EXTERN,
+    PUSH, out[3]\r\n        PUSH, literal[5]\r\n        PUSH, out[3]\r\n        EXTERN,
     \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[3]\r\n        PUSH, out[2]\r\n        PUSH, out[3]\r\n        PUSH,
     literal[2]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
-    PUSH, out[3]\r\n        PUSH, literal[6]\r\n        PUSH, out[3]\r\n        EXTERN,
+    PUSH, out[3]\r\n        PUSH, literal[5]\r\n        PUSH, out[3]\r\n        EXTERN,
     \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[3]\r\n        PUSH, out[2]\r\n        PUSH, out[3]\r\n        PUSH,
     literal[3]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
-    PUSH, out[3]\r\n        PUSH, literal[6]\r\n        PUSH, out[3]\r\n        EXTERN,
+    PUSH, out[3]\r\n        PUSH, literal[5]\r\n        PUSH, out[3]\r\n        EXTERN,
     \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[3]\r\n        PUSH, out[2]\r\n        PUSH, out[3]\r\n        PUSH,
     literal[4]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
-    PUSH, out[3]\r\n        PUSH, literal[6]\r\n        PUSH, out[3]\r\n        EXTERN,
+    PUSH, out[3]\r\n        PUSH, literal[5]\r\n        PUSH, out[3]\r\n        EXTERN,
     \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[3]\r\n        PUSH, out[2]\r\n        PUSH, var[arr]\r\n        COPY\r\n       
     PUSH, var[arr]\r\n        PUSH, literal[8]\r\n        PUSH, out[0]\r\n       
@@ -233,7 +234,7 @@ MonoBehaviour:
       Data: 8|System.Int32, mscorlib
     - Name: 
       Entry: 3
-      Data: 0
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -261,7 +262,7 @@ MonoBehaviour:
       Data: 9|System.Int32, mscorlib
     - Name: 
       Entry: 3
-      Data: 1
+      Data: 5
     - Name: 
       Entry: 8
       Data: 
@@ -289,7 +290,7 @@ MonoBehaviour:
       Data: 10|System.Int32, mscorlib
     - Name: 
       Entry: 3
-      Data: 5
+      Data: 0
     - Name: 
       Entry: 8
       Data: 

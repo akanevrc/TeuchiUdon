@@ -49,16 +49,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> ArrayCtor
         (
-            IEnumerable<(IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements)> arrayExprs,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> lengths,
             TeuchiUdonLiteral zero,
-            TeuchiUdonLiteral one,
-            TeuchiUdonLiteral length,
-            TeuchiUdonOutValue outValue1,
-            TeuchiUdonOutValue outValue2,
+            TeuchiUdonOutValue array,
+            TeuchiUdonOutValue counter,
             TeuchiUdonMethod ctor,
+            TeuchiUdonMethod addition
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> ArrayElementsCtor
+        (
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements,
+            TeuchiUdonLiteral one,
+            TeuchiUdonOutValue array,
+            TeuchiUdonOutValue counter,
             TeuchiUdonMethod setter,
             TeuchiUdonMethod addition
         );
+        protected abstract IEnumerable<TeuchiUdonAssembly> ArrayElementsCtorLength(TeuchiUdonLiteral length);
 
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
         {
@@ -142,12 +150,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             throw new NotSupportedException("unsupported parser result type");
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitArrayExpr(ArrayExprResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitArrayExprToGetSetters(ArrayCtorResult ctor, ArrayExprResult result)
         {
-            if (result is ElementArrayExprResult      elementArrayExpr     ) return VisitElementArrayExpr     (elementArrayExpr);
-            if (result is RangeArrayExprResult        rangeArrayExpr       ) return VisitRangeArrayExpr       (rangeArrayExpr);
-            if (result is SteppedRangeArrayExprResult steppedRangeArrayExpr) return VisitSteppedRangeArrayExpr(steppedRangeArrayExpr);
-            if (result is SpreadArrayExprResult       spreadArrayExpr      ) return VisitSpreadArrayExpr      (spreadArrayExpr);
+            if (result is ElementsArrayExprResult     elementsArrayExpr    ) return VisitElementsArrayExprToGetSetters    (ctor, elementsArrayExpr);
+            if (result is RangeArrayExprResult        rangeArrayExpr       ) return VisitRangeArrayExprToGetSetters       (ctor, rangeArrayExpr);
+            if (result is SteppedRangeArrayExprResult steppedRangeArrayExpr) return VisitSteppedRangeArrayExprToGetSetters(ctor, steppedRangeArrayExpr);
+            if (result is SpreadArrayExprResult       spreadArrayExpr      ) return VisitSpreadArrayExprToGetSetters      (ctor, spreadArrayExpr);
+            throw new NotSupportedException("unsupported parser result type");
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitArrayExprToGetLengths(ArrayExprResult result)
+        {
+            if (result is ElementsArrayExprResult     elementsArrayExpr    ) return VisitElementsArrayExprToGetLengths    (elementsArrayExpr);
+            if (result is RangeArrayExprResult        rangeArrayExpr       ) return VisitRangeArrayExprToGetLengths       (rangeArrayExpr);
+            if (result is SteppedRangeArrayExprResult steppedRangeArrayExpr) return VisitSteppedRangeArrayExprToGetLengths(steppedRangeArrayExpr);
+            if (result is SpreadArrayExprResult       spreadArrayExpr      ) return VisitSpreadArrayExprToGetLengths      (spreadArrayExpr);
             throw new NotSupportedException("unsupported parser result type");
         }
 
@@ -270,14 +287,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     Enumerable.Empty<TeuchiUdonAssembly>() :
                     ArrayCtor
                     (
-                        result.Exprs.Select(x => VisitArrayExpr(x)),
+                        result.Exprs.Select(x => VisitArrayExprToGetSetters(result, x)),
+                        result.Exprs.Select(x => VisitArrayExprToGetLengths(x)),
                         result.Literals["0"],
-                        result.Literals["1"],
-                        result.Literals["length"],
-                        result.OutValuess["tmp"][0],
-                        result.OutValuess["tmp"][1],
+                        result.OutValuess["array"  ][0],
+                        result.OutValuess["counter"][0],
                         result.Methods["ctor"],
-                        result.Methods["setter"],
                         result.Methods["addition"]
                     );
         }
@@ -566,43 +581,52 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<TeuchiUdonAssembly>();
         }
         
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitElementArrayExpr(ElementArrayExprResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitElementsArrayExprToGetSetters(ArrayCtorResult ctor, ElementsArrayExprResult result)
         {
-            return
+            return ArrayElementsCtor
             (
-                Enumerable.Empty<TeuchiUdonAssembly>(),
-                new IEnumerable<TeuchiUdonAssembly>[]
-                {
-                    VisitExpr(result.Expr)
-                }
+                result.Exprs.Select(x => VisitExpr(x)),
+                result.Literals["1"],
+                ctor.OutValuess["array"  ][0],
+                ctor.OutValuess["counter"][0],
+                ctor.Methods["setter"],
+                ctor.Methods["addition"]
             );
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitRangeArrayExpr(RangeArrayExprResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitRangeArrayExprToGetSetters(ArrayCtorResult ctor, RangeArrayExprResult result)
         {
-            return
-            (
-                Enumerable.Empty<TeuchiUdonAssembly>(),
-                Enumerable.Empty<IEnumerable<TeuchiUdonAssembly>>()
-            );
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitSteppedRangeArrayExpr(SteppedRangeArrayExprResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitSteppedRangeArrayExprToGetSetters(ArrayCtorResult ctor, SteppedRangeArrayExprResult result)
         {
-            return
-            (
-                Enumerable.Empty<TeuchiUdonAssembly>(),
-                Enumerable.Empty<IEnumerable<TeuchiUdonAssembly>>()
-            );
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
-        protected (IEnumerable<TeuchiUdonAssembly> init, IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements) VisitSpreadArrayExpr(SpreadArrayExprResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitSpreadArrayExprToGetSetters(ArrayCtorResult ctor, SpreadArrayExprResult result)
         {
-            return
-            (
-                Enumerable.Empty<TeuchiUdonAssembly>(),
-                Enumerable.Empty<IEnumerable<TeuchiUdonAssembly>>()
-            );
+            return Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitElementsArrayExprToGetLengths(ElementsArrayExprResult result)
+        {
+            return ArrayElementsCtorLength(result.Literals["length"]);
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitRangeArrayExprToGetLengths(RangeArrayExprResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitSteppedRangeArrayExprToGetLengths(SteppedRangeArrayExprResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitSpreadArrayExprToGetLengths(SpreadArrayExprResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         public IEnumerable<TeuchiUdonAssembly> DeclIndirectAddresses(IEnumerable<(TeuchiUdonIndirect indirect, uint address)> pairs)

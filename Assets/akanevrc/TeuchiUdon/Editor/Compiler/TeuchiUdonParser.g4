@@ -76,8 +76,7 @@ expr
     | '{' (statement ';')* expr '}'          #ValueBlockExpr
     | '(' expr ')'                           #ParenExpr
     | '[' ']'                                #UnitArrayCtorExpr
-    | '[' arrayExpr ']'                      #SingleArrayCtorExpr
-    | '[' arrayExpr (',' arrayExpr)+ ']'     #TupleArrayCtorExpr
+    | '[' arrayExpr (',' arrayExpr)* ']'     #ArrayCtorExpr
     | literal                                #LiteralExpr
     | thisLiteral                            #ThisLiteralExpr
     | identifier                             #EvalVarExpr
@@ -114,7 +113,7 @@ argExpr
 
 arrayExpr
     returns [ArrayExprResult result]
-    : expr                     #ElementArrayExpr
+    : expr (',' expr)*         #ElementsArrayExpr
     | expr '..' expr           #RangeArrayExpr
     | expr '..' expr '..' expr #SteppedRangeArrayExpr
     | '...' expr               #SpreadArrayExpr
