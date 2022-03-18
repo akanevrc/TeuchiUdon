@@ -1137,6 +1137,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private TypedResult ExitEvalKeyExpr(IToken token, ExprResult expr, IEnumerable<ExprResult> args)
         {
+            var argArray = args.ToArray();
             if (expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type) && args.All(x => x.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type)))
             {
                 var exprType = expr.Inner.Type.GetArgAsType();
@@ -1189,6 +1190,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         return new BottomResult(token);
                     }
                 }
+            }
+            else if
+            (
+                expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Array) &&
+                argArray.Length == 1 &&
+                argArray[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int)
+            )
+            {
+                var qual = TeuchiUdonQualifierStack.Instance.Peek();
+                return new EvalArrayIndexerResult(token, expr.Inner.Type.GetArgAsArray(), qual, expr, argArray[0]);
             }
             else
             {

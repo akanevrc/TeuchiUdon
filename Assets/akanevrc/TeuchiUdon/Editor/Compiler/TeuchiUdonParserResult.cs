@@ -730,6 +730,56 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
     }
 
+    public class EvalArrayIndexerResult : ExternResult
+    {
+        public ExprResult Expr { get; }
+        public ExprResult Arg { get; }
+
+        public EvalArrayIndexerResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult expr, ExprResult arg)
+            : base(token, type, qualifier)
+        {
+            Expr = expr;
+            Arg  = arg;
+            Init();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues { get; } = Array.Empty<ITeuchiUdonLeftValue>();
+
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            return new (string, TeuchiUdonMethod)[]
+            {
+                (
+                    "getter",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Expr.Inner.Type },
+                        false,
+                        new string[] { "Get" },
+                        new TeuchiUdonType[] { Expr.Inner.Type, TeuchiUdonType.Int }
+                    )
+                )
+            };
+        }
+
+        protected override IEnumerable<(string key, int count)> GetOutValuess()
+        {
+            return Enumerable.Empty<(string, int)>();
+        }
+
+        protected override bool CreateOutValuesForMethods { get; } = true;
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return Enumerable.Empty<(string, ICodeLabel)>();
+        }
+    }
+
     public class ArgExprResult : TeuchiUdonParserResult
     {
         public ExprResult Expr { get; }
