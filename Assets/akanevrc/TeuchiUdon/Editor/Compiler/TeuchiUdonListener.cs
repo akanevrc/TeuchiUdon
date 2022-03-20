@@ -466,10 +466,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(paren.Token, paren);
         }
 
-        public override void ExitUnitArrayCtorExpr([NotNull] UnitArrayCtorExprContext context)
+        public override void ExitEmptyArrayCtorExpr([NotNull] EmptyArrayCtorExprContext context)
         {
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            var type       = TeuchiUdonType.Bottom.ToArrayType();
+            var type       = TeuchiUdonType.Unknown.ToArrayType();
             var arrayCtor  = new ArrayCtorResult(context.Start, type, qual, Enumerable.Empty<IterExprResult>());
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
@@ -485,7 +485,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(arrayCtor.Token, arrayCtor);
         }
 
-        public override void ExitUnitListCtorExpr([NotNull] UnitListCtorExprContext context)
+        public override void ExitEmptyListCtorExpr([NotNull] EmptyListCtorExprContext context)
         {
             throw new NotImplementedException();
         }
@@ -853,6 +853,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var type2 = exprs[1].Inner.Type;
             if (type1.IsAssignableFrom(type2) || type2.IsAssignableFrom(type1))
             {
+                if (type2.IsUnknown())
+                {
+                    exprs[1].Inner.BindType(type1);
+                }
                 var cast       = new TypeCastResult(context.Start, type1, exprs[0], exprs[1]);
                 context.result = new ExprResult(cast.Token, cast);
             }
@@ -1323,26 +1327,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             var infix      = new InfixResult(context.Start, type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
-        }
-
-        public override void ExitConditionalExpr([NotNull] ConditionalExprContext context)
-        {
-            var exprs = context.expr().Select(x => x.result).ToArray();
-            if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
-
-            if
-            (
-                !exprs[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool) ||
-                !exprs[1].Inner.Type.IsAssignableFrom(exprs[2].Inner.Type) &&
-                !exprs[2].Inner.Type.IsAssignableFrom(exprs[1].Inner.Type))
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
-                return;
-            }
-
-            var type        = exprs[1].Inner.Type.IsAssignableFrom(exprs[2].Inner.Type) ? exprs[1].Inner.Type : exprs[2].Inner.Type;
-            var conditional = new ConditionalResult(context.Start, type, exprs[0], exprs[1], exprs[2]);
-            context.result  = new ExprResult(conditional.Token, conditional);
         }
 
         public override void ExitAssignExpr([NotNull] AssignExprContext context)

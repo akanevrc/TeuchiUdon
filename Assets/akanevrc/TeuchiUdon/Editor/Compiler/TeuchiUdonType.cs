@@ -413,6 +413,43 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             .Any(x => LogicalTypeEquals(x));
         }
 
+        public bool IsUnknown()
+        {
+            return LogicalTypeEquals(TeuchiUdonType.Unknown) || Args.Any(x => x is TeuchiUdonType t && t.IsUnknown());
+        }
+
+        public TeuchiUdonType Fix(TeuchiUdonType type)
+        {
+            if (LogicalTypeEquals(TeuchiUdonType.Unknown))
+            {
+                return type;
+            }
+            else if (IsAssignableFrom(type) || type.IsAssignableFrom(this))
+            {
+                var t =
+                    ApplyArgs
+                    (
+                        Args
+                        .Zip(type.Args, (a, ta) => (a, ta))
+                        .Select(x => x.a is TeuchiUdonType at && x.ta is TeuchiUdonType tat ? at.Fix(tat) : x.ta)
+                    );
+                if (TeuchiUdonTables.Instance.Types.ContainsKey(t))
+                {
+                    return TeuchiUdonTables.Instance.Types[t];
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(null, $"cannot bind type");
+                    return Invalid;
+                }
+            }
+            else
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(null, $"cannot bind type");
+                return Invalid;
+            }
+        }
+
         protected TeuchiUdonType ApplyArgs(IEnumerable<ITeuchiUdonTypeArg> args)
         {
             return new TeuchiUdonType(Qualifier, Name, args, LogicalName, RealName, RealType);

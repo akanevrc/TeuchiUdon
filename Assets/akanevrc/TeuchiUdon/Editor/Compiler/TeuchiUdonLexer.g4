@@ -91,7 +91,7 @@ BIND                 : '='  ;
 LT                   : '<'  ;
 GT                   : '>'  ;
 WILDCARD             : '_'  ;
-INTERR               : '?'  ;
+//INTERR               : '?'  ;
 OP_COALESCING        : '??' ;
 OP_COALESCING_ACCESS : '?.' ;
 OP_AND               : '&&' ;

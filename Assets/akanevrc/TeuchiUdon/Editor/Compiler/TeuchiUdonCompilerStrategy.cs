@@ -264,6 +264,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 });
         }
 
+        protected override IEnumerable<TeuchiUdonAssembly> EmptyArrayCtor
+        (
+            TeuchiUdonLiteral zero,
+            TeuchiUdonOutValue array,
+            TeuchiUdonMethod ctor
+        )
+        {
+            return EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(zero) }, new TeuchiUdonOutValue[] { array }, ctor);
+        }
+
         protected override IEnumerable<TeuchiUdonAssembly> ArrayElementsCtor
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements,

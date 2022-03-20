@@ -17,9 +17,14 @@ MonoBehaviour:
   udonAssembly: ".data_start\r\n    var[arr]: %SystemInt32Array, null\r\n    literal[0]:
     %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n    out[arraySystemObject>0]:
     %SystemObjectArray, null\r\n    out[SystemBoolean>0]: %SystemBoolean, null\r\n   
-    out[SystemInt32>0]: %SystemInt32, null\r\n    out[arraybottom>0]: %SystemObjectArray,
-    null\r\n    out[SystemInt32>1]: %SystemInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    .export _start\r\n    _start:\r\n        PUSH, var[arr]\r\n        COPY\r\n       
+    out[SystemInt32>0]: %SystemInt32, null\r\n    out[arrayunknown>0]: %SystemObjectArray,
+    null\r\n    out[SystemInt32>1]: %SystemInt32, null\r\n    out[arraySystemInt32>0]:
+    %SystemInt32Array, null\r\n    out[SystemBoolean>1]: %SystemBoolean, null\r\n   
+    out[arraySystemInt32>1]: %SystemInt32Array, null\r\n    out[SystemInt32>2]: %SystemInt32,
+    null\r\n    out[SystemInt32>3]: %SystemInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, out[arraySystemInt32>1]\r\n       
+    EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
+    PUSH, out[arraySystemInt32>1]\r\n        PUSH, var[arr]\r\n        COPY\r\n       
     PUSH, var[arr]\r\n        PUSH, out[SystemInt32>0]\r\n        EXTERN, \"SystemInt32Array.__get_Length__SystemInt32\"\r\n       
     PUSH, out[SystemInt32>0]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
