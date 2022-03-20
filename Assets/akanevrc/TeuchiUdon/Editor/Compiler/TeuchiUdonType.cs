@@ -129,7 +129,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetLogicalName()
         {
-            return LogicalName;
+            return $"{LogicalName}{string.Join("", Args.Select(x => x.GetLogicalName()))}";
         }
 
         public string GetRealName()

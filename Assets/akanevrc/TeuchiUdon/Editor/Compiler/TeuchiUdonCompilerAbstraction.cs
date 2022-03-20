@@ -290,8 +290,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         result.Exprs.Select(x => VisitArrayExprToGetSetters(result, x)),
                         result.Exprs.Select(x => VisitArrayExprToGetLengths(x)),
                         result.Literals["0"],
-                        result.OutValuess["array"  ][0],
-                        result.OutValuess["counter"][0],
+                        result.TmpValues["array"  ],
+                        result.TmpValues["counter"],
                         result.Methods["ctor"],
                         result.Methods["addition"]
                     );
@@ -426,18 +426,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         IfElse
                         (
                             VisitExpr(result.Expr1)
-                            .Concat(Set(result.OutValuess["tmp"][0]))
+                            .Concat(Set(result.TmpValues["tmp"]))
                             .Concat
                             (
                                 EvalMethod
                                 (
-                                    new IEnumerable<TeuchiUdonAssembly>[] { Get(result.OutValuess["tmp"][0]), Get(result.Literals["null"]) },
+                                    new IEnumerable<TeuchiUdonAssembly>[] { Get(result.TmpValues["tmp"]), Get(result.Literals["null"]) },
                                     result.OutValuess["=="],
                                     result.Methods   ["=="]
                                 )
                             ),
                             Get(result.Literals["null"]),
-                            Get(result.OutValuess["tmp"][0]).Concat(VisitExpr(result.Expr2)),
+                            Get(result.TmpValues["tmp"]).Concat(VisitExpr(result.Expr2)),
                             result.Labels["1"],
                             result.Labels["2"]
                         );
@@ -510,18 +510,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         IfElse
                         (
                             VisitExpr(result.Expr1)
-                            .Concat(Set(result.OutValuess["tmp"][0]))
+                            .Concat(Set(result.TmpValues["tmp"]))
                             .Concat
                             (
                                 EvalMethod
                                 (
-                                    new IEnumerable<TeuchiUdonAssembly>[] { Get(result.OutValuess["tmp"][0]), Get(result.Literals["null"]) },
+                                    new IEnumerable<TeuchiUdonAssembly>[] { Get(result.TmpValues["tmp"]), Get(result.Literals["null"]) },
                                     result.OutValuess["=="],
                                     result.Methods   ["=="]
                                 )
                             ),
                             VisitExpr(result.Expr2),
-                            Get(result.OutValuess["tmp"][0]),
+                            Get(result.TmpValues["tmp"]),
                             result.Labels["1"],
                             result.Labels["2"]
                         );
@@ -587,8 +587,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             (
                 result.Exprs.Select(x => VisitExpr(x)),
                 result.Literals["1"],
-                ctor.OutValuess["array"  ][0],
-                ctor.OutValuess["counter"][0],
+                ctor.TmpValues["array"  ],
+                ctor.TmpValues["counter"],
                 ctor.Methods["setter"],
                 ctor.Methods["addition"]
             );

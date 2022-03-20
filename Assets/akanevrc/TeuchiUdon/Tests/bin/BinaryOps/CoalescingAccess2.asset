@@ -16,17 +16,19 @@ MonoBehaviour:
     type: 2}
   udonAssembly: ".data_start\r\n    var[x]: %SystemDateTime, null\r\n    literal[0]:
     %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n    literal[3]: %SystemObject,
-    null\r\n    out[0]: %SystemObject, null\r\n    out[1]: %SystemObject, null\r\n   
-    out[2]: %SystemObject, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
+    null\r\n    out[SystemDateTime>0]: %SystemDateTime, null\r\n    out[SystemInt32>0]:
+    %SystemInt32, null\r\n    out[SystemBoolean>0]: %SystemBoolean, null\r\n    out[SystemInt32>1]:
+    %SystemInt32, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
     _start:\r\n        PUSH, literal[0]\r\n        PUSH, literal[1]\r\n        PUSH,
-    literal[1]\r\n        PUSH, out[0]\r\n        EXTERN, \"SystemDateTime.__ctor__SystemInt32_SystemInt32_SystemInt32__SystemDateTime\"\r\n       
-    PUSH, out[0]\r\n        PUSH, var[x]\r\n        COPY\r\n        PUSH, var[x]\r\n       
-    PUSH, out[2]\r\n        COPY\r\n        PUSH, out[2]\r\n        PUSH, literal[3]\r\n       
-    PUSH, out[1]\r\n        EXTERN, \"SystemDateTime.__op_Equality__SystemDateTime_SystemDateTime__SystemBoolean\"\r\n       
-    PUSH, out[1]\r\n        JUMP_IF_FALSE, branch[0]\r\n        PUSH, literal[3]\r\n       
-    JUMP, branch[1]\r\n        branch[0]:\r\n        PUSH, out[2]\r\n        PUSH,
-    out[0]\r\n        EXTERN, \"SystemDateTime.__get_Year__SystemInt32\"\r\n       
-    PUSH, out[0]\r\n        branch[1]:\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    literal[1]\r\n        PUSH, out[SystemDateTime>0]\r\n        EXTERN, \"SystemDateTime.__ctor__SystemInt32_SystemInt32_SystemInt32__SystemDateTime\"\r\n       
+    PUSH, out[SystemDateTime>0]\r\n        PUSH, var[x]\r\n        COPY\r\n       
+    PUSH, var[x]\r\n        PUSH, out[SystemInt32>1]\r\n        COPY\r\n        PUSH,
+    out[SystemInt32>1]\r\n        PUSH, literal[3]\r\n        PUSH, out[SystemBoolean>0]\r\n       
+    EXTERN, \"SystemDateTime.__op_Equality__SystemDateTime_SystemDateTime__SystemBoolean\"\r\n       
+    PUSH, out[SystemBoolean>0]\r\n        JUMP_IF_FALSE, branch[0]\r\n        PUSH,
+    literal[3]\r\n        JUMP, branch[1]\r\n        branch[0]:\r\n        PUSH,
+    out[SystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n        EXTERN, \"SystemDateTime.__get_Year__SystemInt32\"\r\n       
+    PUSH, out[SystemInt32>0]\r\n        branch[1]:\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:

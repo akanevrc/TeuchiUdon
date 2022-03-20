@@ -5,19 +5,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TeuchiUdonOutValue : IIndexedLabel, IDataLabel, IEquatable<TeuchiUdonOutValue>
     {
         public TeuchiUdonQualifier Qualifier { get; }
-        public int Index { get; }
         public TeuchiUdonType Type { get; }
+        public int Index { get; }
 
-        public TeuchiUdonOutValue(TeuchiUdonQualifier qualifier, int index)
+        public TeuchiUdonOutValue(TeuchiUdonQualifier qualifier, TeuchiUdonType type, int index)
         {
             Qualifier = qualifier;
+            Type      = type;
             Index     = index;
-            Type      = TeuchiUdonType.Any;
         }
 
         public bool Equals(TeuchiUdonOutValue obj)
         {
-            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Index == obj.Index;
+            return !object.ReferenceEquals(obj, null) && Qualifier == obj.Qualifier && Type.LogicalTypeEquals(obj.Type) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
@@ -27,7 +27,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override int GetHashCode()
         {
-            return Type.GetHashCode();
+            return Index.GetHashCode();
         }
 
         public static bool operator ==(TeuchiUdonOutValue obj1, TeuchiUdonOutValue obj2)
@@ -46,12 +46,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public string GetLabel()
         {
-            return $"out[{Index}]";
+            return $"out[{Type.GetLogicalName()}>{Index}]";
         }
 
         public string GetFullLabel()
         {
-            return $"out[{Qualifier.Qualify(">", Index.ToString())}]";
+            return $"out[{Qualifier.Qualify(">", $"{Type.GetLogicalName()}>{Index}")}]";
         }
     }
 }

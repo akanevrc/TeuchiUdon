@@ -15,13 +15,15 @@ MonoBehaviour:
   serializedUdonProgramAsset: {fileID: 11400000, guid: ac09c468ce50b2e4ea80504d18c293cd,
     type: 2}
   udonAssembly: ".data_start\r\n    literal[0]: %SystemSingle, null\r\n    literal[1]:
-    %SystemSingle, null\r\n    literal[2]: %SystemSingle, null\r\n    out[0]: %SystemObject,
-    null\r\n    out[1]: %SystemObject, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    %SystemSingle, null\r\n    literal[2]: %SystemSingle, null\r\n    out[UnityEngineVector3>0]:
+    %UnityEngineVector3, null\r\n    out[SystemSingle>0]: %SystemSingle, null\r\n.data_end\r\n\r\n.code_start\r\n   
     .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, literal[1]\r\n       
-    PUSH, literal[2]\r\n        PUSH, out[0]\r\n        EXTERN, \"UnityEngineVector3.__ctor__SystemSingle_SystemSingle_SystemSingle__UnityEngineVector3\"\r\n       
-    PUSH, out[0]\r\n        PUSH, out[1]\r\n        EXTERN, \"UnityEngineVector3.__get_x__SystemSingle\"\r\n       
-    PUSH, out[1]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
-    JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+    PUSH, literal[2]\r\n        PUSH, out[UnityEngineVector3>0]\r\n        EXTERN,
+    \"UnityEngineVector3.__ctor__SystemSingle_SystemSingle_SystemSingle__UnityEngineVector3\"\r\n       
+    PUSH, out[UnityEngineVector3>0]\r\n        PUSH, out[SystemSingle>0]\r\n       
+    EXTERN, \"UnityEngineVector3.__get_x__SystemSingle\"\r\n        PUSH, out[SystemSingle>0]\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP,
+    0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2

@@ -240,6 +240,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonQualifier Qualifier { get; }
         public Dictionary<string, TeuchiUdonMethod> Methods { get; protected set; }
         public Dictionary<string, TeuchiUdonOutValue[]> OutValuess { get; protected set; }
+        public Dictionary<string, TeuchiUdonOutValue> TmpValues { get; protected set; }
         public Dictionary<string, TeuchiUdonLiteral> Literals { get; protected set; }
         public Dictionary<string, ICodeLabel> Labels { get; protected set; }
 
@@ -250,8 +251,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         protected abstract IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods();
-        protected abstract IEnumerable<(string key, int count)> GetOutValuess();
         protected abstract bool CreateOutValuesForMethods { get; }
+        protected abstract IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues();
         protected abstract IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals();
         protected abstract IEnumerable<(string key, ICodeLabel value)> GetLabels();
 
@@ -265,21 +266,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         key  : x.Key,
                         value: x.Value == null ?
                             Array.Empty<TeuchiUdonOutValue>() :
-                            TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.Value.OutTypes.Length).ToArray()
-                    )
-                )
-                .Concat
-                (
-                    GetOutValuess()
-                    .Select(x =>
-                        (
-                            key  : x.key,
-                            value: TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.count).ToArray()
-                        )
+                            TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), x.Value.OutTypes).ToArray()
                     )
                 )
                 .ToDictionary(x => x.key, x => x.value);
-
+            TmpValues =
+                GetTmpValues()
+                .Bind(out var outValues)
+                .Select(x => x.key)
+                .Zip(TeuchiUdonOutValuePool.Instance.RetainOutValues(Qualifier.GetFuncQualifier(), outValues.Select(x => x.type)), (k, v) => (k, v))
+                .ToDictionary(x => x.k, x => x.v);
             Literals = GetLiterals().ToDictionary(x => x.key, x => x.value);
             Labels   = GetLabels  ().ToDictionary(x => x.key, x => x.value);
         }
@@ -461,16 +457,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     )
                 };
             }
-
-            
-        }
-
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return new (string, int)[] { ("array", 1), ("counter", 1) };
         }
 
         protected override bool CreateOutValuesForMethods => false;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return new (string, TeuchiUdonType)[] { ("array", Type), ("counter", TeuchiUdonType.Int) };
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -512,12 +506,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return Enumerable.Empty<(string, int)>();
-        }
-
         protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -552,12 +546,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return Enumerable.Empty<(string, int)>();
-        }
-
         protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -590,12 +584,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return Enumerable.Empty<(string, int)>();
-        }
-
         protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -624,12 +618,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return Enumerable.Empty<(string, int)>();
-        }
-
         protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -734,7 +728,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type)
         {
             Method    = method;
-            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes.Length).ToArray();
+            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes).ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -764,7 +758,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Getter    = getter;
             Setter    = setter;
-            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), getter.OutTypes.Length).ToArray();
+            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), getter.OutTypes).ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => new ITeuchiUdonLeftValue[] { Setter };
@@ -781,7 +775,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type)
         {
             EvalFunc = new TeuchiUdonEvalFunc(index, qualifier);
-            OutValue = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), 1).First();
+            OutValue = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), new TeuchiUdonType[] { TeuchiUdonType.UInt }).First();
             Expr     = expr;
             Args     = args.ToArray();
         }
@@ -802,7 +796,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Method    = method;
             Expr      = expr;
             Args      = args.ToArray();
-            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes.Length).ToArray();
+            OutValues = TeuchiUdonOutValuePool.Instance.RetainOutValues(qualifier.GetFuncQualifier(), method.OutTypes).ToArray();
 
             Instance = expr.Inner.Instance;
         }
@@ -855,12 +849,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return Enumerable.Empty<(string, int)>();
-        }
-
         protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -1002,12 +996,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
-        {
-            return Enumerable.Empty<(string, int)>();
-        }
-
         protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -1107,16 +1101,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
+        protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             switch (Op)
             {
                 default:
-                    return Enumerable.Empty<(string, int)>();
+                    return Enumerable.Empty<(string, TeuchiUdonType)>();
             }
         }
-
-        protected override bool CreateOutValuesForMethods => true;
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
@@ -1515,19 +1509,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<(string key, int count)> GetOutValuess()
+        protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             switch (Op)
             {
                 case "?.":
                 case "??":
-                    return new (string, int)[] { ("tmp", 1) };
+                    return new (string, TeuchiUdonType)[] { ("tmp", Type) };
                 default:
-                    return Enumerable.Empty<(string, int)>();
+                    return Enumerable.Empty<(string, TeuchiUdonType)>();
             }
         }
-
-        protected override bool CreateOutValuesForMethods => true;
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
