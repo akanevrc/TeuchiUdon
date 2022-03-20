@@ -12,6 +12,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TeuchiUdonType : ITeuchiUdonTypeArg, IEquatable<TeuchiUdonType>
     {
         public static TeuchiUdonType Unknown { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unknown", "unknown", null, null);
+        public static TeuchiUdonType Invalid { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "invalid", "invalid", "SystemObject", typeof(object));
         public static TeuchiUdonType Any { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "any", "any", "SystemObject", typeof(object));
         public static TeuchiUdonType Bottom { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "bottom", "bottom", null, null);
         public static TeuchiUdonType Unit { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unit", "unit", null, null);

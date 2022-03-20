@@ -34,6 +34,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private int EvalFuncCounter { get; set; }
         private int LetInCounter { get; set; }
         private int BranchCounter { get; set; }
+        private int LoopCounter { get; set; }
         private int IndirectCounter { get; set; }
 
         private bool IsInitialized { get; set; } = false;
@@ -78,6 +79,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             EvalFuncCounter = 0;
             LetInCounter    = 0;
             BranchCounter   = 0;
+            LoopCounter     = 0;
             IndirectCounter = 0;
         }
 
@@ -85,7 +87,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var types = new TeuchiUdonType[]
             {
-                TeuchiUdonType.Unknown,
                 TeuchiUdonType.Any,
                 TeuchiUdonType.Bottom,
                 TeuchiUdonType.Unit,
@@ -414,6 +415,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public int GetBranchIndex()
         {
             return BranchCounter++;
+        }
+
+        public int GetLoopIndex()
+        {
+            return LoopCounter++;
         }
 
         public int GetIndirectIndex()

@@ -13,6 +13,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class TeuchiUdonMethod : ITeuchiUdonTypeArg, ITeuchiUdonLeftValue, IEquatable<TeuchiUdonMethod>
     {
+        public static TeuchiUdonMethod InvalidMethod { get; } =
+            new TeuchiUdonMethod
+            (
+                TeuchiUdonType.Invalid,
+                "_",
+                Enumerable.Empty<TeuchiUdonType>(),
+                Enumerable.Empty<TeuchiUdonType>(),
+                Enumerable.Empty<TeuchiUdonType>(),
+                Enumerable.Empty<TeuchiUdonMethodParamInOut>(),
+                "_",
+                Enumerable.Empty<string>()
+            );
+
         public TeuchiUdonType Type { get; }
         public string Name { get; }
         public TeuchiUdonType[] AllParamTypes { get; }

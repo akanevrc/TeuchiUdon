@@ -67,10 +67,12 @@ VERBATIUM_STRING  : '@"' (~'"' | '""')* '"';
 
 OPEN_BRACE           : '{'  ;
 CLOSE_BRACE          : '}'  ;
-OPEN_BRACKET         : '['  ;
-CLOSE_BRACKET        : ']'  ;
 OPEN_PAREN           : '('  ;
 CLOSE_PAREN          : ')'  ;
+OPEN_BRACKET         : '['  ;
+CLOSE_BRACKET        : ']'  ;
+OPEN_ARRAY           : '[|' ;
+CLOSE_ARRAY          : '|]' ;
 DOT                  : '.'  ;
 COMMA                : ','  ;
 COLON                : ':'  ;

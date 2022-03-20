@@ -26,7 +26,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public static InvalidLabel Instance = new InvalidLabel();
         public int Index { get; } = -1;
-        public TeuchiUdonType Type { get; } = TeuchiUdonType.Bottom;
+        public TeuchiUdonType Type { get; } = TeuchiUdonType.Invalid;
 
         protected InvalidLabel()
         {

@@ -3,9 +3,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public static class TeuchiUdonUtil
     {
-        public static T Bind<T>(this T t, out T bind)
+        public static T Store<T>(this T t, out T v)
         {
-            bind = t;
+            v = t;
             return t;
         }
     }

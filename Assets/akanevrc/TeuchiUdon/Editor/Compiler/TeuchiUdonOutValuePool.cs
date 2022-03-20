@@ -6,7 +6,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TeuchiUdonOutValuePool
     {
         public static TeuchiUdonOutValuePool Instance { get; } = new TeuchiUdonOutValuePool();
-        private static TeuchiUdonOutValue InvalidOutValue = new TeuchiUdonOutValue(TeuchiUdonQualifier.Top, TeuchiUdonType.Bottom, -1);
+        private static TeuchiUdonOutValue InvalidOutValue = new TeuchiUdonOutValue(TeuchiUdonQualifier.Top, TeuchiUdonType.Invalid, -1);
 
         public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
         private Dictionary<TeuchiUdonQualifier, Stack<Dictionary<TeuchiUdonType, int>>> Counters { get; set; }
