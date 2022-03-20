@@ -20,10 +20,9 @@ MonoBehaviour:
     null\r\n    literal[10]: %SystemInt32, null\r\n    out[SystemBoolean>0]: %SystemBoolean,
     null\r\n    out[SystemBoolean>1]: %SystemBoolean, null\r\n    out[SystemInt32>0]:
     %SystemInt32, null\r\n    out[SystemInt32>1]: %SystemInt32, null\r\n    out[SystemInt32>2]:
-    %SystemInt32, null\r\n    out[SystemInt32>3]: %SystemInt32, null\r\n    out[SystemInt32>4]:
     %SystemInt32, null\r\n    out[arraySystemInt32>0]: %SystemInt32Array, null\r\n   
     out[SystemBoolean>2]: %SystemBoolean, null\r\n    out[arraySystemInt32>1]: %SystemInt32Array,
-    null\r\n    out[SystemInt32>5]: %SystemInt32, null\r\n    out[SystemInt32>6]:
+    null\r\n    out[SystemInt32>3]: %SystemInt32, null\r\n    out[SystemInt32>4]:
     %SystemInt32, null\r\n    out[SystemString>0]: %SystemString, null\r\n    out[SystemString>1]:
     %SystemString, null\r\n    out[SystemString>2]: %SystemString, null\r\n    out[SystemString>3]:
     %SystemString, null\r\n    out[SystemString>4]: %SystemString, null\r\n    out[SystemString>5]:
@@ -42,19 +41,17 @@ MonoBehaviour:
     PUSH, out[SystemInt32>2]\r\n        JUMP, branch[1]\r\n        branch[0]:\r\n       
     PUSH, literal[3]\r\n        branch[1]:\r\n        PUSH, out[SystemInt32>2]\r\n       
     PUSH, out[arraySystemInt32>1]\r\n        EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
-    PUSH, literal[3]\r\n        PUSH, out[SystemInt32>5]\r\n        COPY\r\n       
-    PUSH, out[SystemInt32>0]\r\n        PUSH, out[SystemInt32>3]\r\n        COPY\r\n       
-    PUSH, out[SystemInt32>1]\r\n        PUSH, out[SystemInt32>4]\r\n        COPY\r\n       
-    PUSH, out[SystemInt32>3]\r\n        PUSH, out[SystemInt32>4]\r\n        PUSH,
+    PUSH, literal[3]\r\n        PUSH, out[SystemInt32>3]\r\n        COPY\r\n       
+    PUSH, out[SystemInt32>0]\r\n        PUSH, out[SystemInt32>1]\r\n        PUSH,
     out[SystemBoolean>0]\r\n        EXTERN, \"SystemInt32.__op_LessThanOrEqual__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
     PUSH, out[SystemBoolean>0]\r\n        JUMP_IF_FALSE, loop[1]\r\n        loop[0]:\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>5]\r\n       
-    PUSH, out[SystemInt32>3]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
-    PUSH, out[SystemInt32>5]\r\n        PUSH, literal[2]\r\n        PUSH, out[SystemInt32>5]\r\n       
-    EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>3]\r\n       
+    PUSH, out[SystemInt32>0]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
     PUSH, out[SystemInt32>3]\r\n        PUSH, literal[2]\r\n        PUSH, out[SystemInt32>3]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, out[SystemInt32>3]\r\n        PUSH, out[SystemInt32>4]\r\n        PUSH,
+    PUSH, out[SystemInt32>0]\r\n        PUSH, literal[2]\r\n        PUSH, out[SystemInt32>0]\r\n       
+    EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    PUSH, out[SystemInt32>0]\r\n        PUSH, out[SystemInt32>1]\r\n        PUSH,
     out[SystemBoolean>0]\r\n        EXTERN, \"SystemInt32.__op_GreaterThan__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
     PUSH, out[SystemBoolean>0]\r\n        JUMP_IF_FALSE, loop[0]\r\n        loop[1]:\r\n       
     PUSH, out[arraySystemInt32>1]\r\n        PUSH, var[arr]\r\n        COPY\r\n       

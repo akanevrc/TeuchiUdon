@@ -72,14 +72,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonLiteral zero,
             TeuchiUdonLiteral one,
             TeuchiUdonLiteral step,
-            TeuchiUdonOutValue first,
-            TeuchiUdonOutValue last,
+            TeuchiUdonOutValue value,
+            TeuchiUdonOutValue valueLimit,
             TeuchiUdonOutValue condition,
             TeuchiUdonOutValue length,
             TeuchiUdonOutValue array,
             TeuchiUdonOutValue key,
-            TeuchiUdonOutValue value,
-            TeuchiUdonOutValue valueLimit,
             TeuchiUdonMethod ctor,
             TeuchiUdonMethod setter,
             TeuchiUdonMethod valueLessThanOrEqual,
@@ -147,7 +145,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTyped(TypedResult result)
         {
-            if (result is InvalidResult           bottom          ) return VisitBottom          (bottom);
+            if (result is InvalidResult          invalid         ) return VisitInvalid         (invalid);
             if (result is UnknownTypeResult      unknownType     ) return VisitUnknownType     (unknownType);
             if (result is UnitResult             unit            ) return VisitUnit            (unit);
             if (result is BlockResult            block           ) return VisitBlock           (block);
@@ -269,7 +267,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ? Enumerable.Empty<TeuchiUdonAssembly>() : Pop());
         }
 
-        protected IEnumerable<TeuchiUdonAssembly> VisitBottom(InvalidResult result)
+        protected IEnumerable<TeuchiUdonAssembly> VisitInvalid(InvalidResult result)
         {
             return Enumerable.Empty<TeuchiUdonAssembly>();
         }
@@ -619,14 +617,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     ctor  .Literals ["0"],
                     ctor  .Literals ["1"],
                     result.Literals ["step"],
-                    result.TmpValues["first"],
-                    result.TmpValues["last"],
+                    result.TmpValues["value"],
+                    result.TmpValues["limit"],
                     result.TmpValues["condition"],
                     result.TmpValues["length"],
                     ctor  .TmpValues["array"],
                     ctor  .TmpValues["key"],
-                    result.TmpValues["value"],
-                    result.TmpValues["limit"],
                     ctor  .Methods  ["ctor"],
                     ctor  .Methods  ["setter"],
                     result.Methods  ["lessThanOrEqual"],

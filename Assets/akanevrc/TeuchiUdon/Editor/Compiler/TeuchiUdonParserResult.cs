@@ -1638,12 +1638,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new (string, TeuchiUdonType)[]
             {
-                ("first"    , Type),
-                ("last"     , Type),
-                ("condition", TeuchiUdonType.Bool),
-                ("length"   , Type),
                 ("value"    , Type),
-                ("limit"    , Type)
+                ("limit"    , Type),
+                ("condition", TeuchiUdonType.Bool),
+                ("length"   , Type)
             };
         }
 
