@@ -85,13 +85,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             PushDataPart(TeuchiUdonCompilerStrategy.Instance.DeclIndirectAddresses(TeuchiUdonTables.Instance.Indirects.Select(x => (x.Key, x.Value))));
 
+            foreach (var asm in CodePart)
+            {
+                if (asm is Assembly_UnaryDataAddress dasm)
+                {
+                    TeuchiUdonTables.Instance.UsedData.Add(dasm.Address.GetLabel());
+                }
+            }
+
             foreach (var asm in DataPart)
             {
-                if (asm is Assembly_DECL_DATA declData && !DataAddresses.ContainsKey(declData.Data))
+                if (asm is Assembly_DECL_DATA declData && TeuchiUdonTables.Instance.UsedData.Contains(declData.Data))
                 {
-                    DataAddresses.Add(declData.Data, DataAddress);
+                    if (!DataAddresses.ContainsKey(declData.Data))
+                    {
+                        DataAddresses.Add(declData.Data, DataAddress);
+                    }
+                    DataAddress += asm.Size;
                 }
-                DataAddress += asm.Size;
             }
         }
 
@@ -122,6 +133,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private void WriteOne(TextWriter writer, TeuchiUdonAssembly assembly, ref int indent)
         {
+            if
+            (
+                assembly is Assembly_EXPORT_DATA assemblyExportData && !TeuchiUdonTables.Instance.UsedData.Contains(assemblyExportData.Data) ||
+                assembly is Assembly_SYNC_DATA   assemblySyncData   && !TeuchiUdonTables.Instance.UsedData.Contains(assemblySyncData  .Data) ||
+                assembly is Assembly_DECL_DATA   assemblyDeclData   && !TeuchiUdonTables.Instance.UsedData.Contains(assemblyDeclData  .Data)
+            )
+            {
+                return;
+            }
+
             if (assembly is Assembly_NO_CODE) return;
 
             if (assembly is Assembly_NEW_LINE)

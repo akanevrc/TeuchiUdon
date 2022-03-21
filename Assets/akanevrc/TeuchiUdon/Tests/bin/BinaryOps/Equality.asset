@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: e3e1082836ccf1745a34c410b1474652,
     type: 2}
-  udonAssembly: ".data_start\r\n    literal[0]: %SystemInt32, null\r\n    literal[2]:
-    %SystemBoolean, null\r\n    out[SystemBoolean>0]: %SystemBoolean, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, literal[0]\r\n       
-    PUSH, out[SystemBoolean>0]\r\n        EXTERN, \"SystemInt32.__op_Equality__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
+  udonAssembly: ".data_start\r\n    literal[0]: %SystemInt32, null\r\n    out[SystemBoolean>0]:
+    %SystemBoolean, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
+    _start:\r\n        PUSH, literal[0]\r\n        PUSH, literal[0]\r\n        PUSH,
+    out[SystemBoolean>0]\r\n        EXTERN, \"SystemInt32.__op_Equality__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
     PUSH, out[SystemBoolean>0]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
@@ -43,7 +43,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 1
     - Name: 
       Entry: 7
       Data: 
@@ -69,40 +69,6 @@ MonoBehaviour:
     - Name: 
       Entry: 1
       Data: System.Int32, mscorlib
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 1
-      Data: literal[2]
-    - Name: $v
-      Entry: 7
-      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
-        mscorlib
-    - Name: Item1
-      Entry: 7
-      Data: 4|System.Boolean, mscorlib
-    - Name: 
-      Entry: 5
-      Data: true
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: Item2
-      Entry: 7
-      Data: 5|System.RuntimeType, mscorlib
-    - Name: 
-      Entry: 1
-      Data: System.Boolean, mscorlib
     - Name: 
       Entry: 8
       Data: 

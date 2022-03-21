@@ -18,13 +18,11 @@ MonoBehaviour:
     %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n    literal[2]: %SystemInt32,
     null\r\n    literal[3]: %SystemInt32, null\r\n    literal[5]: %SystemString,
     null\r\n    literal[10]: %SystemInt32, null\r\n    out[SystemBoolean>0]: %SystemBoolean,
-    null\r\n    out[SystemBoolean>1]: %SystemBoolean, null\r\n    out[SystemInt32>0]:
-    %SystemInt32, null\r\n    out[SystemInt32>1]: %SystemInt32, null\r\n    out[SystemInt32>2]:
-    %SystemInt32, null\r\n    out[arraySystemInt32>0]: %SystemInt32Array, null\r\n   
-    out[SystemBoolean>2]: %SystemBoolean, null\r\n    out[arraySystemInt32>1]: %SystemInt32Array,
-    null\r\n    out[SystemInt32>3]: %SystemInt32, null\r\n    out[SystemInt32>4]:
-    %SystemInt32, null\r\n    out[SystemString>0]: %SystemString, null\r\n    out[SystemString>1]:
-    %SystemString, null\r\n    out[SystemString>2]: %SystemString, null\r\n    out[SystemString>3]:
+    null\r\n    out[SystemInt32>0]: %SystemInt32, null\r\n    out[SystemInt32>1]:
+    %SystemInt32, null\r\n    out[SystemInt32>2]: %SystemInt32, null\r\n    out[arraySystemInt32>1]:
+    %SystemInt32Array, null\r\n    out[SystemInt32>3]: %SystemInt32, null\r\n   
+    out[SystemString>0]: %SystemString, null\r\n    out[SystemString>1]: %SystemString,
+    null\r\n    out[SystemString>2]: %SystemString, null\r\n    out[SystemString>3]:
     %SystemString, null\r\n    out[SystemString>4]: %SystemString, null\r\n    out[SystemString>5]:
     %SystemString, null\r\n    out[SystemString>6]: %SystemString, null\r\n    out[SystemString>7]:
     %SystemString, null\r\n    out[SystemString>8]: %SystemString, null\r\n    out[SystemString>9]:

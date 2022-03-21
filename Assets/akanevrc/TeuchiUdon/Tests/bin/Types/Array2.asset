@@ -15,14 +15,9 @@ MonoBehaviour:
   serializedUdonProgramAsset: {fileID: 11400000, guid: 371217bb25fb42d45885088dae6eb24b,
     type: 2}
   udonAssembly: ".data_start\r\n    var[arr]: %SystemInt32Array, null\r\n    literal[0]:
-    %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n    out[arraySystemObject>0]:
-    %SystemObjectArray, null\r\n    out[SystemBoolean>0]: %SystemBoolean, null\r\n   
-    out[SystemInt32>0]: %SystemInt32, null\r\n    out[arrayunknown>0]: %SystemObjectArray,
-    null\r\n    out[SystemInt32>1]: %SystemInt32, null\r\n    out[arraySystemInt32>0]:
-    %SystemInt32Array, null\r\n    out[SystemBoolean>1]: %SystemBoolean, null\r\n   
-    out[arraySystemInt32>1]: %SystemInt32Array, null\r\n    out[SystemInt32>2]: %SystemInt32,
-    null\r\n    out[SystemInt32>3]: %SystemInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, out[arraySystemInt32>1]\r\n       
+    %SystemInt32, null\r\n    out[SystemInt32>0]: %SystemInt32, null\r\n    out[arraySystemInt32>1]:
+    %SystemInt32Array, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   
+    _start:\r\n        PUSH, literal[0]\r\n        PUSH, out[arraySystemInt32>1]\r\n       
     EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
     PUSH, out[arraySystemInt32>1]\r\n        PUSH, var[arr]\r\n        COPY\r\n       
     PUSH, var[arr]\r\n        PUSH, out[SystemInt32>0]\r\n        EXTERN, \"SystemInt32Array.__get_Length__SystemInt32\"\r\n       
@@ -51,7 +46,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 1
     - Name: 
       Entry: 7
       Data: 
@@ -80,34 +75,6 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 1
-      Data: literal[1]
-    - Name: $v
-      Entry: 7
-      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
-        mscorlib
-    - Name: Item1
-      Entry: 7
-      Data: 4|System.Int32, mscorlib
-    - Name: 
-      Entry: 3
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: Item2
-      Entry: 9
-      Data: 3
     - Name: 
       Entry: 8
       Data: 

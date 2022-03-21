@@ -24,6 +24,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
+        public HashSet<IDataLabel> UsedData { get; set; }
 
         private int VarCounter { get; set; }
         private int OutValueCounter { get; set; }
@@ -69,6 +70,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             This       = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs      = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
             Indirects  = new Dictionary<TeuchiUdonIndirect, uint>();
+            UsedData   = new HashSet<IDataLabel>();
 
             VarCounter      = 0;
             OutValueCounter = 0;
@@ -462,9 +464,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<(string name, object value, Type type)> GetDefaultValues()
         {
             return
-                PublicVars             .Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Key.Type         .RealType))
-                .Concat(Literals.Values.Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
-                .Concat(Indirects      .Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
+                PublicVars             .Where(x => UsedData.Contains(x.Key)).Select(x => (x.Key.GetFullLabel(), x.Value.Value  , x.Key.Type         .RealType))
+                .Concat(Literals.Values.Where(x => UsedData.Contains(x    )).Select(x => (x    .GetFullLabel(), x.Value        , x.Type             .RealType)))
+                .Concat(Indirects      .Where(x => UsedData.Contains(x.Key)).Select(x => (x.Key.GetFullLabel(), (object)x.Value, TeuchiUdonType.UInt.RealType)));
         }
     }
 }

@@ -20,16 +20,15 @@ MonoBehaviour:
     %SystemUInt32, null\r\n    var[getAngle>func[1]>angle]: %SystemSingle, null\r\n   
     _update: %SystemUInt32, null\r\n    _onPlayerJoined: %SystemUInt32, null\r\n   
     var[_onPlayerJoined>func[3]>x]: %VRCSDKBaseVRCPlayerApi, null\r\n    onPlayerJoinedPlayer:
-    %VRCSDKBaseVRCPlayerApi, null\r\n    literal[0]: %SystemSingle, null\r\n    literal[1]:
-    %SystemSingle, null\r\n    literal[this]: %UnityEngineGameObject, this\r\n   
-    return[func[deltaAngle>0]]: %SystemUInt32, null\r\n    return[func[getAngle>1]]:
-    %SystemUInt32, null\r\n    return[func[_update>2]]: %SystemUInt32, null\r\n   
-    return[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n    out[deltaAngle>SystemSingle>0]:
-    %SystemSingle, null\r\n    out[deltaAngle>SystemSingle>1]: %SystemSingle, null\r\n   
-    out[getAngle>UnityEngineVector3>0]: %UnityEngineVector3, null\r\n    out[getAngle>UnityEngineQuaternion>0]:
-    %UnityEngineQuaternion, null\r\n    out[_update>SystemUInt32>0]: %SystemUInt32,
-    null\r\n    out[_update>SystemSingle>0]: %SystemSingle, null\r\n    out[_update>UnityEngineTransform>0]:
-    %UnityEngineTransform, null\r\n    out[_update>UnityEngineQuaternion>0]: %UnityEngineQuaternion,
+    %VRCSDKBaseVRCPlayerApi, null\r\n    literal[1]: %SystemSingle, null\r\n    literal[this]:
+    %UnityEngineGameObject, this\r\n    return[func[deltaAngle>0]]: %SystemUInt32,
+    null\r\n    return[func[getAngle>1]]: %SystemUInt32, null\r\n    return[func[_update>2]]:
+    %SystemUInt32, null\r\n    return[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n   
+    out[deltaAngle>SystemSingle>0]: %SystemSingle, null\r\n    out[deltaAngle>SystemSingle>1]:
+    %SystemSingle, null\r\n    out[getAngle>UnityEngineVector3>0]: %UnityEngineVector3,
+    null\r\n    out[getAngle>UnityEngineQuaternion>0]: %UnityEngineQuaternion, null\r\n   
+    out[_update>SystemUInt32>0]: %SystemUInt32, null\r\n    out[_update>SystemSingle>0]:
+    %SystemSingle, null\r\n    out[_update>UnityEngineTransform>0]: %UnityEngineTransform,
     null\r\n    indirect[topcall[_update]]: %SystemUInt32, null\r\n    indirect[topcall[_onPlayerJoined]]:
     %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>0]]: %SystemUInt32,
     null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]: %SystemUInt32, null\r\n   
@@ -98,7 +97,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 12
+      Data: 10
     - Name: 
       Entry: 7
       Data: 
@@ -138,28 +137,6 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: literal[0]
-    - Name: $v
-      Entry: 7
-      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
-        mscorlib
-    - Name: Item1
-      Entry: 9
-      Data: 2
-    - Name: Item2
-      Entry: 9
-      Data: 3
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 1
       Data: literal[1]
     - Name: $v
       Entry: 7
@@ -177,28 +154,6 @@ MonoBehaviour:
     - Name: Item2
       Entry: 9
       Data: 3
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 1
-      Data: literal[2]
-    - Name: $v
-      Entry: 7
-      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
-        mscorlib
-    - Name: Item1
-      Entry: 6
-      Data: 
-    - Name: Item2
-      Entry: 6
-      Data: 
     - Name: 
       Entry: 8
       Data: 

@@ -151,8 +151,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     EvalFunc
                     (
                         ev.OutParamUdonNames
-                            .Zip(ev.OutTypes, (n, t) => (n, t))
-                            .Select(x => Get(new TextDataLabel(TeuchiUdonTables.GetEventParamName(varName, x.n), x.t))),
+                            .Select(x => TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, TeuchiUdonTables.GetEventParamName(varName, x))])
+                            .Select(x => Get(x)),
                         new TextCodeLabel($"topcall[{eventName}]"),
                         v
                     ) :

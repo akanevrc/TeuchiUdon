@@ -126,6 +126,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public abstract class TeuchiUdonAssemblyDataAddress
     {
+        public abstract IDataLabel GetLabel();
     }
 
     public class AssemblyAddress_DATA_LABEL : TeuchiUdonAssemblyDataAddress
@@ -135,6 +136,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public AssemblyAddress_DATA_LABEL(IDataLabel label)
         {
             Label = label;
+        }
+
+        public override IDataLabel GetLabel()
+        {
+            return Label;
         }
 
         public override string ToString()
@@ -152,6 +158,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var index = TeuchiUdonTables.Instance.GetIndirectIndex();
             Indirect  = new TeuchiUdonIndirect(index, label);
             TeuchiUdonTables.Instance.Indirects.Add(Indirect, 0xFFFFFFFF);
+        }
+
+        public override IDataLabel GetLabel()
+        {
+            return Indirect;
         }
 
         public override string ToString()
