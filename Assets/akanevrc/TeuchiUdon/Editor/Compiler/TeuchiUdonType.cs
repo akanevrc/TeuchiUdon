@@ -176,7 +176,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private bool IsAssignableFromUnknown(TeuchiUdonType obj)
         {
             if (obj == null) return false;
-            if (!LogicalTypeEquals(TeuchiUdonType.Unknown)) return false;
+            if (!LogicalTypeEquals(TeuchiUdonType.Unknown) && !obj.LogicalTypeEquals(TeuchiUdonType.Unknown)) return false;
 
             return true;
         }

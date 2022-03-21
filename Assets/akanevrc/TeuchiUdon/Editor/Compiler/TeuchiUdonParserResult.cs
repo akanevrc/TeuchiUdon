@@ -374,10 +374,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void BindType(TeuchiUdonType type)
         {
-            if (TypeBinded || type.IsUnknown()) return;
-            Expr.Inner.BindType(type);
-            Type       = Type.Fix(type);
-            TypeBinded = true;
         }
     }
 
@@ -1535,6 +1531,32 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 default:
                     return Enumerable.Empty<(string, ICodeLabel)>();
             }
+        }
+    }
+
+    public class ConditionalResult : TypedResult
+    {
+        public ExprResult Condition { get; }
+        public ExprResult Expr1 { get; }
+        public ExprResult Expr2 { get; }
+        public ICodeLabel[] Labels { get; }
+
+        public ConditionalResult(IToken token, TeuchiUdonType type, ExprResult condition, ExprResult expr1, ExprResult expr2)
+            : base(token, type)
+        {
+            Condition = condition;
+            Expr1     = expr1;
+            Expr2     = expr2;
+
+            var index1 = TeuchiUdonTables.Instance.GetBranchIndex();
+            var index2 = TeuchiUdonTables.Instance.GetBranchIndex();
+            Labels     = new ICodeLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+
+        public override void BindType(TeuchiUdonType type)
+        {
         }
     }
 

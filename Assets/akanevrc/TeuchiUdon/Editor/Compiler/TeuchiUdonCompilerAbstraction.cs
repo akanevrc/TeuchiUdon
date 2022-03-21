@@ -172,6 +172,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is ConvertCastResult      convertCast     ) return VisitConvertCast     (convertCast);
             if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
             if (result is InfixResult            infix           ) return VisitInfix           (infix);
+            if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
             if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
             if (result is FuncResult             func            ) return VisitFunc            (func);
             if (result is MethodResult           method          ) return VisitMethod          (method);
@@ -566,6 +567,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 default:
                     return Enumerable.Empty<TeuchiUdonAssembly>();
             }
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitConditional(ConditionalResult result)
+        {
+            return
+                IfElse
+                (
+                    VisitExpr(result.Condition),
+                    VisitExpr(result.Expr1),
+                    VisitExpr(result.Expr2),
+                    result.Labels[0],
+                    result.Labels[1]
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLetInBind(LetInBindResult result)

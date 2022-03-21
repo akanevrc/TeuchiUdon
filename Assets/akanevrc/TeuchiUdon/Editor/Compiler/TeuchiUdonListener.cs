@@ -242,7 +242,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = expr.Inner.Type;
                 if (v.Type.IsAssignableFrom(t))
                 {
-                    vars = new TeuchiUdonVar[] { new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), v.Qualifier, v.Name, v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? t : v.Type, mut, false) };
+                    if (t.IsUnknown())
+                    {
+                        expr.Inner.BindType(v.Type);
+                    }
+
+                    vars = new TeuchiUdonVar[]
+                    {
+                        new TeuchiUdonVar
+                        (
+                            TeuchiUdonTables.Instance.GetVarIndex(),
+                            v.Qualifier,
+                            v.Name,
+                            v.Type.LogicalTypeEquals(TeuchiUdonType.Unknown) ? t : v.Type,
+                            mut,
+                            false
+                        )
+                    };
                 }
                 else
                 {
@@ -258,9 +274,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     var ts = expr.Inner.Type.GetArgsAsTuple().ToArray();
                     if (vs.Length == ts.Length && varDecl.Types.Zip(ts, (v, t) => (v, t)).All(x => x.v.IsAssignableFrom(x.t)))
                     {
+                        if (expr.Inner.Type.IsUnknown())
+                        {
+                            expr.Inner.BindType(TeuchiUdonType.ToOneType(vs.Select(x => x.Type)));
+                        }
+                        
                         vars = varDecl.Vars
                             .Zip(ts, (v, t) => (v, t))
-                            .Select(x => new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), x.v.Qualifier, x.v.Name, x.v.Type.LogicalTypeNameEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type, mut, false))
+                            .Select(x =>
+                                new TeuchiUdonVar
+                                (
+                                    TeuchiUdonTables.Instance.GetVarIndex(),
+                                    x.v.Qualifier,
+                                    x.v.Name,
+                                    x.v.Type.LogicalTypeEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type,
+                                    mut,
+                                    false
+                                )
+                            )
                             .ToArray();
                     }
                     else
@@ -1327,6 +1358,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             var infix      = new InfixResult(context.Start, type, qual, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
+        }
+
+        public override void ExitConditionalExpr([NotNull] ConditionalExprContext context)
+        {
+            var exprs = context.expr().Select(x => x.result).ToArray();
+            if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
+
+            if
+            (
+                !exprs[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool) ||
+                !exprs[1].Inner.Type.IsAssignableFrom(exprs[2].Inner.Type) &&
+                !exprs[2].Inner.Type.IsAssignableFrom(exprs[1].Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid operand type");
+                return;
+            }
+
+            var type        = exprs[1].Inner.Type.IsAssignableFrom(exprs[2].Inner.Type) ? exprs[1].Inner.Type : exprs[2].Inner.Type;
+            var conditional = new ConditionalResult(context.Start, type, exprs[0], exprs[1], exprs[2]);
+            context.result  = new ExprResult(conditional.Token, conditional);
         }
 
         public override void ExitAssignExpr([NotNull] AssignExprContext context)

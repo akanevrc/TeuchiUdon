@@ -102,6 +102,7 @@ expr
     | expr op='&&' expr                      #ConditionalAndExpr
     | expr op='||' expr                      #ConditionalOrExpr
     | expr op='??' expr                      #CoalescingExpr
+    |<assoc=right> expr '?' expr ':' expr    #ConditionalExpr
     |<assoc=right> expr op='<-' expr         #AssignExpr
     | 'let' varBind 'in' expr                #LetInBindExpr
     | varDecl[false] '->' expr               #FuncExpr
