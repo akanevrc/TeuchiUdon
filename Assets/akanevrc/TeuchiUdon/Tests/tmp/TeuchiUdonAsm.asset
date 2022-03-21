@@ -24,10 +24,9 @@ MonoBehaviour:
     %UnityEngineGameObject, this\r\n    return[func[deltaAngle>0]]: %SystemUInt32,
     null\r\n    return[func[getAngle>1]]: %SystemUInt32, null\r\n    return[func[_update>2]]:
     %SystemUInt32, null\r\n    return[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n   
-    out[deltaAngle>SystemSingle>0]: %SystemSingle, null\r\n    out[deltaAngle>SystemSingle>1]:
-    %SystemSingle, null\r\n    out[getAngle>UnityEngineVector3>0]: %UnityEngineVector3,
-    null\r\n    out[getAngle>UnityEngineQuaternion>0]: %UnityEngineQuaternion, null\r\n   
-    out[_update>SystemUInt32>0]: %SystemUInt32, null\r\n    out[_update>SystemSingle>0]:
+    out[deltaAngle>SystemSingle>0]: %SystemSingle, null\r\n    out[getAngle>UnityEngineVector3>0]:
+    %UnityEngineVector3, null\r\n    out[getAngle>UnityEngineQuaternion>0]: %UnityEngineQuaternion,
+    null\r\n    out[_update>SystemUInt32>0]: %SystemUInt32, null\r\n    out[_update>SystemSingle>0]:
     %SystemSingle, null\r\n    out[_update>UnityEngineTransform>0]: %UnityEngineTransform,
     null\r\n    indirect[topcall[_update]]: %SystemUInt32, null\r\n    indirect[topcall[_onPlayerJoined]]:
     %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>0]]: %SystemUInt32,
@@ -38,9 +37,9 @@ MonoBehaviour:
     func[deltaAngle>0]:\r\n        PUSH, return[func[deltaAngle>0]]\r\n        COPY\r\n       
     PUSH, var[deltaAngle>func[0]>velocity]\r\n        COPY\r\n        PUSH, out[deltaAngle>SystemSingle>0]\r\n       
     EXTERN, \"UnityEngineTime.__get_deltaTime__SystemSingle\"\r\n        PUSH, out[deltaAngle>SystemSingle>0]\r\n       
-    PUSH, var[deltaAngle>func[0]>velocity]\r\n        PUSH, out[deltaAngle>SystemSingle>1]\r\n       
+    PUSH, var[deltaAngle>func[0]>velocity]\r\n        PUSH, out[deltaAngle>SystemSingle>0]\r\n       
     EXTERN, \"SystemSingle.__op_Multiplication__SystemSingle_SystemSingle__SystemSingle\"\r\n       
-    PUSH, out[deltaAngle>SystemSingle>1]\r\n        JUMP_INDIRECT, return[func[deltaAngle>0]]\r\n\r\n   
+    PUSH, out[deltaAngle>SystemSingle>0]\r\n        JUMP_INDIRECT, return[func[deltaAngle>0]]\r\n\r\n   
     func[getAngle>1]:\r\n        PUSH, return[func[getAngle>1]]\r\n        COPY\r\n       
     PUSH, var[getAngle>func[1]>angle]\r\n        COPY\r\n        PUSH, var[getAngle>func[1]>angle]\r\n       
     PUSH, out[getAngle>UnityEngineVector3>0]\r\n        EXTERN, \"UnityEngineVector3.__get_up__UnityEngineVector3\"\r\n       

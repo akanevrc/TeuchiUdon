@@ -33,6 +33,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 TeuchiUdonOutValuePool.Instance.PopScope(TeuchiUdonQualifierStack.Instance.Peek().GetFuncQualifier());
             }
+            else if (context is ExprContext expr && expr.result != null)
+            {
+                foreach (var child in expr.result.Inner.Children) child.ReleaseOutValues();
+            }
         }
 
         public override void ExitTarget([NotNull] TargetContext context)
