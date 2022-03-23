@@ -291,8 +291,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length) }, new TeuchiUdonOutValue[] { array }, ctor)
                 .Concat(Get(zero))
                 .Concat(Set(key))
-                .Concat(elements.SelectMany(y =>
-                            CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(array), Get(key), y }, Enumerable.Empty<TeuchiUdonOutValue>(), setter)
+                .Concat(elements.SelectMany(x =>
+                            CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(array), Get(key), x }, Enumerable.Empty<TeuchiUdonOutValue>(), setter)
                     .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(key), Get(one) }, new TeuchiUdonOutValue[] { key }, addition))
                 ))
                 .Concat(Get(array));

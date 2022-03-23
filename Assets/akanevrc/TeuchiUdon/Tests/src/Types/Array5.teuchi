@@ -1,3 +1,3 @@
-// 3, 10, 11, 12
-arr = [|10..12|];
-UnityEngine.Debug.Log(arr.Length.ToString() + ", " + arr[0].ToString() + ", " + arr[1].ToString() + ", " + arr[2].ToString());
+// a, b, c, d, e
+arr = [|"A".ToLower(), "B".ToLower(), "C".ToLower(), "D".ToLower(), "E".ToLower()|];
+UnityEngine.Debug.Log(string.Join(", ", arr));

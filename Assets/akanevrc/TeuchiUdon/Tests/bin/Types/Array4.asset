@@ -18,32 +18,32 @@ MonoBehaviour:
     %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n    literal[2]: %SystemInt32,
     null\r\n    literal[3]: %SystemInt32, null\r\n    literal[4]: %SystemInt32, null\r\n   
     literal[5]: %SystemInt32, null\r\n    literal[6]: %SystemInt32, null\r\n    literal[7]:
-    %SystemInt32, null\r\n    literal[8]: %SystemInt32, null\r\n    out[SystemInt32>0]:
-    %SystemInt32, null\r\n    out[arraySystemInt32>1]: %SystemInt32Array, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    .export _start\r\n    _start:\r\n        PUSH, literal[5]\r\n        PUSH, out[arraySystemInt32>1]\r\n       
+    %SystemInt32, null\r\n    literal[8]: %SystemInt32, null\r\n    out[arraySystemInt32>0]:
+    %SystemInt32Array, null\r\n    out[SystemInt32>0]: %SystemInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, literal[5]\r\n        PUSH, out[arraySystemInt32>0]\r\n       
     EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
     PUSH, literal[6]\r\n        PUSH, out[SystemInt32>0]\r\n        COPY\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n       
+    PUSH, out[arraySystemInt32>0]\r\n        PUSH, out[SystemInt32>0]\r\n       
     PUSH, literal[0]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
     PUSH, out[SystemInt32>0]\r\n        PUSH, literal[7]\r\n        PUSH, out[SystemInt32>0]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n       
+    PUSH, out[arraySystemInt32>0]\r\n        PUSH, out[SystemInt32>0]\r\n       
     PUSH, literal[1]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
     PUSH, out[SystemInt32>0]\r\n        PUSH, literal[7]\r\n        PUSH, out[SystemInt32>0]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n       
+    PUSH, out[arraySystemInt32>0]\r\n        PUSH, out[SystemInt32>0]\r\n       
     PUSH, literal[2]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
     PUSH, out[SystemInt32>0]\r\n        PUSH, literal[7]\r\n        PUSH, out[SystemInt32>0]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n       
+    PUSH, out[arraySystemInt32>0]\r\n        PUSH, out[SystemInt32>0]\r\n       
     PUSH, literal[3]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
     PUSH, out[SystemInt32>0]\r\n        PUSH, literal[7]\r\n        PUSH, out[SystemInt32>0]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n       
+    PUSH, out[arraySystemInt32>0]\r\n        PUSH, out[SystemInt32>0]\r\n       
     PUSH, literal[4]\r\n        EXTERN, \"SystemInt32Array.__Set__SystemInt32_SystemInt32__SystemVoid\"\r\n       
     PUSH, out[SystemInt32>0]\r\n        PUSH, literal[7]\r\n        PUSH, out[SystemInt32>0]\r\n       
     EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
-    PUSH, out[arraySystemInt32>1]\r\n        PUSH, var[arr]\r\n        COPY\r\n       
+    PUSH, out[arraySystemInt32>0]\r\n        PUSH, var[arr]\r\n        COPY\r\n       
     PUSH, var[arr]\r\n        PUSH, literal[8]\r\n        PUSH, out[SystemInt32>0]\r\n       
     EXTERN, \"SystemInt32Array.__Get__SystemInt32__SystemInt32\"\r\n        PUSH,
     out[SystemInt32>0]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       

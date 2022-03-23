@@ -343,7 +343,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalGetter(EvalGetterResult result)
         {
-            return EvalMethod(Enumerable.Empty<TeuchiUdonAssembly[]>(), result.OutValues, result.Method);
+            return EvalMethod(Enumerable.Empty<TeuchiUdonAssembly[]>(), result.OutValuess["getter"], result.Methods["getter"]);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalSetter(EvalSetterResult result)
@@ -353,7 +353,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalGetterSetter(EvalGetterSetterResult result)
         {
-            return EvalMethod(Enumerable.Empty<TeuchiUdonAssembly[]>(), result.OutValues, result.Getter);
+            return EvalMethod(Enumerable.Empty<TeuchiUdonAssembly[]>(), result.OutValuess["getter"], result.Methods["getter"]);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalFunc(EvalFuncResult result)
@@ -368,7 +368,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitExpr(result.Expr)
-                .Concat(EvalMethod(result.Args.Select(x => VisitExpr(x)), result.OutValues, result.Method));
+                .Concat(EvalMethod(result.Args.Select(x => VisitExpr(x)), result.OutValuess["method"], result.Methods["method"]));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalArrayIndexer(EvalArrayIndexerResult result)

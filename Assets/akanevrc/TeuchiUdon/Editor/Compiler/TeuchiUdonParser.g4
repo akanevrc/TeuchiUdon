@@ -115,10 +115,15 @@ argExpr
 
 iterExpr
     returns [IterExprResult result]
-    : expr (',' expr)*         #ElementsIterExpr
-    | expr '..' expr           #RangeIterExpr
-    | expr '..' expr '..' expr #SteppedRangeIterExpr
-    | '...' expr               #SpreadIterExpr
+    : elementExpr (',' elementExpr)* #ElementsIterExpr
+    | expr '..' expr                 #RangeIterExpr
+    | expr '..' expr '..' expr       #SteppedRangeIterExpr
+    | '...' expr                     #SpreadIterExpr
+    ;
+
+elementExpr
+    returns [ElementExprResult result]
+    : expr
     ;
 
 literal

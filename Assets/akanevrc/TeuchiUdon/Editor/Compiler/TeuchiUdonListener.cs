@@ -21,7 +21,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void EnterEveryRule([NotNull] ParserRuleContext context)
         {
-            if (context is TopStatementContext || context is StatementContext || context is ExprContext && context.Parent is FuncExprContext)
+            if
+            (
+                context is TopStatementContext ||
+                context is StatementContext    ||
+                context is VarBindContext      ||
+                context is IterExprContext     ||
+                context is ElementExprContext  ||
+                context is ExprContext && context.Parent is FuncExprContext
+            )
             {
                 TeuchiUdonOutValuePool.Instance.PushScope(TeuchiUdonQualifierStack.Instance.Peek().GetFuncQualifier());
             }
@@ -29,7 +37,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitEveryRule([NotNull] ParserRuleContext context)
         {
-            if (context is TopStatementContext || context is StatementContext || context is ExprContext && context.Parent is FuncExprContext)
+            if
+            (
+                context is TopStatementContext ||
+                context is StatementContext    ||
+                context is VarBindContext      ||
+                context is IterExprContext     ||
+                context is ElementExprContext  ||
+                context is ExprContext && context.Parent is FuncExprContext
+            )
             {
                 TeuchiUdonOutValuePool.Instance.PopScope(TeuchiUdonQualifierStack.Instance.Peek().GetFuncQualifier());
             }
@@ -788,7 +804,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, s[0]);
+                            eval = new EvalSetterResult(varCandidate2.Token, qualifier, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
@@ -846,7 +862,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, s[0]);
+                            eval = new EvalSetterResult(varCandidate2.Token, qualifier, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
@@ -1366,7 +1382,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitConditionalExpr([NotNull] ConditionalExprContext context)
         {
-            var exprs = context.expr().Select(x => x.result).ToArray();
+            var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
 
             if
@@ -1505,13 +1521,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             context.result = new ArgExprResult(context.Start, expr, rf);
         }
-
+        
         public override void ExitElementsIterExpr([NotNull] ElementsIterExprContext context)
         {
-            var exprs = context.expr().Select(x => x?.result);
-            if (exprs.Any(x => x == null)) return;
+            var elementExprs = context.elementExpr().Select(x => x?.result);
+            if (elementExprs.Any(x => x == null)) return;
 
-            var type = TeuchiUdonType.GetUpperType(exprs.Select(x => x.Inner.Type));
+            var exprs = elementExprs.Select(x => x.Expr);
+            var type  = TeuchiUdonType.GetUpperType(exprs.Select(x => x.Inner.Type));
             if (type.LogicalTypeEquals(TeuchiUdonType.Unknown))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"array element types are incompatible");
@@ -1575,6 +1592,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             context.result = new SpreadIterExprResult(context.Start, expr.Inner.Type.GetArgAsListElementType(), qual, expr);
+        }
+
+        public override void ExitElementExpr([NotNull] ElementExprContext context)
+        {
+            var expr = context.expr()?.result;
+            if (expr == null) return;
+
+            context.result = new ElementExprResult(context.Start, expr);
         }
 
         public override void ExitUnitLiteral([NotNull] UnitLiteralContext context)
