@@ -206,6 +206,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is UnitResult             unit            ) return VisitUnit            (unit);
             if (result is BlockResult            block           ) return VisitBlock           (block);
             if (result is ParenResult            paren           ) return VisitParen           (paren);
+            if (result is TupleResult            tuple           ) return VisitTuple           (tuple);
             if (result is ArrayCtorResult        arrayCtor       ) return VisitArrayCtor       (arrayCtor);
             if (result is LiteralResult          literal         ) return VisitLiteral         (literal);
             if (result is ThisResult             ths             ) return VisitThis            (ths);
@@ -346,6 +347,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitParen(ParenResult result)
         {
             return VisitExpr(result.Expr);
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitTuple(TupleResult result)
+        {
+            return result.Exprs.SelectMany(x => VisitExpr(x));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArrayCtor(ArrayCtorResult result)

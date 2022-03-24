@@ -449,6 +449,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class TupleResult : TypedResult
+    {
+        public ExprResult[] Exprs { get; }
+
+        public TupleResult(IToken token, TeuchiUdonType type, IEnumerable<ExprResult> exprs)
+            : base(token, type)
+        {
+            Exprs = exprs.ToArray();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Exprs.SelectMany(x => x.Inner.LeftValues).ToArray();
+        public override IEnumerable<TypedResult> Children => Exprs.SelectMany(x => x.Inner.Children);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+            if (TypeBinded || type.IsUnknown()) return;
+            if (!type.LogicalTypeNameEquals(TeuchiUdonType.Tuple)) return;
+            foreach (var x in Exprs.Zip(type.GetArgsAsTuple(), (e, t) => (e, t))) x.e.Inner.BindType(x.t);
+            Type       = Type.Fix(type);
+            TypeBinded = true;
+        }
+
+        public override void ReleaseOutValues()
+        {
+            foreach (var x in Exprs) x.Inner.ReleaseOutValues();
+        }
+    }
+
     public class ArrayCtorResult : ExternResult
     {
         public IterExprResult[] Iters { get; }

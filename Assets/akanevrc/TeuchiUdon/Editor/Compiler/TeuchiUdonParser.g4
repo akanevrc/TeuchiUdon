@@ -75,6 +75,7 @@ expr
     : '{' (statement ';')* '}'               #UnitBlockExpr
     | '{' (statement ';')* expr '}'          #ValueBlockExpr
     | '(' expr ')'                           #ParenExpr
+    | '(' expr (',' expr)+ ')'               #TupleExpr
     | '[|' '|]'                              #EmptyArrayCtorExpr
     | '[|' iterExpr '|]'                     #ArrayCtorExpr
     | '[' ']'                                #EmptyListCtorExpr

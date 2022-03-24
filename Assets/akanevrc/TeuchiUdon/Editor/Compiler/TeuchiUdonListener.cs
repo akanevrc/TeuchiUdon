@@ -517,6 +517,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(paren.Token, paren);
         }
 
+        public override void ExitTupleExpr([NotNull] TupleExprContext context)
+        {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length < 2 || exprs.Any(x => x == null)) return;
+
+            var type       = TeuchiUdonType.Tuple.ApplyArgsAsTuple(exprs.Select(x => x.Inner.Type));
+            var tuple      = new TupleResult(context.Start, type, exprs);
+            context.result = new ExprResult(tuple.Token, tuple);
+        }
+
         public override void ExitEmptyArrayCtorExpr([NotNull] EmptyArrayCtorExprContext context)
         {
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();

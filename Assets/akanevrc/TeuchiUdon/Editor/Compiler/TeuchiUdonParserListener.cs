@@ -577,6 +577,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitFuncExpr([NotNull] TeuchiUdonParser.FuncExprContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>TupleExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTupleExpr([NotNull] TeuchiUdonParser.TupleExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>TupleExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTupleExpr([NotNull] TeuchiUdonParser.TupleExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>PrefixExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
