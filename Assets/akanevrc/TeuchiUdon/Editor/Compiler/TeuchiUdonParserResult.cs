@@ -1947,7 +1947,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
-        protected override bool CreateOutValuesForMethods => true;
+        protected override bool CreateOutValuesForMethods => false;
 
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
@@ -2039,7 +2039,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override bool CreateOutValuesForMethods => true;
+        protected override bool CreateOutValuesForMethods => false;
 
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
@@ -2100,14 +2100,73 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
-            return Enumerable.Empty<(string, TeuchiUdonMethod)>();
+            return new (string, TeuchiUdonMethod)[]
+            {
+                (
+                    "lessThanOrEqual",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_LessThanOrEqual" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "greaterThan",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_GreaterThan" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "addition",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Addition" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "subtraction",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Subtraction" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "division",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Division" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                )
+            };
         }
 
-        protected override bool CreateOutValuesForMethods => true;
+        protected override bool CreateOutValuesForMethods => false;
 
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
-            return Enumerable.Empty<(string, TeuchiUdonType)>();
+            return new (string, TeuchiUdonType)[]
+            {
+                ("value"    , Type),
+                ("limit"    , Type),
+                ("step"     , Type),
+                ("condition", TeuchiUdonType.Bool),
+                ("length"   , Type)
+            };
         }
 
         protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
@@ -2122,7 +2181,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
         {
-            return Enumerable.Empty<(string, ICodeLabel)>();
+            return new (string, ICodeLabel)[]
+            {
+                ("branch1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch2", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("loop1"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex())),
+                ("loop2"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex()))
+            };
         }
     }
 
@@ -2148,7 +2213,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonMethod)>();
         }
 
-        protected override bool CreateOutValuesForMethods => true;
+        protected override bool CreateOutValuesForMethods => false;
 
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {

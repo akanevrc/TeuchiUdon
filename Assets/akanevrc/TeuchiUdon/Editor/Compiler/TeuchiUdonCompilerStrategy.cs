@@ -335,7 +335,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     (
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueLimit) }, new TeuchiUdonOutValue[] { condition }, valueLessThanOrEqual),
                                 CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLimit), Get(value) }, new TeuchiUdonOutValue[] { length }, valueSubtraction)
-                        .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length), Get(one) }, new TeuchiUdonOutValue[] { length }, valueAddition)),
+                        .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length    ), Get(one  ) }, new TeuchiUdonOutValue[] { length }, valueAddition)),
                         Get(zero),
                         branchLabel1,
                         branchLabel2
@@ -353,6 +353,75 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(array), Get(key), Get(value) }, Enumerable.Empty<TeuchiUdonOutValue>(), setter))
                 .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(key  ), Get(one       ) }, new TeuchiUdonOutValue[] { key       }, keyAddition))
                 .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(step      ) }, new TeuchiUdonOutValue[] { value     }, valueAddition))
+                .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueLimit) }, new TeuchiUdonOutValue[] { condition }, valueGreaterThan))
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(loopLabel1)),
+                    new Assembly_LABEL(loopLabel2)
+                })
+                .Concat(Get(array));
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> ArraySteppedRangeCtor
+        (
+            IEnumerable<TeuchiUdonAssembly> firstExpr,
+            IEnumerable<TeuchiUdonAssembly> lastExpr,
+            IEnumerable<TeuchiUdonAssembly> stepExpr,
+            TeuchiUdonLiteral zero,
+            TeuchiUdonLiteral one,
+            TeuchiUdonOutValue value,
+            TeuchiUdonOutValue valueLimit,
+            TeuchiUdonOutValue valueStep,
+            TeuchiUdonOutValue condition,
+            TeuchiUdonOutValue length,
+            TeuchiUdonOutValue array,
+            TeuchiUdonOutValue key,
+            TeuchiUdonMethod ctor,
+            TeuchiUdonMethod setter,
+            TeuchiUdonMethod valueLessThanOrEqual,
+            TeuchiUdonMethod valueGreaterThan,
+            TeuchiUdonMethod keyAddition,
+            TeuchiUdonMethod valueAddition,
+            TeuchiUdonMethod valueSubtraction,
+            TeuchiUdonMethod valueDivision,
+            ICodeLabel branchLabel1,
+            ICodeLabel branchLabel2,
+            ICodeLabel loopLabel1,
+            ICodeLabel loopLabel2
+        )
+        {
+            return
+                firstExpr
+                .Concat(Set(value))
+                .Concat(lastExpr)
+                .Concat(Set(valueLimit))
+                .Concat(stepExpr)
+                .Concat(Set(valueStep))
+                .Concat
+                (
+                    IfElse
+                    (
+                        EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueLimit) }, new TeuchiUdonOutValue[] { condition }, valueLessThanOrEqual),
+                                CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLimit), Get(value    ) }, new TeuchiUdonOutValue[] { length }, valueSubtraction)
+                        .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length    ), Get(valueStep) }, new TeuchiUdonOutValue[] { length }, valueDivision))
+                        .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length    ), Get(one      ) }, new TeuchiUdonOutValue[] { length }, valueAddition)),
+                        Get(zero),
+                        branchLabel1,
+                        branchLabel2
+                    )
+                )
+                .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length) }, new TeuchiUdonOutValue[] { array }, ctor))
+                .Concat(Get(zero))
+                .Concat(Set(key))
+                .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueLimit) }, new TeuchiUdonOutValue[] { condition }, valueLessThanOrEqual))
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(loopLabel2)),
+                    new Assembly_LABEL(loopLabel1)
+                })
+                .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(array), Get(key), Get(value) }, Enumerable.Empty<TeuchiUdonOutValue>(), setter))
+                .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(key  ), Get(one       ) }, new TeuchiUdonOutValue[] { key       }, keyAddition))
+                .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueStep ) }, new TeuchiUdonOutValue[] { value     }, valueAddition))
                 .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueLimit) }, new TeuchiUdonOutValue[] { condition }, valueGreaterThan))
                 .Concat(new TeuchiUdonAssembly[]
                 {

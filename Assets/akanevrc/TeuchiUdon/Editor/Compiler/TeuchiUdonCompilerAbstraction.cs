@@ -96,6 +96,33 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel loopLabel1,
             ICodeLabel loopLabel2
         );
+        protected abstract IEnumerable<TeuchiUdonAssembly> ArraySteppedRangeCtor
+        (
+            IEnumerable<TeuchiUdonAssembly> firstExpr,
+            IEnumerable<TeuchiUdonAssembly> lastExpr,
+            IEnumerable<TeuchiUdonAssembly> stepExpr,
+            TeuchiUdonLiteral zero,
+            TeuchiUdonLiteral one,
+            TeuchiUdonOutValue value,
+            TeuchiUdonOutValue valueLimit,
+            TeuchiUdonOutValue valueStep,
+            TeuchiUdonOutValue condition,
+            TeuchiUdonOutValue length,
+            TeuchiUdonOutValue array,
+            TeuchiUdonOutValue key,
+            TeuchiUdonMethod ctor,
+            TeuchiUdonMethod setter,
+            TeuchiUdonMethod valueLessThanOrEqual,
+            TeuchiUdonMethod valueGreaterThan,
+            TeuchiUdonMethod keyAddition,
+            TeuchiUdonMethod valueAddition,
+            TeuchiUdonMethod valueSubtraction,
+            TeuchiUdonMethod valueDivision,
+            ICodeLabel branchLabel1,
+            ICodeLabel branchLabel2,
+            ICodeLabel loopLabel1,
+            ICodeLabel loopLabel2
+        );
 
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
         {
@@ -620,6 +647,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 result.Methods["lessThanOrEqual"] == null ||
+                result.Methods["greaterThan"    ] == null ||
                 result.Methods["addition"       ] == null ||
                 result.Methods["subtraction"    ] == null ?
                 Enumerable.Empty<TeuchiUdonAssembly>() :
@@ -652,7 +680,40 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArraySteppedRangeIter(ArrayCtorResult ctor, SteppedRangeIterExprResult result)
         {
-            return Enumerable.Empty<TeuchiUdonAssembly>();
+            return
+                result.Methods["lessThanOrEqual"] == null ||
+                result.Methods["greaterThan"    ] == null ||
+                result.Methods["addition"       ] == null ||
+                result.Methods["subtraction"    ] == null ||
+                result.Methods["division"       ] == null ?
+                Enumerable.Empty<TeuchiUdonAssembly>() :
+                ArraySteppedRangeCtor
+                (
+                    VisitExpr(result.First),
+                    VisitExpr(result.Last),
+                    VisitExpr(result.Step),
+                    ctor  .Literals ["0"],
+                    ctor  .Literals ["1"],
+                    result.TmpValues["value"],
+                    result.TmpValues["limit"],
+                    result.TmpValues["step"],
+                    result.TmpValues["condition"],
+                    result.TmpValues["length"],
+                    ctor  .TmpValues["array"],
+                    ctor  .TmpValues["key"],
+                    ctor  .Methods  ["ctor"],
+                    ctor  .Methods  ["setter"],
+                    result.Methods  ["lessThanOrEqual"],
+                    result.Methods  ["greaterThan"],
+                    ctor  .Methods  ["addition"],
+                    result.Methods  ["addition"],
+                    result.Methods  ["subtraction"],
+                    result.Methods  ["division"],
+                    result.Labels   ["branch1"],
+                    result.Labels   ["branch2"],
+                    result.Labels   ["loop1"],
+                    result.Labels   ["loop2"]
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArraySpreadIter(ArrayCtorResult ctor, SpreadIterExprResult result)

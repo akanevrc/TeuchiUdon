@@ -1,0 +1,3 @@
+// 3, 10, 12, 14
+arr = [|10..14..2|];
+UnityEngine.Debug.Log(arr.Length.ToString() + ", " + arr[0].ToString() + ", " + arr[1].ToString() + ", " + arr[2].ToString());

@@ -1544,7 +1544,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
 
-            if (!exprs[0].Inner.Type.IsNumericType() || !exprs[1].Inner.Type.IsNumericType())
+            if (!exprs[0].Inner.Type.IsIntegerType() || !exprs[1].Inner.Type.IsIntegerType())
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not numeric type");
                 return;
@@ -1564,7 +1564,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
 
-            if (!exprs[0].Inner.Type.IsNumericType() || !exprs[1].Inner.Type.IsNumericType() || !exprs[2].Inner.Type.IsNumericType())
+            if (!exprs[0].Inner.Type.IsIntegerType() || !exprs[1].Inner.Type.IsIntegerType() || !exprs[2].Inner.Type.IsIntegerType())
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not a numeric type");
                 return;

@@ -394,7 +394,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             .Any(x => LogicalTypeEquals(x));
         }
 
-        public bool IsNumericType()
+        public bool IsIntegerType()
         {
             return new TeuchiUdonType[]
             {
@@ -405,10 +405,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Int,
                 TeuchiUdonType.UInt,
                 TeuchiUdonType.Long,
-                TeuchiUdonType.ULong,
-                TeuchiUdonType.Float,
-                TeuchiUdonType.Double,
-                TeuchiUdonType.Decimal
+                TeuchiUdonType.ULong
             }
             .Any(x => LogicalTypeEquals(x));
         }
