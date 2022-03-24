@@ -14,7 +14,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonAssembly> ExportData(IDataLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> SyncData(IDataLabel label, TeuchiUdonSyncMode mode);
         protected abstract IEnumerable<TeuchiUdonAssembly> DeclData(IDataLabel label, TeuchiUdonAssemblyLiteral literal);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Pop();
+        protected abstract IEnumerable<TeuchiUdonAssembly> Pop(TeuchiUdonType type);
         protected abstract IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Set(IDataLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Jump(IDataLabel label);
@@ -321,7 +321,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitTyped(result.Inner)
-                .Concat(result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ? Enumerable.Empty<TeuchiUdonAssembly>() : Pop());
+                .Concat
+                (
+                    result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                        Enumerable.Empty<TeuchiUdonAssembly>() :
+                        Pop(result.Inner.Type)
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitInvalid(InvalidResult result)

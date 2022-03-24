@@ -66,12 +66,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             .Compile();
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> Pop()
+        protected override IEnumerable<TeuchiUdonAssembly> Pop(TeuchiUdonType type)
         {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_POP()
-            };
+            return
+                type.LogicalTypeNameEquals(TeuchiUdonType.Tuple) ?
+                type.GetArgsAsTuple().SelectMany(x => Pop(x)) :
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_POP()
+                };
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label)

@@ -1,0 +1,4 @@
+// 100, 200
+t = (100, 200);
+(x, y) = t;
+UnityEngine.Debug.Log(x.ToString() + ", " + y.ToString());
