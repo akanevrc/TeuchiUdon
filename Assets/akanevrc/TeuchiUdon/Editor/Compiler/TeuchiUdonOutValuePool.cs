@@ -39,7 +39,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (!table.ContainsKey(qualifier))
             {
                 var stack = new Stack<Dictionary<TeuchiUdonType, SortedList<int, TeuchiUdonOutValue>>>();
-                stack.Push(new Dictionary<TeuchiUdonType, SortedList<int, TeuchiUdonOutValue>>(TeuchiUdonTypeLogicalEqualityComparer.Instance));
                 table.Add(qualifier, stack);
             }
             if (table[qualifier].Count == 0)
@@ -48,7 +47,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
-                table[qualifier].Push(table[qualifier].Peek().ToDictionary(x => x.Key, x => new SortedList<int, TeuchiUdonOutValue>(x.Value)));
+                table[qualifier].Push(table[qualifier].Peek()
+                    .ToDictionary(x => x.Key, x => new SortedList<int, TeuchiUdonOutValue>(x.Value), TeuchiUdonTypeLogicalEqualityComparer.Instance));
             }
         }
 
@@ -111,7 +111,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     .ToDictionary(x => x.k, x => x.v)
                 );
                 var o = new TeuchiUdonOutValue(qualifier, type, used.Count);
-                retList.Add(o.Index, o);
+                if (!retList.ContainsKey(o.Index))
+                {
+                    retList.Add(o.Index, o);
+                }
                 if (!OutValues.ContainsKey(o))
                 {
                     OutValues.Add(o, o);

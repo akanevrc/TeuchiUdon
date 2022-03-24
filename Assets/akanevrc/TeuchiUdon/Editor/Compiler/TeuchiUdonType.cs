@@ -394,18 +394,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             .Any(x => LogicalTypeEquals(x));
         }
 
-        public bool IsIntegerType()
+        public bool IsSignedIntegerType()
         {
             return new TeuchiUdonType[]
             {
-                TeuchiUdonType.Byte,
                 TeuchiUdonType.SByte,
                 TeuchiUdonType.Short,
-                TeuchiUdonType.UShort,
                 TeuchiUdonType.Int,
-                TeuchiUdonType.UInt,
-                TeuchiUdonType.Long,
-                TeuchiUdonType.ULong
+                TeuchiUdonType.Long
             }
             .Any(x => LogicalTypeEquals(x));
         }

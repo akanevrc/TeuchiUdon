@@ -2048,6 +2048,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new (string, TeuchiUdonMethod)[]
             {
                 (
+                    "keyGreaterThan",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { TeuchiUdonType.Int },
+                        true,
+                        new string[] { "op_GreaterThan" },
+                        new TeuchiUdonType[] { TeuchiUdonType.Int, TeuchiUdonType.Int }
+                    )
+                ),
+                (
+                    "equality",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Equality" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
                     "lessThanOrEqual",
                     GetMethodFromName
                     (
@@ -2119,6 +2139,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 ("value"      , Type),
                 ("limit"      , Type),
                 ("step"       , Type),
+                ("isUpTo"     , TeuchiUdonType.Bool),
                 ("condition"  , TeuchiUdonType.Bool),
                 ("length"     , TeuchiUdonType.Int),
                 ("valueLength", Type),
@@ -2132,7 +2153,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
-            return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
+            return new (string, TeuchiUdonLiteral)[]
+            {
+                ("1", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "1", Type))
+            };
         }
 
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
@@ -2141,6 +2165,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 ("branch1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
                 ("branch2", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch3", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch4", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch5", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch6", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch7", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch8", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
                 ("loop1"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex())),
                 ("loop2"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex()))
             };

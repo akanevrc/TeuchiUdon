@@ -1544,9 +1544,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
 
-            if (!exprs[0].Inner.Type.IsIntegerType() || !exprs[1].Inner.Type.IsIntegerType())
+            if (!exprs[0].Inner.Type.IsSignedIntegerType() || !exprs[1].Inner.Type.IsSignedIntegerType())
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not integer type");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not signed integer type");
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type))
@@ -1564,9 +1564,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var exprs = context.expr().Select(x => x?.result).ToArray();
             if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
 
-            if (!exprs[0].Inner.Type.IsIntegerType() || !exprs[1].Inner.Type.IsIntegerType() || !exprs[2].Inner.Type.IsIntegerType())
+            if (!exprs[0].Inner.Type.IsSignedIntegerType() || !exprs[1].Inner.Type.IsSignedIntegerType() || !exprs[2].Inner.Type.IsSignedIntegerType())
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not a integer type");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not signed integer type");
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type) || !exprs[0].Inner.Type.LogicalTypeEquals(exprs[2].Inner.Type))

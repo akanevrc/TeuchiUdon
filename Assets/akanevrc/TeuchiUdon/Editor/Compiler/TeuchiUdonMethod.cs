@@ -179,5 +179,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return "";
             }
         }
+
+        public static TeuchiUdonMethod GetDebugMethod()
+        {
+            return
+                TeuchiUdonTables.Instance.TypeToMethods[TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("UnityEngineDebug"))]["Log"]
+                .First
+                (
+                    x => x.InTypes.Length == 1 &&
+                    x.InTypes[0].LogicalTypeEquals(TeuchiUdonType.Object)
+                );
+        }
     }
 }

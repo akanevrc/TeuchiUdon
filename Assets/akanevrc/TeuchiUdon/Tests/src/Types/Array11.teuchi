@@ -1,3 +1,3 @@
-// 3, 10, 12, 14
-arr = [| 10L..14L..2L |];
+// 3, 10, 8, 6
+arr = [| 10..6..-2 |];
 UnityEngine.Debug.Log(arr.Length.ToString() + ", " + arr[0].ToString() + ", " + arr[1].ToString() + ", " + arr[2].ToString());

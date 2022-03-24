@@ -10,6 +10,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
         }
 
+        protected abstract IEnumerable<TeuchiUdonAssembly> Debug(IEnumerable<TeuchiUdonAssembly> asm);
         protected abstract IEnumerable<TeuchiUdonAssembly> ExportData(IDataLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> SyncData(IDataLabel label, TeuchiUdonSyncMode mode);
         protected abstract IEnumerable<TeuchiUdonAssembly> DeclData(IDataLabel label, TeuchiUdonAssemblyLiteral literal);
@@ -106,9 +107,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> stepExpr,
             TeuchiUdonLiteral zero,
             TeuchiUdonLiteral one,
+            TeuchiUdonLiteral valueZero,
             TeuchiUdonOutValue value,
             TeuchiUdonOutValue valueLimit,
             TeuchiUdonOutValue valueStep,
+            TeuchiUdonOutValue isUpTo,
             TeuchiUdonOutValue condition,
             TeuchiUdonOutValue length,
             TeuchiUdonOutValue valueLength,
@@ -116,6 +119,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonOutValue key,
             TeuchiUdonMethod ctor,
             TeuchiUdonMethod setter,
+            TeuchiUdonMethod keyGreaterThan,
+            TeuchiUdonMethod valueEquality,
             TeuchiUdonMethod valueLessThanOrEqual,
             TeuchiUdonMethod valueGreaterThan,
             TeuchiUdonMethod valueToKey,
@@ -125,6 +130,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonMethod valueDivision,
             ICodeLabel branchLabel1,
             ICodeLabel branchLabel2,
+            ICodeLabel branchLabel3,
+            ICodeLabel branchLabel4,
+            ICodeLabel branchLabel5,
+            ICodeLabel branchLabel6,
+            ICodeLabel branchLabel7,
+            ICodeLabel branchLabel8,
             ICodeLabel loopLabel1,
             ICodeLabel loopLabel2,
             TeuchiUdonType type
@@ -697,6 +708,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitArraySteppedRangeIter(ArrayCtorResult ctor, SteppedRangeIterExprResult result)
         {
             return
+                result.Methods["keyGreaterThan" ] == null ||
+                result.Methods["equality"       ] == null ||
                 result.Methods["lessThanOrEqual"] == null ||
                 result.Methods["greaterThan"    ] == null ||
                 result.Methods["convert"        ] == null ||
@@ -711,9 +724,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     VisitExpr(result.Step),
                     ctor  .Literals ["0"],
                     ctor  .Literals ["1"],
+                    result.Literals ["1"],
                     result.TmpValues["value"],
                     result.TmpValues["limit"],
                     result.TmpValues["step"],
+                    result.TmpValues["isUpTo"],
                     result.TmpValues["condition"],
                     result.TmpValues["length"],
                     result.TmpValues["valueLength"],
@@ -721,6 +736,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     ctor  .TmpValues["key"],
                     ctor  .Methods  ["ctor"],
                     ctor  .Methods  ["setter"],
+                    result.Methods  ["keyGreaterThan"],
+                    result.Methods  ["equality"],
                     result.Methods  ["lessThanOrEqual"],
                     result.Methods  ["greaterThan"],
                     result.Methods  ["convert"],
@@ -730,6 +747,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     result.Methods  ["division"],
                     result.Labels   ["branch1"],
                     result.Labels   ["branch2"],
+                    result.Labels   ["branch3"],
+                    result.Labels   ["branch4"],
+                    result.Labels   ["branch5"],
+                    result.Labels   ["branch6"],
+                    result.Labels   ["branch7"],
+                    result.Labels   ["branch8"],
                     result.Labels   ["loop1"],
                     result.Labels   ["loop2"],
                     result.Type
