@@ -82,19 +82,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonOutValue valueLimit,
             TeuchiUdonOutValue condition,
             TeuchiUdonOutValue length,
+            TeuchiUdonOutValue valueLength,
             TeuchiUdonOutValue array,
             TeuchiUdonOutValue key,
             TeuchiUdonMethod ctor,
             TeuchiUdonMethod setter,
             TeuchiUdonMethod valueLessThanOrEqual,
             TeuchiUdonMethod valueGreaterThan,
+            TeuchiUdonMethod valueToKey,
             TeuchiUdonMethod keyAddition,
             TeuchiUdonMethod valueAddition,
             TeuchiUdonMethod valueSubtraction,
             ICodeLabel branchLabel1,
             ICodeLabel branchLabel2,
             ICodeLabel loopLabel1,
-            ICodeLabel loopLabel2
+            ICodeLabel loopLabel2,
+            TeuchiUdonType type
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> ArraySteppedRangeCtor
         (
@@ -108,12 +111,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonOutValue valueStep,
             TeuchiUdonOutValue condition,
             TeuchiUdonOutValue length,
+            TeuchiUdonOutValue valueLength,
             TeuchiUdonOutValue array,
             TeuchiUdonOutValue key,
             TeuchiUdonMethod ctor,
             TeuchiUdonMethod setter,
             TeuchiUdonMethod valueLessThanOrEqual,
             TeuchiUdonMethod valueGreaterThan,
+            TeuchiUdonMethod valueToKey,
             TeuchiUdonMethod keyAddition,
             TeuchiUdonMethod valueAddition,
             TeuchiUdonMethod valueSubtraction,
@@ -121,7 +126,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel branchLabel1,
             ICodeLabel branchLabel2,
             ICodeLabel loopLabel1,
-            ICodeLabel loopLabel2
+            ICodeLabel loopLabel2,
+            TeuchiUdonType type
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> ArraySpreadCtor
+        (
+            IEnumerable<TeuchiUdonAssembly> expr,
+            TeuchiUdonOutValue array,
+            TeuchiUdonMethod clone
         );
 
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
@@ -648,6 +660,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 result.Methods["lessThanOrEqual"] == null ||
                 result.Methods["greaterThan"    ] == null ||
+                result.Methods["convert"        ] == null ||
                 result.Methods["addition"       ] == null ||
                 result.Methods["subtraction"    ] == null ?
                 Enumerable.Empty<TeuchiUdonAssembly>() :
@@ -662,19 +675,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     result.TmpValues["limit"],
                     result.TmpValues["condition"],
                     result.TmpValues["length"],
+                    result.TmpValues["valueLength"],
                     ctor  .TmpValues["array"],
                     ctor  .TmpValues["key"],
                     ctor  .Methods  ["ctor"],
                     ctor  .Methods  ["setter"],
                     result.Methods  ["lessThanOrEqual"],
                     result.Methods  ["greaterThan"],
+                    result.Methods  ["convert"],
                     ctor  .Methods  ["addition"],
                     result.Methods  ["addition"],
                     result.Methods  ["subtraction"],
                     result.Labels   ["branch1"],
                     result.Labels   ["branch2"],
                     result.Labels   ["loop1"],
-                    result.Labels   ["loop2"]
+                    result.Labels   ["loop2"],
+                    result.Type
                 );
         }
 
@@ -683,6 +699,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 result.Methods["lessThanOrEqual"] == null ||
                 result.Methods["greaterThan"    ] == null ||
+                result.Methods["convert"        ] == null ||
                 result.Methods["addition"       ] == null ||
                 result.Methods["subtraction"    ] == null ||
                 result.Methods["division"       ] == null ?
@@ -699,12 +716,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     result.TmpValues["step"],
                     result.TmpValues["condition"],
                     result.TmpValues["length"],
+                    result.TmpValues["valueLength"],
                     ctor  .TmpValues["array"],
                     ctor  .TmpValues["key"],
                     ctor  .Methods  ["ctor"],
                     ctor  .Methods  ["setter"],
                     result.Methods  ["lessThanOrEqual"],
                     result.Methods  ["greaterThan"],
+                    result.Methods  ["convert"],
                     ctor  .Methods  ["addition"],
                     result.Methods  ["addition"],
                     result.Methods  ["subtraction"],
@@ -712,13 +731,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     result.Labels   ["branch1"],
                     result.Labels   ["branch2"],
                     result.Labels   ["loop1"],
-                    result.Labels   ["loop2"]
+                    result.Labels   ["loop2"],
+                    result.Type
                 );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArraySpreadIter(ArrayCtorResult ctor, SpreadIterExprResult result)
         {
-            return Enumerable.Empty<TeuchiUdonAssembly>();
+            return
+                result.Methods["clone"] == null ?
+                Enumerable.Empty<TeuchiUdonAssembly>() :
+                ArraySpreadCtor(VisitExpr(result.Expr), ctor.TmpValues["array"], result.Methods["clone"]);
         }
 
         public IEnumerable<TeuchiUdonAssembly> DeclIndirectAddresses(IEnumerable<(TeuchiUdonIndirect indirect, uint address)> pairs)

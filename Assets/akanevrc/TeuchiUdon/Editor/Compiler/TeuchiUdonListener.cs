@@ -970,7 +970,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var expr = context.expr   ()?.result;
             var args = context.argExpr().Select(x => x?.result).ToArray();
-            if (expr == null || args.Length < 2) return;
+            if (expr == null || args.Length < 2 || args.Any(x => x == null)) return;
 
             context.result = ExitEvalFuncExpr(context.Start, expr, args);
         }
@@ -1546,7 +1546,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             if (!exprs[0].Inner.Type.IsIntegerType() || !exprs[1].Inner.Type.IsIntegerType())
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not numeric type");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not integer type");
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type))
@@ -1566,7 +1566,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             if (!exprs[0].Inner.Type.IsIntegerType() || !exprs[1].Inner.Type.IsIntegerType() || !exprs[2].Inner.Type.IsIntegerType())
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not a numeric type");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not a integer type");
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type) || !exprs[0].Inner.Type.LogicalTypeEquals(exprs[2].Inner.Type))
@@ -1584,14 +1584,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var expr = context.expr()?.result;
             if (expr == null) return;
 
-            if (!expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.List))
+            if (!expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Array))
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"spread expression is not a list type");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"spread expression is not a array type");
                 return;
             }
 
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-            context.result = new SpreadIterExprResult(context.Start, expr.Inner.Type.GetArgAsListElementType(), qual, expr);
+            context.result = new SpreadIterExprResult(context.Start, expr.Inner.Type.GetArgAsArray(), qual, expr);
         }
 
         public override void ExitElementExpr([NotNull] ElementExprContext context)

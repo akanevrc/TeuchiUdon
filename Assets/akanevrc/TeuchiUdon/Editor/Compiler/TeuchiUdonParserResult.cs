@@ -1091,7 +1091,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
-            var methodName = ToConvertMethodName(Expr.Inner.Type.GetArgAsType());
+            var methodName = TeuchiUdonMethod.GetConvertMethodName(Expr.Inner.Type.GetArgAsType());
             return new (string, TeuchiUdonMethod)[]
             {
                 (
@@ -1105,74 +1105,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     )
                 )
             };
-        }
-
-        private string ToConvertMethodName(TeuchiUdonType type)
-        {
-            if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
-            {
-                return "ToBoolean";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
-            {
-                return "ToByte";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Char))
-            {
-                return "ToChar";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.DateTime))
-            {
-                return "ToDateTime";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Decimal))
-            {
-                return "ToDecimal";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Double))
-            {
-                return "ToDouble";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Short))
-            {
-                return "ToInt16";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Int))
-            {
-                return "ToInt32";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Long))
-            {
-                return "ToInt64";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.SByte))
-            {
-                return "ToSByte";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.Float))
-            {
-                return "ToSingle";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.String))
-            {
-                return "ToString";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.UShort))
-            {
-                return "ToUInt16";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.UInt))
-            {
-                return "ToUInt32";
-            }
-            else if (type.LogicalTypeEquals(TeuchiUdonType.ULong))
-            {
-                return "ToUInt64";
-            }
-            else
-            {
-                return "";
-            }
         }
 
         protected override bool CreateOutValuesForMethods => true;
@@ -1994,6 +1926,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
+            var convertMethodName = TeuchiUdonMethod.GetConvertMethodName(TeuchiUdonType.Int);
             return new (string, TeuchiUdonMethod)[]
             {
                 (
@@ -2014,6 +1947,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         true,
                         new string[] { "op_GreaterThan" },
                         new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "convert",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { new TeuchiUdonType("SystemConvert") },
+                        true,
+                        new string[] { convertMethodName },
+                        new TeuchiUdonType[] { Type }
                     )
                 ),
                 (
@@ -2045,10 +1988,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new (string, TeuchiUdonType)[]
             {
-                ("value"    , Type),
-                ("limit"    , Type),
-                ("condition", TeuchiUdonType.Bool),
-                ("length"   , Type)
+                ("value"      , Type),
+                ("limit"      , Type),
+                ("condition"  , TeuchiUdonType.Bool),
+                ("length"     , TeuchiUdonType.Int),
+                ("valueLength", Type),
             };
         }
 
@@ -2100,6 +2044,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
+            var convertMethodName = TeuchiUdonMethod.GetConvertMethodName(TeuchiUdonType.Int);
             return new (string, TeuchiUdonMethod)[]
             {
                 (
@@ -2120,6 +2065,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         true,
                         new string[] { "op_GreaterThan" },
                         new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "convert",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { new TeuchiUdonType("SystemConvert") },
+                        true,
+                        new string[] { convertMethodName },
+                        new TeuchiUdonType[] { Type }
                     )
                 ),
                 (
@@ -2161,11 +2116,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return new (string, TeuchiUdonType)[]
             {
-                ("value"    , Type),
-                ("limit"    , Type),
-                ("step"     , Type),
-                ("condition", TeuchiUdonType.Bool),
-                ("length"   , Type)
+                ("value"      , Type),
+                ("limit"      , Type),
+                ("step"       , Type),
+                ("condition"  , TeuchiUdonType.Bool),
+                ("length"     , TeuchiUdonType.Int),
+                ("valueLength", Type),
             };
         }
 
@@ -2210,7 +2166,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
         {
-            return Enumerable.Empty<(string, TeuchiUdonMethod)>();
+            var arrayType = Type.ToArrayType();
+            return new (string, TeuchiUdonMethod)[]
+            {
+                (
+                    "clone",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { arrayType },
+                        false,
+                        new string[] { "Clone" },
+                        new TeuchiUdonType[] { arrayType }
+                    )
+                )
+            };
         }
 
         protected override bool CreateOutValuesForMethods => false;

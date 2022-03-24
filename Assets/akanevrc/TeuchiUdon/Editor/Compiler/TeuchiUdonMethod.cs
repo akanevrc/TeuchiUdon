@@ -111,5 +111,73 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return $"{Type.GetLogicalName()}{Name}{string.Join("", InTypes.Select(x => x.GetLogicalName()))}";
         }
+
+        public static string GetConvertMethodName(TeuchiUdonType type)
+        {
+            if (type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            {
+                return "ToBoolean";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Byte))
+            {
+                return "ToByte";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Char))
+            {
+                return "ToChar";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.DateTime))
+            {
+                return "ToDateTime";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Decimal))
+            {
+                return "ToDecimal";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Double))
+            {
+                return "ToDouble";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Short))
+            {
+                return "ToInt16";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Int))
+            {
+                return "ToInt32";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Long))
+            {
+                return "ToInt64";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.SByte))
+            {
+                return "ToSByte";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.Float))
+            {
+                return "ToSingle";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.String))
+            {
+                return "ToString";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UShort))
+            {
+                return "ToUInt16";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.UInt))
+            {
+                return "ToUInt32";
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.ULong))
+            {
+                return "ToUInt64";
+            }
+            else
+            {
+                return "";
+            }
+        }
     }
 }
