@@ -1494,6 +1494,38 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(infix.Token, infix);
         }
 
+        public override void ExitRightPipelineExpr([NotNull] RightPipelineExprContext context)
+        {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+
+            if (exprs[0].Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Tuple))
+            {
+                context.result = ExitEvalFuncExprWithSpread(context.Start, exprs[1], exprs[0]);
+            }
+            else
+            {
+                var args       = new ArgExprResult[] { new ArgExprResult(exprs[0].Token, exprs[0], false) };
+                context.result = ExitEvalFuncExprWithArgs(context.Start, exprs[1], args);
+            }
+        }
+
+        public override void ExitLeftPipelineExpr([NotNull] LeftPipelineExprContext context)
+        {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+
+            if (exprs[1].Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Tuple))
+            {
+                context.result = ExitEvalFuncExprWithSpread(context.Start, exprs[0], exprs[1]);
+            }
+            else
+            {
+                var args       = new ArgExprResult[] { new ArgExprResult(exprs[1].Token, exprs[1], false) };
+                context.result = ExitEvalFuncExprWithArgs(context.Start, exprs[0], args);
+            }
+        }
+
         public override void ExitConditionalExpr([NotNull] ConditionalExprContext context)
         {
             var exprs = context.expr().Select(x => x?.result).ToArray();

@@ -408,6 +408,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitEvalVarExpr([NotNull] TeuchiUdonParser.EvalVarExprContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>RightPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterRightPipelineExpr([NotNull] TeuchiUdonParser.RightPipelineExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>RightPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitRightPipelineExpr([NotNull] TeuchiUdonParser.RightPipelineExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>EqualityExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -547,6 +561,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitEvalSingleFuncExpr([NotNull] TeuchiUdonParser.EvalSingleFuncExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>LeftPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterLeftPipelineExpr([NotNull] TeuchiUdonParser.LeftPipelineExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>LeftPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitLeftPipelineExpr([NotNull] TeuchiUdonParser.LeftPipelineExprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>EvalSingleKeyExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.

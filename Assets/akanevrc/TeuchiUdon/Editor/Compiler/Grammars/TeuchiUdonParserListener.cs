@@ -349,6 +349,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitEvalVarExpr([NotNull] TeuchiUdonParser.EvalVarExprContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>RightPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterRightPipelineExpr([NotNull] TeuchiUdonParser.RightPipelineExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>RightPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitRightPipelineExpr([NotNull] TeuchiUdonParser.RightPipelineExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>EqualityExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -468,6 +480,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitEvalSingleFuncExpr([NotNull] TeuchiUdonParser.EvalSingleFuncExprContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>LeftPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterLeftPipelineExpr([NotNull] TeuchiUdonParser.LeftPipelineExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>LeftPipelineExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitLeftPipelineExpr([NotNull] TeuchiUdonParser.LeftPipelineExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>EvalSingleKeyExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.

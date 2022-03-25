@@ -1,0 +1,4 @@
+// 600
+f = (x : int, y : int) -> x + y;
+g = x : int -> x * 2;
+UnityEngine.Debug.Log(g <| f <| (100, 200));
