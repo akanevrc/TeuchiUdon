@@ -576,6 +576,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAccessExpr([NotNull] TeuchiUdonParser.AccessExprContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>EvalSpreadFuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterEvalSpreadFuncExpr([NotNull] TeuchiUdonParser.EvalSpreadFuncExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>EvalSpreadFuncExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitEvalSpreadFuncExpr([NotNull] TeuchiUdonParser.EvalSpreadFuncExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>EvalUnitFuncExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>

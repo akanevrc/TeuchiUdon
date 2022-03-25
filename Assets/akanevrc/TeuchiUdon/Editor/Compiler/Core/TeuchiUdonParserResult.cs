@@ -908,7 +908,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class EvalFuncResult : TypedResult
     {
         public TeuchiUdonEvalFunc EvalFunc { get; }
-
         public TeuchiUdonOutValue OutValue { get; }
         public ExprResult Expr { get; }
         public ExprResult[] Args { get; }
@@ -924,6 +923,35 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner }.Concat(Args.Select(x => x.Inner));
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
+            TeuchiUdonOutValuePool.Instance.ReleaseOutValue(OutValue);
+        }
+    }
+
+    public class EvalSpreadFuncResult : TypedResult
+    {
+        public TeuchiUdonEvalFunc EvalFunc { get; }
+        public TeuchiUdonOutValue OutValue { get; }
+        public ExprResult Expr { get; }
+        public ExprResult Arg { get; }
+
+        public EvalSpreadFuncResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, ExprResult expr, ExprResult arg)
+            : base(token, type)
+        {
+            EvalFunc = new TeuchiUdonEvalFunc(index, qualifier);
+            OutValue = TeuchiUdonOutValuePool.Instance.RetainOutValue(qualifier.GetFuncQualifier(), TeuchiUdonType.UInt);
+            Expr     = expr;
+            Arg      = arg;
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -955,6 +983,62 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner }.Concat(Args.Select(x => x.Inner));
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+        
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            return new (string, TeuchiUdonMethod)[]
+            {
+                ("method", Method)
+            };
+        }
+
+        protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
+
+        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
+        {
+            return Enumerable.Empty<TeuchiUdonOutValue>();
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return Enumerable.Empty<(string, ICodeLabel)>();
+        }
+    }
+
+    public class EvalSpreadMethodResult : ExternResult
+    {
+        public ExprResult Expr { get; }
+        public ExprResult Arg { get; }
+        private TeuchiUdonMethod Method { get; }
+
+        public EvalSpreadMethodResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod method, ExprResult expr, ExprResult arg)
+            : base(token, type, qualifier)
+        {
+            Method = method;
+            Expr   = expr;
+            Arg    = arg;
+
+            Instance = expr.Inner.Instance;
+
+            Init();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
 
         public override void BindType(TeuchiUdonType type)
         {
