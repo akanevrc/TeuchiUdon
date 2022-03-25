@@ -33,37 +33,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private IEnumerable<(string name, IDataLabel label)> CreateAssemblyLabels(IDataLabel label)
         {
-            if (label.Type.RealType == null)
-            {
-                return Enumerable.Empty<(string, IDataLabel)>();
-            }
-            else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.Tuple))
-            {
-                return label.Type.GetArgsAsTuple()
-                    .Select((x, i) => CreateOneAssemblyLabel(label, i.ToString(), x));
-            }
-            else if (label.Type.LogicalTypeNameEquals(TeuchiUdonType.List))
-            {
-                return new (string, IDataLabel)[] { ("", label) };
-            }
-            else
-            {
-                return new (string, IDataLabel)[] { ("", label) };
-            }
+            return
+                label.Type.GetMembers()
+                .SelectMany
+                (
+                    x => x.name == "" ?
+                    new (string, IDataLabel)[] { (x.name, label) } :
+                    CreateAssemblyLabels(CreateOneAssemblyLabel(label, x.name, x.type))
+                );
         }
 
-        private (string name, IDataLabel label) CreateOneAssemblyLabel(IDataLabel label, string name, TeuchiUdonType type)
+        private IDataLabel CreateOneAssemblyLabel(IDataLabel label, string name, TeuchiUdonType type)
         {
-            return
+            return new TeuchiUdonDataLabelWrapper
             (
-                name,
-                new TeuchiUdonDataLabelWrapper
-                (
-                    new TextDataLabel($"{label.GetFullLabel()}>{label.Type.LogicalName}[{name}]", type),
-                    Reverse,
-                    LabelFunc,
-                    ListFunc
-                )
+                new TextDataLabel($"{label.GetFullLabel()}>{label.Type.LogicalName}[{name}]", type),
+                Reverse,
+                LabelFunc,
+                ListFunc
             );
         }
 

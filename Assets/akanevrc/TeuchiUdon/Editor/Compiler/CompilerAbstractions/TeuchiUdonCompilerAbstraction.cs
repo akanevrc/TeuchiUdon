@@ -30,7 +30,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalMethod
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> inValues,
-            IEnumerable<TeuchiUdonOutValue> outValues,
+            IEnumerable<IDataLabel> outValues,
             TeuchiUdonMethod method
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> CallMethod
@@ -625,7 +625,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 case "<-":
                 {
                     return
-                        result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) || result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                        result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) || result.Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                             Enumerable.Empty<TeuchiUdonAssembly>() :
                         result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
                             EvalAssign

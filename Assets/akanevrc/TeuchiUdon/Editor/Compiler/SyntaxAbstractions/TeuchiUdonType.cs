@@ -153,6 +153,46 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return obj != null && LogicalName == obj.LogicalName && Args.SequenceEqual(obj.Args, ITeuchiUdonTypeArgLogicalEqualityComparer.Instance);
         }
 
+        public IEnumerable<(string name, TeuchiUdonType type)> GetMembers()
+        {
+            if (RealType == null)
+            {
+                return Enumerable.Empty<(string, TeuchiUdonType)>();
+            }
+            else if (LogicalTypeNameEquals(TeuchiUdonType.Tuple))
+            {
+                return GetArgsAsTuple().Select((x, i) => (i.ToString(), x));
+            }
+            else if (LogicalTypeNameEquals(TeuchiUdonType.Array))
+            {
+                return new (string, TeuchiUdonType)[] { ("", this) };
+            }
+            else
+            {
+                return new (string, TeuchiUdonType)[] { ("", this) };
+            }
+        }
+
+        public int GetMemberCount()
+        {
+            if (RealType == null)
+            {
+                return 0;
+            }
+            else if (LogicalTypeNameEquals(TeuchiUdonType.Tuple))
+            {
+                return GetArgsAsTuple().Sum(x => x.GetMemberCount());
+            }
+            else if (LogicalTypeNameEquals(TeuchiUdonType.Array))
+            {
+                return 1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
         public bool IsAssignableFrom(TeuchiUdonType obj)
         {
             return
