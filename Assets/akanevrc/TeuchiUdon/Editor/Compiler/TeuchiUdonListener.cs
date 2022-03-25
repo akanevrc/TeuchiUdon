@@ -1178,15 +1178,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     }
                 }
             }
-            else if
-            (
-                expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Array) &&
-                argArray.Length == 1 &&
-                argArray[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int)
-            )
+            else if (argArray.Length == 1 && argArray[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Int))
             {
-                var qual = TeuchiUdonQualifierStack.Instance.Peek();
-                return new EvalArrayIndexerResult(token, expr.Inner.Type.GetArgAsArray(), qual, expr, argArray[0]);
+                if (expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Array))
+                {
+                    var qual = TeuchiUdonQualifierStack.Instance.Peek();
+                    return new EvalArrayIndexerResult(token, expr.Inner.Type.GetArgAsArray(), qual, expr, argArray[0]);
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                    return new InvalidResult(token);
+                }
             }
             else
             {

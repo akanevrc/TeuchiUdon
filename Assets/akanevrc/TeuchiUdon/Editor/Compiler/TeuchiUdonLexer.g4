@@ -55,7 +55,6 @@ THIS_LITERAL : 'this';
 
 IDENTIFIER : IdentifierOrKeyword;
 
-LITERAL_ACCESS      : [0-9] ('_'* [0-9])* IntegerTypeSuffix? '.' '@'? IdentifierOrKeyword;
 INTEGER_LITERAL     : [0-9] ('_'* [0-9])* IntegerTypeSuffix?;
 HEX_INTEGER_LITERAL : '0' [xX] ('_'* HexDigit)+ IntegerTypeSuffix?;
 BIN_INTEGER_LITERAL : '0' [bB] ('_'* [01]    )+ IntegerTypeSuffix?;
