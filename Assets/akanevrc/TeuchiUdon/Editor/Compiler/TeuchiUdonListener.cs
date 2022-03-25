@@ -1098,10 +1098,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new ExprResult(evalFunc.Token, evalFunc);
         }
 
-        public override void ExitNameOfExpr([NotNull] NameOfExprContext context)
-        {
-        }
-
         public override void ExitEvalSingleKeyExpr([NotNull] EvalSingleKeyExprContext context)
         {
             var exprs = context.expr().Select(x => x?.result).ToArray();

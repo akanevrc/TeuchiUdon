@@ -35,7 +35,6 @@ IS       : 'is'       ;
 LET      : 'let'      ;
 MODULE   : 'module'   ;
 MUT      : 'mut'      ;
-NAMEOF   : 'nameof'   ;
 NEWTYPE  : 'newtype'  ;
 OF       : 'of'       ;
 REF      : 'ref'      ;
