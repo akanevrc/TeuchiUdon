@@ -155,7 +155,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new Assembly_INDENT(1)
                 }
                 .Concat(stats.SelectMany(x => VisitTopStatement(x)))
-                .Concat(v?.Type.LogicalTypeNameEquals(TeuchiUdonType.Func) ?? false ?
+                .Concat(v?.Type.IsFunc() ?? false ?
                     EvalFunc
                     (
                         ev.OutParamUdonNames

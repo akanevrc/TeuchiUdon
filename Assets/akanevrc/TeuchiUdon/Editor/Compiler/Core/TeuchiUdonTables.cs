@@ -136,6 +136,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Array,
                 TeuchiUdonType.List,
                 TeuchiUdonType.Func,
+                TeuchiUdonType.DetFunc,
                 TeuchiUdonType.Method
             };
 

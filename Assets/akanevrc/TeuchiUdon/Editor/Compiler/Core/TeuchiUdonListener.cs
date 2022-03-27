@@ -51,7 +51,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else if (context is ExprContext expr && expr.result != null)
             {
-                foreach (var child in expr.result.Inner.Children) child.ReleaseOutValues();
+                foreach (var child in expr.result.Inner.ReleasedChildren) child.ReleaseOutValues();
             }
         }
 
@@ -111,7 +111,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"tuple cannot be specified with any attributes");
                 }
             }
-            else if (varBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func))
+            else if (varBind.Vars[0].Type.IsFunc())
             {
                 if (sync != TeuchiUdonSyncMode.Disable)
                 {
@@ -262,7 +262,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = expr.Inner.Type;
                 if (v.Type.IsAssignableFrom(t))
                 {
-                    if (t.IsUnknown())
+                    if (t.ContainsUnknown())
                     {
                         expr.Inner.BindType(v.Type);
                     }
@@ -294,7 +294,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     var ts = expr.Inner.Type.GetArgsAsTuple().ToArray();
                     if (vs.Length == ts.Length && varDecl.Types.Zip(ts, (v, t) => (v, t)).All(x => x.v.IsAssignableFrom(x.t)))
                     {
-                        if (expr.Inner.Type.IsUnknown())
+                        if (expr.Inner.Type.ContainsUnknown())
                         {
                             expr.Inner.BindType(TeuchiUdonType.ToOneType(vs.Select(x => x.Type)));
                         }
@@ -327,7 +327,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
 
-            if (mut && vars.Any(x => x.Type.LogicalTypeNameEquals(TeuchiUdonType.Func)))
+            if (mut && vars.Any(x => x.Type.IsFunc()))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function variable cannot be mutable");
             }
@@ -360,6 +360,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private VarDeclResult ExitVarDecl(IToken token, IEnumerable<QualifiedVarResult> qualifiedVars, bool isActual)
         {
+            if (!isActual && qualifiedVars.Any(x => x.Qualified.Inner.Type.ContainsNonDetFunc()))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"function arguments cannot contain nondeterministic function");
+            }
+
             var oldQual = (TeuchiUdonQualifier)null;
             if (isActual) oldQual = TeuchiUdonQualifierStack.Instance.Pop();
 
@@ -819,7 +824,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
                         {
-                            TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate2.Token, $"arguments of method '{varCandidate2.Identifier.Name}' is nondeterministic");
+                            TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate2.Token, $"method '{varCandidate2.Identifier.Name}' has multiple overloads");
                             eval = new InvalidResult(varCandidate2.Token);
                             break;
                         }
@@ -877,7 +882,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
                         {
-                            TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate2.Token, $"arguments of method '{varCandidate2.Identifier.Name}' is nondeterministic");
+                            TeuchiUdonLogicalErrorHandler.Instance.ReportError(varCandidate2.Token, $"method '{varCandidate2.Identifier.Name}' has multiple overloads");
                             eval = new InvalidResult(varCandidate2.Token);
                             break;
                         }
@@ -914,7 +919,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var type2 = exprs[1].Inner.Type;
             if (type1.IsAssignableFrom(type2) || type2.IsAssignableFrom(type1))
             {
-                if (type2.IsUnknown())
+                if (type2.ContainsUnknown())
                 {
                     exprs[1].Inner.BindType(type1);
                 }
@@ -993,7 +998,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var qual     = TeuchiUdonQualifierStack.Instance.Peek();
             var evalFunc = (TypedResult)null;
 
-            if (type.LogicalTypeNameEquals(TeuchiUdonType.Func))
+            if (type.IsFunc())
             {
                 if (argRefs.Any(x => x))
                 {
@@ -1005,7 +1010,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     var argTypes = argExprs.Select(x => x.Expr.Inner.Type).ToArray();
                     var iType    = TeuchiUdonType.ToOneType(argTypes);
                     var oType    = TeuchiUdonType.Unknown;
-                    if (type.IsAssignableFrom(TeuchiUdonType.Func.ApplyArgsAsFunc(iType, oType)))
+                    if (type.IsAssignableFrom(TeuchiUdonType.DetFunc.ApplyArgsAsFunc(iType, oType)))
                     {
                         var outType = type.GetArgAsFuncOutType();
                         var index   = TeuchiUdonTables.Instance.GetEvalFuncIndex();
@@ -1050,7 +1055,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of method is nondeterministic");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"method has multiple overloads");
                     evalFunc = new InvalidResult(token);
                 }
             }
@@ -1085,7 +1090,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of ctor is nondeterministic");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"ctor has multiple overloads");
                     evalFunc = new InvalidResult(token);
                 }
             }
@@ -1117,12 +1122,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"spread expression is not a tuple type");
                 evalFunc = new InvalidResult(token);
             }
-            else if (type.LogicalTypeNameEquals(TeuchiUdonType.Func))
+            else if (type.IsFunc())
             {
                 var argTypes = arg.Inner.Type.GetArgsAsTuple().ToArray();
                 var iType    = TeuchiUdonType.ToOneType(argTypes);
                 var oType    = TeuchiUdonType.Unknown;
-                if (type.IsAssignableFrom(TeuchiUdonType.Func.ApplyArgsAsFunc(iType, oType)))
+                if (type.IsAssignableFrom(TeuchiUdonType.DetFunc.ApplyArgsAsFunc(iType, oType)))
                 {
                     var outType = type.GetArgAsFuncOutType();
                     var index   = TeuchiUdonTables.Instance.GetEvalFuncIndex();
@@ -1160,7 +1165,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of method is nondeterministic");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"method has multiple overloads");
                     evalFunc = new InvalidResult(token);
                 }
             }
@@ -1190,7 +1195,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"arguments of ctor is nondeterministic");
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"ctor has multiple overloads");
                     evalFunc = new InvalidResult(token);
                 }
             }
@@ -1256,6 +1261,36 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var type = TeuchiUdonType.List
                             .ApplyArgAsList(argTypes[0])
                             .ApplyRealType(TeuchiUdonType.AnyArray.GetRealName(), TeuchiUdonType.AnyArray.RealType);
+                        return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                        return new InvalidResult(token);
+                    }
+                }
+                else if (exprType.LogicalTypeEquals(TeuchiUdonType.Func))
+                {
+                    if (argTypes.Length == 2)
+                    {
+                        var type = TeuchiUdonType.Func
+                            .ApplyArgsAsFunc(argTypes[0], argTypes[1])
+                            .ApplyRealType(TeuchiUdonType.UInt.GetRealName(), TeuchiUdonType.UInt.RealType);
+                        return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified key is invalid");
+                        return new InvalidResult(token);
+                    }
+                }
+                else if (exprType.LogicalTypeEquals(TeuchiUdonType.DetFunc))
+                {
+                    if (argTypes.Length == 2)
+                    {
+                        var type = TeuchiUdonType.DetFunc
+                            .ApplyArgsAsFunc(argTypes[0], argTypes[1])
+                            .ApplyRealType(TeuchiUdonType.UInt.GetRealName(), TeuchiUdonType.UInt.RealType);
                         return new EvalTypeResult(token, TeuchiUdonType.Type.ApplyArgAsType(type), type);
                     }
                     else
@@ -1607,10 +1642,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             TeuchiUdonQualifierStack.Instance.Pop();
 
-            var qual    = TeuchiUdonQualifierStack.Instance.Peek();
-            var inType  = TeuchiUdonType.ToOneType(varDecl.Types);
-            var outType = expr.Inner.Type;
-            var type    = TeuchiUdonType.Func.ApplyArgsAsFunc(inType, outType);
+            var qual          = TeuchiUdonQualifierStack.Instance.Peek();
+            var inType        = TeuchiUdonType.ToOneType(varDecl.Types);
+            var outType       = expr.Inner.Type;
+            var deterministic = expr.Inner.Deterministic && varDecl.Vars.All(x => !x.Type.ContainsFunc());
+
+            var type =
+                deterministic ?
+                    new TeuchiUdonType
+                    (
+                        TeuchiUdonQualifier.Top,
+                        TeuchiUdonType.DetFunc.Name,
+                        new TeuchiUdonType[] { inType, outType },
+                        TeuchiUdonType.DetFunc.LogicalName,
+                        TeuchiUdonType.UInt.GetRealName(),
+                        TeuchiUdonType.UInt.RealType
+                    ) :
+                    new TeuchiUdonType
+                    (
+                        TeuchiUdonQualifier.Top,
+                        TeuchiUdonType.Func.Name,
+                        new TeuchiUdonType[] { inType, outType },
+                        TeuchiUdonType.Func.LogicalName,
+                        TeuchiUdonType.UInt.GetRealName(),
+                        TeuchiUdonType.UInt.RealType
+                    );
 
             var varBind = qual.GetLast<TeuchiUdonVarBind>();
             if (varBind != null && varBind.Qualifier == TeuchiUdonQualifier.Top && varBind.VarNames.Length == 1 && TeuchiUdonTables.Instance.Events.ContainsKey(varBind.VarNames[0]))
@@ -1655,7 +1711,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var index      = context.tableIndex;
-            var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr);
+            var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr, deterministic);
             context.result = new ExprResult(func.Token, func);
         }
 

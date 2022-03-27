@@ -12,20 +12,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public TeuchiUdonVar[] Vars { get; }
         public ExprResult Expr { get; }
         public TeuchiUdonReturn Return { get; }
+        public bool Deterministic { get; }
 
         public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier)
-            : this(index, qualifier, null, null, null)
+            : this(index, qualifier, null, null, null, false)
         {
         }
 
-        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr)
+        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr, bool deterministic)
         {
-            Index     = index;
-            Qualifier = qualifier;
-            Type      = type;
-            Vars      = vars?.ToArray();
-            Expr      = expr;
-            Return    = new TeuchiUdonReturn(index, this);
+            Index         = index;
+            Qualifier     = qualifier;
+            Type          = type;
+            Vars          = vars?.ToArray();
+            Expr          = expr;
+            Return        = new TeuchiUdonReturn(index, this);
+            Deterministic = deterministic;
         }
 
         public bool Equals(TeuchiUdonFunc obj)

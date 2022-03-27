@@ -22,7 +22,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Array { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array", "array", null, null);
         public static TeuchiUdonType AnyArray { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "anyarray", "array", "SystemObjectArray", typeof(object[])).ApplyArgAsArray(new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object)));
         public static TeuchiUdonType List { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list", "list", null, null);
-        public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", "SystemUInt32", typeof(uint));
+        public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", null, null);
+        public static TeuchiUdonType DetFunc { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "detfunc", "detfunc", null, null);
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType NullType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "nulltype", "nulltype", "SystemObject", typeof(object));
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
@@ -208,6 +209,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     IsAssignableFromArray   (obj) ||
                     IsAssignableFromList    (obj) ||
                     IsAssignableFromFunc    (obj) ||
+                    IsAssignableFromDetFunc (obj) ||
                     IsAssignableFromNullType(obj) ||
                     IsAssignableFromDotNet  (obj)
                 );
@@ -296,7 +298,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private bool IsAssignableFromFunc(TeuchiUdonType obj)
         {
             if (obj == null) return false;
-            if (!LogicalTypeNameEquals(TeuchiUdonType.Func) || !obj.LogicalTypeNameEquals(TeuchiUdonType.Func)) return false;
+            if
+            (
+                !    LogicalTypeNameEquals(TeuchiUdonType.Func) ||
+                !obj.LogicalTypeNameEquals(TeuchiUdonType.Func) && !obj.LogicalTypeNameEquals(TeuchiUdonType.DetFunc)
+            ) return false;
+
+            return
+                    GetArgAsFuncInType ().IsAssignableFrom(obj.GetArgAsFuncInType ()) &&
+                obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
+        }
+
+        private bool IsAssignableFromDetFunc(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.DetFunc) || !obj.LogicalTypeNameEquals(TeuchiUdonType.DetFunc)) return false;
 
             return
                     GetArgAsFuncInType ().IsAssignableFrom(obj.GetArgAsFuncInType ()) &&
@@ -446,9 +462,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             .Any(x => LogicalTypeEquals(x));
         }
 
-        public bool IsUnknown()
+        public bool IsFunc()
         {
-            return LogicalTypeEquals(TeuchiUdonType.Unknown) || Args.Any(x => x is TeuchiUdonType t && t.IsUnknown());
+            return LogicalTypeNameEquals(TeuchiUdonType.Func) || LogicalTypeNameEquals(TeuchiUdonType.DetFunc);
+        }
+
+        public bool ContainsUnknown()
+        {
+            return LogicalTypeEquals(TeuchiUdonType.Unknown) || Args.Any(x => x is TeuchiUdonType t && t.ContainsUnknown());
+        }
+
+        public bool ContainsFunc()
+        {
+            return IsFunc() || Args.Any(x => x is TeuchiUdonType t && t.ContainsFunc());
+        }
+
+        public bool ContainsNonDetFunc()
+        {
+            return LogicalTypeNameEquals(TeuchiUdonType.Func) || Args.Any(x => x is TeuchiUdonType t && t.ContainsNonDetFunc());
         }
 
         public TeuchiUdonType Fix(TeuchiUdonType type)

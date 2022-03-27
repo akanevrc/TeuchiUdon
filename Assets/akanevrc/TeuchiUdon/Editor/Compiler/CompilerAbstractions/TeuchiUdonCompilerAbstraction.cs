@@ -246,7 +246,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var topEvents = result.TopStatements
                 .Where(x =>
                     x is TopBindResult topBind &&
-                    topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func) &&
+                    topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.IsFunc() &&
                     (TeuchiUdonTables.Instance.Events.ContainsKey(topBind.VarBind.Vars[0].Name) || topBind.Public)
                 )
                 .Cast<TopBindResult>()
@@ -260,7 +260,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var topStats = result.TopStatements
                 .Where(x =>
                     !(x is TopBindResult topBind) ||
-                    topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.LogicalTypeNameEquals(TeuchiUdonType.Func) ||
+                    topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.IsFunc() ||
                     !topBind.Public
                 )
                 .ToArray();
