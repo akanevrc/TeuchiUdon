@@ -251,7 +251,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             TeuchiUdonQualifierStack.Instance.Pop();
 
-            var mut   = context.MUT() != null;
+            var mut = context.MUT() != null;
+
+            if (mut && expr.Inner.Type.IsFunc())
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function variable cannot be mutable");
+                return;
+            }
+
             var index = context.tableIndex;
             var qual  = TeuchiUdonQualifierStack.Instance.Peek();
 
@@ -1625,6 +1632,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(letInBind.Token, letInBind);
         }
 
+        public override void ExitIfExpr([NotNull] IfExprContext context)
+        {
+        }
+
+        public override void ExitIfElifExpr([NotNull] IfElifExprContext context)
+        {
+        }
+
+        public override void ExitIfElseExpr([NotNull] IfElseExprContext context)
+        {
+        }
+
+        public override void ExitIfElifElseExpr([NotNull] IfElifElseExprContext context)
+        {
+        }
+
+        public override void ExitWhileExpr([NotNull] WhileExprContext context)
+        {
+        }
+
+        public override void ExitForExpr([NotNull] ForExprContext context)
+        {
+        }
+
+        public override void ExitLoopExpr([NotNull] LoopExprContext context)
+        {
+        }
+
         public override void EnterFuncExpr([NotNull] FuncExprContext context)
         {
             var index          = TeuchiUdonTables.Instance.GetFuncIndex();
@@ -1714,15 +1749,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr, deterministic);
             context.result = new ExprResult(func.Token, func);
         }
-
-        public override void ExitArgExpr([NotNull] ArgExprContext context)
-        {
-            var expr = context.expr()?.result;
-            var rf   = context.REF() != null;
-            if (expr == null) return;
-
-            context.result = new ArgExprResult(context.Start, expr, rf);
-        }
         
         public override void ExitElementsIterExpr([NotNull] ElementsIterExprContext context)
         {
@@ -1802,6 +1828,35 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (expr == null) return;
 
             context.result = new ElementExprResult(context.Start, expr);
+        }
+
+        public override void ExitArgExpr([NotNull] ArgExprContext context)
+        {
+            var expr = context.expr()?.result;
+            var rf   = context.REF() != null;
+            if (expr == null) return;
+
+            context.result = new ArgExprResult(context.Start, expr, rf);
+        }
+
+        public override void ExitLetForBind([NotNull] LetForBindContext context)
+        {
+        }
+
+        public override void ExitAssignForBind([NotNull] AssignForBindContext context)
+        {
+        }
+
+        public override void ExitRangeForIterExpr([NotNull] RangeForIterExprContext context)
+        {
+        }
+
+        public override void ExitSteppedRangeForIterExpr([NotNull] SteppedRangeForIterExprContext context)
+        {
+        }
+
+        public override void ExitSpreadForIterExpr([NotNull] SpreadForIterExprContext context)
+        {
         }
 
         public override void ExitUnitLiteral([NotNull] UnitLiteralContext context)

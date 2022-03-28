@@ -1928,13 +1928,97 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             if (TypeBound || type.ContainsUnknown()) return;
             Expr.Inner.BindType(type);
-            Type       = Type.Fix(type);
+            Type      = Type.Fix(type);
             TypeBound = true;
         }
 
         public override void ReleaseOutValues()
         {
             Expr.Inner.ReleaseOutValues();
+        }
+    }
+
+    public class IfReslut : TypedResult
+    {
+        public IfReslut(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
+        }
+    }
+
+    public class WhileResult : TypedResult
+    {
+        public WhileResult(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
+        }
+    }
+
+    public class ForResult : TypedResult
+    {
+        public ForResult(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
+        }
+    }
+
+    public class LoopResult : TypedResult
+    {
+        public LoopResult(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
         }
     }
 
@@ -1998,19 +2082,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ReleaseOutValues()
         {
-        }
-    }
-
-    public class ArgExprResult : TeuchiUdonParserResult
-    {
-        public ExprResult Expr { get; }
-        public bool Ref { get; }
-
-        public ArgExprResult(IToken token, ExprResult expr, bool rf)
-            : base(token)
-        {
-            Expr = expr;
-            Ref  = rf;
         }
     }
 
@@ -2414,6 +2485,412 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token)
         {
             Expr = expr;
+        }
+    }
+
+    public class ArgExprResult : TeuchiUdonParserResult
+    {
+        public ExprResult Expr { get; }
+        public bool Ref { get; }
+
+        public ArgExprResult(IToken token, ExprResult expr, bool rf)
+            : base(token)
+        {
+            Expr = expr;
+            Ref  = rf;
+        }
+    }
+
+    public abstract class ForBindResult : TypedResult
+    {
+        public ForBindResult(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+    }
+
+    public class LetForBindResult : ForBindResult
+    {
+        public LetForBindResult(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
+        }
+    }
+
+    public class AssignForBindResult : ForBindResult
+    {
+        public AssignForBindResult(IToken token, TeuchiUdonType type)
+            : base(token, type)
+        {
+        }
+
+        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        public override void ReleaseOutValues()
+        {
+        }
+    }
+
+    public abstract class ForIterExprResult : ExternResult
+    {
+        public ForIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier)
+            : base(token, type, qualifier)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+    }
+
+    public class RangeForIterExprResult : ForIterExprResult
+    {
+        public ExprResult First { get; }
+        public ExprResult Last { get; }
+
+        public RangeForIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult first, ExprResult last)
+            : base(token, type, qualifier)
+        {
+            First = first;
+            Last  = last;
+            Init();
+        }
+
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { First.Inner, Last.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { First.Inner, Last.Inner };
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            var convertMethodName = TeuchiUdonMethod.GetConvertMethodName(TeuchiUdonType.Int);
+            return new (string, TeuchiUdonMethod)[]
+            {
+                (
+                    "lessThanOrEqual",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_LessThanOrEqual" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "greaterThan",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_GreaterThan" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "convert",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { new TeuchiUdonType("SystemConvert") },
+                        true,
+                        new string[] { convertMethodName },
+                        new TeuchiUdonType[] { Type }
+                    )
+                ),
+                (
+                    "addition",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Addition" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "subtraction",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Subtraction" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                )
+            };
+        }
+
+        protected override bool CreateOutValuesForMethods => false;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return new (string, TeuchiUdonType)[]
+            {
+                ("value"      , Type),
+                ("limit"      , Type),
+                ("condition"  , TeuchiUdonType.Bool),
+                ("length"     , TeuchiUdonType.Int),
+                ("valueLength", Type),
+            };
+        }
+
+        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
+        {
+            return Enumerable.Empty<TeuchiUdonOutValue>();
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return new (string, TeuchiUdonLiteral)[]
+            {
+                ("step", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "1", Type))
+            };
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return new (string, ICodeLabel)[]
+            {
+                ("branch1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch2", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("loop1"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex())),
+                ("loop2"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex()))
+            };
+        }
+    }
+
+    public class SteppedRangeForIterExprResult : ForIterExprResult
+    {
+        public ExprResult First { get; }
+        public ExprResult Last { get; }
+        public ExprResult Step { get; }
+
+        public SteppedRangeForIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult first, ExprResult last, ExprResult step)
+            : base(token, type, qualifier)
+        {
+            First = first;
+            Last  = last;
+            Step  = step;
+            Init();
+        }
+
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { First.Inner, Last.Inner, Step.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { First.Inner, Last.Inner, Step.Inner };
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            var convertMethodName = TeuchiUdonMethod.GetConvertMethodName(TeuchiUdonType.Int);
+            return new (string, TeuchiUdonMethod)[]
+            {
+                (
+                    "keyGreaterThan",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { TeuchiUdonType.Int },
+                        true,
+                        new string[] { "op_GreaterThan" },
+                        new TeuchiUdonType[] { TeuchiUdonType.Int, TeuchiUdonType.Int }
+                    )
+                ),
+                (
+                    "equality",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Equality" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "lessThanOrEqual",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_LessThanOrEqual" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "greaterThan",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_GreaterThan" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "convert",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { new TeuchiUdonType("SystemConvert") },
+                        true,
+                        new string[] { convertMethodName },
+                        new TeuchiUdonType[] { Type }
+                    )
+                ),
+                (
+                    "addition",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Addition" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "subtraction",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Subtraction" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                ),
+                (
+                    "division",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Type },
+                        true,
+                        new string[] { "op_Division" },
+                        new TeuchiUdonType[] { Type, Type }
+                    )
+                )
+            };
+        }
+
+        protected override bool CreateOutValuesForMethods => false;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return new (string, TeuchiUdonType)[]
+            {
+                ("value"      , Type),
+                ("limit"      , Type),
+                ("step"       , Type),
+                ("isUpTo"     , TeuchiUdonType.Bool),
+                ("condition"  , TeuchiUdonType.Bool),
+                ("length"     , TeuchiUdonType.Int),
+                ("valueLength", Type),
+            };
+        }
+
+        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
+        {
+            return Enumerable.Empty<TeuchiUdonOutValue>();
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return new (string, TeuchiUdonLiteral)[]
+            {
+                ("1", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "1", Type))
+            };
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return new (string, ICodeLabel)[]
+            {
+                ("branch1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch2", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch3", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch4", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch5", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch6", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch7", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("branch8", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("loop1"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex())),
+                ("loop2"  , new TeuchiUdonLoop  (TeuchiUdonTables.Instance.GetLoopIndex()))
+            };
+        }
+    }
+
+    public class SpreadForIterExprResult : ForIterExprResult
+    {
+        public ExprResult Expr { get; }
+
+        public SpreadForIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult expr)
+            : base(token, type, qualifier)
+        {
+            Expr = expr;
+            Init();
+        }
+
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner };
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            var arrayType = Type.ToArrayType();
+            return new (string, TeuchiUdonMethod)[]
+            {
+                (
+                    "clone",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { arrayType },
+                        false,
+                        new string[] { "Clone" },
+                        new TeuchiUdonType[] { arrayType }
+                    )
+                )
+            };
+        }
+
+        protected override bool CreateOutValuesForMethods => false;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonType)>();
+        }
+
+        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
+        {
+            return Enumerable.Empty<TeuchiUdonOutValue>();
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return Enumerable.Empty<(string, ICodeLabel)>();
         }
     }
 }
