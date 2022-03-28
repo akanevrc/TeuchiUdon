@@ -1,0 +1,3 @@
+// 300
+f = (x : int) -> (y : int) -> x + y;
+UnityEngine.Debug.Log(f(100)(200));
