@@ -865,16 +865,6 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitSpreadIterExpr([NotNull] TeuchiUdonParser.SpreadIterExprContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.elementExpr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterElementExpr([NotNull] TeuchiUdonParser.ElementExprContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.elementExpr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitElementExpr([NotNull] TeuchiUdonParser.ElementExprContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.argExpr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -944,6 +934,16 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitSpreadForIterExpr([NotNull] TeuchiUdonParser.SpreadForIterExprContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.isoExpr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIsoExpr([NotNull] TeuchiUdonParser.IsoExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.isoExpr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIsoExpr([NotNull] TeuchiUdonParser.IsoExprContext context);
 	/// <summary>
 	/// Enter a parse tree produced by the <c>UnitLiteral</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.

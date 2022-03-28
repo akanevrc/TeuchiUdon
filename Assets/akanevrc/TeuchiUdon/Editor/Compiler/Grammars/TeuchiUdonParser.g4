@@ -72,63 +72,58 @@ statement
 
 expr
     returns [ExprResult result, int tableIndex]
-    : '{' (statement ';')* '}'                                                  #UnitBlockExpr
-    | '{' (statement ';')* expr '}'                                             #ValueBlockExpr
-    | '(' expr ')'                                                              #ParenExpr
-    | '(' expr (',' expr)+ ')'                                                  #TupleExpr
-    | '[|' '|]'                                                                 #EmptyArrayCtorExpr
-    | '[|' iterExpr '|]'                                                        #ArrayCtorExpr
-    | '[' ']'                                                                   #EmptyListCtorExpr
-    | '[' iterExpr (',' iterExpr)* ']'                                          #ListCtorExpr
-    | literal                                                                   #LiteralExpr
-    | thisLiteral                                                               #ThisLiteralExpr
-    | identifier                                                                #EvalVarExpr
-    | expr op=('.' | '?.') expr                                                 #AccessExpr
-    | expr '.' 'cast' '(' expr ')'                                              #CastExpr
-    | expr '(' ')'                                                              #EvalUnitFuncExpr
-    | expr '(' argExpr ')'                                                      #EvalSingleFuncExpr
-    | expr '(' argExpr (',' argExpr)+ ')'                                       #EvalTupleFuncExpr
-    | expr '(' '...' expr ')'                                                   #EvalSpreadFuncExpr
-    | expr '[' expr ']'                                                         #EvalSingleKeyExpr
-    | expr '[' expr (',' expr)+ ']'                                             #EvalTupleKeyExpr
-    | op=('+' | '-' | '!' | '~') expr                                           #PrefixExpr
-    | expr op=('*' | '/' | '%') expr                                            #MultiplicationExpr
-    | expr op=('+' | '-') expr                                                  #AdditionExpr
-    | expr op=('<<' | '>>') expr                                                #ShiftExpr
-    | expr op=('<' | '>' | '<=' | '>=') expr                                    #RelationExpr
-    | expr op=('==' | '!=') expr                                                #EqualityExpr
-    | expr op='&' expr                                                          #LogicalAndExpr
-    | expr op='^' expr                                                          #LogicalXorExpr
-    | expr op='|' expr                                                          #LogicalOrExpr
-    | expr op='&&' expr                                                         #ConditionalAndExpr
-    | expr op='||' expr                                                         #ConditionalOrExpr
-    | expr op='??' expr                                                         #CoalescingExpr
-    | expr '|>' expr                                                            #RightPipelineExpr
-    |<assoc=right> expr '<|' expr                                               #LeftPipelineExpr
-    |<assoc=right> expr '?' expr ':' expr                                       #ConditionalExpr
-    |<assoc=right> expr op='<-' expr                                            #AssignExpr
-    | 'let' varBind 'in' expr                                                   #LetInBindExpr
-    |<assoc=right> 'if' expr 'then' expr                                        #IfExpr
-    |<assoc=right> 'if' expr 'then' expr ('elif' expr 'then' expr)+             #IfElifExpr
-    |<assoc=right> 'if' expr 'then' expr 'else' expr                            #IfElseExpr
-    |<assoc=right> 'if' expr 'then' expr ('elif' expr 'then' expr)+ 'else' expr #IfElifElseExpr
-    |<assoc=right> 'while' expr 'do' expr                                       #WhileExpr
-    |'for' forBind (',' forBind)* 'do' expr                                     #ForExpr
-    |'loop' expr                                                                #LoopExpr
-    | varDecl[false] '->' expr                                                  #FuncExpr
+    : '{' (statement ';')* '}'                                                                 #UnitBlockExpr
+    | '{' (statement ';')* expr '}'                                                            #ValueBlockExpr
+    | '(' expr ')'                                                                             #ParenExpr
+    | '(' expr (',' expr)+ ')'                                                                 #TupleExpr
+    | '[|' '|]'                                                                                #EmptyArrayCtorExpr
+    | '[|' iterExpr '|]'                                                                       #ArrayCtorExpr
+    | '[' ']'                                                                                  #EmptyListCtorExpr
+    | '[' iterExpr (',' iterExpr)* ']'                                                         #ListCtorExpr
+    | literal                                                                                  #LiteralExpr
+    | thisLiteral                                                                              #ThisLiteralExpr
+    | identifier                                                                               #EvalVarExpr
+    | expr op=('.' | '?.') expr                                                                #AccessExpr
+    | expr '.' 'cast' '(' expr ')'                                                             #CastExpr
+    | expr '(' ')'                                                                             #EvalUnitFuncExpr
+    | expr '(' argExpr ')'                                                                     #EvalSingleFuncExpr
+    | expr '(' argExpr (',' argExpr)+ ')'                                                      #EvalTupleFuncExpr
+    | expr '(' '...' expr ')'                                                                  #EvalSpreadFuncExpr
+    | expr '[' expr ']'                                                                        #EvalSingleKeyExpr
+    | expr '[' expr (',' expr)+ ']'                                                            #EvalTupleKeyExpr
+    | op=('+' | '-' | '!' | '~') expr                                                          #PrefixExpr
+    | expr op=('*' | '/' | '%') expr                                                           #MultiplicationExpr
+    | expr op=('+' | '-') expr                                                                 #AdditionExpr
+    | expr op=('<<' | '>>') expr                                                               #ShiftExpr
+    | expr op=('<' | '>' | '<=' | '>=') expr                                                   #RelationExpr
+    | expr op=('==' | '!=') expr                                                               #EqualityExpr
+    | expr op='&' expr                                                                         #LogicalAndExpr
+    | expr op='^' expr                                                                         #LogicalXorExpr
+    | expr op='|' expr                                                                         #LogicalOrExpr
+    | expr op='&&' expr                                                                        #ConditionalAndExpr
+    | expr op='||' expr                                                                        #ConditionalOrExpr
+    | expr op='??' expr                                                                        #CoalescingExpr
+    | expr '|>' expr                                                                           #RightPipelineExpr
+    |<assoc=right> expr '<|' expr                                                              #LeftPipelineExpr
+    |<assoc=right> expr '?' expr ':' expr                                                      #ConditionalExpr
+    |<assoc=right> expr op='<-' expr                                                           #AssignExpr
+    | 'let' varBind 'in' expr                                                                  #LetInBindExpr
+    |<assoc=right> 'if' isoExpr 'then' isoExpr                                                 #IfExpr
+    |<assoc=right> 'if' isoExpr 'then' isoExpr  'else' isoExpr                                 #IfElseExpr
+    |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+                #IfElifExpr
+    |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+ 'else' isoExpr #IfElifElseExpr
+    |<assoc=right> 'while' expr 'do' expr                                                      #WhileExpr
+    |'for' forBind (',' forBind)* 'do' expr                                                    #ForExpr
+    |'loop' expr                                                                               #LoopExpr
+    | varDecl[false] '->' expr                                                                 #FuncExpr
     ;
 
 iterExpr
     returns [IterExprResult result]
-    : elementExpr (',' elementExpr)* #ElementsIterExpr
-    | expr '..' expr                 #RangeIterExpr
-    | expr '..' expr '..' expr       #SteppedRangeIterExpr
-    | '...' expr                     #SpreadIterExpr
-    ;
-
-elementExpr
-    returns [ElementExprResult result]
-    : expr
+    : isoExpr (',' isoExpr)*   #ElementsIterExpr
+    | expr '..' expr           #RangeIterExpr
+    | expr '..' expr '..' expr #SteppedRangeIterExpr
+    | '...' expr               #SpreadIterExpr
     ;
 
 argExpr
@@ -147,6 +142,11 @@ forIterExpr
     : expr '..' expr           #RangeForIterExpr
     | expr '..' expr '..' expr #SteppedRangeForIterExpr
     | expr                     #SpreadForIterExpr
+    ;
+
+isoExpr
+    returns [IsoExprResult result]
+    : expr
     ;
 
 literal

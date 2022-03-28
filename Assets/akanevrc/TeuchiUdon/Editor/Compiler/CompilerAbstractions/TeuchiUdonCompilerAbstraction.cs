@@ -49,10 +49,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonAssembly> IfElse
         (
             IEnumerable<TeuchiUdonAssembly> condition,
-            IEnumerable<TeuchiUdonAssembly> truePart,
-            IEnumerable<TeuchiUdonAssembly> falsePart,
+            IEnumerable<TeuchiUdonAssembly> thenPart,
+            IEnumerable<TeuchiUdonAssembly> elsePart,
             ICodeLabel label1,
             ICodeLabel label2
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> IfElif
+        (
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
+            IEnumerable<ICodeLabel> labels
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> IfElifElse
+        (
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
+            IEnumerable<TeuchiUdonAssembly> elsePart,
+            IEnumerable<ICodeLabel> labels
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> EmptyArrayCtor
         (
@@ -209,7 +222,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is TupleResult            tuple           ) return VisitTuple           (tuple);
             if (result is ArrayCtorResult        arrayCtor       ) return VisitArrayCtor       (arrayCtor);
             if (result is LiteralResult          literal         ) return VisitLiteral         (literal);
-            if (result is ThisResult             ths             ) return VisitThis            (ths);
+            if (result is ThisResult             this_           ) return VisitThis            (this_);
             if (result is EvalVarResult          evalVar         ) return VisitEvalVar         (evalVar);
             if (result is EvalTypeResult         evalType        ) return VisitEvalType        (evalType);
             if (result is EvalQualifierResult    evalQualifier   ) return VisitEvalQualifier   (evalQualifier);
@@ -227,6 +240,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is InfixResult            infix           ) return VisitInfix           (infix);
             if (result is ConditionalResult      conditional     ) return VisitConditional     (conditional);
             if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
+            if (result is IfResult               if_             ) return VisitIf              (if_);
+            if (result is WhileResult            while_          ) return VisitWhile           (while_);
+            if (result is ForResult              for_            ) return VisitFor             (for_);
+            if (result is LoopResult             loop            ) return VisitLoop            (loop);
             if (result is FuncResult             func            ) return VisitFunc            (func);
             if (result is MethodResult           method          ) return VisitMethod          (method);
             throw new NotSupportedException("unsupported parser result type");
@@ -666,6 +683,40 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 VisitExpr(result.VarBind.Expr)
                 .Concat(result.VarBind.Vars.Reverse().SelectMany(x => Set(x)))
                 .Concat(VisitExpr(result.Expr));
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitIf(IfResult result)
+        {
+            return
+                result.HasElse ?
+                    IfElifElse
+                    (
+                        result.Conditions.Select(x => VisitExpr(x)),
+                        result.Exprs.Take(result.Exprs.Length - 1).Select(x => VisitExpr(x)),
+                        VisitExpr(result.Exprs[result.Exprs.Length - 1]),
+                        result.Labels
+                    ) :
+                    IfElif
+                    (
+                        result.Conditions.Select(x => VisitExpr(x)),
+                        result.Exprs     .Select(x => VisitExpr(x)),
+                        result.Labels
+                    );
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitWhile(WhileResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitFor(ForResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitLoop(LoopResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitFunc(FuncResult result)

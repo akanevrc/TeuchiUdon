@@ -1010,18 +1010,6 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitSpreadIterExpr([NotNull] TeuchiUdonParser.SpreadIterExprContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.elementExpr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterElementExpr([NotNull] TeuchiUdonParser.ElementExprContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.elementExpr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitElementExpr([NotNull] TeuchiUdonParser.ElementExprContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.argExpr"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -1103,6 +1091,18 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitSpreadForIterExpr([NotNull] TeuchiUdonParser.SpreadForIterExprContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.isoExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterIsoExpr([NotNull] TeuchiUdonParser.IsoExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.isoExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitIsoExpr([NotNull] TeuchiUdonParser.IsoExprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>UnitLiteral</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.literal"/>.

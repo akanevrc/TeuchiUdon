@@ -247,8 +247,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<TeuchiUdonAssembly> IfElse
         (
             IEnumerable<TeuchiUdonAssembly> condition,
-            IEnumerable<TeuchiUdonAssembly> truePart,
-            IEnumerable<TeuchiUdonAssembly> falsePart,
+            IEnumerable<TeuchiUdonAssembly> thenPart,
+            IEnumerable<TeuchiUdonAssembly> elsePart,
             ICodeLabel label1,
             ICodeLabel label2
         )
@@ -259,16 +259,102 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label1))
                 })
-                .Concat(truePart)
+                .Concat(thenPart)
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label2)),
                     new Assembly_LABEL(label1)
                 })
-                .Concat(falsePart)
+                .Concat(elsePart)
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_LABEL(label2)
+                });
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> IfElif
+        (
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
+            IEnumerable<ICodeLabel> labels
+        )
+        {
+            var ifs  = conditions.Zip(thenParts, (c, t) => (c, t));
+            var head = ifs.First();
+            var tail =
+                ifs
+                .Skip(1)
+                .Zip(labels        , (x, pl) => (x.c, x.t,   pl))
+                .Zip(labels.Skip(1), (x, l ) => (x.c, x.t, x.pl, l));
+            var firstLabel = labels.First();
+            var lastLabel  = labels.Last();
+            return
+                tail
+                .Aggregate
+                (
+                    head.c
+                    .Concat(new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(firstLabel))
+                    })
+                    .Concat(head.t),
+                    (acc, x) =>
+                        acc
+                        .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(lastLabel)),
+                            new Assembly_LABEL(x.pl)
+                        })
+                        .Concat(x.c)
+                        .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(x.l))
+                        })
+                        .Concat(x.t)
+                )
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_LABEL(lastLabel)
+                });
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> IfElifElse
+        (
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
+            IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
+            IEnumerable<TeuchiUdonAssembly> elsePart,
+            IEnumerable<ICodeLabel> labels
+        )
+        {
+            var ifs =
+                conditions
+                .Zip(thenParts, (c, t) => (c, t))
+                .Zip(labels   , (x, l) => (x.c, x.t, l));
+            var lastLabel = labels.Last();
+            return
+                ifs
+                .Aggregate
+                (
+                    Enumerable.Empty<TeuchiUdonAssembly>(),
+                    (acc, x) =>
+                        acc
+                        .Concat(x.c)
+                        .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(x.l))
+                        })
+                        .Concat(x.t)
+                        .Concat(new TeuchiUdonAssembly[]
+                        {
+                            new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(lastLabel)),
+                            new Assembly_LABEL(x.l)
+                        })
+                        
+                )
+                .Concat(elsePart)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_LABEL(lastLabel)
                 });
         }
 

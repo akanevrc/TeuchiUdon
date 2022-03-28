@@ -58,13 +58,13 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	public const int
 		RULE_target = 0, RULE_body = 1, RULE_topStatement = 2, RULE_varAttr = 3, 
 		RULE_varBind = 4, RULE_varDecl = 5, RULE_qualifiedVar = 6, RULE_identifier = 7, 
-		RULE_statement = 8, RULE_expr = 9, RULE_iterExpr = 10, RULE_elementExpr = 11, 
-		RULE_argExpr = 12, RULE_forBind = 13, RULE_forIterExpr = 14, RULE_literal = 15, 
+		RULE_statement = 8, RULE_expr = 9, RULE_iterExpr = 10, RULE_argExpr = 11, 
+		RULE_forBind = 12, RULE_forIterExpr = 13, RULE_isoExpr = 14, RULE_literal = 15, 
 		RULE_thisLiteral = 16;
 	public static readonly string[] ruleNames = {
 		"target", "body", "topStatement", "varAttr", "varBind", "varDecl", "qualifiedVar", 
-		"identifier", "statement", "expr", "iterExpr", "elementExpr", "argExpr", 
-		"forBind", "forIterExpr", "literal", "thisLiteral"
+		"identifier", "statement", "expr", "iterExpr", "argExpr", "forBind", "forIterExpr", 
+		"isoExpr", "literal", "thisLiteral"
 	};
 
 	private static readonly string[] _LiteralNames = {
@@ -1101,11 +1101,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class IfExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IF() { return GetToken(TeuchiUdonParser.IF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
-			return GetRuleContexts<ExprContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
+			return GetRuleContexts<IsoExprContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
-			return GetRuleContext<ExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
+			return GetRuleContext<IsoExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode THEN() { return GetToken(TeuchiUdonParser.THEN, 0); }
 		public IfExprContext(ExprContext context) { CopyFrom(context); }
@@ -1122,11 +1122,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class IfElifExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IF() { return GetToken(TeuchiUdonParser.IF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
-			return GetRuleContexts<ExprContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
+			return GetRuleContexts<IsoExprContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
-			return GetRuleContext<ExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
+			return GetRuleContext<IsoExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] THEN() { return GetTokens(TeuchiUdonParser.THEN); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode THEN(int i) {
@@ -1458,11 +1458,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class IfElseExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IF() { return GetToken(TeuchiUdonParser.IF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
-			return GetRuleContexts<ExprContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
+			return GetRuleContexts<IsoExprContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
-			return GetRuleContext<ExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
+			return GetRuleContext<IsoExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode THEN() { return GetToken(TeuchiUdonParser.THEN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ELSE() { return GetToken(TeuchiUdonParser.ELSE, 0); }
@@ -1976,11 +1976,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class IfElifElseExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IF() { return GetToken(TeuchiUdonParser.IF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext[] expr() {
-			return GetRuleContexts<ExprContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
+			return GetRuleContexts<IsoExprContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr(int i) {
-			return GetRuleContext<ExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
+			return GetRuleContext<IsoExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] THEN() { return GetTokens(TeuchiUdonParser.THEN); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode THEN(int i) {
@@ -2279,27 +2279,46 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 175;
 				Match(IF);
 				State = 176;
-				expr(0);
+				isoExpr();
 				State = 177;
 				Match(THEN);
 				State = 178;
-				expr(8);
+				isoExpr();
 				}
 				break;
 			case 15:
 				{
-				_localctx = new IfElifExprContext(_localctx);
+				_localctx = new IfElseExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 180;
 				Match(IF);
 				State = 181;
-				expr(0);
+				isoExpr();
 				State = 182;
 				Match(THEN);
 				State = 183;
-				expr(0);
+				isoExpr();
+				State = 184;
+				Match(ELSE);
+				State = 185;
+				isoExpr();
+				}
+				break;
+			case 16:
+				{
+				_localctx = new IfElifExprContext(_localctx);
+				Context = _localctx;
+				_prevctx = _localctx;
+				State = 187;
+				Match(IF);
+				State = 188;
+				isoExpr();
 				State = 189;
+				Match(THEN);
+				State = 190;
+				isoExpr();
+				State = 196;
 				ErrorHandler.Sync(this);
 				_alt = 1;
 				do {
@@ -2307,43 +2326,24 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					case 1:
 						{
 						{
-						State = 184;
+						State = 191;
 						Match(ELIF);
-						State = 185;
-						expr(0);
-						State = 186;
+						State = 192;
+						isoExpr();
+						State = 193;
 						Match(THEN);
-						State = 187;
-						expr(0);
+						State = 194;
+						isoExpr();
 						}
 						}
 						break;
 					default:
 						throw new NoViableAltException(this);
 					}
-					State = 191;
+					State = 198;
 					ErrorHandler.Sync(this);
 					_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
 				} while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER );
-				}
-				break;
-			case 16:
-				{
-				_localctx = new IfElseExprContext(_localctx);
-				Context = _localctx;
-				_prevctx = _localctx;
-				State = 193;
-				Match(IF);
-				State = 194;
-				expr(0);
-				State = 195;
-				Match(THEN);
-				State = 196;
-				expr(0);
-				State = 197;
-				Match(ELSE);
-				State = 198;
-				expr(6);
 				}
 				break;
 			case 17:
@@ -2354,11 +2354,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 200;
 				Match(IF);
 				State = 201;
-				expr(0);
+				isoExpr();
 				State = 202;
 				Match(THEN);
 				State = 203;
-				expr(0);
+				isoExpr();
 				State = 209;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
@@ -2368,11 +2368,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					State = 204;
 					Match(ELIF);
 					State = 205;
-					expr(0);
+					isoExpr();
 					State = 206;
 					Match(THEN);
 					State = 207;
-					expr(0);
+					isoExpr();
 					}
 					}
 					State = 211;
@@ -2382,7 +2382,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 213;
 				Match(ELSE);
 				State = 214;
-				expr(5);
+				isoExpr();
 				}
 				break;
 			case 18:
@@ -2882,11 +2882,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		}
 	}
 	public partial class ElementsIterExprContext : IterExprContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ElementExprContext[] elementExpr() {
-			return GetRuleContexts<ElementExprContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
+			return GetRuleContexts<IsoExprContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ElementExprContext elementExpr(int i) {
-			return GetRuleContext<ElementExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
+			return GetRuleContext<IsoExprContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(TeuchiUdonParser.COMMA); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
@@ -2979,7 +2979,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 345;
-				elementExpr();
+				isoExpr();
 				State = 350;
 				ErrorHandler.Sync(this);
 				_alt = Interpreter.AdaptivePredict(TokenStream,22,Context);
@@ -2990,7 +2990,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 						State = 346;
 						Match(COMMA);
 						State = 347;
-						elementExpr();
+						isoExpr();
 						}
 						} 
 					}
@@ -3051,50 +3051,6 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		return _localctx;
 	}
 
-	public partial class ElementExprContext : ParserRuleContext {
-		public ElementExprResult result;
-		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
-			return GetRuleContext<ExprContext>(0);
-		}
-		public ElementExprContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_elementExpr; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.EnterElementExpr(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
-			if (typedListener != null) typedListener.ExitElementExpr(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public ElementExprContext elementExpr() {
-		ElementExprContext _localctx = new ElementExprContext(Context, State);
-		EnterRule(_localctx, 22, RULE_elementExpr);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 367;
-			expr(0);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
 	public partial class ArgExprContext : ParserRuleContext {
 		public ArgExprResult result;
 		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
@@ -3121,22 +3077,22 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public ArgExprContext argExpr() {
 		ArgExprContext _localctx = new ArgExprContext(Context, State);
-		EnterRule(_localctx, 24, RULE_argExpr);
+		EnterRule(_localctx, 22, RULE_argExpr);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 370;
+			State = 368;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==REF) {
 				{
-				State = 369;
+				State = 367;
 				Match(REF);
 				}
 			}
 
-			State = 372;
+			State = 370;
 			expr(0);
 			}
 		}
@@ -3210,22 +3166,22 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public ForBindContext forBind() {
 		ForBindContext _localctx = new ForBindContext(Context, State);
-		EnterRule(_localctx, 26, RULE_forBind);
+		EnterRule(_localctx, 24, RULE_forBind);
 		try {
-			State = 383;
+			State = 381;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,25,Context) ) {
 			case 1:
 				_localctx = new LetForBindContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 374;
+				State = 372;
 				Match(LET);
-				State = 375;
+				State = 373;
 				expr(0);
-				State = 376;
+				State = 374;
 				Match(OP_ASSIGNMENT);
-				State = 377;
+				State = 375;
 				forIterExpr();
 				}
 				break;
@@ -3233,11 +3189,11 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new AssignForBindContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 379;
+				State = 377;
 				expr(0);
-				State = 380;
+				State = 378;
 				Match(OP_ASSIGNMENT);
-				State = 381;
+				State = 379;
 				forIterExpr();
 				}
 				break;
@@ -3331,20 +3287,20 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	[RuleVersion(0)]
 	public ForIterExprContext forIterExpr() {
 		ForIterExprContext _localctx = new ForIterExprContext(Context, State);
-		EnterRule(_localctx, 28, RULE_forIterExpr);
+		EnterRule(_localctx, 26, RULE_forIterExpr);
 		try {
-			State = 396;
+			State = 394;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,26,Context) ) {
 			case 1:
 				_localctx = new RangeForIterExprContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 385;
+				State = 383;
 				expr(0);
-				State = 386;
+				State = 384;
 				Match(OP_RANGE);
-				State = 387;
+				State = 385;
 				expr(0);
 				}
 				break;
@@ -3352,15 +3308,15 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new SteppedRangeForIterExprContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
+				State = 387;
+				expr(0);
+				State = 388;
+				Match(OP_RANGE);
 				State = 389;
 				expr(0);
 				State = 390;
 				Match(OP_RANGE);
 				State = 391;
-				expr(0);
-				State = 392;
-				Match(OP_RANGE);
-				State = 393;
 				expr(0);
 				}
 				break;
@@ -3368,10 +3324,54 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				_localctx = new SpreadForIterExprContext(_localctx);
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 395;
+				State = 393;
 				expr(0);
 				}
 				break;
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class IsoExprContext : ParserRuleContext {
+		public IsoExprResult result;
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
+		public IsoExprContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_isoExpr; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.EnterIsoExpr(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			ITeuchiUdonParserListener typedListener = listener as ITeuchiUdonParserListener;
+			if (typedListener != null) typedListener.ExitIsoExpr(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public IsoExprContext isoExpr() {
+		IsoExprContext _localctx = new IsoExprContext(Context, State);
+		EnterRule(_localctx, 28, RULE_isoExpr);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 396;
+			expr(0);
 			}
 		}
 		catch (RecognitionException re) {
@@ -3761,9 +3761,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
 		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
-		'\v', '\x3', '\v', '\x3', '\v', '\x6', '\v', '\xC0', '\n', '\v', '\r', 
-		'\v', '\xE', '\v', '\xC1', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
 		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
+		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x6', '\v', '\xC7', 
+		'\n', '\v', '\r', '\v', '\xE', '\v', '\xC8', '\x3', '\v', '\x3', '\v', 
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
 		'\v', '\x3', '\v', '\x6', '\v', '\xD4', '\n', '\v', '\r', '\v', '\xE', 
 		'\v', '\xD5', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
@@ -3795,80 +3795,80 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\f', '\f', '\xE', '\f', '\x162', '\v', '\f', '\x3', '\f', '\x3', '\f', 
 		'\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', 
 		'\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x3', '\f', '\x5', '\f', 
-		'\x170', '\n', '\f', '\x3', '\r', '\x3', '\r', '\x3', '\xE', '\x5', '\xE', 
-		'\x175', '\n', '\xE', '\x3', '\xE', '\x3', '\xE', '\x3', '\xF', '\x3', 
+		'\x170', '\n', '\f', '\x3', '\r', '\x5', '\r', '\x173', '\n', '\r', '\x3', 
+		'\r', '\x3', '\r', '\x3', '\xE', '\x3', '\xE', '\x3', '\xE', '\x3', '\xE', 
+		'\x3', '\xE', '\x3', '\xE', '\x3', '\xE', '\x3', '\xE', '\x3', '\xE', 
+		'\x5', '\xE', '\x180', '\n', '\xE', '\x3', '\xF', '\x3', '\xF', '\x3', 
 		'\xF', '\x3', '\xF', '\x3', '\xF', '\x3', '\xF', '\x3', '\xF', '\x3', 
-		'\xF', '\x3', '\xF', '\x3', '\xF', '\x5', '\xF', '\x182', '\n', '\xF', 
-		'\x3', '\x10', '\x3', '\x10', '\x3', '\x10', '\x3', '\x10', '\x3', '\x10', 
-		'\x3', '\x10', '\x3', '\x10', '\x3', '\x10', '\x3', '\x10', '\x3', '\x10', 
-		'\x3', '\x10', '\x5', '\x10', '\x18F', '\n', '\x10', '\x3', '\x11', '\x3', 
-		'\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x3', 
-		'\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x5', 
-		'\x11', '\x19C', '\n', '\x11', '\x3', '\x12', '\x3', '\x12', '\x3', '\x12', 
-		'\x2', '\x3', '\x14', '\x13', '\x2', '\x4', '\x6', '\b', '\n', '\f', '\xE', 
-		'\x10', '\x12', '\x14', '\x16', '\x18', '\x1A', '\x1C', '\x1E', ' ', '\"', 
-		'\x2', '\t', '\x4', '\x2', '?', '@', 'G', 'H', '\x4', '\x2', ';', ';', 
-		'O', 'O', '\x3', '\x2', '\x41', '\x43', '\x3', '\x2', '?', '@', '\x3', 
-		'\x2', 'X', 'Y', '\x4', '\x2', 'J', 'K', 'U', 'V', '\x3', '\x2', 'S', 
-		'T', '\x2', '\x1E6', '\x2', '(', '\x3', '\x2', '\x2', '\x2', '\x4', '+', 
-		'\x3', '\x2', '\x2', '\x2', '\x6', ';', '\x3', '\x2', '\x2', '\x2', '\b', 
-		'\x41', '\x3', '\x2', '\x2', '\x2', '\n', '\x44', '\x3', '\x2', '\x2', 
-		'\x2', '\f', 'X', '\x3', '\x2', '\x2', '\x2', '\xE', 'Z', '\x3', '\x2', 
-		'\x2', '\x2', '\x10', '_', '\x3', '\x2', '\x2', '\x2', '\x12', 'm', '\x3', 
-		'\x2', '\x2', '\x2', '\x14', '\xF1', '\x3', '\x2', '\x2', '\x2', '\x16', 
-		'\x16F', '\x3', '\x2', '\x2', '\x2', '\x18', '\x171', '\x3', '\x2', '\x2', 
-		'\x2', '\x1A', '\x174', '\x3', '\x2', '\x2', '\x2', '\x1C', '\x181', '\x3', 
-		'\x2', '\x2', '\x2', '\x1E', '\x18E', '\x3', '\x2', '\x2', '\x2', ' ', 
-		'\x19B', '\x3', '\x2', '\x2', '\x2', '\"', '\x19D', '\x3', '\x2', '\x2', 
-		'\x2', '$', '%', '\x5', '\x4', '\x3', '\x2', '%', '&', '\a', '\x2', '\x2', 
-		'\x3', '&', ')', '\x3', '\x2', '\x2', '\x2', '\'', ')', '\a', '\x2', '\x2', 
-		'\x3', '(', '$', '\x3', '\x2', '\x2', '\x2', '(', '\'', '\x3', '\x2', 
-		'\x2', '\x2', ')', '\x3', '\x3', '\x2', '\x2', '\x2', '*', ',', '\x5', 
-		'\x6', '\x4', '\x2', '+', '*', '\x3', '\x2', '\x2', '\x2', ',', '-', '\x3', 
-		'\x2', '\x2', '\x2', '-', '+', '\x3', '\x2', '\x2', '\x2', '-', '.', '\x3', 
-		'\x2', '\x2', '\x2', '.', '\x5', '\x3', '\x2', '\x2', '\x2', '/', '\x31', 
-		'\x5', '\b', '\x5', '\x2', '\x30', '/', '\x3', '\x2', '\x2', '\x2', '\x31', 
-		'\x34', '\x3', '\x2', '\x2', '\x2', '\x32', '\x30', '\x3', '\x2', '\x2', 
-		'\x2', '\x32', '\x33', '\x3', '\x2', '\x2', '\x2', '\x33', '\x35', '\x3', 
-		'\x2', '\x2', '\x2', '\x34', '\x32', '\x3', '\x2', '\x2', '\x2', '\x35', 
-		'\x36', '\x5', '\n', '\x6', '\x2', '\x36', '\x37', '\a', '>', '\x2', '\x2', 
-		'\x37', '<', '\x3', '\x2', '\x2', '\x2', '\x38', '\x39', '\x5', '\x14', 
-		'\v', '\x2', '\x39', ':', '\a', '>', '\x2', '\x2', ':', '<', '\x3', '\x2', 
-		'\x2', '\x2', ';', '\x32', '\x3', '\x2', '\x2', '\x2', ';', '\x38', '\x3', 
-		'\x2', '\x2', '\x2', '<', '\a', '\x3', '\x2', '\x2', '\x2', '=', '\x42', 
-		'\a', '$', '\x2', '\x2', '>', '\x42', '\a', '%', '\x2', '\x2', '?', '\x42', 
-		'\a', '&', '\x2', '\x2', '@', '\x42', '\a', '\'', '\x2', '\x2', '\x41', 
-		'=', '\x3', '\x2', '\x2', '\x2', '\x41', '>', '\x3', '\x2', '\x2', '\x2', 
-		'\x41', '?', '\x3', '\x2', '\x2', '\x2', '\x41', '@', '\x3', '\x2', '\x2', 
-		'\x2', '\x42', '\t', '\x3', '\x2', '\x2', '\x2', '\x43', '\x45', '\a', 
-		'\x1B', '\x2', '\x2', '\x44', '\x43', '\x3', '\x2', '\x2', '\x2', '\x44', 
-		'\x45', '\x3', '\x2', '\x2', '\x2', '\x45', '\x46', '\x3', '\x2', '\x2', 
-		'\x2', '\x46', 'G', '\x5', '\f', '\a', '\x2', 'G', 'H', '\a', 'I', '\x2', 
-		'\x2', 'H', 'I', '\x5', '\x14', '\v', '\x2', 'I', '\v', '\x3', '\x2', 
-		'\x2', '\x2', 'J', 'K', '\a', '\x35', '\x2', '\x2', 'K', 'Y', '\a', '\x36', 
-		'\x2', '\x2', 'L', 'Y', '\x5', '\xE', '\b', '\x2', 'M', 'N', '\a', '\x35', 
-		'\x2', '\x2', 'N', 'S', '\x5', '\xE', '\b', '\x2', 'O', 'P', '\a', '<', 
-		'\x2', '\x2', 'P', 'R', '\x5', '\xE', '\b', '\x2', 'Q', 'O', '\x3', '\x2', 
-		'\x2', '\x2', 'R', 'U', '\x3', '\x2', '\x2', '\x2', 'S', 'Q', '\x3', '\x2', 
-		'\x2', '\x2', 'S', 'T', '\x3', '\x2', '\x2', '\x2', 'T', 'V', '\x3', '\x2', 
-		'\x2', '\x2', 'U', 'S', '\x3', '\x2', '\x2', '\x2', 'V', 'W', '\a', '\x36', 
-		'\x2', '\x2', 'W', 'Y', '\x3', '\x2', '\x2', '\x2', 'X', 'J', '\x3', '\x2', 
-		'\x2', '\x2', 'X', 'L', '\x3', '\x2', '\x2', '\x2', 'X', 'M', '\x3', '\x2', 
-		'\x2', '\x2', 'Y', '\r', '\x3', '\x2', '\x2', '\x2', 'Z', ']', '\x5', 
-		'\x10', '\t', '\x2', '[', '\\', '\a', '=', '\x2', '\x2', '\\', '^', '\x5', 
-		'\x14', '\v', '\x2', ']', '[', '\x3', '\x2', '\x2', '\x2', ']', '^', '\x3', 
-		'\x2', '\x2', '\x2', '^', '\xF', '\x3', '\x2', '\x2', '\x2', '_', '`', 
-		'\a', '+', '\x2', '\x2', '`', '\x11', '\x3', '\x2', '\x2', '\x2', '\x61', 
-		'n', '\a', '\x1F', '\x2', '\x2', '\x62', '\x63', '\a', '\x1F', '\x2', 
-		'\x2', '\x63', 'n', '\x5', '\x14', '\v', '\x2', '\x64', 'n', '\a', '\r', 
-		'\x2', '\x2', '\x65', '\x66', '\a', '\r', '\x2', '\x2', '\x66', 'n', '\x5', 
-		'\x14', '\v', '\x2', 'g', 'n', '\a', '\n', '\x2', '\x2', 'h', 'i', '\a', 
-		'\n', '\x2', '\x2', 'i', 'n', '\x5', '\x14', '\v', '\x2', 'j', 'k', '\a', 
-		'\x18', '\x2', '\x2', 'k', 'n', '\x5', '\n', '\x6', '\x2', 'l', 'n', '\x5', 
-		'\x14', '\v', '\x2', 'm', '\x61', '\x3', '\x2', '\x2', '\x2', 'm', '\x62', 
-		'\x3', '\x2', '\x2', '\x2', 'm', '\x64', '\x3', '\x2', '\x2', '\x2', 'm', 
-		'\x65', '\x3', '\x2', '\x2', '\x2', 'm', 'g', '\x3', '\x2', '\x2', '\x2', 
-		'm', 'h', '\x3', '\x2', '\x2', '\x2', 'm', 'j', '\x3', '\x2', '\x2', '\x2', 
+		'\xF', '\x3', '\xF', '\x3', '\xF', '\x3', '\xF', '\x5', '\xF', '\x18D', 
+		'\n', '\xF', '\x3', '\x10', '\x3', '\x10', '\x3', '\x11', '\x3', '\x11', 
+		'\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', 
+		'\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x3', '\x11', '\x5', '\x11', 
+		'\x19C', '\n', '\x11', '\x3', '\x12', '\x3', '\x12', '\x3', '\x12', '\x2', 
+		'\x3', '\x14', '\x13', '\x2', '\x4', '\x6', '\b', '\n', '\f', '\xE', '\x10', 
+		'\x12', '\x14', '\x16', '\x18', '\x1A', '\x1C', '\x1E', ' ', '\"', '\x2', 
+		'\t', '\x4', '\x2', '?', '@', 'G', 'H', '\x4', '\x2', ';', ';', 'O', 'O', 
+		'\x3', '\x2', '\x41', '\x43', '\x3', '\x2', '?', '@', '\x3', '\x2', 'X', 
+		'Y', '\x4', '\x2', 'J', 'K', 'U', 'V', '\x3', '\x2', 'S', 'T', '\x2', 
+		'\x1E6', '\x2', '(', '\x3', '\x2', '\x2', '\x2', '\x4', '+', '\x3', '\x2', 
+		'\x2', '\x2', '\x6', ';', '\x3', '\x2', '\x2', '\x2', '\b', '\x41', '\x3', 
+		'\x2', '\x2', '\x2', '\n', '\x44', '\x3', '\x2', '\x2', '\x2', '\f', 'X', 
+		'\x3', '\x2', '\x2', '\x2', '\xE', 'Z', '\x3', '\x2', '\x2', '\x2', '\x10', 
+		'_', '\x3', '\x2', '\x2', '\x2', '\x12', 'm', '\x3', '\x2', '\x2', '\x2', 
+		'\x14', '\xF1', '\x3', '\x2', '\x2', '\x2', '\x16', '\x16F', '\x3', '\x2', 
+		'\x2', '\x2', '\x18', '\x172', '\x3', '\x2', '\x2', '\x2', '\x1A', '\x17F', 
+		'\x3', '\x2', '\x2', '\x2', '\x1C', '\x18C', '\x3', '\x2', '\x2', '\x2', 
+		'\x1E', '\x18E', '\x3', '\x2', '\x2', '\x2', ' ', '\x19B', '\x3', '\x2', 
+		'\x2', '\x2', '\"', '\x19D', '\x3', '\x2', '\x2', '\x2', '$', '%', '\x5', 
+		'\x4', '\x3', '\x2', '%', '&', '\a', '\x2', '\x2', '\x3', '&', ')', '\x3', 
+		'\x2', '\x2', '\x2', '\'', ')', '\a', '\x2', '\x2', '\x3', '(', '$', '\x3', 
+		'\x2', '\x2', '\x2', '(', '\'', '\x3', '\x2', '\x2', '\x2', ')', '\x3', 
+		'\x3', '\x2', '\x2', '\x2', '*', ',', '\x5', '\x6', '\x4', '\x2', '+', 
+		'*', '\x3', '\x2', '\x2', '\x2', ',', '-', '\x3', '\x2', '\x2', '\x2', 
+		'-', '+', '\x3', '\x2', '\x2', '\x2', '-', '.', '\x3', '\x2', '\x2', '\x2', 
+		'.', '\x5', '\x3', '\x2', '\x2', '\x2', '/', '\x31', '\x5', '\b', '\x5', 
+		'\x2', '\x30', '/', '\x3', '\x2', '\x2', '\x2', '\x31', '\x34', '\x3', 
+		'\x2', '\x2', '\x2', '\x32', '\x30', '\x3', '\x2', '\x2', '\x2', '\x32', 
+		'\x33', '\x3', '\x2', '\x2', '\x2', '\x33', '\x35', '\x3', '\x2', '\x2', 
+		'\x2', '\x34', '\x32', '\x3', '\x2', '\x2', '\x2', '\x35', '\x36', '\x5', 
+		'\n', '\x6', '\x2', '\x36', '\x37', '\a', '>', '\x2', '\x2', '\x37', '<', 
+		'\x3', '\x2', '\x2', '\x2', '\x38', '\x39', '\x5', '\x14', '\v', '\x2', 
+		'\x39', ':', '\a', '>', '\x2', '\x2', ':', '<', '\x3', '\x2', '\x2', '\x2', 
+		';', '\x32', '\x3', '\x2', '\x2', '\x2', ';', '\x38', '\x3', '\x2', '\x2', 
+		'\x2', '<', '\a', '\x3', '\x2', '\x2', '\x2', '=', '\x42', '\a', '$', 
+		'\x2', '\x2', '>', '\x42', '\a', '%', '\x2', '\x2', '?', '\x42', '\a', 
+		'&', '\x2', '\x2', '@', '\x42', '\a', '\'', '\x2', '\x2', '\x41', '=', 
+		'\x3', '\x2', '\x2', '\x2', '\x41', '>', '\x3', '\x2', '\x2', '\x2', '\x41', 
+		'?', '\x3', '\x2', '\x2', '\x2', '\x41', '@', '\x3', '\x2', '\x2', '\x2', 
+		'\x42', '\t', '\x3', '\x2', '\x2', '\x2', '\x43', '\x45', '\a', '\x1B', 
+		'\x2', '\x2', '\x44', '\x43', '\x3', '\x2', '\x2', '\x2', '\x44', '\x45', 
+		'\x3', '\x2', '\x2', '\x2', '\x45', '\x46', '\x3', '\x2', '\x2', '\x2', 
+		'\x46', 'G', '\x5', '\f', '\a', '\x2', 'G', 'H', '\a', 'I', '\x2', '\x2', 
+		'H', 'I', '\x5', '\x14', '\v', '\x2', 'I', '\v', '\x3', '\x2', '\x2', 
+		'\x2', 'J', 'K', '\a', '\x35', '\x2', '\x2', 'K', 'Y', '\a', '\x36', '\x2', 
+		'\x2', 'L', 'Y', '\x5', '\xE', '\b', '\x2', 'M', 'N', '\a', '\x35', '\x2', 
+		'\x2', 'N', 'S', '\x5', '\xE', '\b', '\x2', 'O', 'P', '\a', '<', '\x2', 
+		'\x2', 'P', 'R', '\x5', '\xE', '\b', '\x2', 'Q', 'O', '\x3', '\x2', '\x2', 
+		'\x2', 'R', 'U', '\x3', '\x2', '\x2', '\x2', 'S', 'Q', '\x3', '\x2', '\x2', 
+		'\x2', 'S', 'T', '\x3', '\x2', '\x2', '\x2', 'T', 'V', '\x3', '\x2', '\x2', 
+		'\x2', 'U', 'S', '\x3', '\x2', '\x2', '\x2', 'V', 'W', '\a', '\x36', '\x2', 
+		'\x2', 'W', 'Y', '\x3', '\x2', '\x2', '\x2', 'X', 'J', '\x3', '\x2', '\x2', 
+		'\x2', 'X', 'L', '\x3', '\x2', '\x2', '\x2', 'X', 'M', '\x3', '\x2', '\x2', 
+		'\x2', 'Y', '\r', '\x3', '\x2', '\x2', '\x2', 'Z', ']', '\x5', '\x10', 
+		'\t', '\x2', '[', '\\', '\a', '=', '\x2', '\x2', '\\', '^', '\x5', '\x14', 
+		'\v', '\x2', ']', '[', '\x3', '\x2', '\x2', '\x2', ']', '^', '\x3', '\x2', 
+		'\x2', '\x2', '^', '\xF', '\x3', '\x2', '\x2', '\x2', '_', '`', '\a', 
+		'+', '\x2', '\x2', '`', '\x11', '\x3', '\x2', '\x2', '\x2', '\x61', 'n', 
+		'\a', '\x1F', '\x2', '\x2', '\x62', '\x63', '\a', '\x1F', '\x2', '\x2', 
+		'\x63', 'n', '\x5', '\x14', '\v', '\x2', '\x64', 'n', '\a', '\r', '\x2', 
+		'\x2', '\x65', '\x66', '\a', '\r', '\x2', '\x2', '\x66', 'n', '\x5', '\x14', 
+		'\v', '\x2', 'g', 'n', '\a', '\n', '\x2', '\x2', 'h', 'i', '\a', '\n', 
+		'\x2', '\x2', 'i', 'n', '\x5', '\x14', '\v', '\x2', 'j', 'k', '\a', '\x18', 
+		'\x2', '\x2', 'k', 'n', '\x5', '\n', '\x6', '\x2', 'l', 'n', '\x5', '\x14', 
+		'\v', '\x2', 'm', '\x61', '\x3', '\x2', '\x2', '\x2', 'm', '\x62', '\x3', 
+		'\x2', '\x2', '\x2', 'm', '\x64', '\x3', '\x2', '\x2', '\x2', 'm', '\x65', 
+		'\x3', '\x2', '\x2', '\x2', 'm', 'g', '\x3', '\x2', '\x2', '\x2', 'm', 
+		'h', '\x3', '\x2', '\x2', '\x2', 'm', 'j', '\x3', '\x2', '\x2', '\x2', 
 		'm', 'l', '\x3', '\x2', '\x2', '\x2', 'n', '\x13', '\x3', '\x2', '\x2', 
 		'\x2', 'o', 'p', '\b', '\v', '\x1', '\x2', 'p', 'v', '\a', '\x33', '\x2', 
 		'\x2', 'q', 'r', '\x5', '\x12', '\n', '\x2', 'r', 's', '\a', '>', '\x2', 
@@ -3911,37 +3911,37 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x2', '\xAD', '\xAE', '\x5', '\n', '\x6', '\x2', '\xAE', '\xAF', '\a', 
 		'\x16', '\x2', '\x2', '\xAF', '\xB0', '\x5', '\x14', '\v', '\v', '\xB0', 
 		'\xF2', '\x3', '\x2', '\x2', '\x2', '\xB1', '\xB2', '\a', '\x15', '\x2', 
-		'\x2', '\xB2', '\xB3', '\x5', '\x14', '\v', '\x2', '\xB3', '\xB4', '\a', 
-		' ', '\x2', '\x2', '\xB4', '\xB5', '\x5', '\x14', '\v', '\n', '\xB5', 
+		'\x2', '\xB2', '\xB3', '\x5', '\x1E', '\x10', '\x2', '\xB3', '\xB4', '\a', 
+		' ', '\x2', '\x2', '\xB4', '\xB5', '\x5', '\x1E', '\x10', '\x2', '\xB5', 
 		'\xF2', '\x3', '\x2', '\x2', '\x2', '\xB6', '\xB7', '\a', '\x15', '\x2', 
-		'\x2', '\xB7', '\xB8', '\x5', '\x14', '\v', '\x2', '\xB8', '\xB9', '\a', 
-		' ', '\x2', '\x2', '\xB9', '\xBF', '\x5', '\x14', '\v', '\x2', '\xBA', 
-		'\xBB', '\a', '\x10', '\x2', '\x2', '\xBB', '\xBC', '\x5', '\x14', '\v', 
-		'\x2', '\xBC', '\xBD', '\a', ' ', '\x2', '\x2', '\xBD', '\xBE', '\x5', 
-		'\x14', '\v', '\x2', '\xBE', '\xC0', '\x3', '\x2', '\x2', '\x2', '\xBF', 
-		'\xBA', '\x3', '\x2', '\x2', '\x2', '\xC0', '\xC1', '\x3', '\x2', '\x2', 
-		'\x2', '\xC1', '\xBF', '\x3', '\x2', '\x2', '\x2', '\xC1', '\xC2', '\x3', 
-		'\x2', '\x2', '\x2', '\xC2', '\xF2', '\x3', '\x2', '\x2', '\x2', '\xC3', 
-		'\xC4', '\a', '\x15', '\x2', '\x2', '\xC4', '\xC5', '\x5', '\x14', '\v', 
-		'\x2', '\xC5', '\xC6', '\a', ' ', '\x2', '\x2', '\xC6', '\xC7', '\x5', 
-		'\x14', '\v', '\x2', '\xC7', '\xC8', '\a', '\x11', '\x2', '\x2', '\xC8', 
-		'\xC9', '\x5', '\x14', '\v', '\b', '\xC9', '\xF2', '\x3', '\x2', '\x2', 
+		'\x2', '\xB7', '\xB8', '\x5', '\x1E', '\x10', '\x2', '\xB8', '\xB9', '\a', 
+		' ', '\x2', '\x2', '\xB9', '\xBA', '\x5', '\x1E', '\x10', '\x2', '\xBA', 
+		'\xBB', '\a', '\x11', '\x2', '\x2', '\xBB', '\xBC', '\x5', '\x1E', '\x10', 
+		'\x2', '\xBC', '\xF2', '\x3', '\x2', '\x2', '\x2', '\xBD', '\xBE', '\a', 
+		'\x15', '\x2', '\x2', '\xBE', '\xBF', '\x5', '\x1E', '\x10', '\x2', '\xBF', 
+		'\xC0', '\a', ' ', '\x2', '\x2', '\xC0', '\xC6', '\x5', '\x1E', '\x10', 
+		'\x2', '\xC1', '\xC2', '\a', '\x10', '\x2', '\x2', '\xC2', '\xC3', '\x5', 
+		'\x1E', '\x10', '\x2', '\xC3', '\xC4', '\a', ' ', '\x2', '\x2', '\xC4', 
+		'\xC5', '\x5', '\x1E', '\x10', '\x2', '\xC5', '\xC7', '\x3', '\x2', '\x2', 
+		'\x2', '\xC6', '\xC1', '\x3', '\x2', '\x2', '\x2', '\xC7', '\xC8', '\x3', 
+		'\x2', '\x2', '\x2', '\xC8', '\xC6', '\x3', '\x2', '\x2', '\x2', '\xC8', 
+		'\xC9', '\x3', '\x2', '\x2', '\x2', '\xC9', '\xF2', '\x3', '\x2', '\x2', 
 		'\x2', '\xCA', '\xCB', '\a', '\x15', '\x2', '\x2', '\xCB', '\xCC', '\x5', 
-		'\x14', '\v', '\x2', '\xCC', '\xCD', '\a', ' ', '\x2', '\x2', '\xCD', 
-		'\xD3', '\x5', '\x14', '\v', '\x2', '\xCE', '\xCF', '\a', '\x10', '\x2', 
-		'\x2', '\xCF', '\xD0', '\x5', '\x14', '\v', '\x2', '\xD0', '\xD1', '\a', 
-		' ', '\x2', '\x2', '\xD1', '\xD2', '\x5', '\x14', '\v', '\x2', '\xD2', 
+		'\x1E', '\x10', '\x2', '\xCC', '\xCD', '\a', ' ', '\x2', '\x2', '\xCD', 
+		'\xD3', '\x5', '\x1E', '\x10', '\x2', '\xCE', '\xCF', '\a', '\x10', '\x2', 
+		'\x2', '\xCF', '\xD0', '\x5', '\x1E', '\x10', '\x2', '\xD0', '\xD1', '\a', 
+		' ', '\x2', '\x2', '\xD1', '\xD2', '\x5', '\x1E', '\x10', '\x2', '\xD2', 
 		'\xD4', '\x3', '\x2', '\x2', '\x2', '\xD3', '\xCE', '\x3', '\x2', '\x2', 
 		'\x2', '\xD4', '\xD5', '\x3', '\x2', '\x2', '\x2', '\xD5', '\xD3', '\x3', 
 		'\x2', '\x2', '\x2', '\xD5', '\xD6', '\x3', '\x2', '\x2', '\x2', '\xD6', 
 		'\xD7', '\x3', '\x2', '\x2', '\x2', '\xD7', '\xD8', '\a', '\x11', '\x2', 
-		'\x2', '\xD8', '\xD9', '\x5', '\x14', '\v', '\a', '\xD9', '\xF2', '\x3', 
+		'\x2', '\xD8', '\xD9', '\x5', '\x1E', '\x10', '\x2', '\xD9', '\xF2', '\x3', 
 		'\x2', '\x2', '\x2', '\xDA', '\xDB', '\a', '\"', '\x2', '\x2', '\xDB', 
 		'\xDC', '\x5', '\x14', '\v', '\x2', '\xDC', '\xDD', '\a', '\xF', '\x2', 
 		'\x2', '\xDD', '\xDE', '\x5', '\x14', '\v', '\x6', '\xDE', '\xF2', '\x3', 
 		'\x2', '\x2', '\x2', '\xDF', '\xE0', '\a', '\x12', '\x2', '\x2', '\xE0', 
-		'\xE5', '\x5', '\x1C', '\xF', '\x2', '\xE1', '\xE2', '\a', '<', '\x2', 
-		'\x2', '\xE2', '\xE4', '\x5', '\x1C', '\xF', '\x2', '\xE3', '\xE1', '\x3', 
+		'\xE5', '\x5', '\x1A', '\xE', '\x2', '\xE1', '\xE2', '\a', '<', '\x2', 
+		'\x2', '\xE2', '\xE4', '\x5', '\x1A', '\xE', '\x2', '\xE3', '\xE1', '\x3', 
 		'\x2', '\x2', '\x2', '\xE4', '\xE7', '\x3', '\x2', '\x2', '\x2', '\xE5', 
 		'\xE3', '\x3', '\x2', '\x2', '\x2', '\xE5', '\xE6', '\x3', '\x2', '\x2', 
 		'\x2', '\xE6', '\xE8', '\x3', '\x2', '\x2', '\x2', '\xE7', '\xE5', '\x3', 
@@ -3959,7 +3959,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x2', '\xF1', '\xA8', '\x3', '\x2', '\x2', '\x2', '\xF1', '\xA9', '\x3', 
 		'\x2', '\x2', '\x2', '\xF1', '\xAA', '\x3', '\x2', '\x2', '\x2', '\xF1', 
 		'\xAC', '\x3', '\x2', '\x2', '\x2', '\xF1', '\xB1', '\x3', '\x2', '\x2', 
-		'\x2', '\xF1', '\xB6', '\x3', '\x2', '\x2', '\x2', '\xF1', '\xC3', '\x3', 
+		'\x2', '\xF1', '\xB6', '\x3', '\x2', '\x2', '\x2', '\xF1', '\xBD', '\x3', 
 		'\x2', '\x2', '\x2', '\xF1', '\xCA', '\x3', '\x2', '\x2', '\x2', '\xF1', 
 		'\xDA', '\x3', '\x2', '\x2', '\x2', '\xF1', '\xDF', '\x3', '\x2', '\x2', 
 		'\x2', '\xF1', '\xEB', '\x3', '\x2', '\x2', '\x2', '\xF1', '\xED', '\x3', 
@@ -4002,13 +4002,13 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x3', '\x2', '\x2', '\x2', '\x12D', '\x12E', '\f', '!', '\x2', '\x2', 
 		'\x12E', '\x12F', '\a', '\x35', '\x2', '\x2', '\x12F', '\x157', '\a', 
 		'\x36', '\x2', '\x2', '\x130', '\x131', '\f', ' ', '\x2', '\x2', '\x131', 
-		'\x132', '\a', '\x35', '\x2', '\x2', '\x132', '\x133', '\x5', '\x1A', 
-		'\xE', '\x2', '\x133', '\x134', '\a', '\x36', '\x2', '\x2', '\x134', '\x157', 
+		'\x132', '\a', '\x35', '\x2', '\x2', '\x132', '\x133', '\x5', '\x18', 
+		'\r', '\x2', '\x133', '\x134', '\a', '\x36', '\x2', '\x2', '\x134', '\x157', 
 		'\x3', '\x2', '\x2', '\x2', '\x135', '\x136', '\f', '\x1F', '\x2', '\x2', 
 		'\x136', '\x137', '\a', '\x35', '\x2', '\x2', '\x137', '\x13A', '\x5', 
-		'\x1A', '\xE', '\x2', '\x138', '\x139', '\a', '<', '\x2', '\x2', '\x139', 
-		'\x13B', '\x5', '\x1A', '\xE', '\x2', '\x13A', '\x138', '\x3', '\x2', 
-		'\x2', '\x2', '\x13B', '\x13C', '\x3', '\x2', '\x2', '\x2', '\x13C', '\x13A', 
+		'\x18', '\r', '\x2', '\x138', '\x139', '\a', '<', '\x2', '\x2', '\x139', 
+		'\x13B', '\x5', '\x18', '\r', '\x2', '\x13A', '\x138', '\x3', '\x2', '\x2', 
+		'\x2', '\x13B', '\x13C', '\x3', '\x2', '\x2', '\x2', '\x13C', '\x13A', 
 		'\x3', '\x2', '\x2', '\x2', '\x13C', '\x13D', '\x3', '\x2', '\x2', '\x2', 
 		'\x13D', '\x13E', '\x3', '\x2', '\x2', '\x2', '\x13E', '\x13F', '\a', 
 		'\x36', '\x2', '\x2', '\x13F', '\x157', '\x3', '\x2', '\x2', '\x2', '\x140', 
@@ -4043,9 +4043,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x3', '\x2', '\x2', '\x2', '\x157', '\x15A', '\x3', '\x2', '\x2', '\x2', 
 		'\x158', '\x156', '\x3', '\x2', '\x2', '\x2', '\x158', '\x159', '\x3', 
 		'\x2', '\x2', '\x2', '\x159', '\x15', '\x3', '\x2', '\x2', '\x2', '\x15A', 
-		'\x158', '\x3', '\x2', '\x2', '\x2', '\x15B', '\x160', '\x5', '\x18', 
-		'\r', '\x2', '\x15C', '\x15D', '\a', '<', '\x2', '\x2', '\x15D', '\x15F', 
-		'\x5', '\x18', '\r', '\x2', '\x15E', '\x15C', '\x3', '\x2', '\x2', '\x2', 
+		'\x158', '\x3', '\x2', '\x2', '\x2', '\x15B', '\x160', '\x5', '\x1E', 
+		'\x10', '\x2', '\x15C', '\x15D', '\a', '<', '\x2', '\x2', '\x15D', '\x15F', 
+		'\x5', '\x1E', '\x10', '\x2', '\x15E', '\x15C', '\x3', '\x2', '\x2', '\x2', 
 		'\x15F', '\x162', '\x3', '\x2', '\x2', '\x2', '\x160', '\x15E', '\x3', 
 		'\x2', '\x2', '\x2', '\x160', '\x161', '\x3', '\x2', '\x2', '\x2', '\x161', 
 		'\x170', '\x3', '\x2', '\x2', '\x2', '\x162', '\x160', '\x3', '\x2', '\x2', 
@@ -4059,28 +4059,28 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x16E', '\x170', '\x5', '\x14', '\v', '\x2', '\x16F', '\x15B', '\x3', 
 		'\x2', '\x2', '\x2', '\x16F', '\x163', '\x3', '\x2', '\x2', '\x2', '\x16F', 
 		'\x167', '\x3', '\x2', '\x2', '\x2', '\x16F', '\x16D', '\x3', '\x2', '\x2', 
-		'\x2', '\x170', '\x17', '\x3', '\x2', '\x2', '\x2', '\x171', '\x172', 
-		'\x5', '\x14', '\v', '\x2', '\x172', '\x19', '\x3', '\x2', '\x2', '\x2', 
-		'\x173', '\x175', '\a', '\x1E', '\x2', '\x2', '\x174', '\x173', '\x3', 
-		'\x2', '\x2', '\x2', '\x174', '\x175', '\x3', '\x2', '\x2', '\x2', '\x175', 
-		'\x176', '\x3', '\x2', '\x2', '\x2', '\x176', '\x177', '\x5', '\x14', 
-		'\v', '\x2', '\x177', '\x1B', '\x3', '\x2', '\x2', '\x2', '\x178', '\x179', 
-		'\a', '\x18', '\x2', '\x2', '\x179', '\x17A', '\x5', '\x14', '\v', '\x2', 
-		'\x17A', '\x17B', '\a', 'W', '\x2', '\x2', '\x17B', '\x17C', '\x5', '\x1E', 
-		'\x10', '\x2', '\x17C', '\x182', '\x3', '\x2', '\x2', '\x2', '\x17D', 
-		'\x17E', '\x5', '\x14', '\v', '\x2', '\x17E', '\x17F', '\a', 'W', '\x2', 
-		'\x2', '\x17F', '\x180', '\x5', '\x1E', '\x10', '\x2', '\x180', '\x182', 
-		'\x3', '\x2', '\x2', '\x2', '\x181', '\x178', '\x3', '\x2', '\x2', '\x2', 
-		'\x181', '\x17D', '\x3', '\x2', '\x2', '\x2', '\x182', '\x1D', '\x3', 
-		'\x2', '\x2', '\x2', '\x183', '\x184', '\x5', '\x14', '\v', '\x2', '\x184', 
-		'\x185', '\a', '\\', '\x2', '\x2', '\x185', '\x186', '\x5', '\x14', '\v', 
-		'\x2', '\x186', '\x18F', '\x3', '\x2', '\x2', '\x2', '\x187', '\x188', 
+		'\x2', '\x170', '\x17', '\x3', '\x2', '\x2', '\x2', '\x171', '\x173', 
+		'\a', '\x1E', '\x2', '\x2', '\x172', '\x171', '\x3', '\x2', '\x2', '\x2', 
+		'\x172', '\x173', '\x3', '\x2', '\x2', '\x2', '\x173', '\x174', '\x3', 
+		'\x2', '\x2', '\x2', '\x174', '\x175', '\x5', '\x14', '\v', '\x2', '\x175', 
+		'\x19', '\x3', '\x2', '\x2', '\x2', '\x176', '\x177', '\a', '\x18', '\x2', 
+		'\x2', '\x177', '\x178', '\x5', '\x14', '\v', '\x2', '\x178', '\x179', 
+		'\a', 'W', '\x2', '\x2', '\x179', '\x17A', '\x5', '\x1C', '\xF', '\x2', 
+		'\x17A', '\x180', '\x3', '\x2', '\x2', '\x2', '\x17B', '\x17C', '\x5', 
+		'\x14', '\v', '\x2', '\x17C', '\x17D', '\a', 'W', '\x2', '\x2', '\x17D', 
+		'\x17E', '\x5', '\x1C', '\xF', '\x2', '\x17E', '\x180', '\x3', '\x2', 
+		'\x2', '\x2', '\x17F', '\x176', '\x3', '\x2', '\x2', '\x2', '\x17F', '\x17B', 
+		'\x3', '\x2', '\x2', '\x2', '\x180', '\x1B', '\x3', '\x2', '\x2', '\x2', 
+		'\x181', '\x182', '\x5', '\x14', '\v', '\x2', '\x182', '\x183', '\a', 
+		'\\', '\x2', '\x2', '\x183', '\x184', '\x5', '\x14', '\v', '\x2', '\x184', 
+		'\x18D', '\x3', '\x2', '\x2', '\x2', '\x185', '\x186', '\x5', '\x14', 
+		'\v', '\x2', '\x186', '\x187', '\a', '\\', '\x2', '\x2', '\x187', '\x188', 
 		'\x5', '\x14', '\v', '\x2', '\x188', '\x189', '\a', '\\', '\x2', '\x2', 
-		'\x189', '\x18A', '\x5', '\x14', '\v', '\x2', '\x18A', '\x18B', '\a', 
-		'\\', '\x2', '\x2', '\x18B', '\x18C', '\x5', '\x14', '\v', '\x2', '\x18C', 
-		'\x18F', '\x3', '\x2', '\x2', '\x2', '\x18D', '\x18F', '\x5', '\x14', 
-		'\v', '\x2', '\x18E', '\x183', '\x3', '\x2', '\x2', '\x2', '\x18E', '\x187', 
-		'\x3', '\x2', '\x2', '\x2', '\x18E', '\x18D', '\x3', '\x2', '\x2', '\x2', 
+		'\x189', '\x18A', '\x5', '\x14', '\v', '\x2', '\x18A', '\x18D', '\x3', 
+		'\x2', '\x2', '\x2', '\x18B', '\x18D', '\x5', '\x14', '\v', '\x2', '\x18C', 
+		'\x181', '\x3', '\x2', '\x2', '\x2', '\x18C', '\x185', '\x3', '\x2', '\x2', 
+		'\x2', '\x18C', '\x18B', '\x3', '\x2', '\x2', '\x2', '\x18D', '\x1D', 
+		'\x3', '\x2', '\x2', '\x2', '\x18E', '\x18F', '\x5', '\x14', '\v', '\x2', 
 		'\x18F', '\x1F', '\x3', '\x2', '\x2', '\x2', '\x190', '\x191', '\a', '\x35', 
 		'\x2', '\x2', '\x191', '\x19C', '\a', '\x36', '\x2', '\x2', '\x192', '\x19C', 
 		'\a', '(', '\x2', '\x2', '\x193', '\x19C', '\a', ')', '\x2', '\x2', '\x194', 
@@ -4097,9 +4097,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x3', '\x2', '\x2', '\x2', '\x19C', '!', '\x3', '\x2', '\x2', '\x2', 
 		'\x19D', '\x19E', '\a', '*', '\x2', '\x2', '\x19E', '#', '\x3', '\x2', 
 		'\x2', '\x2', '\x1E', '(', '-', '\x32', ';', '\x41', '\x44', 'S', 'X', 
-		']', 'm', 'v', '\x80', '\x90', '\xA2', '\xC1', '\xD5', '\xE5', '\xF1', 
-		'\x13C', '\x152', '\x156', '\x158', '\x160', '\x16F', '\x174', '\x181', 
-		'\x18E', '\x19B',
+		']', 'm', 'v', '\x80', '\x90', '\xA2', '\xC8', '\xD5', '\xE5', '\xF1', 
+		'\x13C', '\x152', '\x156', '\x158', '\x160', '\x16F', '\x172', '\x17F', 
+		'\x18C', '\x19B',
 	};
 
 	public static readonly ATN _ATN =

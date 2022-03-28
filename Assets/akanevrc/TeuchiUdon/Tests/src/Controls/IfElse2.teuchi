@@ -1,0 +1,2 @@
+// ok
+UnityEngine.Debug.Log(if false then "ng" else "ok");

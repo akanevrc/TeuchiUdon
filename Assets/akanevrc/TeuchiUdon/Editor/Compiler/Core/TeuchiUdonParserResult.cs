@@ -236,12 +236,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public abstract ITeuchiUdonLeftValue[] LeftValues { get; }
         public abstract IEnumerable<TypedResult> Children { get; }
         public abstract IEnumerable<TypedResult> ReleasedChildren { get; }
+        public abstract IEnumerable<TeuchiUdonOutValue> ReleasedOutValues { get; }
         public abstract bool Deterministic { get; }
         
         protected bool TypeBound { get; set; }
         public abstract void BindType(TeuchiUdonType type);
-
-        public abstract void ReleaseOutValues();
     }
 
     public abstract class ExternResult : TypedResult
@@ -259,25 +258,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Qualifier = qualifier;
         }
 
-        public override bool Deterministic => Children.All(x => x.Deterministic);
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => OutValuess.Values.SelectMany(x => x).Concat(TmpValues.Values);
 
-        public override void ReleaseOutValues()
-        {
-            foreach (var x in OutValuess.Values.SelectMany(x => x)) TeuchiUdonOutValuePool.Instance.ReleaseOutValue(x);
-            foreach (var x in TmpValues .Values                   ) TeuchiUdonOutValuePool.Instance.ReleaseOutValue(x);
-        }
+        public override bool Deterministic => Children.All(x => x.Deterministic);
 
         protected abstract IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods();
         protected abstract bool CreateOutValuesForMethods { get; }
         protected abstract IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues();
-        protected abstract IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues();
         protected abstract IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals();
         protected abstract IEnumerable<(string key, ICodeLabel value)> GetLabels();
 
         protected void Init()
         {
-            var invalids = GetInvalidOutValues();
-
             Methods    = GetMethods().ToDictionary(x => x.key, x => x.value);
             OutValuess =
                 CreateOutValuesForMethods ?
@@ -288,7 +280,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             value: x.Value == null ?
                                 Array.Empty<TeuchiUdonOutValue>() :
                                 x.Value.OutTypes.Select(y =>
-                                    TeuchiUdonOutValuePool.Instance.RetainOutValueWithoutInvalids(Qualifier.GetFuncQualifier(), y, invalids)
+                                    TeuchiUdonOutValuePool.Instance.RetainOutValue(Qualifier.GetFuncQualifier(), y)
                                 )
                                 .ToArray()
                         )
@@ -303,7 +295,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Zip
                 (
                     outValues.Select(x =>
-                        TeuchiUdonOutValuePool.Instance.RetainOutValueWithoutInvalids(Qualifier.GetFuncQualifier(), x.type, invalids)
+                        TeuchiUdonOutValuePool.Instance.RetainOutValue(Qualifier.GetFuncQualifier(), x.type)
                     ),
                     (k, v) => (k, v)
                 )
@@ -351,14 +343,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -372,14 +361,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -393,14 +379,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -421,16 +404,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => Expr.Inner.ReleasedChildren;
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Expr.Inner.ReleasedOutValues;
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
         {
-        }
-
-        public override void ReleaseOutValues()
-        {
-            Expr.Inner.ReleaseOutValues();
         }
     }
 
@@ -446,7 +425,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Expr.Inner.LeftValues;
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => Expr.Inner.ReleasedChildren;
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Expr.Inner.ReleasedOutValues;
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
@@ -455,11 +435,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Expr.Inner.BindType(type);
             Type      = Type.Fix(type);
             TypeBound = true;
-        }
-
-        public override void ReleaseOutValues()
-        {
-            Expr.Inner.ReleaseOutValues();
         }
     }
 
@@ -475,7 +450,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Exprs.SelectMany(x => x.Inner.LeftValues).ToArray();
         public override IEnumerable<TypedResult> Children => Exprs.Select(x => x.Inner);
-        public override IEnumerable<TypedResult> ReleasedChildren => Exprs.SelectMany(x => x.Inner.ReleasedChildren);
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Exprs.SelectMany(x => x.Inner.ReleasedOutValues);
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
@@ -485,11 +461,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             foreach (var x in Exprs.Zip(type.GetArgsAsTuple(), (e, t) => (e, t))) x.e.Inner.BindType(x.t);
             Type      = Type.Fix(type);
             TypeBound = true;
-        }
-
-        public override void ReleaseOutValues()
-        {
-            foreach (var x in Exprs) x.Inner.ReleaseOutValues();
         }
     }
 
@@ -501,12 +472,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             : base(token, type, qualifier)
         {
             Iters = iters.ToArray();
+
+            foreach (var o in Children.SelectMany(x => x.ReleasedOutValues))
+            {
+                TeuchiUdonOutValuePool.Instance.RetainReleasedOutValue(o);
+            }
             Init();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Iters;
-        public override IEnumerable<TypedResult> ReleasedChildren => Iters;
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => base.ReleasedOutValues.Concat(Children.SelectMany(x => x.ReleasedOutValues));
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -624,11 +601,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Iters.SelectMany(x => x.OutValuess.Values.SelectMany(y => y).Concat(x.TmpValues.Values));
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return new (string, TeuchiUdonLiteral)[]
@@ -665,14 +637,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -698,14 +667,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -722,14 +688,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Var.Mut ? new ITeuchiUdonLeftValue[] { Var } : Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -746,14 +709,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -770,14 +730,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -795,7 +752,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -814,11 +771,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -845,7 +797,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => new ITeuchiUdonLeftValue[] { Setter };
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -864,11 +816,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -897,7 +844,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => new ITeuchiUdonLeftValue[] { Setter };
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -917,11 +864,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -953,16 +895,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner }.Concat(Args.Select(x => x.Inner));
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner }.Concat(Args.Select(x => x.Inner));
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => new TeuchiUdonOutValue[] { OutValue };
         public override bool Deterministic => !Expr.Inner.Type.ContainsNonDetFunc() && Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
         {
-        }
-
-        public override void ReleaseOutValues()
-        {
-            TeuchiUdonOutValuePool.Instance.ReleaseOutValue(OutValue);
         }
     }
 
@@ -984,16 +922,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner, Arg.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => new TeuchiUdonOutValue[] { OutValue };
         public override bool Deterministic => !Expr.Inner.Type.ContainsNonDetFunc() && Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
         {
-        }
-
-        public override void ReleaseOutValues()
-        {
-            TeuchiUdonOutValuePool.Instance.ReleaseOutValue(OutValue);
         }
     }
 
@@ -1017,7 +951,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner }.Concat(Args.Select(x => x.Inner));
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner }.Concat(Args.Select(x => x.Inner));
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
@@ -1037,11 +971,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -1075,7 +1004,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner, Arg.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -1094,11 +1023,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -1124,14 +1048,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -1151,7 +1072,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner, Arg.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -1181,11 +1102,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonType)>();
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
@@ -1211,14 +1127,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner, Arg.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -1238,7 +1151,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner, Arg.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -1267,11 +1180,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -1308,7 +1216,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -1390,11 +1298,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             switch (Op)
@@ -1429,7 +1332,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr1.Inner, Expr2.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr1.Inner, Expr2.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -1813,11 +1716,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             switch (Op)
@@ -1894,13 +1792,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Condition.Inner, Expr1.Inner, Expr2.Inner };
         public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Condition.Inner };
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -1922,6 +1817,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] { VarBind.Expr.Inner, Expr.Inner };
         public override IEnumerable<TypedResult> ReleasedChildren => Expr.Inner.ReleasedChildren;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Expr.Inner.ReleasedOutValues;
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
@@ -1931,30 +1827,41 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Type      = Type.Fix(type);
             TypeBound = true;
         }
-
-        public override void ReleaseOutValues()
-        {
-            Expr.Inner.ReleaseOutValues();
-        }
     }
 
-    public class IfReslut : TypedResult
+    public class IfResult : TypedResult
     {
-        public IfReslut(IToken token, TeuchiUdonType type)
+        public ExprResult[] Conditions { get; }
+        public ExprResult[] Exprs { get; }
+        public bool HasElse { get; }
+        public ICodeLabel[] Labels { get; }
+
+        public IfResult(IToken token, TeuchiUdonType type, IEnumerable<ExprResult> conditions, IEnumerable<ExprResult> exprs, bool hasElse)
             : base(token, type)
         {
+            Conditions = conditions.ToArray();
+            Exprs      = exprs     .ToArray();
+            HasElse    = hasElse;
+
+            foreach (var o in Children.SelectMany(x => x.ReleasedOutValues))
+            {
+                TeuchiUdonOutValuePool.Instance.RetainReleasedOutValue(o);
+            }
+
+            Labels =
+                Enumerable
+                .Range(0, HasElse ? Conditions.Length + 1 : Conditions.Length)
+                .Select(_ => new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex()))
+                .ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
-        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override IEnumerable<TypedResult> Children => Conditions.Select(x => x.Inner).Concat(Exprs.Select(x => x.Inner));
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Children.SelectMany(x => x.ReleasedOutValues);
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -1968,14 +1875,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -1989,14 +1893,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -2010,14 +1911,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -2049,14 +1947,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => IsDet;
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -2073,14 +1968,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
         public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -2125,11 +2017,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonType)>();
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return new (string, TeuchiUdonLiteral)[]
@@ -2158,7 +2045,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { First.Inner, Last.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { First.Inner, Last.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -2236,11 +2123,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return new (string, TeuchiUdonLiteral)[]
@@ -2277,7 +2159,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { First.Inner, Last.Inner, Step.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { First.Inner, Last.Inner, Step.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -2385,11 +2267,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 ("length"     , TeuchiUdonType.Int),
                 ("valueLength", Type),
             };
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
@@ -2430,7 +2307,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -2461,11 +2338,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<(string, TeuchiUdonType)>();
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return Enumerable.Empty<(string, TeuchiUdonLiteral)>();
@@ -2477,11 +2349,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class ElementExprResult : TeuchiUdonParserResult
+    public class IsoExprResult : TeuchiUdonParserResult
     {
         public ExprResult Expr { get; }
 
-        public ElementExprResult(IToken token, ExprResult expr)
+        public IsoExprResult(IToken token, ExprResult expr)
             : base(token)
         {
             Expr = expr;
@@ -2519,14 +2391,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -2539,14 +2408,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] {};
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)
-        {
-        }
-
-        public override void ReleaseOutValues()
         {
         }
     }
@@ -2575,7 +2441,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { First.Inner, Last.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { First.Inner, Last.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -2653,11 +2519,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return new (string, TeuchiUdonLiteral)[]
@@ -2694,7 +2555,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { First.Inner, Last.Inner, Step.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { First.Inner, Last.Inner, Step.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -2804,11 +2665,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
-        }
-
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
         {
             return new (string, TeuchiUdonLiteral)[]
@@ -2847,7 +2703,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
         public override void BindType(TeuchiUdonType type)
         {
@@ -2876,11 +2732,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
         {
             return Enumerable.Empty<(string, TeuchiUdonType)>();
-        }
-
-        protected override IEnumerable<TeuchiUdonOutValue> GetInvalidOutValues()
-        {
-            return Enumerable.Empty<TeuchiUdonOutValue>();
         }
 
         protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
