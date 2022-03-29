@@ -27,6 +27,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 context is StatementContext    ||
                 context is VarBindContext      ||
                 context is IterExprContext     ||
+                context is ForBindContext      ||
                 context is IsoExprContext      ||
                 context is ExprContext && context.Parent is FuncExprContext
             )
@@ -43,6 +44,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 context is StatementContext    ||
                 context is VarBindContext      ||
                 context is IterExprContext     ||
+                context is ForBindContext      ||
                 context is IsoExprContext      ||
                 context is ExprContext && context.Parent is FuncExprContext
             )
@@ -1721,6 +1723,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitWhileExpr([NotNull] WhileExprContext context)
         {
+            var isoExprs = context.isoExpr().Select(x => x?.result);
+            if (isoExprs.Any(x => x == null)) return;
+
+            var exprs = isoExprs.Select(x => x.Expr).ToArray();
+            if (!exprs[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
+                return;
+            }
+
+            var while_     = new WhileResult(context.Start, TeuchiUdonType.Unit, exprs[0], exprs[1]);
+            context.result = new ExprResult(while_.Token, while_);
         }
 
         public override void ExitForExpr([NotNull] ForExprContext context)
@@ -1729,6 +1743,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitLoopExpr([NotNull] LoopExprContext context)
         {
+            var isoExpr = context.isoExpr()?.result;
+            if (isoExpr == null) return;
+
+            if (!isoExpr.Expr.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
+                return;
+            }
+
+            var loop       = new LoopResult(context.Start, TeuchiUdonType.Unit, isoExpr.Expr);
+            context.result = new ExprResult(loop.Token, loop);
         }
 
         public override void EnterFuncExpr([NotNull] FuncExprContext context)

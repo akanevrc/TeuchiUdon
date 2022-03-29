@@ -1868,14 +1868,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class WhileResult : TypedResult
     {
-        public WhileResult(IToken token, TeuchiUdonType type)
+        public ExprResult Condition { get; }
+        public ExprResult Expr { get; }
+        public ICodeLabel[] Labels { get; }
+
+        public WhileResult(IToken token, TeuchiUdonType type, ExprResult condition, ExprResult expr)
             : base(token, type)
         {
+            Condition = condition;
+            Expr      = expr;
+            Labels    = new ICodeLabel[]
+            {
+                new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex()),
+                new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex())
+            };
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
-        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Condition.Inner, Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
         public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
@@ -1904,14 +1915,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class LoopResult : TypedResult
     {
-        public LoopResult(IToken token, TeuchiUdonType type)
+        public ExprResult Expr { get; }
+        public ICodeLabel[] Labels { get; }
+
+        public LoopResult(IToken token, TeuchiUdonType type, ExprResult expr)
             : base(token, type)
         {
+            Expr   = expr;
+            Labels = new ICodeLabel[]
+            {
+                new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex()),
+                new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex())
+            };
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
-        public override IEnumerable<TypedResult> Children => new TypedResult[] {};
-        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
         public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
         public override bool Deterministic => Children.All(x => x.Deterministic);
 

@@ -358,6 +358,52 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 });
         }
 
+        protected override IEnumerable<TeuchiUdonAssembly> While
+        (
+            IEnumerable<TeuchiUdonAssembly> condition,
+            IEnumerable<TeuchiUdonAssembly> expr,
+            ICodeLabel label1,
+            ICodeLabel label2
+        )
+        {
+            return
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_LABEL(label1)
+                }
+                .Concat(condition)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label2))
+                })
+                .Concat(expr)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label1)),
+                    new Assembly_LABEL(label2)
+                });
+        }
+
+        protected override IEnumerable<TeuchiUdonAssembly> Loop
+        (
+            IEnumerable<TeuchiUdonAssembly> expr,
+            ICodeLabel label1,
+            ICodeLabel label2
+        )
+        {
+            return
+                new TeuchiUdonAssembly[]
+                {
+                    new Assembly_LABEL(label1)
+                }
+                .Concat(expr)
+                .Concat(new TeuchiUdonAssembly[]
+                {
+                    new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label1)),
+                    new Assembly_LABEL(label2)
+                });
+        }
+
         protected override IEnumerable<TeuchiUdonAssembly> EmptyArrayCtor
         (
             TeuchiUdonLiteral zero,

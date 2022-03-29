@@ -67,6 +67,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> elsePart,
             IEnumerable<ICodeLabel> labels
         );
+        protected abstract IEnumerable<TeuchiUdonAssembly> While
+        (
+            IEnumerable<TeuchiUdonAssembly> condition,
+            IEnumerable<TeuchiUdonAssembly> expr,
+            ICodeLabel label1,
+            ICodeLabel label2
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> Loop
+        (
+            IEnumerable<TeuchiUdonAssembly> expr,
+            ICodeLabel label1,
+            ICodeLabel label2
+        );
         protected abstract IEnumerable<TeuchiUdonAssembly> EmptyArrayCtor
         (
             TeuchiUdonLiteral zero,
@@ -706,7 +719,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitWhile(WhileResult result)
         {
-            return Enumerable.Empty<TeuchiUdonAssembly>();
+            return
+                While
+                (
+                    VisitExpr(result.Condition),
+                    VisitExpr(result.Expr),
+                    result.Labels[0],
+                    result.Labels[1]
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitFor(ForResult result)
@@ -716,7 +736,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLoop(LoopResult result)
         {
-            return Enumerable.Empty<TeuchiUdonAssembly>();
+            return
+                Loop
+                (
+                    VisitExpr(result.Expr),
+                    result.Labels[0],
+                    result.Labels[1]
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitFunc(FuncResult result)
