@@ -58,7 +58,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
-            IEnumerable<ICodeLabel> labels
+            IEnumerable<ICodeLabel> labels,
+            TeuchiUdonType type
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> IfElifElse
         (
@@ -72,13 +73,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> condition,
             IEnumerable<TeuchiUdonAssembly> expr,
             ICodeLabel label1,
-            ICodeLabel label2
+            ICodeLabel label2,
+            TeuchiUdonType type
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> Loop
         (
             IEnumerable<TeuchiUdonAssembly> expr,
             ICodeLabel label1,
-            ICodeLabel label2
+            ICodeLabel label2,
+            TeuchiUdonType type
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> EmptyArrayCtor
         (
@@ -354,7 +357,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 VisitTyped(result.Inner)
                 .Concat
                 (
-                    result.ReturnsValue || result.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    result.ReturnsValue ?
                         Enumerable.Empty<TeuchiUdonAssembly>() :
                         Pop(result.Inner.Type)
                 );
@@ -699,7 +702,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     (
                         result.Conditions.Select(x => VisitExpr(x)),
                         result.Exprs     .Select(x => VisitExpr(x)),
-                        result.Labels
+                        result.Labels,
+                        result.Type
                     );
         }
 
@@ -711,7 +715,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     VisitExpr(result.Condition),
                     VisitExpr(result.Expr),
                     result.Labels[0],
-                    result.Labels[1]
+                    result.Labels[1],
+                    result.Type
                 );
         }
 
@@ -727,7 +732,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 (
                     VisitExpr(result.Expr),
                     result.Labels[0],
-                    result.Labels[1]
+                    result.Labels[1],
+                    result.Type
                 );
         }
 

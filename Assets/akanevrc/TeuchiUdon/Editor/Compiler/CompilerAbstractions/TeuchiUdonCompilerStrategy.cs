@@ -70,11 +70,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 type.LogicalTypeNameEquals(TeuchiUdonType.Tuple) ?
-                type.GetArgsAsTuple().SelectMany(x => Pop(x)) :
-                new TeuchiUdonAssembly[]
-                {
-                    new Assembly_POP()
-                };
+                    type.GetArgsAsTuple().SelectMany(x => Pop(x)) :
+                type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
+                    Enumerable.Empty<TeuchiUdonAssembly>() :
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_POP()
+                    };
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label)
@@ -276,7 +278,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
-            IEnumerable<ICodeLabel> labels
+            IEnumerable<ICodeLabel> labels,
+            TeuchiUdonType type
         )
         {
             var ifs  = conditions.Zip(thenParts, (c, t) => (c, t));
@@ -297,7 +300,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(firstLabel))
                     })
-                    .Concat(head.t),
+                    .Concat(head.t)
+                    .Concat(Pop(type)),
                     (acc, x) =>
                         acc
                         .Concat(new TeuchiUdonAssembly[]
@@ -311,6 +315,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(x.l))
                         })
                         .Concat(x.t)
+                        .Concat(Pop(type))
                 )
                 .Concat(new TeuchiUdonAssembly[]
                 {
@@ -363,7 +368,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> condition,
             IEnumerable<TeuchiUdonAssembly> expr,
             ICodeLabel label1,
-            ICodeLabel label2
+            ICodeLabel label2,
+            TeuchiUdonType type
         )
         {
             return
@@ -377,6 +383,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(label2))
                 })
                 .Concat(expr)
+                .Concat(Pop(type))
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label1)),
@@ -388,7 +395,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             IEnumerable<TeuchiUdonAssembly> expr,
             ICodeLabel label1,
-            ICodeLabel label2
+            ICodeLabel label2,
+            TeuchiUdonType type
         )
         {
             return
@@ -397,6 +405,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new Assembly_LABEL(label1)
                 }
                 .Concat(expr)
+                .Concat(Pop(type))
                 .Concat(new TeuchiUdonAssembly[]
                 {
                     new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(label1)),
