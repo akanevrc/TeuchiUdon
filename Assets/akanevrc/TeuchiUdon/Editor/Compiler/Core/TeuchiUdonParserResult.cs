@@ -1770,36 +1770,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    public class ConditionalResult : TypedResult
-    {
-        public ExprResult Condition { get; }
-        public ExprResult Expr1 { get; }
-        public ExprResult Expr2 { get; }
-        public ICodeLabel[] Labels { get; }
-
-        public ConditionalResult(IToken token, TeuchiUdonType type, ExprResult condition, ExprResult expr1, ExprResult expr2)
-            : base(token, type)
-        {
-            Condition = condition;
-            Expr1     = expr1;
-            Expr2     = expr2;
-
-            var index1 = TeuchiUdonTables.Instance.GetBranchIndex();
-            var index2 = TeuchiUdonTables.Instance.GetBranchIndex();
-            Labels     = new ICodeLabel[] { new TeuchiUdonBranch(index1), new TeuchiUdonBranch(index2) };
-        }
-
-        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
-        public override IEnumerable<TypedResult> Children => new TypedResult[] { Condition.Inner, Expr1.Inner, Expr2.Inner };
-        public override IEnumerable<TypedResult> ReleasedChildren => new TypedResult[] { Condition.Inner };
-        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
-        public override bool Deterministic => Children.All(x => x.Deterministic);
-
-        public override void BindType(TeuchiUdonType type)
-        {
-        }
-    }
-
     public class LetInBindResult : TypedResult
     {
         public TeuchiUdonLetIn LetIn { get; }

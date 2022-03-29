@@ -1,5 +1,5 @@
 // ok
 {
-    let x = "ok";
-    UnityEngine.Debug.Log(x);
+  let x = "ok";
+  UnityEngine.Debug.Log(x);
 };

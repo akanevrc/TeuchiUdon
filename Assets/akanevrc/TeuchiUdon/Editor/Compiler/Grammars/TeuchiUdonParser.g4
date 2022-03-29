@@ -105,7 +105,6 @@ expr
     | expr op='??' expr                                                                        #CoalescingExpr
     | expr '|>' expr                                                                           #RightPipelineExpr
     |<assoc=right> expr '<|' expr                                                              #LeftPipelineExpr
-    |<assoc=right> expr '?' expr ':' expr                                                      #ConditionalExpr
     |<assoc=right> expr op='<-' expr                                                           #AssignExpr
     | 'let' varBind 'in' expr                                                                  #LetInBindExpr
     |<assoc=right> 'if' isoExpr 'then' isoExpr                                                 #IfExpr

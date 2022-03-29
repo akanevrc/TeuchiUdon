@@ -1,2 +1,0 @@
-// !
-false ? { UnityEngine.Debug.Log("ok"); 100 } : 200;

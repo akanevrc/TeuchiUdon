@@ -730,20 +730,6 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitEvalTupleKeyExpr([NotNull] TeuchiUdonParser.EvalTupleKeyExprContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>ConditionalExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterConditionalExpr([NotNull] TeuchiUdonParser.ConditionalExprContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>ConditionalExpr</c>
-	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitConditionalExpr([NotNull] TeuchiUdonParser.ConditionalExprContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>FuncExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
