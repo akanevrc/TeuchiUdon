@@ -1,0 +1,6 @@
+// 0
+mut str = "0";
+for let i <- 1..9..0 do {
+  str <- str + ", " + i.ToString();
+};
+UnityEngine.Debug.Log(str);

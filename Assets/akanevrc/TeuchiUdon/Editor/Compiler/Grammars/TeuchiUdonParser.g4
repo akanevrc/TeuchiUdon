@@ -112,7 +112,7 @@ expr
     |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+                #IfElifExpr
     |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+ 'else' isoExpr #IfElifElseExpr
     |<assoc=right> 'while' isoExpr 'do' isoExpr                                                #WhileExpr
-    |'for' forBind (',' forBind)* 'do' isoExpr                                                 #ForExpr
+    |('for' forBind)+ 'do' expr                                                                #ForExpr
     |'loop' isoExpr                                                                            #LoopExpr
     | varDecl[false] '->' expr                                                                 #FuncExpr
     ;
@@ -131,13 +131,13 @@ argExpr
     ;
 
 forBind
-    returns [ForBindResult result]
-    : 'let' expr '<-' forIterExpr #LetForBind
-    | expr '<-' forIterExpr       #AssignForBind
+    returns [ForBindResult result, int tableIndex]
+    : 'let' varDecl[true] '<-' forIterExpr #LetForBind
+    | expr '<-' forIterExpr                #AssignForBind
     ;
 
 forIterExpr
-    returns [ForIterExprResult result]
+    returns [IterExprResult result]
     : expr '..' expr           #RangeForIterExpr
     | expr '..' expr '..' expr #SteppedRangeForIterExpr
     | expr                     #SpreadForIterExpr

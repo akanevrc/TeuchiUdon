@@ -76,6 +76,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel label2,
             TeuchiUdonType type
         );
+        protected abstract IEnumerable<TeuchiUdonAssembly> For
+        (
+            IEnumerable<Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>>> forIters,
+            IEnumerable<TeuchiUdonAssembly> expr,
+            TeuchiUdonType type
+        );
         protected abstract IEnumerable<TeuchiUdonAssembly> Loop
         (
             IEnumerable<TeuchiUdonAssembly> expr,
@@ -83,13 +89,79 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel label2,
             TeuchiUdonType type
         );
+        protected abstract IEnumerable<TeuchiUdonAssembly> RangeIter
+        (
+            IEnumerable<TeuchiUdonAssembly> firstExpr,
+            IEnumerable<TeuchiUdonAssembly> lastExpr,
+            TeuchiUdonLiteral step,
+            IDataLabel value,
+            IDataLabel limit,
+            IDataLabel condition,
+            TeuchiUdonMethod lessThanOrEqual,
+            TeuchiUdonMethod greaterThan,
+            TeuchiUdonMethod addition,
+            ICodeLabel loopLabel1,
+            ICodeLabel loopLabel2,
+            IEnumerable<TeuchiUdonAssembly> initPart,
+            IEnumerable<TeuchiUdonAssembly> bodyPart,
+            IEnumerable<TeuchiUdonAssembly> termPart
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> SteppedRangeIter
+        (
+            IEnumerable<TeuchiUdonAssembly> firstExpr,
+            IEnumerable<TeuchiUdonAssembly> lastExpr,
+            IEnumerable<TeuchiUdonAssembly> stepExpr,
+            TeuchiUdonLiteral zero,
+            IDataLabel value,
+            IDataLabel limit,
+            IDataLabel step,
+            IDataLabel isUpTo,
+            IDataLabel condition,
+            TeuchiUdonMethod equality,
+            TeuchiUdonMethod lessThanOrEqual,
+            TeuchiUdonMethod greaterThan,
+            TeuchiUdonMethod addition,
+            ICodeLabel branchLabel1,
+            ICodeLabel branchLabel2,
+            ICodeLabel branchLabel3,
+            ICodeLabel branchLabel4,
+            ICodeLabel branchLabel5,
+            ICodeLabel branchLabel6,
+            ICodeLabel loopLabel1,
+            ICodeLabel loopLabel2,
+            IEnumerable<TeuchiUdonAssembly> initPart,
+            IEnumerable<TeuchiUdonAssembly> bodyPart,
+            IEnumerable<TeuchiUdonAssembly> termPart,
+            IEnumerable<TeuchiUdonAssembly> zeroPart
+        );
+        protected abstract IEnumerable<TeuchiUdonAssembly> SpreadIter
+        (
+            IEnumerable<TeuchiUdonAssembly> expr,
+            TeuchiUdonLiteral zero,
+            TeuchiUdonLiteral one,
+            IDataLabel array,
+            IDataLabel key,
+            IDataLabel value,
+            IDataLabel length,
+            IDataLabel condition,
+            TeuchiUdonMethod getter,
+            TeuchiUdonMethod getLength,
+            TeuchiUdonMethod lessThan,
+            TeuchiUdonMethod greaterThanOrEqual,
+            TeuchiUdonMethod addition,
+            ICodeLabel loopLabel1,
+            ICodeLabel loopLabel2,
+            IEnumerable<TeuchiUdonAssembly> initPart,
+            IEnumerable<TeuchiUdonAssembly> bodyPart,
+            IEnumerable<TeuchiUdonAssembly> termPart
+        );
         protected abstract IEnumerable<TeuchiUdonAssembly> EmptyArrayCtor
         (
             TeuchiUdonLiteral zero,
             TeuchiUdonOutValue array,
             TeuchiUdonMethod ctor
         );
-        protected abstract IEnumerable<TeuchiUdonAssembly> ArrayElementsCtor
+        protected abstract IEnumerable<TeuchiUdonAssembly> ElementsArrayCtor
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> elements,
             TeuchiUdonLiteral zero,
@@ -101,7 +173,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             TeuchiUdonMethod setter,
             TeuchiUdonMethod addition
         );
-        protected abstract IEnumerable<TeuchiUdonAssembly> ArrayRangeCtor
+        protected abstract IEnumerable<TeuchiUdonAssembly> RangeArrayCtor
         (
             IEnumerable<TeuchiUdonAssembly> firstExpr,
             IEnumerable<TeuchiUdonAssembly> lastExpr,
@@ -129,7 +201,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel loopLabel2,
             TeuchiUdonType type
         );
-        protected abstract IEnumerable<TeuchiUdonAssembly> ArraySteppedRangeCtor
+        protected abstract IEnumerable<TeuchiUdonAssembly> SteppedRangeArrayCtor
         (
             IEnumerable<TeuchiUdonAssembly> firstExpr,
             IEnumerable<TeuchiUdonAssembly> lastExpr,
@@ -169,7 +241,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             ICodeLabel loopLabel2,
             TeuchiUdonType type
         );
-        protected abstract IEnumerable<TeuchiUdonAssembly> ArraySpreadCtor
+        protected abstract IEnumerable<TeuchiUdonAssembly> SpreadArrayCtor
         (
             IEnumerable<TeuchiUdonAssembly> expr,
             TeuchiUdonOutValue array,
@@ -266,10 +338,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArrayIter(ArrayCtorResult ctor, IterExprResult result)
         {
-            if (result is ElementsIterExprResult     elementsIterExpr    ) return VisitArrayElementsIter    (ctor, elementsIterExpr);
-            if (result is RangeIterExprResult        rangeIterExpr       ) return VisitArrayRangeIter       (ctor, rangeIterExpr);
-            if (result is SteppedRangeIterExprResult steppedRangeIterExpr) return VisitArraySteppedRangeIter(ctor, steppedRangeIterExpr);
-            if (result is SpreadIterExprResult       spreadIterExpr      ) return VisitArraySpreadIter      (ctor, spreadIterExpr);
+            if (result is ElementsIterExprResult     elementsIter    ) return VisitArrayElementsIter    (ctor, elementsIter);
+            if (result is RangeIterExprResult        rangeIter       ) return VisitArrayRangeIter       (ctor, rangeIter);
+            if (result is SteppedRangeIterExprResult steppedRangeIter) return VisitArraySteppedRangeIter(ctor, steppedRangeIter);
+            if (result is SpreadIterExprResult       spreadIter      ) return VisitArraySpreadIter      (ctor, spreadIter);
+            throw new NotSupportedException("unsupported parser result type");
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForBindForSetter(ForBindResult result)
+        {
+            if (result is LetForBindResult    letBind) return VisitLetForBindForSetter   (letBind);
+            if (result is AssignForBindResult assign ) return VisitAssignForBindForSetter(assign);
+            throw new NotSupportedException("unsupported parser result type");
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForIter
+        (
+            IterExprResult result,
+            Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> setter
+        )
+        {
+            if (result is RangeIterExprResult        rangeIter       ) return VisitForRangeIter       (rangeIter       , setter);
+            if (result is SteppedRangeIterExprResult steppedRangeIter) return VisitForSteppedRangeIter(steppedRangeIter, setter);
+            if (result is SpreadIterExprResult       spreadIter      ) return VisitForSpreadIter      (spreadIter      , setter);
             throw new NotSupportedException("unsupported parser result type");
         }
 
@@ -703,7 +794,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         result.Conditions.Select(x => VisitExpr(x)),
                         result.Exprs     .Select(x => VisitExpr(x)),
                         result.Labels,
-                        result.Type
+                        TeuchiUdonType.GetUpperType(result.Exprs.Select(x => x.Inner.Type))
                     );
         }
 
@@ -716,13 +807,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     VisitExpr(result.Expr),
                     result.Labels[0],
                     result.Labels[1],
-                    result.Type
+                    result.Expr.Inner.Type
                 );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitFor(ForResult result)
         {
-            return Enumerable.Empty<TeuchiUdonAssembly>();
+            return
+                For
+                (
+                    result.ForBinds.Select(x =>
+                        x is LetForBindResult    letBind ? VisitForIter(letBind.Iter, VisitLetForBindForSetter   (letBind)) :
+                        x is AssignForBindResult assign  ? VisitForIter(assign .Iter, VisitAssignForBindForSetter(assign))  :
+                        _ => Enumerable.Empty<TeuchiUdonAssembly>()
+                    ),
+                    VisitExpr(result.Expr),
+                    result.Expr.Inner.Type
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLoop(LoopResult result)
@@ -733,7 +834,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     VisitExpr(result.Expr),
                     result.Labels[0],
                     result.Labels[1],
-                    result.Type
+                    result.Expr.Inner.Type
                 );
         }
 
@@ -749,7 +850,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         
         protected IEnumerable<TeuchiUdonAssembly> VisitArrayElementsIter(ArrayCtorResult ctor, ElementsIterExprResult result)
         {
-            return ArrayElementsCtor
+            return ElementsArrayCtor
             (
                 result.Exprs.Select(x => VisitExpr(x)),
                 ctor  .Literals ["0"],
@@ -772,7 +873,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 result.Methods["addition"       ] == null ||
                 result.Methods["subtraction"    ] == null ?
                 Enumerable.Empty<TeuchiUdonAssembly>() :
-                ArrayRangeCtor
+                RangeArrayCtor
                 (
                     VisitExpr(result.First),
                     VisitExpr(result.Last),
@@ -814,14 +915,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 result.Methods["subtraction"    ] == null ||
                 result.Methods["division"       ] == null ?
                 Enumerable.Empty<TeuchiUdonAssembly>() :
-                ArraySteppedRangeCtor
+                SteppedRangeArrayCtor
                 (
                     VisitExpr(result.First),
                     VisitExpr(result.Last),
                     VisitExpr(result.Step),
                     ctor  .Literals ["0"],
                     ctor  .Literals ["1"],
-                    result.Literals ["1"],
+                    result.Literals ["0"],
                     result.TmpValues["value"],
                     result.TmpValues["limit"],
                     result.TmpValues["step"],
@@ -861,7 +962,139 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 result.Methods["clone"] == null ?
                 Enumerable.Empty<TeuchiUdonAssembly>() :
-                ArraySpreadCtor(VisitExpr(result.Expr), ctor.TmpValues["array"], result.Methods["clone"]);
+                SpreadArrayCtor(VisitExpr(result.Expr), ctor.TmpValues["array"], result.Methods["clone"]);
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitLetForBindForSetter(LetForBindResult result)
+        {
+            return x => x.Concat(result.Vars.Reverse().SelectMany(y => Set(y)));
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitAssignForBindForSetter(AssignForBindResult result)
+        {
+            return x =>
+                result.Expr.Inner.LeftValues.Length == 1 && result.Expr.Inner.LeftValues[0] is TeuchiUdonVar ?
+                    EvalAssign
+                    (
+                        VisitExpr(result.Expr),
+                        x
+                    ) :
+                result.Expr.Inner.LeftValues.Length == 1 && result.Expr.Inner.LeftValues[0] is TeuchiUdonMethod m ?
+                    EvalSetterAssign
+                    (
+                        VisitExpr(result.Expr.Inner.Instance),
+                        x,
+                        m
+                    ) :
+                Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForRangeIter
+        (
+            RangeIterExprResult result,
+            Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> setter
+        )
+        {
+            return x =>
+                result.Methods["lessThanOrEqual"] == null ||
+                result.Methods["greaterThan"    ] == null ||
+                result.Methods["addition"       ] == null ?
+                Enumerable.Empty<TeuchiUdonAssembly>() :
+                RangeIter
+                (
+                    VisitExpr(result.First),
+                    VisitExpr(result.Last),
+                    result.Literals ["step"],
+                    result.TmpValues["value"],
+                    result.TmpValues["limit"],
+                    result.TmpValues["condition"],
+                    result.Methods  ["lessThanOrEqual"],
+                    result.Methods  ["greaterThan"],
+                    result.Methods  ["addition"],
+                    result.Labels   ["loop1"],
+                    result.Labels   ["loop2"],
+                    Enumerable.Empty<TeuchiUdonAssembly>(),
+                    setter(Get(result.TmpValues["value"])).Concat(x),
+                    Enumerable.Empty<TeuchiUdonAssembly>()
+                );
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForSteppedRangeIter
+        (
+            SteppedRangeIterExprResult result,
+            Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> setter
+        )
+        {
+            return x =>
+                result.Methods["equality"       ] == null ||
+                result.Methods["lessThanOrEqual"] == null ||
+                result.Methods["greaterThan"    ] == null ||
+                result.Methods["addition"       ] == null ?
+                Enumerable.Empty<TeuchiUdonAssembly>() :
+                SteppedRangeIter
+                (
+                    VisitExpr(result.First),
+                    VisitExpr(result.Last),
+                    VisitExpr(result.Step),
+                    result.Literals ["0"],
+                    result.TmpValues["value"],
+                    result.TmpValues["limit"],
+                    result.TmpValues["step"],
+                    result.TmpValues["isUpTo"],
+                    result.TmpValues["condition"],
+                    result.Methods  ["equality"],
+                    result.Methods  ["lessThanOrEqual"],
+                    result.Methods  ["greaterThan"],
+                    result.Methods  ["addition"],
+                    result.Labels   ["branch1"],
+                    result.Labels   ["branch2"],
+                    result.Labels   ["branch3"],
+                    result.Labels   ["branch4"],
+                    result.Labels   ["branch5"],
+                    result.Labels   ["branch6"],
+                    result.Labels   ["loop1"],
+                    result.Labels   ["loop2"],
+                    Enumerable.Empty<TeuchiUdonAssembly>(),
+                    setter(Get(result.TmpValues["value"])).Concat(x),
+                    Enumerable.Empty<TeuchiUdonAssembly>(),
+                    Enumerable.Empty<TeuchiUdonAssembly>()
+                );
+        }
+
+        protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForSpreadIter
+        (
+            SpreadIterExprResult result,
+            Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> setter
+        )
+        {
+            return x =>
+                result.Methods["getter"            ] == null ||
+                result.Methods["getLength"         ] == null ||
+                result.Methods["lessThan"          ] == null ||
+                result.Methods["greaterThanOrEqual"] == null ||
+                result.Methods["addition"          ] == null ?
+                Enumerable.Empty<TeuchiUdonAssembly>() :
+                SpreadIter
+                (
+                    VisitExpr(result.Expr),
+                    result.Literals ["0"],
+                    result.Literals ["1"],
+                    result.TmpValues["array"],
+                    result.TmpValues["key"],
+                    result.TmpValues["value"],
+                    result.TmpValues["length"],
+                    result.TmpValues["condition"],
+                    result.Methods  ["getter"],
+                    result.Methods  ["getLength"],
+                    result.Methods  ["lessThan"],
+                    result.Methods  ["greaterThanOrEqual"],
+                    result.Methods  ["addition"],
+                    result.Labels   ["loop1"],
+                    result.Labels   ["loop2"],
+                    Enumerable.Empty<TeuchiUdonAssembly>(),
+                    setter(Get(result.TmpValues["value"])).Concat(x),
+                    Enumerable.Empty<TeuchiUdonAssembly>()
+                );
         }
 
         public IEnumerable<TeuchiUdonAssembly> DeclIndirectAddresses(IEnumerable<(TeuchiUdonIndirect indirect, uint address)> pairs)

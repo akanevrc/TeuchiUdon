@@ -27,7 +27,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 context is StatementContext    ||
                 context is VarBindContext      ||
                 context is IterExprContext     ||
-                context is ForBindContext      ||
                 context is IsoExprContext      ||
                 context is ExprContext && context.Parent is FuncExprContext
             )
@@ -44,7 +43,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 context is StatementContext    ||
                 context is VarBindContext      ||
                 context is IterExprContext     ||
-                context is ForBindContext      ||
                 context is IsoExprContext      ||
                 context is ExprContext && context.Parent is FuncExprContext
             )
@@ -255,12 +253,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var mut = context.MUT() != null;
 
-            if (mut && expr.Inner.Type.IsFunc())
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function variable cannot be mutable");
-                return;
-            }
-
             var index = context.tableIndex;
             var qual  = TeuchiUdonQualifierStack.Instance.Peek();
 
@@ -336,9 +328,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
             }
 
-            if (mut && vars.Any(x => x.Type.IsFunc()))
+            if (mut && expr.Inner.Type.IsFunc())
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function variable cannot be mutable");
+                return;
             }
 
             context.result = new VarBindResult(context.Start, index, qual, vars, varDecl, expr);
@@ -1582,7 +1575,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             if (expr1.Inner.LeftValues.Length != 1 || !expr1.Inner.Type.IsAssignableFrom(expr2.Inner.Type))
             {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot assign");
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot be assigned");
                 return;
             }
 
@@ -1719,6 +1712,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitForExpr([NotNull] ForExprContext context)
         {
+            var forBinds = context.forBind().Select(x => x?.result);
+            var expr     = context.expr()?.result;
+            if (forBinds.Any(x => x == null) || expr == null) return;
+
+            var for_       = new ForResult(context.Start, TeuchiUdonType.Unit, forBinds, expr);
+            context.result = new ExprResult(for_.Token, for_);
         }
 
         public override void ExitLoopExpr([NotNull] LoopExprContext context)
@@ -1915,24 +1914,186 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ArgExprResult(context.Start, expr, rf);
         }
 
+        public override void EnterLetForBind([NotNull] LetForBindContext context)
+        {
+            var varDecl = context.varDecl();
+            if
+            (
+                varDecl == null ||
+                varDecl is SingleVarDeclContext s && s.qualifiedVar()?.identifier() == null ||
+                varDecl is TupleVarDeclContext  t && t.qualifiedVar().Any(x => x?.identifier() == null)
+            ) return;
+
+            var index          = TeuchiUdonTables.Instance.GetVarBindIndex();
+            context.tableIndex = index;
+            var qual           = TeuchiUdonQualifierStack.Instance.Peek();
+            var varNames       =
+                varDecl is SingleVarDeclContext sv ? new string[] { sv.qualifiedVar()?.identifier()?.GetText() ?? "" } :
+                varDecl is TupleVarDeclContext  tv ? tv.qualifiedVar().Select(x => x?.identifier()?.GetText() ?? "").ToArray() : Enumerable.Empty<string>();
+            var scope   = new TeuchiUdonScope(new TeuchiUdonVarBind(index, qual, varNames), TeuchiUdonScopeMode.VarBind);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
+        }
+
         public override void ExitLetForBind([NotNull] LetForBindContext context)
         {
+            var varDecl     = context.varDecl    ()?.result;
+            var forIterExpr = context.forIterExpr()?.result;
+            if (varDecl == null || forIterExpr == null) return;
+
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var index = context.tableIndex;
+            var qual  = TeuchiUdonQualifierStack.Instance.Peek();
+
+            var vars = (TeuchiUdonVar[])null;
+            if (varDecl.Vars.Length == 1)
+            {
+                var v = varDecl.Vars[0];
+                var t = forIterExpr.Type;
+                if (v.Type.IsAssignableFrom(t))
+                {
+                    if (t.ContainsUnknown())
+                    {
+                        forIterExpr.BindType(v.Type);
+                    }
+
+                    vars = new TeuchiUdonVar[]
+                    {
+                        new TeuchiUdonVar
+                        (
+                            TeuchiUdonTables.Instance.GetVarIndex(),
+                            v.Qualifier,
+                            v.Name,
+                            v.Type.LogicalTypeEquals(TeuchiUdonType.Unknown) ? t : v.Type,
+                            true,
+                            false
+                        )
+                    };
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variable");
+                    vars = Array.Empty<TeuchiUdonVar>();
+                }
+            }
+            else if (varDecl.Vars.Length >= 2)
+            {
+                if (forIterExpr.Type.LogicalTypeNameEquals(TeuchiUdonType.Tuple))
+                {
+                    var vs = varDecl.Vars;
+                    var ts = forIterExpr.Type.GetArgsAsTuple().ToArray();
+                    if (vs.Length == ts.Length && varDecl.Types.Zip(ts, (v, t) => (v, t)).All(x => x.v.IsAssignableFrom(x.t)))
+                    {
+                        if (forIterExpr.Type.ContainsUnknown())
+                        {
+                            forIterExpr.BindType(TeuchiUdonType.ToOneType(vs.Select(x => x.Type)));
+                        }
+                        
+                        vars = varDecl.Vars
+                            .Zip(ts, (v, t) => (v, t))
+                            .Select(x =>
+                                new TeuchiUdonVar
+                                (
+                                    TeuchiUdonTables.Instance.GetVarIndex(),
+                                    x.v.Qualifier,
+                                    x.v.Name,
+                                    x.v.Type.LogicalTypeEquals(TeuchiUdonType.Unknown) ? x.t : x.v.Type,
+                                    true,
+                                    false
+                                )
+                            )
+                            .ToArray();
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variables");
+                        vars = Array.Empty<TeuchiUdonVar>();
+                    }
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression cannot be assigned to variables");
+                    vars = Array.Empty<TeuchiUdonVar>();
+                }
+            }
+
+            if (forIterExpr.Type.IsFunc())
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function variable cannot be mutable");
+                return;
+            }
+
+            context.result = new LetForBindResult(context.Start, index, qual, vars, varDecl, forIterExpr);
         }
 
         public override void ExitAssignForBind([NotNull] AssignForBindContext context)
         {
+            var expr        = context.expr       ()?.result;
+            var forIterExpr = context.forIterExpr()?.result;
+            if (expr == null || forIterExpr == null) return;
+
+            if (expr.Inner.LeftValues.Length != 1 || !expr.Inner.Type.IsAssignableFrom(forIterExpr.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"cannot be assigned");
+                return;
+            }
+
+            context.result = new AssignForBindResult(context.Start, expr, forIterExpr);
         }
 
         public override void ExitRangeForIterExpr([NotNull] RangeForIterExprContext context)
         {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+
+            if (!exprs[0].Inner.Type.IsSignedIntegerType() || !exprs[1].Inner.Type.IsSignedIntegerType())
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not signed integer type");
+                return;
+            }
+            else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression type is incompatible");
+                return;
+            }
+
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new RangeIterExprResult(context.Start, exprs[0].Inner.Type, qual, exprs[0], exprs[1]);
         }
 
         public override void ExitSteppedRangeForIterExpr([NotNull] SteppedRangeForIterExprContext context)
         {
+            var exprs = context.expr().Select(x => x?.result).ToArray();
+            if (exprs.Length != 3 || exprs.Any(x => x == null)) return;
+
+            if (!exprs[0].Inner.Type.IsSignedIntegerType() || !exprs[1].Inner.Type.IsSignedIntegerType() || !exprs[2].Inner.Type.IsSignedIntegerType())
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression is not signed integer type");
+                return;
+            }
+            else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type) || !exprs[0].Inner.Type.LogicalTypeEquals(exprs[2].Inner.Type))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"range expression type is incompatible");
+                return;
+            }
+
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new SteppedRangeIterExprResult(context.Start, exprs[0].Inner.Type, qual, exprs[0], exprs[1], exprs[2]);
         }
 
         public override void ExitSpreadForIterExpr([NotNull] SpreadForIterExprContext context)
         {
+            var expr = context.expr()?.result;
+            if (expr == null) return;
+
+            if (!expr.Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Array))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"spread expression is not a array type");
+                return;
+            }
+
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new SpreadIterExprResult(context.Start, expr.Inner.Type.GetArgAsArray(), qual, expr);
         }
 
         public override void ExitUnitLiteral([NotNull] UnitLiteralContext context)

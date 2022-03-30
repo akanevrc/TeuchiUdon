@@ -24,12 +24,12 @@ MonoBehaviour:
     .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, out[SystemInt32>0]\r\n       
     COPY\r\n        PUSH, literal[1]\r\n        PUSH, out[SystemInt32>1]\r\n       
     COPY\r\n        PUSH, literal[2]\r\n        PUSH, out[SystemInt32>2]\r\n       
-    COPY\r\n        PUSH, out[SystemInt32>2]\r\n        PUSH, literal[2]\r\n       
+    COPY\r\n        PUSH, out[SystemInt32>2]\r\n        PUSH, literal[1]\r\n       
     PUSH, out[SystemBoolean>0]\r\n        EXTERN, \"SystemInt32.__op_Equality__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
     PUSH, out[SystemBoolean>0]\r\n        JUMP_IF_FALSE, branch[6]\r\n        PUSH,
     literal[1]\r\n        PUSH, out[arraySystemInt32>0]\r\n        EXTERN, \"SystemInt32Array.__ctor__SystemInt32__SystemInt32Array\"\r\n       
     PUSH, out[arraySystemInt32>0]\r\n        JUMP, branch[7]\r\n        branch[6]:\r\n       
-    PUSH, out[SystemInt32>2]\r\n        PUSH, literal[2]\r\n        PUSH, out[SystemBoolean>0]\r\n       
+    PUSH, out[SystemInt32>2]\r\n        PUSH, literal[1]\r\n        PUSH, out[SystemBoolean>0]\r\n       
     EXTERN, \"SystemInt32.__op_GreaterThan__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
     PUSH, out[SystemInt32>1]\r\n        PUSH, out[SystemInt32>0]\r\n        PUSH,
     out[SystemInt32>3]\r\n        EXTERN, \"SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32\"\r\n       
