@@ -7,33 +7,22 @@ using UnityEngine;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
+    public class TeuchiUdonCompilerException : Exception
+    {
+        public TeuchiUdonCompilerException(string message)
+            : base(message)
+        {
+        }
+    }
+
     public static class TeuchiUdonCompilerRunner
     {
-        [MenuItem("Tools/Run Compile")]
-        public static void Tool_RunCompile()
-        {
-            var (output, error) = CompileFromPath("Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi");
-            Debug.Log(output);
-            Debug.Log(error);
-        }
-
-        [UnityEditor.MenuItem("Tools/Save TeuchiUdon Asset")]
-        public static void Tool_SaveTeuchiUdonAsset()
-        {
-            SaveTeuchiUdonAsset
-            (
-                "Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonTest.teuchi",
-                "Assets/akanevrc/TeuchiUdon/Tests/tmp/TeuchiUdonAsm.asset"
-            );
-            Debug.Log("save succeeded");
-        }
-
         public static TeuchiUdonProgramAsset SaveTeuchiUdonAsset(string srcPath, string assetPath)
         {
             var (output, error) = CompileFromPath(srcPath);
             if (!string.IsNullOrEmpty(error))
             {
-                throw new InvalidOperationException(error);
+                throw new TeuchiUdonCompilerException(error);
             }
 
             var program = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
