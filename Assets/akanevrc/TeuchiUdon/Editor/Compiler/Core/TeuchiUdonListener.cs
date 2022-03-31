@@ -821,7 +821,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, qualifier, s[0]);
+                            eval = new EvalSetterResult(varCandidate2.Token, s[0].InTypes[1], qualifier, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
@@ -879,7 +879,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, qualifier, s[0]);
+                            eval = new EvalSetterResult(varCandidate2.Token, s[0].InTypes[1], qualifier, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)

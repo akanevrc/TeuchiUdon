@@ -788,8 +788,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         private TeuchiUdonMethod Setter { get; }
 
-        public EvalSetterResult(IToken token, TeuchiUdonQualifier qualifier, TeuchiUdonMethod setter)
-            : base(token, TeuchiUdonType.Unit, qualifier)
+        public EvalSetterResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod setter)
+            : base(token, type, qualifier)
         {
             Setter = setter;
             Init();

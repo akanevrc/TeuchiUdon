@@ -95,7 +95,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.NullType,
                 TeuchiUdonType.Object,
                 TeuchiUdonType.DotNetType,
-                TeuchiUdonType.AnyArray,
                 TeuchiUdonType.Bool,
                 TeuchiUdonType.Byte,
                 TeuchiUdonType.SByte,
@@ -136,8 +135,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Array,
                 TeuchiUdonType.List,
                 TeuchiUdonType.Func,
-                TeuchiUdonType.DetFunc,
-                TeuchiUdonType.Method
+                TeuchiUdonType.DetFunc
             };
 
             foreach (var t in genericRoots)

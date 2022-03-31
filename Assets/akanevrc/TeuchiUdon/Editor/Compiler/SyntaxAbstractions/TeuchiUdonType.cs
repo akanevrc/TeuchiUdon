@@ -25,6 +25,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Func { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func", "func", null, null);
         public static TeuchiUdonType DetFunc { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "detfunc", "detfunc", null, null);
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
+        public static TeuchiUdonType Setter { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "setter", "setter", null, null);
         public static TeuchiUdonType NullType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "nulltype", "nulltype", "SystemObject", typeof(object));
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
         public static TeuchiUdonType DotNetType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "dotnettype", "SystemType", "SystemType", typeof(Type));
@@ -210,6 +211,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     IsAssignableFromList    (obj) ||
                     IsAssignableFromFunc    (obj) ||
                     IsAssignableFromDetFunc (obj) ||
+                    IsAssignableFromSetter  (obj) ||
                     IsAssignableFromNullType(obj) ||
                     IsAssignableFromDotNet  (obj)
                 );
@@ -319,6 +321,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 obj.GetArgAsFuncOutType().IsAssignableFrom(    GetArgAsFuncOutType());
         }
 
+        private bool IsAssignableFromSetter(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if (!LogicalTypeNameEquals(TeuchiUdonType.Setter)) return false;
+
+            return GetArgAsSetter().IsAssignableFrom(obj);
+        }
+
         private bool IsAssignableFromNullType(TeuchiUdonType obj)
         {
             if (obj == null) return false;
@@ -340,16 +350,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonType[]
             {
                 TeuchiUdonType.Unknown,
+                TeuchiUdonType.Invalid,
                 TeuchiUdonType.Any,
                 TeuchiUdonType.Bottom,
                 TeuchiUdonType.Unit,
                 TeuchiUdonType.Qual,
                 TeuchiUdonType.Type,
                 TeuchiUdonType.Tuple,
-                TeuchiUdonType.Array,
                 TeuchiUdonType.List,
                 TeuchiUdonType.Func,
-                TeuchiUdonType.Method
+                TeuchiUdonType.DetFunc,
+                TeuchiUdonType.Method,
+                TeuchiUdonType.Setter
             }
             .All(x => !LogicalTypeNameEquals(x));
         }
@@ -554,6 +566,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return ApplyArgs(methods);
         }
 
+        public TeuchiUdonType ApplyArgAsSetter(TeuchiUdonType type)
+        {
+            return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
+        }
+
         public TeuchiUdonQualifier GetArgAsQual()
         {
             return (TeuchiUdonQualifier)Args[0];
@@ -597,6 +614,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public IEnumerable<TeuchiUdonMethod> GetArgsAsMethod()
         {
             return Args.Cast<TeuchiUdonMethod>();
+        }
+
+        public TeuchiUdonType GetArgAsSetter()
+        {
+            return (TeuchiUdonType)Args[0];
         }
 
         public TeuchiUdonType ApplyRealType(string realName, Type realType)
