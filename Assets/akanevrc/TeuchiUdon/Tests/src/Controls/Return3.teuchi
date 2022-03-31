@@ -1,0 +1,6 @@
+// error
+f = () -> {
+  if true then { return "ng"; };
+  100
+};
+UnityEngine.Debug.Log(f());

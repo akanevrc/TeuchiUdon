@@ -17,7 +17,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonAssembly> Pop(TeuchiUdonType type);
         protected abstract IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Set(IDataLabel label);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Jump(IDataLabel label);
+        protected abstract IEnumerable<TeuchiUdonAssembly> Jump(ITeuchiUdonLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Indirect(ICodeLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Func(TeuchiUdonFunc func);
         protected abstract IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, TeuchiUdonMethod ev, List<TopStatementResult> stats);
@@ -80,6 +80,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             IEnumerable<Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>>> forIters,
             IEnumerable<TeuchiUdonAssembly> expr,
+            ICodeLabel continueLabel,
             TeuchiUdonType type
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> Loop
@@ -432,7 +433,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 VisitExpr(result.Value)
-                .Concat(Jump(result.Label));
+                .Concat(Jump(result.Label()));
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitLetBind(LetBindResult result)
@@ -822,6 +823,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         _ => Enumerable.Empty<TeuchiUdonAssembly>()
                     ),
                     VisitExpr(result.Expr),
+                    result.ContinueLabel,
                     result.Expr.Inner.Type
                 );
         }

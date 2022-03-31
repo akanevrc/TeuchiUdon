@@ -188,12 +188,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class JumpResult : StatementResult
     {
         public ExprResult Value { get; }
-        public IDataLabel Label { get; }
+        public Func<TeuchiUdonBlock> Block { get; }
+        public Func<ITeuchiUdonLabel> Label { get; }
 
-        public JumpResult(IToken token, ExprResult value, IDataLabel label)
+        public JumpResult(IToken token, ExprResult value, Func<TeuchiUdonBlock> block, Func<ITeuchiUdonLabel> label)
             : base(token)
         {
             Value = value;
+            Block = block;
             Label = label;
         }
     }
@@ -397,9 +399,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public BlockResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, IEnumerable<StatementResult> statements, ExprResult expr)
             : base(token, type)
         {
-            Block      = new TeuchiUdonBlock(index, qualifier);
+            Block      = new TeuchiUdonBlock(index, qualifier, type);
             Statements = statements.ToArray();
             Expr       = expr;
+
+            if (!TeuchiUdonTables.Instance.Blocks.ContainsKey(Block))
+            {
+                TeuchiUdonTables.Instance.Blocks.Add(Block, Block);
+            }
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1858,6 +1865,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex()),
                 new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex())
             };
+
+            if (Expr.Inner is BlockResult block)
+            {
+                block.Block.Continue = Labels[0];
+                block.Block.Break    = Labels[1];
+            }
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1875,22 +1888,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public ForBindResult[] ForBinds { get; }
         public ExprResult Expr { get; }
-        public ICodeLabel[][] Labels { get; }
+        public ICodeLabel ContinueLabel { get; }
 
         public ForResult(IToken token, TeuchiUdonType type, IEnumerable<ForBindResult> forBinds, ExprResult expr)
             : base(token, type)
         {
-            ForBinds = forBinds.ToArray();
-            Expr     = expr;
-            Labels   =
-                ForBinds.Select(_ =>
-                    new ICodeLabel[]
-                    {
-                        new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex()),
-                        new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex())
-                    }
-                )
-                .ToArray();
+            ForBinds      = forBinds.ToArray();
+            Expr          = expr;
+            ContinueLabel = new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex());
+
+            if (Expr.Inner is BlockResult block)
+            {
+                var forBind = forBinds.FirstOrDefault();
+                block.Block.Continue = ContinueLabel;
+                block.Block.Break    =
+                    forBind == null ? null :
+                    forBind is LetForBindResult    letBind ? letBind.Iter.BreakLabel :
+                    forBind is AssignForBindResult assign  ? assign .Iter.BreakLabel :
+                        null;
+            }
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1925,6 +1941,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex()),
                 new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex())
             };
+
+            if (Expr.Inner is BlockResult block)
+            {
+                block.Block.Continue = Labels[0];
+                block.Block.Break    = Labels[1];
+            }
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1960,6 +1982,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             else
             {
                 TeuchiUdonTables.Instance.Funcs.Add(Func, Func);
+            }
+
+            if (Expr.Inner is BlockResult block)
+            {
+                block.Block.Return = Func.Return;
             }
         }
 
@@ -1997,6 +2024,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public abstract class IterExprResult : ExternResult
     {
+        public abstract ICodeLabel BreakLabel { get; }
+
         public IterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier)
             : base(token, type, qualifier)
         {
@@ -2008,6 +2037,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class ElementsIterExprResult : IterExprResult
     {
         public ExprResult[] Exprs { get; }
+        public override ICodeLabel BreakLabel { get; } = null;
 
         public ElementsIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, IEnumerable<ExprResult> exprs)
             : base(token, type, qualifier)
@@ -2053,6 +2083,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public ExprResult First { get; }
         public ExprResult Last { get; }
+        public override ICodeLabel BreakLabel => Labels["loop2"];
 
         public RangeIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult first, ExprResult last)
             : base(token, type, qualifier)
@@ -2166,6 +2197,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult First { get; }
         public ExprResult Last { get; }
         public ExprResult Step { get; }
+        public override ICodeLabel BreakLabel => Labels["loop2"];
 
         public SteppedRangeIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult first, ExprResult last, ExprResult step)
             : base(token, type, qualifier)
@@ -2316,6 +2348,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class SpreadIterExprResult : IterExprResult
     {
         public ExprResult Expr { get; }
+        public override ICodeLabel BreakLabel => Labels["loop2"];
 
         public SpreadIterExprResult(IToken token, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult expr)
             : base(token, type, qualifier)

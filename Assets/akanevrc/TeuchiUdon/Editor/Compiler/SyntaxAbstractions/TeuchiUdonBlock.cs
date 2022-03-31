@@ -6,11 +6,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
+        public TeuchiUdonType Type { get; }
+        public ITeuchiUdonLabel Return { get; set; } = null;
+        public ITeuchiUdonLabel Continue { get; set; } = null;
+        public ITeuchiUdonLabel Break { get; set; } = null;
 
         public TeuchiUdonBlock(int index, TeuchiUdonQualifier qualifier)
+            : this(index, qualifier, null)
+        {
+        }
+
+        public TeuchiUdonBlock(int index, TeuchiUdonQualifier qualifier, TeuchiUdonType type)
         {
             Index     = index;
             Qualifier = qualifier;
+            Type      = type;
         }
 
         public bool Equals(TeuchiUdonBlock obj)

@@ -111,9 +111,9 @@ expr
     |<assoc=right> 'if' isoExpr 'then' isoExpr  'else' isoExpr                                 #IfElseExpr
     |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+                #IfElifExpr
     |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+ 'else' isoExpr #IfElifElseExpr
-    |<assoc=right> 'while' isoExpr 'do' isoExpr                                                #WhileExpr
+    |<assoc=right> 'while' isoExpr 'do' expr                                                   #WhileExpr
     |('for' forBind)+ 'do' expr                                                                #ForExpr
-    |'loop' isoExpr                                                                            #LoopExpr
+    |'loop' expr                                                                               #LoopExpr
     | varDecl[false] '->' expr                                                                 #FuncExpr
     ;
 

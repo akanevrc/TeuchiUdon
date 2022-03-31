@@ -71,19 +71,31 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return new TeuchiUdonQualifier(l);
         }
 
-        public TeuchiUdonScope LastScope(TeuchiUdonScopeMode mode)
+        public TeuchiUdonScope LastScope(IEnumerable<TeuchiUdonScopeMode> modes)
         {
             foreach (var scope in Logical.Reverse())
             {
-                if (scope.Mode == mode) return scope;
+                if (modes.Any(x => x == scope.Mode)) return scope;
             }
             return null;
         }
 
         public TeuchiUdonQualifier GetFuncQualifier()
         {
-            var func = (TeuchiUdonFunc)LastScope(TeuchiUdonScopeMode.Func)?.Label;
+            var func = (TeuchiUdonFunc)LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func })?.Label;
             return func == null ? TeuchiUdonQualifier.Top : func.Qualifier;
+        }
+
+        public TeuchiUdonBlock GetFuncBlock()
+        {
+            var scope = LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.FuncBlock })?.Label;
+            return scope != null && scope is TeuchiUdonBlock block ? block : null;
+        }
+
+        public TeuchiUdonBlock GetLoopBlock()
+        {
+            var scope = LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.LoopBlock })?.Label;
+            return scope != null && scope is TeuchiUdonBlock block ? block : null;
         }
 
         public T GetLast<T>() where T : class, ITeuchiUdonLabel

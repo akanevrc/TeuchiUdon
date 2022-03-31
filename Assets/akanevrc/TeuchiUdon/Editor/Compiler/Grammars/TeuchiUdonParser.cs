@@ -1080,13 +1080,13 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class WhileExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode WHILE() { return GetToken(TeuchiUdonParser.WHILE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
-			return GetRuleContexts<IsoExprContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
-			return GetRuleContext<IsoExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr() {
+			return GetRuleContext<IsoExprContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DO() { return GetToken(TeuchiUdonParser.DO, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
+		}
 		public WhileExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -1877,8 +1877,8 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class LoopExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LOOP() { return GetToken(TeuchiUdonParser.LOOP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr() {
-			return GetRuleContext<IsoExprContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public ExprContext expr() {
+			return GetRuleContext<ExprContext>(0);
 		}
 		public LoopExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
@@ -2375,7 +2375,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 218;
 				Match(DO);
 				State = 219;
-				isoExpr();
+				expr(4);
 				}
 				break;
 			case 19:
@@ -2413,7 +2413,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 230;
 				Match(LOOP);
 				State = 231;
-				isoExpr();
+				expr(2);
 				}
 				break;
 			case 21:
@@ -3896,7 +3896,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\xD9', '\x5', '\x1E', '\x10', '\x2', '\xD9', '\xEF', '\x3', '\x2', '\x2', 
 		'\x2', '\xDA', '\xDB', '\a', '\"', '\x2', '\x2', '\xDB', '\xDC', '\x5', 
 		'\x1E', '\x10', '\x2', '\xDC', '\xDD', '\a', '\xF', '\x2', '\x2', '\xDD', 
-		'\xDE', '\x5', '\x1E', '\x10', '\x2', '\xDE', '\xEF', '\x3', '\x2', '\x2', 
+		'\xDE', '\x5', '\x14', '\v', '\x6', '\xDE', '\xEF', '\x3', '\x2', '\x2', 
 		'\x2', '\xDF', '\xE0', '\a', '\x12', '\x2', '\x2', '\xE0', '\xE2', '\x5', 
 		'\x1A', '\xE', '\x2', '\xE1', '\xDF', '\x3', '\x2', '\x2', '\x2', '\xE2', 
 		'\xE3', '\x3', '\x2', '\x2', '\x2', '\xE3', '\xE1', '\x3', '\x2', '\x2', 
@@ -3904,7 +3904,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x2', '\x2', '\x2', '\xE5', '\xE6', '\a', '\xF', '\x2', '\x2', '\xE6', 
 		'\xE7', '\x5', '\x14', '\v', '\x5', '\xE7', '\xEF', '\x3', '\x2', '\x2', 
 		'\x2', '\xE8', '\xE9', '\a', '\x19', '\x2', '\x2', '\xE9', '\xEF', '\x5', 
-		'\x1E', '\x10', '\x2', '\xEA', '\xEB', '\x5', '\f', '\a', '\x2', '\xEB', 
+		'\x14', '\v', '\x4', '\xEA', '\xEB', '\x5', '\f', '\a', '\x2', '\xEB', 
 		'\xEC', '\a', 'R', '\x2', '\x2', '\xEC', '\xED', '\x5', '\x14', '\v', 
 		'\x3', '\xED', '\xEF', '\x3', '\x2', '\x2', '\x2', '\xEE', 'o', '\x3', 
 		'\x2', '\x2', '\x2', '\xEE', 'z', '\x3', '\x2', '\x2', '\x2', '\xEE', 

@@ -13,6 +13,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class TeuchiUdonListener : TeuchiUdonParserBaseListener
     {
         private TeuchiUdonParser Parser { get; }
+        private List<JumpResult> Jumps { get; } = new List<JumpResult>();
+
+        private JumpResult StoreJumpResult(JumpResult result)
+        {
+            Jumps.Add(result);
+            return result;
+        }
+
+        private void PrepareJumpResults()
+        {
+            foreach (var jump in Jumps)
+            {
+                var block = jump.Block();
+                if (!block.Type.IsAssignableFrom(jump.Value.Inner.Type))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(jump.Token, $"jump value type is not compatible");
+                }
+            }
+        }
 
         public TeuchiUdonListener(TeuchiUdonParser parser)
         {
@@ -57,6 +76,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitTarget([NotNull] TargetContext context)
         {
+            PrepareJumpResults();
+
             var body = context.body()?.result;
 
             TeuchiUdonAssemblyWriter.Instance.PushDataPart
@@ -423,30 +444,66 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private JumpResult ExitReturnStatement(IToken token, ExprResult value)
         {
-            var scope = TeuchiUdonQualifierStack.Instance.Peek().LastScope(TeuchiUdonScopeMode.Func);
-            if (scope == null)
+            var qb = TeuchiUdonQualifierStack.Instance.Peek().GetFuncBlock();
+            if (qb == null)
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no func exists for return");
+                return null;
             }
 
-            var label = scope == null ? (IDataLabel)InvalidLabel.Instance : (IDataLabel)((TeuchiUdonFunc)scope.Label).Return;
-            return new JumpResult(token, value, label);
+            return StoreJumpResult(new JumpResult(token, value, () => TeuchiUdonTables.Instance.Blocks[qb], () => TeuchiUdonTables.Instance.Blocks[qb].Return));
         }
 
         public override void ExitContinueUnitStatement([NotNull] ContinueUnitStatementContext context)
         {
+            var value      = new ExprResult(context.Start, new UnitResult(context.Start));
+            context.result = ExitContinueStatement(context.Start, value);
         }
 
         public override void ExitContinueValueStatement([NotNull] ContinueValueStatementContext context)
         {
+            var value = context.expr()?.result;
+            if (value == null) return;
+
+            context.result = ExitContinueStatement(context.Start, value);
+        }
+
+        private JumpResult ExitContinueStatement(IToken token, ExprResult value)
+        {
+            var qb = TeuchiUdonQualifierStack.Instance.Peek().GetLoopBlock();
+            if (qb == null)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no loop exists for continue");
+                return null;
+            }
+
+            return StoreJumpResult(new JumpResult(token, value, () => TeuchiUdonTables.Instance.Blocks[qb], () => TeuchiUdonTables.Instance.Blocks[qb].Continue));
         }
 
         public override void ExitBreakUnitStatement([NotNull] BreakUnitStatementContext context)
         {
+            var value      = new ExprResult(context.Start, new UnitResult(context.Start));
+            context.result = ExitBreakStatement(context.Start, value);
         }
 
         public override void ExitBreakValueStatement([NotNull] BreakValueStatementContext context)
         {
+            var value = context.expr()?.result;
+            if (value == null) return;
+
+            context.result = ExitBreakStatement(context.Start, value);
+        }
+
+        private JumpResult ExitBreakStatement(IToken token, ExprResult value)
+        {
+            var qb = TeuchiUdonQualifierStack.Instance.Peek().GetLoopBlock();
+            if (qb == null)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, "no loop exists for break");
+                return null;
+            }
+
+            return StoreJumpResult(new JumpResult(token, value, () => TeuchiUdonTables.Instance.Blocks[qb], () => TeuchiUdonTables.Instance.Blocks[qb].Break));
         }
 
         public override void ExitLetBindStatement([NotNull] LetBindStatementContext context)
@@ -466,12 +523,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result    = expr;
         }
 
+        private TeuchiUdonScopeMode GetScopeMode(ParserRuleContext context)
+        {
+            return
+                context.Parent is FuncExprContext ?
+                    TeuchiUdonScopeMode.FuncBlock :
+                context.Parent is ForExprContext   ||
+                context.Parent is WhileExprContext ||
+                context.Parent is LoopExprContext ?
+                    TeuchiUdonScopeMode.LoopBlock :
+                    TeuchiUdonScopeMode.Block;
+        }
+
         public override void EnterUnitBlockExpr([NotNull] UnitBlockExprContext context)
         {
             var index          = TeuchiUdonTables.Instance.GetBlockIndex();
             context.tableIndex = index;
             var qual           = TeuchiUdonQualifierStack.Instance.Peek();
-            var scope          = new TeuchiUdonScope(new TeuchiUdonBlock(index, qual), TeuchiUdonScopeMode.Block);
+            var scopeMode      = GetScopeMode(context);
+            var scope          = new TeuchiUdonScope(new TeuchiUdonBlock(index, qual), scopeMode);
             TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
@@ -495,7 +565,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var index          = TeuchiUdonTables.Instance.GetBlockIndex();
             context.tableIndex = index;
             var qual           = TeuchiUdonQualifierStack.Instance.Peek();
-            var scope          = new TeuchiUdonScope(new TeuchiUdonBlock(index, qual), TeuchiUdonScopeMode.Block);
+            var scopeMode      = GetScopeMode(context);
+            var scope          = new TeuchiUdonScope(new TeuchiUdonBlock(index, qual), scopeMode);
             TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
@@ -1696,17 +1767,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitWhileExpr([NotNull] WhileExprContext context)
         {
-            var isoExprs = context.isoExpr().Select(x => x?.result);
-            if (isoExprs.Any(x => x == null)) return;
+            var isoExpr = context.isoExpr()?.result;
+            var expr    = context.expr   ()?.result;
+            if (isoExpr == null || expr == null) return;
 
-            var exprs = isoExprs.Select(x => x.Expr).ToArray();
-            if (!exprs[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            if (!isoExpr.Expr.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
                 return;
             }
 
-            var while_     = new WhileResult(context.Start, TeuchiUdonType.Unit, exprs[0], exprs[1]);
+            var while_     = new WhileResult(context.Start, TeuchiUdonType.Unit, isoExpr.Expr, expr);
             context.result = new ExprResult(while_.Token, while_);
         }
 
@@ -1722,16 +1793,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitLoopExpr([NotNull] LoopExprContext context)
         {
-            var isoExpr = context.isoExpr()?.result;
-            if (isoExpr == null) return;
-
-            if (!isoExpr.Expr.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
-                return;
-            }
-
-            var loop       = new LoopResult(context.Start, TeuchiUdonType.Unit, isoExpr.Expr);
+            var expr = context.expr()?.result;
+            if (expr == null) return;
+            
+            var loop       = new LoopResult(context.Start, TeuchiUdonType.Unit, expr);
             context.result = new ExprResult(loop.Token, loop);
         }
 

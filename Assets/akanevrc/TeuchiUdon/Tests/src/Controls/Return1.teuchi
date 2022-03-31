@@ -1,0 +1,6 @@
+// !
+f = () -> {
+  if true then { return; };
+  UnityEngine.Debug.Log("ng");
+};
+f();

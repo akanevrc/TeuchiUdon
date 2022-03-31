@@ -6,15 +6,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         None,
         Block,
-        For,
+        FuncBlock,
+        LoopBlock,
         Func,
-        If,
         LetIn,
         Literal,
         This,
         Type,
-        VarBind,
-        While
+        VarBind
     }
 
     public class TeuchiUdonScope : IEquatable<TeuchiUdonScope>

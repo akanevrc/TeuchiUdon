@@ -118,12 +118,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             };
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> Jump(IDataLabel label)
+        protected override IEnumerable<TeuchiUdonAssembly> Jump(ITeuchiUdonLabel label)
         {
-            return new TeuchiUdonAssembly[]
-            {
-                new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(label))
-            };
+            return
+                label is IDataLabel dataLabel ?
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP_INDIRECT(new AssemblyAddress_DATA_LABEL(dataLabel))
+                    } :
+                label is ICodeLabel codeLabel ?
+                    new TeuchiUdonAssembly[]
+                    {
+                        new Assembly_JUMP(new AssemblyAddress_CODE_LABEL(codeLabel))
+                    } :
+                    Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Func(TeuchiUdonFunc func)
@@ -395,10 +403,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             IEnumerable<Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>>> forIters,
             IEnumerable<TeuchiUdonAssembly> expr,
+            ICodeLabel continueLabel,
             TeuchiUdonType type
         )
         {
-            return forIters.Aggregate((acc, x) => y => acc(x(y)))(expr.Concat(Pop(type)));
+            return
+                forIters
+                .Aggregate((acc, x) => y => acc(x(y)))
+                (
+                    expr
+                    .Concat(Pop(type))
+                    .Concat(new TeuchiUdonAssembly[] { new Assembly_LABEL(continueLabel) })
+                );
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Loop

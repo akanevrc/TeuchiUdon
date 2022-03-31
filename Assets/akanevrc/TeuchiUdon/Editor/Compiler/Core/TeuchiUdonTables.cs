@@ -24,6 +24,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
         public Dictionary<TeuchiUdonIndirect, uint> Indirects { get; private set; }
+        public Dictionary<TeuchiUdonBlock, TeuchiUdonBlock> Blocks { get; private set; }
         public HashSet<IDataLabel> UsedData { get; set; }
 
         private int VarCounter { get; set; }
@@ -70,6 +71,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             This       = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs      = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
             Indirects  = new Dictionary<TeuchiUdonIndirect, uint>();
+            Blocks     = new Dictionary<TeuchiUdonBlock   , TeuchiUdonBlock>();
             UsedData   = new HashSet<IDataLabel>();
 
             VarCounter      = 0;

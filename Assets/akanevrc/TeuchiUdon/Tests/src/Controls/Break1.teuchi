@@ -1,0 +1,9 @@
+// 0, 1
+mut str = "0";
+mut x   = 1;
+while x <= 3 do {
+  if x == 2 then { break; };
+  str <- str + ", " + x.ToString();
+  x   <- x + 1;
+};
+UnityEngine.Debug.Log(str);

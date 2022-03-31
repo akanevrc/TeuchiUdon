@@ -41,7 +41,7 @@ namespace akanevrc.TeuchiUdon.Tests.Editor
                 Assert.That
                 (
                     () => TeuchiUdonCompilerRunner.SaveTeuchiUdonAsset(srcAssetPath, binAssetPath),
-                    Throws.InvalidOperationException
+                    Throws.TypeOf<TeuchiUdonCompilerException>()
                 );
             }
             else

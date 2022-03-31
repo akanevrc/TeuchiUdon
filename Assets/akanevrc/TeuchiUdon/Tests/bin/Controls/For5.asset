@@ -58,8 +58,8 @@ MonoBehaviour:
     EXTERN, \"SystemInt32.__ToString__SystemString\"\r\n        PUSH, out[SystemString>0]\r\n       
     PUSH, out[SystemString>1]\r\n        EXTERN, \"SystemString.__op_Addition__SystemString_SystemString__SystemString\"\r\n       
     PUSH, out[SystemString>1]\r\n        PUSH, var[str]\r\n        COPY\r\n       
-    PUSH, out[SystemInt32>5]\r\n        PUSH, out[SystemInt32>7]\r\n        PUSH,
-    out[SystemInt32>5]\r\n        EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
+    loop[4]:\r\n        PUSH, out[SystemInt32>5]\r\n        PUSH, out[SystemInt32>7]\r\n       
+    PUSH, out[SystemInt32>5]\r\n        EXTERN, \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[SystemBoolean>1]\r\n        JUMP_IF_FALSE, branch[4]\r\n        PUSH,
     out[SystemInt32>5]\r\n        PUSH, out[SystemInt32>6]\r\n        PUSH, out[SystemBoolean>2]\r\n       
     EXTERN, \"SystemInt32.__op_GreaterThan__SystemInt32_SystemInt32__SystemBoolean\"\r\n       
