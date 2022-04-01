@@ -410,7 +410,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
-        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> Children =>
+            new TypedResult[] { Expr.Inner }
+            .Concat
+            (
+                Statements
+                .Where(x => x is LetBindResult)
+                .Select(x => ((LetBindResult)x).VarBind.Expr.Inner)
+            )
+            .Concat
+            (
+                Statements
+                .Where(x => x is ExprResult)
+                .Select(x => ((ExprResult)x).Inner)
+            );
         public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
         public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Expr.Inner.ReleasedOutValues;
         public override bool Deterministic => Children.All(x => x.Deterministic);
@@ -1809,39 +1822,73 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class IfResult : TypedResult
     {
         public ExprResult[] Conditions { get; }
-        public ExprResult[] Exprs { get; }
-        public bool HasElse { get; }
+        public StatementResult[] Statements { get; }
         public ICodeLabel[] Labels { get; }
 
-        public IfResult(IToken token, TeuchiUdonType type, IEnumerable<ExprResult> conditions, IEnumerable<ExprResult> exprs, bool hasElse)
+        public IfResult(IToken token, TeuchiUdonType type, IEnumerable<ExprResult> conditions, IEnumerable<StatementResult> statements)
             : base(token, type)
         {
             Conditions = conditions.ToArray();
-            Exprs      = exprs     .ToArray();
-            HasElse    = hasElse;
-
-            if (hasElse)
-            {
-                foreach (var o in Children.SelectMany(x => x.ReleasedOutValues))
-                {
-                    TeuchiUdonOutValuePool.Instance.RetainReleasedOutValue(o);
-                }
-            }
-
-            Labels =
+            Statements = statements.ToArray();
+            Labels     =
                 Enumerable
-                .Range(0, HasElse ? Conditions.Length + 1 : Conditions.Length)
+                .Range(0, Conditions.Length)
                 .Select(_ => new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex()))
                 .ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
-        public override IEnumerable<TypedResult> Children => Conditions.Select(x => x.Inner).Concat(Exprs.Select(x => x.Inner));
+        public override IEnumerable<TypedResult> Children =>
+            Conditions
+            .Select(x => x.Inner)
+            .Concat
+            (
+                Statements
+                .Where(x => x is ExprResult)
+                .Select(x => ((ExprResult)x).Inner)
+            );
         public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
-        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues =>
-            HasElse ?
-                Children.SelectMany(x => x.ReleasedOutValues) :
-                Enumerable.Empty<TeuchiUdonOutValue>();
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+    }
+
+    public class IfElseResult : TypedResult
+    {
+        public ExprResult[] Conditions { get; }
+        public ExprResult[] ThenParts { get; }
+        public ExprResult ElsePart { get; }
+        public ICodeLabel[] Labels { get; }
+
+        public IfElseResult(IToken token, TeuchiUdonType type, IEnumerable<ExprResult> conditions, IEnumerable<ExprResult> thenParts, ExprResult elsePart)
+            : base(token, type)
+        {
+            Conditions = conditions.ToArray();
+            ThenParts  = thenParts .ToArray();
+            ElsePart   = elsePart;
+            Labels     =
+                Enumerable
+                .Range(0, Conditions.Length + 1)
+                .Select(_ => new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex()))
+                .ToArray();
+
+            foreach (var o in Children.SelectMany(x => x.ReleasedOutValues))
+            {
+                TeuchiUdonOutValuePool.Instance.RetainReleasedOutValue(o);
+            }
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children =>
+            Conditions
+            .Select(x => x.Inner)
+            .Concat(ThenParts.Select(x => x.Inner))
+            .Concat(new TypedResult[] { ElsePart.Inner });
+        public override IEnumerable<TypedResult> ReleasedChildren => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Children.SelectMany(x => x.ReleasedOutValues);
         public override bool Deterministic => Children.All(x => x.Deterministic);
 
         public override void BindType(TeuchiUdonType type)

@@ -107,9 +107,9 @@ expr
     |<assoc=right> expr '<|' expr                                                              #LeftPipelineExpr
     |<assoc=right> expr op='<-' expr                                                           #AssignExpr
     | 'let' varBind 'in' expr                                                                  #LetInBindExpr
-    |<assoc=right> 'if' isoExpr 'then' isoExpr                                                 #IfExpr
+    |<assoc=right> 'if' isoExpr 'then' statement                                               #IfExpr
+    |<assoc=right> 'if' isoExpr 'then' statement ('elif' isoExpr 'then' statement)+            #IfElifExpr
     |<assoc=right> 'if' isoExpr 'then' isoExpr  'else' isoExpr                                 #IfElseExpr
-    |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+                #IfElifExpr
     |<assoc=right> 'if' isoExpr 'then' isoExpr ('elif' isoExpr 'then' isoExpr)+ 'else' isoExpr #IfElifElseExpr
     |<assoc=right> 'while' isoExpr 'do' expr                                                   #WhileExpr
     |('for' forBind)+ 'do' expr                                                                #ForExpr

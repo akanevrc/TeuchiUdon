@@ -1101,13 +1101,13 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 	}
 	public partial class IfExprContext : ExprContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IF() { return GetToken(TeuchiUdonParser.IF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext[] isoExpr() {
-			return GetRuleContexts<IsoExprContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr(int i) {
-			return GetRuleContext<IsoExprContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public IsoExprContext isoExpr() {
+			return GetRuleContext<IsoExprContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode THEN() { return GetToken(TeuchiUdonParser.THEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement() {
+			return GetRuleContext<StatementContext>(0);
+		}
 		public IfExprContext(ExprContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
@@ -1131,6 +1131,12 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] THEN() { return GetTokens(TeuchiUdonParser.THEN); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode THEN(int i) {
 			return GetToken(TeuchiUdonParser.THEN, i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext[] statement() {
+			return GetRuleContexts<StatementContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement(int i) {
+			return GetRuleContext<StatementContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] ELIF() { return GetTokens(TeuchiUdonParser.ELIF); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ELIF(int i) {
@@ -2261,12 +2267,12 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 177;
 				Match(THEN);
 				State = 178;
-				isoExpr();
+				statement();
 				}
 				break;
 			case 15:
 				{
-				_localctx = new IfElseExprContext(_localctx);
+				_localctx = new IfElifExprContext(_localctx);
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 180;
@@ -2276,27 +2282,8 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 				State = 182;
 				Match(THEN);
 				State = 183;
-				isoExpr();
-				State = 184;
-				Match(ELSE);
-				State = 185;
-				isoExpr();
-				}
-				break;
-			case 16:
-				{
-				_localctx = new IfElifExprContext(_localctx);
-				Context = _localctx;
-				_prevctx = _localctx;
-				State = 187;
-				Match(IF);
-				State = 188;
-				isoExpr();
+				statement();
 				State = 189;
-				Match(THEN);
-				State = 190;
-				isoExpr();
-				State = 196;
 				ErrorHandler.Sync(this);
 				_alt = 1;
 				do {
@@ -2304,24 +2291,43 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 					case 1:
 						{
 						{
-						State = 191;
+						State = 184;
 						Match(ELIF);
-						State = 192;
+						State = 185;
 						isoExpr();
-						State = 193;
+						State = 186;
 						Match(THEN);
-						State = 194;
-						isoExpr();
+						State = 187;
+						statement();
 						}
 						}
 						break;
 					default:
 						throw new NoViableAltException(this);
 					}
-					State = 198;
+					State = 191;
 					ErrorHandler.Sync(this);
 					_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
 				} while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER );
+				}
+				break;
+			case 16:
+				{
+				_localctx = new IfElseExprContext(_localctx);
+				Context = _localctx;
+				_prevctx = _localctx;
+				State = 193;
+				Match(IF);
+				State = 194;
+				isoExpr();
+				State = 195;
+				Match(THEN);
+				State = 196;
+				isoExpr();
+				State = 197;
+				Match(ELSE);
+				State = 198;
+				isoExpr();
 				}
 				break;
 			case 17:
@@ -3720,9 +3726,9 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
 		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
+		'\v', '\x3', '\v', '\x3', '\v', '\x6', '\v', '\xC0', '\n', '\v', '\r', 
+		'\v', '\xE', '\v', '\xC1', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
 		'\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', 
-		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x6', '\v', '\xC7', 
-		'\n', '\v', '\r', '\v', '\xE', '\v', '\xC8', '\x3', '\v', '\x3', '\v', 
 		'\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
 		'\v', '\x3', '\v', '\x6', '\v', '\xD4', '\n', '\v', '\r', '\v', '\xE', 
 		'\v', '\xD5', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', '\v', '\x3', 
@@ -3870,20 +3876,20 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x2', '\xAF', '\xB0', '\x5', '\x14', '\v', '\v', '\xB0', '\xEF', '\x3', 
 		'\x2', '\x2', '\x2', '\xB1', '\xB2', '\a', '\x15', '\x2', '\x2', '\xB2', 
 		'\xB3', '\x5', '\x1E', '\x10', '\x2', '\xB3', '\xB4', '\a', ' ', '\x2', 
-		'\x2', '\xB4', '\xB5', '\x5', '\x1E', '\x10', '\x2', '\xB5', '\xEF', '\x3', 
+		'\x2', '\xB4', '\xB5', '\x5', '\x12', '\n', '\x2', '\xB5', '\xEF', '\x3', 
 		'\x2', '\x2', '\x2', '\xB6', '\xB7', '\a', '\x15', '\x2', '\x2', '\xB7', 
 		'\xB8', '\x5', '\x1E', '\x10', '\x2', '\xB8', '\xB9', '\a', ' ', '\x2', 
-		'\x2', '\xB9', '\xBA', '\x5', '\x1E', '\x10', '\x2', '\xBA', '\xBB', '\a', 
-		'\x11', '\x2', '\x2', '\xBB', '\xBC', '\x5', '\x1E', '\x10', '\x2', '\xBC', 
-		'\xEF', '\x3', '\x2', '\x2', '\x2', '\xBD', '\xBE', '\a', '\x15', '\x2', 
-		'\x2', '\xBE', '\xBF', '\x5', '\x1E', '\x10', '\x2', '\xBF', '\xC0', '\a', 
-		' ', '\x2', '\x2', '\xC0', '\xC6', '\x5', '\x1E', '\x10', '\x2', '\xC1', 
-		'\xC2', '\a', '\x10', '\x2', '\x2', '\xC2', '\xC3', '\x5', '\x1E', '\x10', 
-		'\x2', '\xC3', '\xC4', '\a', ' ', '\x2', '\x2', '\xC4', '\xC5', '\x5', 
-		'\x1E', '\x10', '\x2', '\xC5', '\xC7', '\x3', '\x2', '\x2', '\x2', '\xC6', 
-		'\xC1', '\x3', '\x2', '\x2', '\x2', '\xC7', '\xC8', '\x3', '\x2', '\x2', 
-		'\x2', '\xC8', '\xC6', '\x3', '\x2', '\x2', '\x2', '\xC8', '\xC9', '\x3', 
-		'\x2', '\x2', '\x2', '\xC9', '\xEF', '\x3', '\x2', '\x2', '\x2', '\xCA', 
+		'\x2', '\xB9', '\xBF', '\x5', '\x12', '\n', '\x2', '\xBA', '\xBB', '\a', 
+		'\x10', '\x2', '\x2', '\xBB', '\xBC', '\x5', '\x1E', '\x10', '\x2', '\xBC', 
+		'\xBD', '\a', ' ', '\x2', '\x2', '\xBD', '\xBE', '\x5', '\x12', '\n', 
+		'\x2', '\xBE', '\xC0', '\x3', '\x2', '\x2', '\x2', '\xBF', '\xBA', '\x3', 
+		'\x2', '\x2', '\x2', '\xC0', '\xC1', '\x3', '\x2', '\x2', '\x2', '\xC1', 
+		'\xBF', '\x3', '\x2', '\x2', '\x2', '\xC1', '\xC2', '\x3', '\x2', '\x2', 
+		'\x2', '\xC2', '\xEF', '\x3', '\x2', '\x2', '\x2', '\xC3', '\xC4', '\a', 
+		'\x15', '\x2', '\x2', '\xC4', '\xC5', '\x5', '\x1E', '\x10', '\x2', '\xC5', 
+		'\xC6', '\a', ' ', '\x2', '\x2', '\xC6', '\xC7', '\x5', '\x1E', '\x10', 
+		'\x2', '\xC7', '\xC8', '\a', '\x11', '\x2', '\x2', '\xC8', '\xC9', '\x5', 
+		'\x1E', '\x10', '\x2', '\xC9', '\xEF', '\x3', '\x2', '\x2', '\x2', '\xCA', 
 		'\xCB', '\a', '\x15', '\x2', '\x2', '\xCB', '\xCC', '\x5', '\x1E', '\x10', 
 		'\x2', '\xCC', '\xCD', '\a', ' ', '\x2', '\x2', '\xCD', '\xD3', '\x5', 
 		'\x1E', '\x10', '\x2', '\xCE', '\xCF', '\a', '\x10', '\x2', '\x2', '\xCF', 
@@ -3915,7 +3921,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x2', '\xEE', '\xA8', '\x3', '\x2', '\x2', '\x2', '\xEE', '\xA9', '\x3', 
 		'\x2', '\x2', '\x2', '\xEE', '\xAA', '\x3', '\x2', '\x2', '\x2', '\xEE', 
 		'\xAC', '\x3', '\x2', '\x2', '\x2', '\xEE', '\xB1', '\x3', '\x2', '\x2', 
-		'\x2', '\xEE', '\xB6', '\x3', '\x2', '\x2', '\x2', '\xEE', '\xBD', '\x3', 
+		'\x2', '\xEE', '\xB6', '\x3', '\x2', '\x2', '\x2', '\xEE', '\xC3', '\x3', 
 		'\x2', '\x2', '\x2', '\xEE', '\xCA', '\x3', '\x2', '\x2', '\x2', '\xEE', 
 		'\xDA', '\x3', '\x2', '\x2', '\x2', '\xEE', '\xE1', '\x3', '\x2', '\x2', 
 		'\x2', '\xEE', '\xE8', '\x3', '\x2', '\x2', '\x2', '\xEE', '\xEA', '\x3', 
@@ -4049,7 +4055,7 @@ public partial class TeuchiUdonParser : TeuchiUdonBaseParser {
 		'\x193', '!', '\x3', '\x2', '\x2', '\x2', '\x194', '\x195', '\a', '*', 
 		'\x2', '\x2', '\x195', '#', '\x3', '\x2', '\x2', '\x2', '\x1E', '(', '-', 
 		'\x32', ';', '\x41', '\x44', 'S', 'X', ']', 'm', 'v', '\x80', '\x90', 
-		'\xA2', '\xC8', '\xD5', '\xE3', '\xEE', '\x133', '\x149', '\x14D', '\x14F', 
+		'\xA2', '\xC1', '\xD5', '\xE3', '\xEE', '\x133', '\x149', '\x14D', '\x14F', 
 		'\x157', '\x166', '\x169', '\x176', '\x183', '\x192',
 	};
 

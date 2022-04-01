@@ -59,7 +59,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
             IEnumerable<ICodeLabel> labels,
-            TeuchiUdonType type
+            IEnumerable<TeuchiUdonType> types
         );
         protected abstract IEnumerable<TeuchiUdonAssembly> IfElifElse
         (
@@ -329,6 +329,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is InfixResult            infix           ) return VisitInfix           (infix);
             if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
             if (result is IfResult               if_             ) return VisitIf              (if_);
+            if (result is IfElseResult           ifElse          ) return VisitIfElse          (ifElse);
             if (result is WhileResult            while_          ) return VisitWhile           (while_);
             if (result is ForResult              for_            ) return VisitFor             (for_);
             if (result is LoopResult             loop            ) return VisitLoop            (loop);
@@ -782,21 +783,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitIf(IfResult result)
         {
             return
-                result.HasElse ?
-                    IfElifElse
-                    (
-                        result.Conditions.Select(x => VisitExpr(x)),
-                        result.Exprs.Take(result.Exprs.Length - 1).Select(x => VisitExpr(x)),
-                        VisitExpr(result.Exprs[result.Exprs.Length - 1]),
-                        result.Labels
-                    ) :
-                    IfElif
-                    (
-                        result.Conditions.Select(x => VisitExpr(x)),
-                        result.Exprs     .Select(x => VisitExpr(x)),
-                        result.Labels,
-                        TeuchiUdonType.GetUpperType(result.Exprs.Select(x => x.Inner.Type))
-                    );
+                IfElif
+                (
+                    result.Conditions.Select(x => VisitExpr(x)),
+                    result.Statements.Select(x => VisitStatement(x)),
+                    result.Labels,
+                    result.Statements.Select(x => x is ExprResult expr ? expr.Inner.Type : TeuchiUdonType.Unit)
+                );
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitIfElse(IfElseResult result)
+        {
+            return
+                IfElifElse
+                (
+                    result.Conditions.Select(x => VisitExpr(x)),
+                    result.ThenParts.Select(x => VisitExpr(x)),
+                    VisitExpr(result.ElsePart),
+                    result.Labels
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitWhile(WhileResult result)

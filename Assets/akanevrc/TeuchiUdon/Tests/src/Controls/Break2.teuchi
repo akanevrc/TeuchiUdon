@@ -1,7 +1,7 @@
 // 0, 1
 mut str = "0";
 for let x <- 1..3 do {
-  if x == 2 then { break; };
+  if x == 2 then break;
   str <- str + ", " + x.ToString();
 };
 UnityEngine.Debug.Log(str);

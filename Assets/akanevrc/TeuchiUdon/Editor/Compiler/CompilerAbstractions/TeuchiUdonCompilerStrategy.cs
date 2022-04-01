@@ -287,16 +287,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> conditions,
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> thenParts,
             IEnumerable<ICodeLabel> labels,
-            TeuchiUdonType type
+            IEnumerable<TeuchiUdonType> types
         )
         {
-            var ifs  = conditions.Zip(thenParts, (c, t) => (c, t));
+            var ifs =
+                conditions
+                .Zip(thenParts, (c, s) => (  c,   s))
+                .Zip(types    , (x, t) => (x.c, x.s, t));
             var head = ifs.First();
             var tail =
                 ifs
                 .Skip(1)
-                .Zip(labels        , (x, pl) => (x.c, x.t,   pl))
-                .Zip(labels.Skip(1), (x, l ) => (x.c, x.t, x.pl, l));
+                .Zip(labels        , (x, pl) => (x.c, x.s, x.t,   pl))
+                .Zip(labels.Skip(1), (x, l ) => (x.c, x.s, x.t, x.pl, l));
             var firstLabel = labels.First();
             var lastLabel  = labels.Last();
             return
@@ -308,8 +311,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(firstLabel))
                     })
-                    .Concat(head.t)
-                    .Concat(Pop(type)),
+                    .Concat(head.s)
+                    .Concat(Pop(head.t)),
                     (acc, x) =>
                         acc
                         .Concat(new TeuchiUdonAssembly[]
@@ -322,8 +325,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         {
                             new Assembly_JUMP_IF_FALSE(new AssemblyAddress_CODE_LABEL(x.l))
                         })
-                        .Concat(x.t)
-                        .Concat(Pop(type))
+                        .Concat(x.s)
+                        .Concat(Pop(x.t))
                 )
                 .Concat(new TeuchiUdonAssembly[]
                 {

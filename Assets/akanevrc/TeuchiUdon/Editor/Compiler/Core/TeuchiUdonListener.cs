@@ -1680,17 +1680,45 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitIfExpr([NotNull] IfExprContext context)
         {
-            var isoExprs = context.isoExpr().Select(x => x?.result);
-            if (isoExprs.Any(x => x == null)) return;
+            var isoExpr   = context.isoExpr  ()?.result;
+            var statement = context.statement()?.result;
+            if (isoExpr == null || statement == null) return;
 
-            var exprs = isoExprs.Select(x => x.Expr).ToArray();
-            if (!exprs[0].Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
+            if (!isoExpr.Expr.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
                 return;
             }
 
-            var if_        = new IfResult(context.Start, TeuchiUdonType.Unit, new ExprResult[] { exprs[0] }, new ExprResult[] { exprs[1] }, false);
+            if (statement is LetBindResult)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"if expression cannot contain let bind");
+                return;
+            }
+
+            var if_        = new IfResult(context.Start, TeuchiUdonType.Unit, new ExprResult[] { isoExpr.Expr }, new StatementResult[] { statement });
+            context.result = new ExprResult(if_.Token, if_);
+        }
+
+        public override void ExitIfElifExpr([NotNull] IfElifExprContext context)
+        {
+            var isoExprs   = context.isoExpr  ().Select(x => x?.result);
+            var statements = context.statement().Select(x => x?.result);
+            if (isoExprs.Any(x => x == null) || statements.Any(x => x == null)) return;
+
+            if (!isoExprs.All(x => x.Expr.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool)))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
+                return;
+            }
+
+            if (statements.Any(x => x is LetBindResult))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"if expression cannot contain let bind");
+                return;
+            }
+
+            var if_        = new IfResult(context.Start, TeuchiUdonType.Unit, isoExprs.Select(x => x.Expr), statements);
             context.result = new ExprResult(if_.Token, if_);
         }
 
@@ -1713,26 +1741,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var if_        = new IfResult(context.Start, type, new ExprResult[] { exprs[0] }, new ExprResult[] { exprs[1], exprs[2] }, true);
-            context.result = new ExprResult(if_.Token, if_);
-        }
-
-        public override void ExitIfElifExpr([NotNull] IfElifExprContext context)
-        {
-            var isoExprs = context.isoExpr().Select(x => x?.result);
-            if (isoExprs.Any(x => x == null)) return;
-
-            var exprs      = isoExprs.Select(x => x.Expr);
-            var conditions = exprs.Where((x, i) => i % 2 == 0);
-            var thenParts  = exprs.Where((x, i) => i % 2 == 1);
-
-            if (!conditions.All(x => x.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool)))
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"condition expression must be bool type");
-                return;
-            }
-
-            var if_        = new IfResult(context.Start, TeuchiUdonType.Unit, conditions, thenParts, false);
+            var if_        = new IfElseResult(context.Start, type, new ExprResult[] { exprs[0] }, new ExprResult[] { exprs[1] }, exprs[2]);
             context.result = new ExprResult(if_.Token, if_);
         }
 
@@ -1746,7 +1755,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var conditions = init.Where((x, i) => i % 2 == 0);
             var thenParts  = init.Where((x, i) => i % 2 == 1);
             var elsePart   = exprs[exprs.Length - 1];
-            var es         = thenParts.Concat(new ExprResult[] { elsePart });
 
             if (!conditions.All(x => x.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Bool)))
             {
@@ -1754,14 +1762,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return;
             }
 
-            var type = TeuchiUdonType.GetUpperType(es.Select(x => x.Inner.Type));
+            var type = TeuchiUdonType.GetUpperType(thenParts.Concat(new ExprResult[] { elsePart }).Select(x => x.Inner.Type));
             if (type.ContainsUnknown())
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"if expression types are not compatible");
                 return;
             }
 
-            var if_        = new IfResult(context.Start, type, conditions, es, true);
+            var if_        = new IfElseResult(context.Start, type, conditions, thenParts, elsePart);
             context.result = new ExprResult(if_.Token, if_);
         }
 

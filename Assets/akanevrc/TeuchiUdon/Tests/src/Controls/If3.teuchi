@@ -1,0 +1,2 @@
+// error
+if true then let x = 100;
