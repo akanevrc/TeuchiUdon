@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
 using VRC.Udon.Editor.ProgramSources;
 using VRC.Udon.Serialization.OdinSerializer;
 
@@ -63,7 +64,10 @@ namespace akanevrc.TeuchiUdon.Editor
         {
             EditorGUILayout.BeginHorizontal();
 
-            variableValue    = base.DrawPublicVariableField(symbol, variableValue, variableType, ref dirty, enabled);
+            var fieldName = symbol.StartsWith("var[") && symbol.EndsWith("]") ? symbol.Substring(4, symbol.Length - 5) : symbol;
+            var fieldType = variableType == typeof(IUdonEventReceiver) ? typeof(UdonBehaviour) : variableType;
+
+            variableValue    = base.DrawPublicVariableField(fieldName, variableValue, fieldType, ref dirty, enabled);
             var defaultValue = (object)null;
             if (heapDefaultValues.ContainsKey(symbol))
             {

@@ -53,6 +53,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Color { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "color", "UnityEngineColor", "UnityEngineColor", typeof(UnityEngine.Color));
         public static TeuchiUdonType Color32 { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "color32", "UnityEngineColor32", "UnityEngineColor32", typeof(UnityEngine.Color32));
         public static TeuchiUdonType VRCUrl { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "vrcurl", "VRCSDKBaseVRCUrl", "VRCSDKBaseVRCUrl", typeof(VRC.SDKBase.VRCUrl));
+        public static TeuchiUdonType UdonBehaviour { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "udonbehaviour", "udonbehaviour", "VRCUdonCommonInterfacesIUdonEventReceiver", typeof(VRC.Udon.Common.Interfaces.IUdonEventReceiver));
 
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }
@@ -343,6 +344,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (!IsDotNetType() || !obj.IsDotNetType()) return false;
 
             return RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType);
+        }
+
+        private bool IsAssignableFromUdonBehaviour(TeuchiUdonType obj)
+        {
+            if (obj == null) return false;
+            if
+            (
+                !LogicalTypeEquals(TeuchiUdonType.UdonBehaviour) &&
+                !LogicalTypeEquals(new TeuchiUdonType("UnityEngineComponent")) &&
+                !LogicalTypeEquals(new TeuchiUdonType("VRCUdonCommonInterfacesIUdonEventReceiver")) ||
+                !obj.LogicalTypeEquals(TeuchiUdonType.UdonBehaviour)
+            ) return false;
+
+            return true;
         }
 
         public bool IsDotNetType()
