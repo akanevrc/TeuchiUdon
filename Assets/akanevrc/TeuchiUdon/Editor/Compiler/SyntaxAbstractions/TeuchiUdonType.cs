@@ -346,20 +346,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return RealType != null && obj.RealType != null && RealType.IsAssignableFrom(obj.RealType);
         }
 
-        private bool IsAssignableFromUdonBehaviour(TeuchiUdonType obj)
-        {
-            if (obj == null) return false;
-            if
-            (
-                !LogicalTypeEquals(TeuchiUdonType.UdonBehaviour) &&
-                !LogicalTypeEquals(new TeuchiUdonType("UnityEngineComponent")) &&
-                !LogicalTypeEquals(new TeuchiUdonType("VRCUdonCommonInterfacesIUdonEventReceiver")) ||
-                !obj.LogicalTypeEquals(TeuchiUdonType.UdonBehaviour)
-            ) return false;
-
-            return true;
-        }
-
         public bool IsDotNetType()
         {
             return new TeuchiUdonType[]
