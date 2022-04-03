@@ -1,0 +1,2 @@
+// 3
+UnityEngine.Debug.Log((100 |> System.Convert.ToString).Length);

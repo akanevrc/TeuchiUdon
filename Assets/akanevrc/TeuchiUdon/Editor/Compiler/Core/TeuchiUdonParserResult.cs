@@ -1202,6 +1202,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class EvalCastResult : TypedResult
+    {
+        public ExprResult Expr { get; }
+
+        public EvalCastResult(IToken token, TeuchiUdonType type, ExprResult expr)
+            : base(token, type)
+        {
+            Expr = expr;
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+    }
+
     public class EvalVarCandidateResult : TypedResult
     {
         public IdentifierResult Identifier { get; }

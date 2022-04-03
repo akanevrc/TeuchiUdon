@@ -85,7 +85,7 @@ expr
     | interpolatedRegularString                                                                #InterpolatedRegularStringExpr
     | identifier                                                                               #EvalVarExpr
     | expr op=('.' | '?.') expr                                                                #AccessExpr
-    | expr '.' 'cast' '(' expr ')'                                                             #CastExpr
+    | expr '.' 'cast'                                                                          #CastExpr
     | expr '(' ')'                                                                             #EvalUnitFuncExpr
     | expr '(' argExpr ')'                                                                     #EvalSingleFuncExpr
     | expr '(' argExpr (',' argExpr)+ ')'                                                      #EvalTupleFuncExpr

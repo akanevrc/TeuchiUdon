@@ -26,6 +26,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType DetFunc { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "detfunc", "detfunc", null, null);
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType Setter { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "setter", "setter", null, null);
+        public static TeuchiUdonType Cast { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "cast", "cast", null, null);
         public static TeuchiUdonType NullType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "nulltype", "nulltype", "SystemObject", typeof(object));
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
         public static TeuchiUdonType DotNetType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "dotnettype", "SystemType", "SystemType", typeof(Type));
@@ -362,7 +363,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Func,
                 TeuchiUdonType.DetFunc,
                 TeuchiUdonType.Method,
-                TeuchiUdonType.Setter
+                TeuchiUdonType.Setter,
+                TeuchiUdonType.Cast
             }
             .All(x => !LogicalTypeNameEquals(x));
         }
@@ -572,6 +574,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
         }
 
+        public TeuchiUdonType ApplyArgAsCast(TeuchiUdonType type)
+        {
+            return ApplyArgs(new ITeuchiUdonTypeArg[] { type });
+        }
+
         public TeuchiUdonQualifier GetArgAsQual()
         {
             return (TeuchiUdonQualifier)Args[0];
@@ -618,6 +625,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
 
         public TeuchiUdonType GetArgAsSetter()
+        {
+            return (TeuchiUdonType)Args[0];
+        }
+
+        public TeuchiUdonType GetArgAsCast()
         {
             return (TeuchiUdonType)Args[0];
         }

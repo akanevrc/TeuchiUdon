@@ -323,6 +323,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is EvalSpreadFuncResult     evalSpreadFunc    ) return VisitEvalSpreadFunc    (evalSpreadFunc);
             if (result is EvalMethodResult         evalMethod        ) return VisitEvalMethod        (evalMethod);
             if (result is EvalSpreadMethodResult   evalSpreadMethod  ) return VisitEvalSpreadMethod  (evalSpreadMethod);
+            if (result is EvalCastResult           evalCast          ) return VisitEvalCast          (evalCast);
             if (result is EvalArrayIndexerResult   evalArrayIndexer  ) return VisitEvalArrayIndexer  (evalArrayIndexer);
             if (result is TypeCastResult           typeCast          ) return VisitTypeCast          (typeCast);
             if (result is ConvertCastResult        convertCast       ) return VisitConvertCast       (convertCast);
@@ -604,6 +605,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return
                 VisitExpr(result.Expr)
                 .Concat(EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { VisitExpr(result.Arg) }, result.OutValuess["method"], result.Methods["method"]));
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitEvalCast(EvalCastResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalArrayIndexer(EvalArrayIndexerResult result)

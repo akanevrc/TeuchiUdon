@@ -953,7 +953,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         else if (s.Length == 1)
                         {
-                            eval = new EvalSetterResult(varCandidate2.Token, s[0].InTypes[1], qualifier, s[0]);
+                            eval = new EvalSetterResult(varCandidate2.Token, TeuchiUdonType.Setter.ApplyArgAsSetter(s[0].InTypes[1]), qualifier, s[0]);
                             break;
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
@@ -981,38 +981,18 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public override void ExitCastExpr([NotNull] CastExprContext context)
         {
-            var exprs = context.expr().Select(x => x?.result).ToArray();
-            if (exprs.Length != 2 || exprs.Any(x => x == null)) return;
+            var expr = context.expr()?.result;
+            if (expr == null) return;
 
-            var type = exprs[0].Inner.Type;
+            var type = expr.Inner.Type;
             if (!type.LogicalTypeNameEquals(TeuchiUdonType.Type))
             {
                 TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression is not a type");
                 return;
             }
 
-            var type1 = type.GetArgAsType();
-            var type2 = exprs[1].Inner.Type;
-            if (type1.IsAssignableFrom(type2) || type2.IsAssignableFrom(type1))
-            {
-                if (type2.ContainsUnknown())
-                {
-                    exprs[1].Inner.BindType(type1);
-                }
-                var cast       = new TypeCastResult(context.Start, type1, exprs[0], exprs[1]);
-                context.result = new ExprResult(cast.Token, cast);
-            }
-            else if (IsValidConvertType(type1) && IsValidConvertType(type2))
-            {
-                var qual       = TeuchiUdonQualifierStack.Instance.Peek();
-                var cast       = new ConvertCastResult(context.Start, type1, qual, exprs[0], exprs[1]);
-                context.result = new ExprResult(cast.Token, cast);
-            }
-            else
-            {
-                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"specified type cannot be cast");
-                return;
-            }
+            var cast = new EvalCastResult(context.Start, TeuchiUdonType.Cast.ApplyArgAsCast(type.GetArgAsType()), expr);
+            context.result = new ExprResult(cast.Token, cast);
         }
 
         private bool IsValidConvertType(TeuchiUdonType type)
@@ -1069,8 +1049,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private ExprResult ExitEvalFuncExprWithArgs(IToken token, ExprResult expr, IEnumerable<ArgExprResult> argExprs)
         {
             var type     = expr.Inner.Type;
-            var args     = argExprs.Select(x => x.Expr);
-            var argRefs  = argExprs.Select(x => x.Ref);
+            var args     = argExprs.Select(x => x.Expr).ToArray();
+            var argRefs  = argExprs.Select(x => x.Ref ).ToArray();
             var qual     = TeuchiUdonQualifierStack.Instance.Peek();
             var evalFunc = (TypedResult)null;
 
@@ -1168,6 +1148,36 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"ctor has multiple overloads");
                     evalFunc = new InvalidResult(token);
+                }
+            }
+            else if (type.LogicalTypeNameEquals(TeuchiUdonType.Cast))
+            {
+                if (args.Length != 1 || argRefs.Any(x => x))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"cast must be specified with one argument");
+                    evalFunc = new InvalidResult(token);
+                }
+                else
+                {
+                    var type1 = type.GetArgAsCast();
+                    var type2 = args[0].Inner.Type;
+                    if (type1.IsAssignableFrom(type2) || type2.IsAssignableFrom(type1))
+                    {
+                        if (type2.ContainsUnknown())
+                        {
+                            args[0].Inner.BindType(type1);
+                        }
+                        evalFunc = new TypeCastResult(token, type1, expr, args[0]);
+                    }
+                    else if (IsValidConvertType(type1) && IsValidConvertType(type2))
+                    {
+                        evalFunc = new ConvertCastResult(token, type1, qual, expr, args[0]);
+                    }
+                    else
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified type cannot be cast");
+                        evalFunc = new InvalidResult(token);
+                    }
                 }
             }
             else
@@ -2671,6 +2681,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var parts = context.interpolatedRegularStringPart().Select(x => x?.result);
             if (parts.Any(x => x == null)) return;
 
+            var exprs = parts.Where(x => x is ExprInterpolatedStringPartResult).Select(x => ((ExprInterpolatedStringPartResult)x).Expr);
+            if (exprs.Any(x => !x.Inner.Type.IsDotNetType()))
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"expression type is incompatible");
+                return;
+            }
+
             var i = 0;
             var partStrings =
                 parts.Select(x =>
@@ -2681,7 +2698,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var joined     = string.Join("", partStrings);
             var literal    = TeuchiUdonLiteral.CreateValue(((InterpolatedRegularStringExprContext)context.Parent).tableIndex, joined, TeuchiUdonType.String);
-            var exprs      = parts.Where(x => x is ExprInterpolatedStringPartResult).Select(x => ((ExprInterpolatedStringPartResult)x).Expr);
             var qual       = TeuchiUdonQualifierStack.Instance.Peek();
             context.result = new InterpolatedStringResult(context.Start, qual, literal, exprs);
         }
