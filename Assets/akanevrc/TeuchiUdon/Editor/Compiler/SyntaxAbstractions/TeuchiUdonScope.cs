@@ -10,8 +10,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         LoopBlock,
         Func,
         LetIn,
-        Literal,
-        This,
         Type,
         VarBind
     }

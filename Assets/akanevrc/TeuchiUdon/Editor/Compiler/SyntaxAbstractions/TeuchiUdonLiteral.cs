@@ -129,6 +129,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 result = Convert.ToChar(Convert.ToInt32(value));
             }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.String))
+            {
+                result = value;
+                value  = $"\"{value}\"";
+            }
             else
             {
                 return null;

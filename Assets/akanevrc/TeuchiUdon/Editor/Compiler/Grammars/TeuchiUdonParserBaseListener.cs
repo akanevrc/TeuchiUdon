@@ -338,6 +338,20 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExprStatement([NotNull] TeuchiUdonParser.ExprStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>InterpolatedRegularStringExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterInterpolatedRegularStringExpr([NotNull] TeuchiUdonParser.InterpolatedRegularStringExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>InterpolatedRegularStringExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitInterpolatedRegularStringExpr([NotNull] TeuchiUdonParser.InterpolatedRegularStringExprContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>WhileExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -1241,6 +1255,46 @@ public partial class TeuchiUdonParserBaseListener : ITeuchiUdonParserListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitThisLiteral([NotNull] TeuchiUdonParser.ThisLiteralContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.interpolatedRegularString"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterInterpolatedRegularString([NotNull] TeuchiUdonParser.InterpolatedRegularStringContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.interpolatedRegularString"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitInterpolatedRegularString([NotNull] TeuchiUdonParser.InterpolatedRegularStringContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>RegularStringInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterRegularStringInterpolatedStringPart([NotNull] TeuchiUdonParser.RegularStringInterpolatedStringPartContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>RegularStringInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitRegularStringInterpolatedStringPart([NotNull] TeuchiUdonParser.RegularStringInterpolatedStringPartContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ExprInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterExprInterpolatedStringPart([NotNull] TeuchiUdonParser.ExprInterpolatedStringPartContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ExprInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitExprInterpolatedStringPart([NotNull] TeuchiUdonParser.ExprInterpolatedStringPartContext context) { }
 
 	/// <inheritdoc/>
 	/// <remarks>The default implementation does nothing.</remarks>

@@ -289,6 +289,18 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExprStatement([NotNull] TeuchiUdonParser.ExprStatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>InterpolatedRegularStringExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterInterpolatedRegularStringExpr([NotNull] TeuchiUdonParser.InterpolatedRegularStringExprContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>InterpolatedRegularStringExpr</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitInterpolatedRegularStringExpr([NotNull] TeuchiUdonParser.InterpolatedRegularStringExprContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>WhileExpr</c>
 	/// labeled alternative in <see cref="TeuchiUdonParser.expr"/>.
 	/// </summary>
@@ -1062,5 +1074,39 @@ public interface ITeuchiUdonParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitThisLiteral([NotNull] TeuchiUdonParser.ThisLiteralContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="TeuchiUdonParser.interpolatedRegularString"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterInterpolatedRegularString([NotNull] TeuchiUdonParser.InterpolatedRegularStringContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="TeuchiUdonParser.interpolatedRegularString"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitInterpolatedRegularString([NotNull] TeuchiUdonParser.InterpolatedRegularStringContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>RegularStringInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterRegularStringInterpolatedStringPart([NotNull] TeuchiUdonParser.RegularStringInterpolatedStringPartContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>RegularStringInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitRegularStringInterpolatedStringPart([NotNull] TeuchiUdonParser.RegularStringInterpolatedStringPartContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>ExprInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterExprInterpolatedStringPart([NotNull] TeuchiUdonParser.ExprInterpolatedStringPartContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>ExprInterpolatedStringPart</c>
+	/// labeled alternative in <see cref="TeuchiUdonParser.interpolatedRegularStringPart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitExprInterpolatedStringPart([NotNull] TeuchiUdonParser.ExprInterpolatedStringPartContext context);
 }
 } // namespace akanevrc.TeuchiUdon.Editor.Compiler

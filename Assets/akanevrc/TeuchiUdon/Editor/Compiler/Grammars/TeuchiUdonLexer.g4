@@ -68,8 +68,10 @@ CHARACTER_LITERAL : '\'' (~['\\\r\n\u0085\u2028\u2029] | CommonCharacter)  '\'';
 REGULAR_STRING    : '"'  (~["\\\r\n\u0085\u2028\u2029] | CommonCharacter)* '"';
 VERBATIUM_STRING  : '@"' (~'"' | '""')* '"';
 
-OPEN_BRACE           : '{'  ;
-CLOSE_BRACE          : '}'  ;
+INTERPOLATED_REGULAR_STRING_START : '$"' { OnInterpolatedRegularStringStart(); } -> pushMode(INTERPOLATION_STRING);
+
+OPEN_BRACE           : '{' { OnOpenBrace (); };
+CLOSE_BRACE          : '}' { OnCloseBrace(); };
 OPEN_PAREN           : '('  ;
 CLOSE_PAREN          : ')'  ;
 OPEN_BRACKET         : '['  ;
@@ -111,6 +113,12 @@ OP_LEFT_PIPELINE     : '<|' ;
 OP_RIGHT_PIPELINE    : '|>' ;
 OP_RANGE             : '..' ;
 OP_SPREAD            : '...';
+
+mode INTERPOLATION_STRING;
+
+OPEN_BRACE_INSIDE     : '{' { OpenBraceInside    (); } -> skip, pushMode(DEFAULT_MODE);
+DOUBLE_QUOTE_INSIDE   : '"' { OnDoubleQuoteInside(); } -> popMode;
+REGULAR_STRING_INSIDE : ~('{' | '\\' | '"')+;
 
 // Fragments
 

@@ -82,6 +82,7 @@ expr
     | '[' iterExpr (',' iterExpr)* ']'                                                         #ListCtorExpr
     | literal                                                                                  #LiteralExpr
     | thisLiteral                                                                              #ThisLiteralExpr
+    | interpolatedRegularString                                                                #InterpolatedRegularStringExpr
     | identifier                                                                               #EvalVarExpr
     | expr op=('.' | '?.') expr                                                                #AccessExpr
     | expr '.' 'cast' '(' expr ')'                                                             #CastExpr
@@ -166,3 +167,14 @@ thisLiteral
     returns [ThisResult result]
     : THIS_LITERAL
     ;
+
+interpolatedRegularString
+    returns [InterpolatedStringResult result]
+	: INTERPOLATED_REGULAR_STRING_START interpolatedRegularStringPart* DOUBLE_QUOTE_INSIDE
+	;
+
+interpolatedRegularStringPart
+    returns [InterpolatedStringPartResult result]
+	: REGULAR_STRING_INSIDE #RegularStringInterpolatedStringPart
+	| isoExpr               #ExprInterpolatedStringPart
+	;

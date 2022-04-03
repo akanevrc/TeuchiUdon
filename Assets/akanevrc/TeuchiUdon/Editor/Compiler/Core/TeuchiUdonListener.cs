@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
@@ -638,8 +639,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var index          = TeuchiUdonTables.Instance.GetLiteralIndex();
             context.tableIndex = index;
-            var scope          = new TeuchiUdonScope(new TeuchiUdonLiteral(index), TeuchiUdonScopeMode.Literal);
-            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitLiteralExpr([NotNull] LiteralExprContext context)
@@ -647,15 +646,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var literal = context.literal()?.result;
             if (literal == null) return;
 
-            TeuchiUdonQualifierStack.Instance.Pop();
-
             context.result = new ExprResult(literal.Token, literal);
-        }
-
-        public override void EnterThisLiteralExpr([NotNull] ThisLiteralExprContext context)
-        {
-            var scope = new TeuchiUdonScope(new TeuchiUdonThis(), TeuchiUdonScopeMode.This);
-            TeuchiUdonQualifierStack.Instance.PushScope(scope);
         }
 
         public override void ExitThisLiteralExpr([NotNull] ThisLiteralExprContext context)
@@ -663,9 +654,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var thisLiteral = context.thisLiteral()?.result;
             if (thisLiteral == null) return;
 
-            TeuchiUdonQualifierStack.Instance.Pop();
-
             context.result = new ExprResult(thisLiteral.Token, thisLiteral);
+        }
+
+        public override void EnterInterpolatedRegularStringExpr([NotNull] InterpolatedRegularStringExprContext context)
+        {
+            var index          = TeuchiUdonTables.Instance.GetLiteralIndex();
+            context.tableIndex = index;
+        }
+
+        public override void ExitInterpolatedRegularStringExpr([NotNull] InterpolatedRegularStringExprContext context)
+        {
+            var str = context.interpolatedRegularString()?.result;
+            if (str == null) return;
+
+            context.result = new ExprResult(str.Token, str);
         }
 
         public override void ExitEvalVarExpr([NotNull] EvalVarExprContext context)
@@ -2661,6 +2664,49 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var text       = context.GetText();
             var type       = TeuchiUdonType.String;
             context.result = new ThisResult(context.Start);
+        }
+
+        public override void ExitInterpolatedRegularString([NotNull] InterpolatedRegularStringContext context)
+        {
+            var parts = context.interpolatedRegularStringPart().Select(x => x?.result);
+            if (parts.Any(x => x == null)) return;
+
+            var i = 0;
+            var partStrings =
+                parts.Select(x =>
+                    x is RegularStringInterpolatedStringPartResult str  ? str.RawString   :
+                    x is ExprInterpolatedStringPartResult          expr ? "{" + (i++) + "}" :
+                    ""
+                );
+
+            var joined     = string.Join("", partStrings);
+            var literal    = TeuchiUdonLiteral.CreateValue(((InterpolatedRegularStringExprContext)context.Parent).tableIndex, joined, TeuchiUdonType.String);
+            var exprs      = parts.Where(x => x is ExprInterpolatedStringPartResult).Select(x => ((ExprInterpolatedStringPartResult)x).Expr);
+            var qual       = TeuchiUdonQualifierStack.Instance.Peek();
+            context.result = new InterpolatedStringResult(context.Start, qual, literal, exprs);
+        }
+
+        public override void ExitRegularStringInterpolatedStringPart([NotNull] RegularStringInterpolatedStringPartContext context)
+        {
+            var rawString = context.REGULAR_STRING_INSIDE()?.GetText();
+            if (rawString == null) return;
+
+            var invalid = Regex.Match(rawString, @"\{\d+\}");
+            if (invalid.Success)
+            {
+                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"invalid word '{invalid.Value}' detected");
+                return;
+            }
+
+            context.result = new RegularStringInterpolatedStringPartResult(context.Start, rawString);
+        }
+
+        public override void ExitExprInterpolatedStringPart([NotNull] ExprInterpolatedStringPartContext context)
+        {
+            var isoExpr = context.isoExpr()?.result;
+            if (isoExpr == null) return;
+
+            context.result = new ExprInterpolatedStringPartResult(context.Start, isoExpr.Expr);
         }
     }
 }

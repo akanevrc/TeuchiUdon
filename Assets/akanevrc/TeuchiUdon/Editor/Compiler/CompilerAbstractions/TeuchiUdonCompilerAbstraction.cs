@@ -303,38 +303,39 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTyped(TypedResult result)
         {
-            if (result is InvalidResult          invalid         ) return VisitInvalid         (invalid);
-            if (result is UnknownTypeResult      unknownType     ) return VisitUnknownType     (unknownType);
-            if (result is UnitResult             unit            ) return VisitUnit            (unit);
-            if (result is BlockResult            block           ) return VisitBlock           (block);
-            if (result is ParenResult            paren           ) return VisitParen           (paren);
-            if (result is TupleResult            tuple           ) return VisitTuple           (tuple);
-            if (result is ArrayCtorResult        arrayCtor       ) return VisitArrayCtor       (arrayCtor);
-            if (result is LiteralResult          literal         ) return VisitLiteral         (literal);
-            if (result is ThisResult             this_           ) return VisitThis            (this_);
-            if (result is EvalVarResult          evalVar         ) return VisitEvalVar         (evalVar);
-            if (result is EvalTypeResult         evalType        ) return VisitEvalType        (evalType);
-            if (result is EvalQualifierResult    evalQualifier   ) return VisitEvalQualifier   (evalQualifier);
-            if (result is EvalGetterResult       evalGetter      ) return VisitEvalGetter      (evalGetter);
-            if (result is EvalSetterResult       evalSetter      ) return VisitEvalSetter      (evalSetter);
-            if (result is EvalGetterSetterResult evalGetterSetter) return VisitEvalGetterSetter(evalGetterSetter);
-            if (result is EvalFuncResult         evalFunc        ) return VisitEvalFunc        (evalFunc);
-            if (result is EvalSpreadFuncResult   evalSpreadFunc  ) return VisitEvalSpreadFunc  (evalSpreadFunc);
-            if (result is EvalMethodResult       evalMethod      ) return VisitEvalMethod      (evalMethod);
-            if (result is EvalSpreadMethodResult evalSpreadMethod) return VisitEvalSpreadMethod(evalSpreadMethod);
-            if (result is EvalArrayIndexerResult evalArrayIndexer) return VisitEvalArrayIndexer(evalArrayIndexer);
-            if (result is TypeCastResult         typeCast        ) return VisitTypeCast        (typeCast);
-            if (result is ConvertCastResult      convertCast     ) return VisitConvertCast     (convertCast);
-            if (result is PrefixResult           prefix          ) return VisitPrefix          (prefix);
-            if (result is InfixResult            infix           ) return VisitInfix           (infix);
-            if (result is LetInBindResult        letInBind       ) return VisitLetInBind       (letInBind);
-            if (result is IfResult               if_             ) return VisitIf              (if_);
-            if (result is IfElseResult           ifElse          ) return VisitIfElse          (ifElse);
-            if (result is WhileResult            while_          ) return VisitWhile           (while_);
-            if (result is ForResult              for_            ) return VisitFor             (for_);
-            if (result is LoopResult             loop            ) return VisitLoop            (loop);
-            if (result is FuncResult             func            ) return VisitFunc            (func);
-            if (result is MethodResult           method          ) return VisitMethod          (method);
+            if (result is InvalidResult            invalid           ) return VisitInvalid           (invalid);
+            if (result is UnknownTypeResult        unknownType       ) return VisitUnknownType       (unknownType);
+            if (result is UnitResult               unit              ) return VisitUnit              (unit);
+            if (result is BlockResult              block             ) return VisitBlock             (block);
+            if (result is ParenResult              paren             ) return VisitParen             (paren);
+            if (result is TupleResult              tuple             ) return VisitTuple             (tuple);
+            if (result is ArrayCtorResult          arrayCtor         ) return VisitArrayCtor         (arrayCtor);
+            if (result is LiteralResult            literal           ) return VisitLiteral           (literal);
+            if (result is ThisResult               this_             ) return VisitThis              (this_);
+            if (result is InterpolatedStringResult interpolatedString) return VisitInterpolatedString(interpolatedString);
+            if (result is EvalVarResult            evalVar           ) return VisitEvalVar           (evalVar);
+            if (result is EvalTypeResult           evalType          ) return VisitEvalType          (evalType);
+            if (result is EvalQualifierResult      evalQualifier     ) return VisitEvalQualifier     (evalQualifier);
+            if (result is EvalGetterResult         evalGetter        ) return VisitEvalGetter        (evalGetter);
+            if (result is EvalSetterResult         evalSetter        ) return VisitEvalSetter        (evalSetter);
+            if (result is EvalGetterSetterResult   evalGetterSetter  ) return VisitEvalGetterSetter  (evalGetterSetter);
+            if (result is EvalFuncResult           evalFunc          ) return VisitEvalFunc          (evalFunc);
+            if (result is EvalSpreadFuncResult     evalSpreadFunc    ) return VisitEvalSpreadFunc    (evalSpreadFunc);
+            if (result is EvalMethodResult         evalMethod        ) return VisitEvalMethod        (evalMethod);
+            if (result is EvalSpreadMethodResult   evalSpreadMethod  ) return VisitEvalSpreadMethod  (evalSpreadMethod);
+            if (result is EvalArrayIndexerResult   evalArrayIndexer  ) return VisitEvalArrayIndexer  (evalArrayIndexer);
+            if (result is TypeCastResult           typeCast          ) return VisitTypeCast          (typeCast);
+            if (result is ConvertCastResult        convertCast       ) return VisitConvertCast       (convertCast);
+            if (result is PrefixResult             prefix            ) return VisitPrefix            (prefix);
+            if (result is InfixResult              infix             ) return VisitInfix             (infix);
+            if (result is LetInBindResult          letInBind         ) return VisitLetInBind         (letInBind);
+            if (result is IfResult                 if_               ) return VisitIf                (if_);
+            if (result is IfElseResult             ifElse            ) return VisitIfElse            (ifElse);
+            if (result is WhileResult              while_            ) return VisitWhile             (while_);
+            if (result is ForResult                for_              ) return VisitFor               (for_);
+            if (result is LoopResult               loop              ) return VisitLoop              (loop);
+            if (result is FuncResult               func              ) return VisitFunc              (func);
+            if (result is MethodResult             method            ) return VisitMethod            (method);
             throw new NotSupportedException("unsupported parser result type");
         }
 
@@ -512,6 +513,37 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitThis(ThisResult result)
         {
             return Get(result.This);
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitInterpolatedString(InterpolatedStringResult result)
+        {
+            return
+                result.Methods["format"     ] == null ||
+                result.Methods["arrayCtor"  ] == null ||
+                result.Methods["arraySetter"] == null ||
+                result.Methods["keyAddition"] == null ?
+                Enumerable.Empty<TeuchiUdonAssembly>() :
+                EvalMethod
+                (
+                    new IEnumerable<TeuchiUdonAssembly>[]
+                    {
+                        Get(result.StringLiteral),
+                        ElementsArrayCtor
+                        (
+                            result.Exprs.Select(x => VisitExpr(x)),
+                            result.Literals ["0"],
+                            result.Literals ["1"],
+                            result.Literals ["length"],
+                            result.TmpValues["array"],
+                            result.TmpValues["key"],
+                            result.Methods  ["arrayCtor"],
+                            result.Methods  ["arraySetter"],
+                            result.Methods  ["keyAddition"]
+                        )
+                    },
+                    new IDataLabel[] { result.TmpValues["out"] },
+                    result.Methods["format"]
+                );
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalVar(EvalVarResult result)

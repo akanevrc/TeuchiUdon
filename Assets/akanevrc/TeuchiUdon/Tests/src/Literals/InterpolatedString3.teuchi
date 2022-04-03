@@ -1,0 +1,2 @@
+// ok200ok
+UnityEngine.Debug.Log($"ok{100 + 100}ok");
