@@ -205,6 +205,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                         if (method.Type.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) continue;
 
+                        if (method.UdonName.EndsWith("__T")) continue;
+
                         if (!Methods.ContainsKey(method))
                         {
                             Methods.Add(method, method);
