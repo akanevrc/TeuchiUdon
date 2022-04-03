@@ -65,9 +65,8 @@ namespace akanevrc.TeuchiUdon.Editor
             EditorGUILayout.BeginHorizontal();
 
             var fieldName = symbol.StartsWith("var[") && symbol.EndsWith("]") ? symbol.Substring(4, symbol.Length - 5) : symbol;
-            var fieldType = variableType == typeof(IUdonEventReceiver) ? typeof(UdonBehaviour) : variableType;
 
-            variableValue    = base.DrawPublicVariableField(fieldName, variableValue, fieldType, ref dirty, enabled);
+            variableValue    = base.DrawPublicVariableField(fieldName, variableValue, variableType, ref dirty, enabled);
             var defaultValue = (object)null;
             if (heapDefaultValues.ContainsKey(symbol))
             {
