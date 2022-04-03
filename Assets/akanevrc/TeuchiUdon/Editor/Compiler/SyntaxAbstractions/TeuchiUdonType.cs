@@ -55,6 +55,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Color { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "color", "UnityEngineColor", "UnityEngineColor", typeof(UnityEngine.Color));
         public static TeuchiUdonType Color32 { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "color32", "UnityEngineColor32", "UnityEngineColor32", typeof(UnityEngine.Color32));
         public static TeuchiUdonType VRCUrl { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "vrcurl", "VRCSDKBaseVRCUrl", "VRCSDKBaseVRCUrl", typeof(VRC.SDKBase.VRCUrl));
+        public static TeuchiUdonType UdonBehaviour { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "udonbehaviour", "VRCUdonUdonBehaviour", "VRCUdonUdonBehaviour", typeof(VRC.Udon.UdonBehaviour));
 
         public TeuchiUdonQualifier Qualifier { get; }
         public string Name { get; }

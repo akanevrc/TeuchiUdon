@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
 using VRC.Udon.Editor;
 using VRC.Udon.Graph;
 
@@ -120,7 +123,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.Quaternion,
                 TeuchiUdonType.Color,
                 TeuchiUdonType.Color32,
-                TeuchiUdonType.VRCUrl
+                TeuchiUdonType.VRCUrl,
+                TeuchiUdonType.UdonBehaviour
             };
 
             foreach (var t in types)
@@ -148,6 +152,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private void InitExternalTypesAndMethods()
         {
+            var udonBehaviour     = RegisterAndGetType(typeof(UdonBehaviour));
+            var component         = RegisterAndGetType(typeof(Component));
+            var udonEventReceiver = RegisterAndGetType(typeof(IUdonEventReceiver));
+
             var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
             foreach (var topReg in topRegistries)
             {
@@ -191,38 +199,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var instanceType      = instanceDef.t == null ? TeuchiUdonType.Type.ApplyArgAsType(type) : instanceDef.t;
                         var allParamUdonNames = def.parameters.Select(x => x.name);
 
-                        var method = new TeuchiUdonMethod(instanceType, methodName, allParamTypes, inTypes, outTypes, allParamInOuts, def.fullName, allParamUdonNames);
-
-                        if (method.UdonName.StartsWith("Const_"   )) continue;
-                        if (method.UdonName.StartsWith("Variable_")) continue;
-                        if (method.UdonName.StartsWith("Event_"))
+                        AddMethod(new TeuchiUdonMethod(instanceType, methodName, allParamTypes, inTypes, outTypes, allParamInOuts, def.fullName, allParamUdonNames));
+                        if (instanceType.LogicalTypeEquals(component) || instanceType.LogicalTypeEquals(udonEventReceiver))
                         {
-                            if (!Events.ContainsKey(method.Name))
-                            {
-                                Events.Add(method.Name, method);
-                            }
-                            continue;
+                            AddMethod(new TeuchiUdonMethod(udonBehaviour, methodName, allParamTypes, inTypes, outTypes, allParamInOuts, def.fullName, allParamUdonNames));
                         }
-                        if (method.Type.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) continue;
-
-                        if (method.UdonName.EndsWith("__T")) continue;
-
-                        if (!Methods.ContainsKey(method))
-                        {
-                            Methods.Add(method, method);
-                        }
-
-                        if (!TypeToMethods.ContainsKey(method.Type))
-                        {
-                            TypeToMethods.Add(method.Type, new Dictionary<string, List<TeuchiUdonMethod>>());
-                        }
-                        var nameToMethods = TypeToMethods[method.Type];
-
-                        if (!nameToMethods.ContainsKey(method.Name))
-                        {
-                            nameToMethods.Add(method.Name, new List<TeuchiUdonMethod>());
-                        }
-                        nameToMethods[method.Name].Add(method);
                     }
                 }
             }
@@ -311,6 +292,40 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var typeName     = genericIndex == -1 ? type.FullName : type.FullName.Substring(0, genericIndex);
             var qualNames    = typeName.Split(new char[] { '.', '+' });
             return qualNames.Take(qualNames.Length - 1).Select(x => new TeuchiUdonScope(x, TeuchiUdonScopeMode.Type));
+        }
+
+        private void AddMethod(TeuchiUdonMethod method)
+        {
+            if (method.UdonName.StartsWith("Const_"   )) return;
+            if (method.UdonName.StartsWith("Variable_")) return;
+            if (method.UdonName.StartsWith("Event_"))
+            {
+                if (!Events.ContainsKey(method.Name))
+                {
+                    Events.Add(method.Name, method);
+                }
+                return;
+            }
+            if (method.Type.LogicalTypeEquals(TeuchiUdonType.Type.ApplyArgAsType(new TeuchiUdonType("SystemVoid")))) return;
+
+            if (method.UdonName.EndsWith("__T")) return;
+
+            if (!Methods.ContainsKey(method))
+            {
+                Methods.Add(method, method);
+            }
+
+            if (!TypeToMethods.ContainsKey(method.Type))
+            {
+                TypeToMethods.Add(method.Type, new Dictionary<string, List<TeuchiUdonMethod>>());
+            }
+            var nameToMethods = TypeToMethods[method.Type];
+
+            if (!nameToMethods.ContainsKey(method.Name))
+            {
+                nameToMethods.Add(method.Name, new List<TeuchiUdonMethod>());
+            }
+            nameToMethods[method.Name].Add(method);
         }
 
         private void InitQualifiers()
