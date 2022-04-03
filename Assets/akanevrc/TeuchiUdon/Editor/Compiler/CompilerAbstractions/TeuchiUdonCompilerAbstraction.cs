@@ -324,8 +324,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (result is EvalMethodResult         evalMethod        ) return VisitEvalMethod        (evalMethod);
             if (result is EvalSpreadMethodResult   evalSpreadMethod  ) return VisitEvalSpreadMethod  (evalSpreadMethod);
             if (result is EvalCastResult           evalCast          ) return VisitEvalCast          (evalCast);
+            if (result is EvalTypeOfResult         evalTypeOf        ) return VisitEvalTypeOf        (evalTypeOf);
             if (result is EvalArrayIndexerResult   evalArrayIndexer  ) return VisitEvalArrayIndexer  (evalArrayIndexer);
             if (result is TypeCastResult           typeCast          ) return VisitTypeCast          (typeCast);
+            if (result is TypeOfResult             typeOf            ) return VisitTypeOf            (typeOf);
             if (result is ConvertCastResult        convertCast       ) return VisitConvertCast       (convertCast);
             if (result is PrefixResult             prefix            ) return VisitPrefix            (prefix);
             if (result is InfixResult              infix             ) return VisitInfix             (infix);
@@ -612,6 +614,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return Enumerable.Empty<TeuchiUdonAssembly>();
         }
 
+        protected IEnumerable<TeuchiUdonAssembly> VisitEvalTypeOf(EvalTypeOfResult result)
+        {
+            return Enumerable.Empty<TeuchiUdonAssembly>();
+        }
+
         protected IEnumerable<TeuchiUdonAssembly> VisitEvalArrayIndexer(EvalArrayIndexerResult result)
         {
             return EvalMethod
@@ -641,6 +648,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         result.Methods   ["convert"]
                     )
                 );
+        }
+
+        protected IEnumerable<TeuchiUdonAssembly> VisitTypeOf(TypeOfResult result)
+        {
+            return Get(result.Literal);
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitPrefix(PrefixResult result)

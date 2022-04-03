@@ -84,6 +84,7 @@ expr
     | thisLiteral                                                                              #ThisLiteralExpr
     | interpolatedRegularString                                                                #InterpolatedRegularStringExpr
     | identifier                                                                               #EvalVarExpr
+    | 'typeof'                                                                                 #EvalTypeOfExpr
     | expr op=('.' | '?.') expr                                                                #AccessExpr
     | expr '.' 'cast'                                                                          #CastExpr
     | expr '(' ')'                                                                             #EvalUnitFuncExpr

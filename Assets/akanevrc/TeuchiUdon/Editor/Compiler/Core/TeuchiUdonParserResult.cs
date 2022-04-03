@@ -1223,6 +1223,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class EvalTypeOfResult : TypedResult
+    {
+        public EvalTypeOfResult(IToken token)
+            : base(token, TeuchiUdonType.TypeOf)
+        {
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+    }
+
     public class EvalVarCandidateResult : TypedResult
     {
         public IdentifierResult Identifier { get; }
@@ -1377,6 +1395,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
         {
             return Enumerable.Empty<(string, ICodeLabel)>();
+        }
+    }
+
+    public class TypeOfResult : TypedResult
+    {
+        public TeuchiUdonLiteral Literal { get; }
+
+        public TypeOfResult(IToken token, TeuchiUdonType type)
+            : base(token, TeuchiUdonType.DotNetType)
+        {
+            Literal = TeuchiUdonLiteral.CreateDotNetType(TeuchiUdonTables.Instance.GetLiteralIndex(), type);
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => Enumerable.Empty<TypedResult>();
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+        public override IEnumerable<TeuchiUdonOutValue> ReleasedOutValues => Enumerable.Empty<TeuchiUdonOutValue>();
+        public override bool Deterministic => Children.All(x => x.Deterministic);
+
+        public override void BindType(TeuchiUdonType type)
+        {
         }
     }
 

@@ -726,6 +726,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(evalVar.Token, evalVar);
         }
 
+        public override void ExitEvalTypeOfExpr([NotNull] EvalTypeOfExprContext context)
+        {
+            var typeOf     = new EvalTypeOfResult(context.Start);
+            context.result = new ExprResult(typeOf.Token, typeOf);
+        }
+
         public override void ExitAccessExpr([NotNull] AccessExprContext context)
         {
             var op    = context.op?.Text;
@@ -1178,6 +1184,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"specified type cannot be cast");
                         evalFunc = new InvalidResult(token);
                     }
+                }
+            }
+            else if (type.LogicalTypeEquals(TeuchiUdonType.TypeOf))
+            {
+                if (args.Length != 1 || argRefs.Any(x => x))
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"typeof must be specified with one argument");
+                    evalFunc = new InvalidResult(token);
+                }
+                else if (args[0].Inner.Type.LogicalTypeNameEquals(TeuchiUdonType.Type) && args[0].Inner.Type.GetArgAsType().RealType != null)
+                {
+                    evalFunc = new TypeOfResult(token, args[0].Inner.Type.GetArgAsType());
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(token, $"typeof argument must be a type");
+                    evalFunc = new InvalidResult(token);
                 }
             }
             else

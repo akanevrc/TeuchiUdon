@@ -44,7 +44,7 @@ OF       : 'of'       ;
 REF      : 'ref'      ;
 RETURN   : 'return'   ;
 THEN     : 'then'     ;
-TYPE     : 'type'     ;
+TYPEOF   : 'typeof'   ;
 WHILE    : 'while'    ;
 YIELD    : 'yield'    ;
 

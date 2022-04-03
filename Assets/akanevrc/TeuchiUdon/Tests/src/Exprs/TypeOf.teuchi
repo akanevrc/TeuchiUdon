@@ -1,0 +1,2 @@
+// String
+UnityEngine.Debug.Log(typeof(string).Name);

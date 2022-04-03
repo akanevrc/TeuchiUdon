@@ -17,7 +17,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Bottom { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "bottom", "bottom", null, null);
         public static TeuchiUdonType Unit { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "unit", "unit", null, null);
         public static TeuchiUdonType Qual { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "qual", "qual", null, null);
-        public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "type", null, null);
+        public static TeuchiUdonType Type { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "internaltype", "internaltype", null, null);
         public static TeuchiUdonType Tuple { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple", "tuple", null, null);
         public static TeuchiUdonType Array { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array", "array", null, null);
         public static TeuchiUdonType AnyArray { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "anyarray", "array", "SystemObjectArray", typeof(object[])).ApplyArgAsArray(new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object)));
@@ -27,9 +27,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static TeuchiUdonType Method { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method", "method", null, null);
         public static TeuchiUdonType Setter { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "setter", "setter", null, null);
         public static TeuchiUdonType Cast { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "cast", "cast", null, null);
+        public static TeuchiUdonType TypeOf { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "typeof", "typeof", null, null);
         public static TeuchiUdonType NullType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "nulltype", "nulltype", "SystemObject", typeof(object));
         public static TeuchiUdonType Object { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "object", "SystemObject", "SystemObject", typeof(object));
-        public static TeuchiUdonType DotNetType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "dotnettype", "SystemType", "SystemType", typeof(Type));
+        public static TeuchiUdonType DotNetType { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "type", "SystemType", "SystemType", typeof(Type));
         public static TeuchiUdonType Bool { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "bool", "SystemBoolean", "SystemBoolean", typeof(bool));
         public static TeuchiUdonType Byte { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "byte", "SystemByte", "SystemByte", typeof(byte));
         public static TeuchiUdonType SByte { get; } = new TeuchiUdonType(TeuchiUdonQualifier.Top, "sbyte", "SystemSByte", "SystemSByte", typeof(sbyte));
@@ -363,7 +364,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 TeuchiUdonType.DetFunc,
                 TeuchiUdonType.Method,
                 TeuchiUdonType.Setter,
-                TeuchiUdonType.Cast
+                TeuchiUdonType.Cast,
+                TeuchiUdonType.TypeOf
             }
             .All(x => !LogicalTypeNameEquals(x));
         }

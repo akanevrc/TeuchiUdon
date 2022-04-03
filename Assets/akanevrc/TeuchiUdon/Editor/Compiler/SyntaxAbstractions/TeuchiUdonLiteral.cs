@@ -213,7 +213,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         public static TeuchiUdonLiteral CreateDotNetType(int index, TeuchiUdonType type)
         {
-            return new TeuchiUdonLiteral(index, $"typeof({type.LogicalName})", TeuchiUdonType.DotNetType, type.RealType);
+            if (type.RealType == null)
+            {
+                return null;
+            }
+
+            var literal = new TeuchiUdonLiteral(index, $"typeof({type.LogicalName})", TeuchiUdonType.DotNetType, type.RealType);
+            if (!TeuchiUdonTables.Instance.Literals.ContainsKey(literal))
+            {
+                TeuchiUdonTables.Instance.Literals.Add(literal, literal);
+            }
+            else
+            {
+                literal = TeuchiUdonTables.Instance.Literals[literal];
+            }
+            return literal;
         }
     }
 }
