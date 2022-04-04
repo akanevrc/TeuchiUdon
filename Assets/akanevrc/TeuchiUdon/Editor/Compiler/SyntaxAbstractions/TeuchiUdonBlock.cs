@@ -4,6 +4,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public class TeuchiUdonBlock : IIndexedLabel, IEquatable<TeuchiUdonBlock>
     {
+        public static TeuchiUdonBlock InvalidBlock { get; } =
+            new TeuchiUdonBlock(-1, TeuchiUdonQualifier.Top, TeuchiUdonType.Invalid)
+            {
+                Return   = InvalidLabel.Instance,
+                Continue = InvalidLabel.Instance,
+                Break    = InvalidLabel.Instance
+            };
+
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
         public TeuchiUdonType Type { get; }

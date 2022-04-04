@@ -472,7 +472,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 return null;
             }
 
-            return StoreJumpResult(new JumpResult(token, value, () => TeuchiUdonTables.Instance.Blocks[qb], () => TeuchiUdonTables.Instance.Blocks[qb].Return));
+            return StoreJumpResult
+            (
+                new JumpResult
+                (
+                    token,
+                    value,
+                    () => TeuchiUdonTables.Instance.Blocks.ContainsKey(qb) ? TeuchiUdonTables.Instance.Blocks[qb]        : TeuchiUdonBlock.InvalidBlock,
+                    () => TeuchiUdonTables.Instance.Blocks.ContainsKey(qb) ? TeuchiUdonTables.Instance.Blocks[qb].Return : TeuchiUdonBlock.InvalidBlock
+                )
+            );
         }
 
         public override void ExitContinueUnitStatement([NotNull] ContinueUnitStatementContext context)
