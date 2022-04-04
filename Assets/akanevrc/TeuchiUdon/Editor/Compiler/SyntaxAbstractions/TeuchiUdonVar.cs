@@ -2,10 +2,6 @@ using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public interface ITeuchiUdonLeftValue
-    {
-    }
-
     public class TeuchiUdonVar : IIndexedLabel, IDataLabel, ITeuchiUdonLeftValue, IEquatable<TeuchiUdonVar>
     {
         public int Index { get; }

@@ -46,6 +46,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             IEnumerable<TeuchiUdonAssembly> value2,
             TeuchiUdonMethod setterMethod
         );
+        protected abstract IEnumerable<TeuchiUdonAssembly> EvalArraySetterAssign
+        (
+            IEnumerable<TeuchiUdonAssembly> instance,
+            IEnumerable<TeuchiUdonAssembly> key,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            TeuchiUdonMethod setterMethod
+        );
         protected abstract IEnumerable<TeuchiUdonAssembly> IfElse
         (
             IEnumerable<TeuchiUdonAssembly> condition,
@@ -801,19 +808,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     return
                         result.Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) || result.Expr2.Inner.Type.LogicalTypeEquals(TeuchiUdonType.Unit) ?
                             Enumerable.Empty<TeuchiUdonAssembly>() :
-                        result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
-                            EvalAssign
-                            (
-                                VisitExpr(result.Expr1),
-                                VisitExpr(result.Expr2)
-                            ) :
-                        result.Expr1.Inner.LeftValues.Length == 1 && result.Expr1.Inner.LeftValues[0] is TeuchiUdonMethod m ?
-                            EvalSetterAssign
-                            (
-                                VisitExpr(result.Expr1.Inner.Instance),
-                                VisitExpr(result.Expr2),
-                                m
-                            ) :
+                        result.Expr1.Inner.LeftValues.Length == 1 ?
+                            result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
+                                EvalAssign
+                                (
+                                    VisitExpr(result.Expr1),
+                                    VisitExpr(result.Expr2)
+                                ) :
+                            result.Expr1.Inner.LeftValues[0] is TeuchiUdonMethod m ?
+                                EvalSetterAssign
+                                (
+                                    VisitExpr(result.Expr1.Inner.Instance),
+                                    VisitExpr(result.Expr2),
+                                    m
+                                ) :
+                            result.Expr1.Inner.LeftValues[0] is TeuchiUdonArraySetter s ?
+                                EvalArraySetterAssign
+                                (
+                                    VisitExpr(s.Expr),
+                                    VisitExpr(s.Arg),
+                                    VisitExpr(result.Expr2),
+                                    s.Method
+                                ) :
+                                Enumerable.Empty<TeuchiUdonAssembly>() :
                             Enumerable.Empty<TeuchiUdonAssembly>();
                 }
                 default:

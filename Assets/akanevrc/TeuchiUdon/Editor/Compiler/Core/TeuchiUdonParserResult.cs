@@ -1275,7 +1275,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Init();
         }
 
-        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override ITeuchiUdonLeftValue[] LeftValues =>
+            new ITeuchiUdonLeftValue[] { new TeuchiUdonArraySetter(Expr, Arg, Methods["setter"]) };
         public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr.Inner, Arg.Inner };
         public override IEnumerable<TypedResult> ReleasedChildren => Children;
 
@@ -1296,6 +1297,16 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         new string[] { "Get" },
                         new TeuchiUdonType[] { Expr.Inner.Type, TeuchiUdonType.Int }
                     )
+                ),
+                (
+                    "setter",
+                    GetMethodFromName
+                    (
+                        new TeuchiUdonType[] { Expr.Inner.Type },
+                        false,
+                        new string[] { "Set" },
+                        new TeuchiUdonType[] { Expr.Inner.Type, TeuchiUdonType.Int, Expr.Inner.Type.GetArgAsType() }
+                    )
                 )
             };
         }
@@ -1315,6 +1326,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
         {
             return Enumerable.Empty<(string, ICodeLabel)>();
+        }
+    }
+
+    public class TeuchiUdonArraySetter : ITeuchiUdonLeftValue
+    {
+        public ExprResult Expr { get; }
+        public ExprResult Arg { get; }
+        public TeuchiUdonMethod Method { get; }
+
+        public TeuchiUdonArraySetter(ExprResult expr, ExprResult arg, TeuchiUdonMethod method)
+        {
+            Expr   = expr;
+            Arg    = arg;
+            Method = method;
         }
     }
 

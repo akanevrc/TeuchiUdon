@@ -1,0 +1,4 @@
+// 100, 200, 300
+arr = [| 1, 2, 3 |];
+for let i <- 0..2 do arr[i] <- arr[i] * 100;
+UnityEngine.Debug.Log($"{arr[0]}, {arr[1]}, {arr[2]}");

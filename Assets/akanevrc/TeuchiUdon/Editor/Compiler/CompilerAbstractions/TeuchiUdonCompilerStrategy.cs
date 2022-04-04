@@ -253,6 +253,21 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Concat(new TeuchiUdonAssembly[] { new Assembly_EXTERN(setterMethod) });
         }
 
+        protected override IEnumerable<TeuchiUdonAssembly> EvalArraySetterAssign
+        (
+            IEnumerable<TeuchiUdonAssembly> instance,
+            IEnumerable<TeuchiUdonAssembly> key,
+            IEnumerable<TeuchiUdonAssembly> value2,
+            TeuchiUdonMethod setterMethod
+        )
+        {
+            return
+                instance
+                .Concat(key)
+                .Concat(value2)
+                .Concat(new TeuchiUdonAssembly[] { new Assembly_EXTERN(setterMethod) });
+        }
+
         protected override IEnumerable<TeuchiUdonAssembly> IfElse
         (
             IEnumerable<TeuchiUdonAssembly> condition,
