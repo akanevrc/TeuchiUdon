@@ -2220,10 +2220,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public ExprResult Expr { get; }
         private bool IsDet { get; }
 
-        public FuncResult(IToken token, TeuchiUdonType type, int index, TeuchiUdonQualifier qualifier, VarDeclResult varDecl, ExprResult expr, bool deterministic)
-            : base(token, type)
+        public FuncResult
+        (
+            IToken token,
+            TeuchiUdonType type,
+            int index,
+            TeuchiUdonQualifier qualifier,
+            IEnumerable<TeuchiUdonVar> vars,
+            VarDeclResult varDecl,
+            ExprResult expr,
+            bool deterministic
+        ) : base(token, type)
         {
-            Func    = new TeuchiUdonFunc(index, qualifier, type, varDecl.Vars, expr, deterministic);
+            Func    = new TeuchiUdonFunc(index, qualifier, type, vars, expr, deterministic);
             VarDecl = varDecl;
             Expr    = expr;
             IsDet   = deterministic;

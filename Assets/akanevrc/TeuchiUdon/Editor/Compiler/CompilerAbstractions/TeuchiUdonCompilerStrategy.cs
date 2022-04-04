@@ -151,11 +151,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             });
         }
 
-        protected override IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, TeuchiUdonMethod ev, List<TopStatementResult> stats)
+        protected override IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, List<TopStatementResult> stats)
         {
             var v =
                 TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, varName)) ?
                 TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, varName)] :
+                null;
+            var ev =
+                v != null && TeuchiUdonTables.Instance.EventFuncs.ContainsKey(v) ?
+                TeuchiUdonTables.Instance.EventFuncs[v] :
                 null;
             return
                 new TeuchiUdonAssembly[]
@@ -165,16 +169,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     new Assembly_INDENT(1)
                 }
                 .Concat(stats.SelectMany(x => VisitTopStatement(x)))
-                .Concat(v?.Type.IsFunc() ?? false ?
-                    EvalFunc
-                    (
-                        ev?.OutParamUdonNames
-                            .Select(x => TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, TeuchiUdonTables.GetEventParamName(varName, x))])
-                            .Select(x => Get(x))
-                            ?? Enumerable.Empty<IEnumerable<TeuchiUdonAssembly>>(),
-                        new TextCodeLabel($"topcall[{eventName}]"),
-                        v
-                    ) :
+                .Concat
+                (
+                    (v?.Type.IsFunc() ?? false) && ev != null ?
+                    EvalFunc(ev.Vars.Select(x => Get(x)), new TextCodeLabel($"topcall[{eventName}]"), v) :
                     Enumerable.Empty<TeuchiUdonAssembly>()
                 )
                 .Concat(new TeuchiUdonAssembly[]

@@ -135,9 +135,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else if (varBind.Vars[0].Type.IsFunc())
             {
-                if (sync != TeuchiUdonSyncMode.Disable)
+                var v = varBind.Vars[0];
+
+                if (varBind.Expr.Inner is FuncResult func)
                 {
-                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @sync, @linear, or @smooth");
+                    if ((pub || TeuchiUdonTables.Instance.Events.ContainsKey(v.Name)) && !TeuchiUdonTables.Instance.EventFuncs.ContainsKey(v))
+                    {
+                        TeuchiUdonTables.Instance.EventFuncs.Add(v, func.Func);
+                    }
+
+                    if (sync != TeuchiUdonSyncMode.Disable)
+                    {
+                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"function cannot be specified with @sync, @linear, or @smooth");
+                    }
+                }
+                else
+                {
+                    TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"toplevel variable cannot be assigned from function indirectly");
                 }
             }
             else
@@ -153,7 +167,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     if (varBind.Expr.Inner is LiteralResult literal)
                     {
-                        TeuchiUdonTables.Instance.PublicVars.Add(v, literal.Literal);
+                        if (!TeuchiUdonTables.Instance.PublicVars.ContainsKey(v))
+                        {
+                            TeuchiUdonTables.Instance.PublicVars.Add(v, literal.Literal);
+                        }
                     }
                     else
                     {
@@ -175,7 +192,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 else if (sync != TeuchiUdonSyncMode.Disable)
                 {
-                    TeuchiUdonTables.Instance.SyncedVars.Add(v, sync);
+                    if (!TeuchiUdonTables.Instance.SyncedVars.ContainsKey(v))
+                    {
+                        TeuchiUdonTables.Instance.SyncedVars.Add(v, sync);
+                    }
                 }
             }
 
@@ -1888,10 +1908,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     );
 
             var varBind = qual.GetLast<TeuchiUdonVarBind>();
+            var args    = varDecl.Vars;
             if (varBind != null && varBind.Qualifier == TeuchiUdonQualifier.Top && varBind.VarNames.Length == 1 && TeuchiUdonTables.Instance.Events.ContainsKey(varBind.VarNames[0]))
             {
-                var ev   = TeuchiUdonTables.Instance.Events[varBind.VarNames[0]];
-                var args = varDecl.Vars.ToArray();
+                var ev = TeuchiUdonTables.Instance.Events[varBind.VarNames[0]];
                 if (ev.OutTypes.Length != args.Length)
                 {
                     TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
@@ -1902,25 +1922,32 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     var argTypes = TeuchiUdonType.ToOneType(args.Select(x => x.Type));
                     if (evTypes.IsAssignableFrom(argTypes))
                     {
-                        foreach (var (n, t) in ev.OutParamUdonNames.Zip(ev.OutTypes, (n, t) => (n, t)))
-                        {
-                            var name = TeuchiUdonTables.GetEventParamName(ev.Name, n);
-                            if (!TeuchiUdonTables.IsValidVarName(name))
-                            {
-                                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{name}' is invalid variable name");
-                                continue;
-                            }
-                            
-                            var v = new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), TeuchiUdonQualifier.Top, name, t, false, true);
-                            if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
-                            {
-                                TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{v.Name}' conflicts with another variable");
-                            }
-                            else
-                            {
-                                TeuchiUdonTables.Instance.Vars.Add(v, v);
-                            }
-                        }
+                        args =
+                            args
+                            .Zip(ev.OutParamUdonNames, (a, n) => (  a,   n))
+                            .Zip(ev.OutTypes         , (x, t) => (x.a, x.n, t))
+                            .Select(x =>
+                                {
+                                    var name = TeuchiUdonTables.GetEventParamName(ev.Name, x.n);
+                                    if (!TeuchiUdonTables.IsValidVarName(name))
+                                    {
+                                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{name}' is invalid variable name");
+                                        return x.a;
+                                    }
+                                    
+                                    var v = new TeuchiUdonVar(TeuchiUdonTables.Instance.GetVarIndex(), TeuchiUdonQualifier.Top, name, x.t, false, true);
+                                    if (TeuchiUdonTables.Instance.Vars.ContainsKey(v))
+                                    {
+                                        TeuchiUdonLogicalErrorHandler.Instance.ReportError(context.Start, $"'{v.Name}' conflicts with another variable");
+                                        return x.a;
+                                    }
+                                    else
+                                    {
+                                        TeuchiUdonTables.Instance.Vars.Add(v, v);
+                                        return v;
+                                    }
+                                })
+                            .ToArray();
                     }
                     else
                     {
@@ -1930,7 +1957,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
 
             var index      = context.tableIndex;
-            var func       = new FuncResult(context.Start, type, index, qual, varDecl, expr, deterministic);
+            var func       = new FuncResult(context.Start, type, index, qual, args, varDecl, expr, deterministic);
             context.result = new ExprResult(func.Token, func);
         }
         

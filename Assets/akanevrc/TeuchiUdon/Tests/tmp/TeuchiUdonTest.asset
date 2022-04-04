@@ -19,20 +19,18 @@ MonoBehaviour:
     null\r\n    var[deltaAngle>func[0]>velocity]: %SystemSingle, null\r\n    var[getAngle]:
     %SystemUInt32, null\r\n    var[getAngle>func[1]>angle]: %SystemSingle, null\r\n   
     _update: %SystemUInt32, null\r\n    _onPlayerJoined: %SystemUInt32, null\r\n   
-    var[_onPlayerJoined>func[3]>x]: %VRCSDKBaseVRCPlayerApi, null\r\n    onPlayerJoinedPlayer:
-    %VRCSDKBaseVRCPlayerApi, null\r\n    literal[1]: %SystemSingle, null\r\n    literal[3]:
-    %SystemType, null\r\n    literal[this]: %UnityEngineGameObject, this\r\n    return[func[deltaAngle>0]]:
+    onPlayerJoinedPlayer: %VRCSDKBaseVRCPlayerApi, null\r\n    literal[1]: %SystemSingle,
+    null\r\n    literal[this]: %UnityEngineGameObject, this\r\n    return[func[deltaAngle>0]]:
     %SystemUInt32, null\r\n    return[func[getAngle>1]]: %SystemUInt32, null\r\n   
     return[func[_update>2]]: %SystemUInt32, null\r\n    return[func[_onPlayerJoined>3]]:
     %SystemUInt32, null\r\n    out[deltaAngle>SystemSingle>0]: %SystemSingle, null\r\n   
     out[getAngle>UnityEngineVector3>0]: %UnityEngineVector3, null\r\n    out[getAngle>UnityEngineQuaternion>0]:
     %UnityEngineQuaternion, null\r\n    out[_update>SystemUInt32>0]: %SystemUInt32,
     null\r\n    out[_update>SystemSingle>0]: %SystemSingle, null\r\n    out[_update>UnityEngineTransform>0]:
-    %UnityEngineTransform, null\r\n    out[UnityEngineComponent>0]: %UnityEngineComponent,
-    null\r\n    indirect[topcall[_update]]: %SystemUInt32, null\r\n    indirect[topcall[_onPlayerJoined]]:
-    %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>0]]: %SystemUInt32,
-    null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]: %SystemUInt32, null\r\n   
-    indirect[func[deltaAngle>0]]: %SystemUInt32, null\r\n    indirect[func[getAngle>1]]:
+    %UnityEngineTransform, null\r\n    indirect[topcall[_update]]: %SystemUInt32,
+    null\r\n    indirect[topcall[_onPlayerJoined]]: %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>0]]:
+    %SystemUInt32, null\r\n    indirect[evalfunc[_update>func[2]>block[0]>1]]: %SystemUInt32,
+    null\r\n    indirect[func[deltaAngle>0]]: %SystemUInt32, null\r\n    indirect[func[getAngle>1]]:
     %SystemUInt32, null\r\n    indirect[func[_update>2]]: %SystemUInt32, null\r\n   
     indirect[func[_onPlayerJoined>3]]: %SystemUInt32, null\r\n.data_end\r\n\r\n.code_start\r\n   
     func[deltaAngle>0]:\r\n        PUSH, return[func[deltaAngle>0]]\r\n        COPY\r\n       
@@ -61,7 +59,7 @@ MonoBehaviour:
     out[_update>SystemUInt32>0]\r\n        evalfunc[_update>func[2]>block[0]>1]:\r\n       
     EXTERN, \"UnityEngineTransform.__set_rotation__UnityEngineQuaternion__SystemVoid\"\r\n       
     JUMP_INDIRECT, return[func[_update>2]]\r\n\r\n    func[_onPlayerJoined>3]:\r\n       
-    PUSH, return[func[_onPlayerJoined>3]]\r\n        COPY\r\n        PUSH, var[_onPlayerJoined>func[3]>x]\r\n       
+    PUSH, return[func[_onPlayerJoined>3]]\r\n        COPY\r\n        PUSH, onPlayerJoinedPlayer\r\n       
     COPY\r\n        JUMP_INDIRECT, return[func[_onPlayerJoined>3]]\r\n\r\n    .export
     _update\r\n    _update:\r\n        PUSH, indirect[topcall[_update]]\r\n       
     JUMP_INDIRECT, _update\r\n        topcall[_update]:\r\n        JUMP, 0xFFFFFFFC\r\n\r\n   
@@ -73,9 +71,7 @@ MonoBehaviour:
     COPY\r\n        PUSH, indirect[func[getAngle>1]]\r\n        PUSH, var[getAngle]\r\n       
     COPY\r\n        PUSH, indirect[func[_update>2]]\r\n        PUSH, _update\r\n       
     COPY\r\n        PUSH, indirect[func[_onPlayerJoined>3]]\r\n        PUSH, _onPlayerJoined\r\n       
-    COPY\r\n        PUSH, literal[this]\r\n        PUSH, literal[3]\r\n        PUSH,
-    out[UnityEngineComponent>0]\r\n        EXTERN, \"UnityEngineGameObject.__GetComponent__SystemType__UnityEngineComponent\"\r\n       
-    PUSH, out[UnityEngineComponent>0]\r\n        POP\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+    COPY\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -99,7 +95,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 11
+      Data: 10
     - Name: 
       Entry: 7
       Data: 
@@ -167,40 +163,6 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: literal[3]
-    - Name: $v
-      Entry: 7
-      Data: System.ValueTuple`2[[System.Object, mscorlib],[System.Type, mscorlib]],
-        mscorlib
-    - Name: Item1
-      Entry: 7
-      Data: 5|System.RuntimeType, mscorlib
-    - Name: 
-      Entry: 1
-      Data: UnityEngine.Transform, UnityEngine.CoreModule
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: Item2
-      Entry: 7
-      Data: 6|System.RuntimeType, mscorlib
-    - Name: 
-      Entry: 1
-      Data: System.Type, mscorlib
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 1
       Data: indirect[topcall[_update]]
     - Name: $v
       Entry: 7
@@ -208,7 +170,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 7|System.UInt32, mscorlib
+      Data: 5|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 416
@@ -217,7 +179,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 7
-      Data: 8|System.RuntimeType, mscorlib
+      Data: 6|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
       Data: System.UInt32, mscorlib
@@ -242,7 +204,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 9|System.UInt32, mscorlib
+      Data: 7|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 448
@@ -251,7 +213,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -270,7 +232,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 10|System.UInt32, mscorlib
+      Data: 8|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 240
@@ -279,7 +241,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -298,7 +260,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 11|System.UInt32, mscorlib
+      Data: 9|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 352
@@ -307,7 +269,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -326,7 +288,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 12|System.UInt32, mscorlib
+      Data: 10|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 0
@@ -335,7 +297,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -354,7 +316,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 13|System.UInt32, mscorlib
+      Data: 11|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 88
@@ -363,7 +325,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -382,7 +344,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 14|System.UInt32, mscorlib
+      Data: 12|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 176
@@ -391,7 +353,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 
@@ -410,7 +372,7 @@ MonoBehaviour:
         mscorlib
     - Name: Item1
       Entry: 7
-      Data: 15|System.UInt32, mscorlib
+      Data: 13|System.UInt32, mscorlib
     - Name: 
       Entry: 3
       Data: 368
@@ -419,7 +381,7 @@ MonoBehaviour:
       Data: 
     - Name: Item2
       Entry: 9
-      Data: 8
+      Data: 6
     - Name: 
       Entry: 8
       Data: 

@@ -20,7 +20,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         protected abstract IEnumerable<TeuchiUdonAssembly> Jump(ITeuchiUdonLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Indirect(ICodeLabel label);
         protected abstract IEnumerable<TeuchiUdonAssembly> Func(TeuchiUdonFunc func);
-        protected abstract IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, TeuchiUdonMethod ev, List<TopStatementResult> stats);
+        protected abstract IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, List<TopStatementResult> stats);
         protected abstract IEnumerable<TeuchiUdonAssembly> EvalFunc
         (
             IEnumerable<IEnumerable<TeuchiUdonAssembly>> args,
@@ -382,8 +382,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 .Select(x =>
                     (
                         varName  : x.VarBind.Vars[0].Name,
-                        eventName: x.VarBind.Vars[0].GetFullLabel(),
-                        method   : TeuchiUdonTables.Instance.Events.ContainsKey(x.VarBind.Vars[0].Name) ? TeuchiUdonTables.Instance.Events[x.VarBind.Vars[0].Name] : null
+                        eventName: x.VarBind.Vars[0].GetFullLabel()
                     ))
                 .ToArray();
             var topStats = result.TopStatements
@@ -396,26 +395,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var startVarName   = "Start";
             var startEventName = TeuchiUdonTables.GetEventName(startVarName);
-            var topEventStats   = new Dictionary<string, (string eventName, TeuchiUdonMethod ev, List<TopStatementResult> stats)>();
+            var topEventStats   = new Dictionary<string, (string eventName, List<TopStatementResult> stats)>();
             foreach (var ev in topEvents)
             {
                 if (!topEventStats.ContainsKey(ev.varName))
                 {
-                    topEventStats.Add(ev.varName, (ev.eventName, ev.method, new List<TopStatementResult>()));
+                    topEventStats.Add(ev.varName, (ev.eventName, new List<TopStatementResult>()));
                 }
             }
             foreach (var stat in topStats)
             {
                 if (!topEventStats.ContainsKey(startVarName))
                 {
-                    topEventStats.Add(startVarName, (startEventName, null, new List<TopStatementResult>()));
+                    topEventStats.Add(startVarName, (startEventName, new List<TopStatementResult>()));
                 }
                 topEventStats[startVarName].stats.Add(stat);
             }
 
             return
                 topEventStats.Count == 0 ? Enumerable.Empty<TeuchiUdonAssembly>() :
-                topEventStats.Select(x => Event(x.Key, x.Value.eventName, x.Value.ev, x.Value.stats))
+                topEventStats.Select(x => Event(x.Key, x.Value.eventName, x.Value.stats))
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
                     .Concat(x)

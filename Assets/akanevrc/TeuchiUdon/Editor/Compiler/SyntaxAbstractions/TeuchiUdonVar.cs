@@ -71,9 +71,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 return TeuchiUdonTables.GetEventName(Name);
             }
+            else if (IsSystemVar)
+            {
+                return Name;
+            }
+            else if (TeuchiUdonTables.Instance.EventFuncs.ContainsKey(this))
+            {
+                return $"event[{Name}]";
+            }
             else
             {
-                return IsSystemVar ? Name : $"var[{Name}]";
+                return $"var[{Name}]";
             }
         }
 
@@ -83,9 +91,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 return TeuchiUdonTables.GetEventName(Name);
             }
+            else if (IsSystemVar)
+            {
+                return Name;
+            }
+            else if (TeuchiUdonTables.Instance.EventFuncs.ContainsKey(this))
+            {
+                return $"event[{Qualifier.Qualify(">", Name)}]";
+            }
             else
             {
-                return IsSystemVar ? Name : $"var[{Qualifier.Qualify(">", Name)}]";
+                return $"var[{Qualifier.Qualify(">", Name)}]";
             }
         }
     }

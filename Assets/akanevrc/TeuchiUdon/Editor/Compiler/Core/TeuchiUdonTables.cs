@@ -23,6 +23,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> PublicVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
+        public Dictionary<TeuchiUdonVar, TeuchiUdonFunc> EventFuncs { get; private set; }
         public Dictionary<TeuchiUdonLiteral, TeuchiUdonLiteral> Literals { get; private set; }
         public Dictionary<TeuchiUdonThis, TeuchiUdonThis> This { get; private set; }
         public Dictionary<TeuchiUdonFunc, TeuchiUdonFunc> Funcs { get; private set; }
@@ -70,6 +71,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             Vars       = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
             PublicVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
             SyncedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
+            EventFuncs = new Dictionary<TeuchiUdonVar     , TeuchiUdonFunc>();
             Literals   = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
             This       = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
             Funcs      = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
