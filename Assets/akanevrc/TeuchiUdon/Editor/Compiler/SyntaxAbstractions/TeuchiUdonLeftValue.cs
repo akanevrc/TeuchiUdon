@@ -1,4 +1,3 @@
-using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {

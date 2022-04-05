@@ -1854,13 +1854,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             context.result = new ExprResult(while_.Token, while_);
         }
 
+        public override void EnterForExpr([NotNull] ForExprContext context)
+        {
+            var index          = TeuchiUdonTables.Instance.GetBlockIndex();
+            context.tableIndex = index;
+            var qual           = TeuchiUdonQualifierStack.Instance.Peek();
+            var scope          = new TeuchiUdonScope(new TeuchiUdonFor(index), TeuchiUdonScopeMode.For);
+            TeuchiUdonQualifierStack.Instance.PushScope(scope);
+        }
+
         public override void ExitForExpr([NotNull] ForExprContext context)
         {
             var forBinds = context.forBind().Select(x => x?.result);
             var expr     = context.expr()?.result;
             if (forBinds.Any(x => x == null) || expr == null) return;
 
-            var for_       = new ForResult(context.Start, TeuchiUdonType.Unit, forBinds, expr);
+            TeuchiUdonQualifierStack.Instance.Pop();
+
+            var index      = context.tableIndex;
+            var for_       = new ForResult(context.Start, TeuchiUdonType.Unit, index, forBinds, expr);
             context.result = new ExprResult(for_.Token, for_);
         }
 

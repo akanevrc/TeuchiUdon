@@ -2164,13 +2164,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public class ForResult : TypedResult
     {
+        public TeuchiUdonFor For { get; }
         public ForBindResult[] ForBinds { get; }
         public ExprResult Expr { get; }
         public ICodeLabel ContinueLabel { get; }
 
-        public ForResult(IToken token, TeuchiUdonType type, IEnumerable<ForBindResult> forBinds, ExprResult expr)
+        public ForResult(IToken token, TeuchiUdonType type, int index, IEnumerable<ForBindResult> forBinds, ExprResult expr)
             : base(token, type)
         {
+            For           = new TeuchiUdonFor(index);
             ForBinds      = forBinds.ToArray();
             Expr          = expr;
             ContinueLabel = new TeuchiUdonLoop(TeuchiUdonTables.Instance.GetLoopIndex());

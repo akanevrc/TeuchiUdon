@@ -8,6 +8,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         Block,
         FuncBlock,
         LoopBlock,
+        For,
         Func,
         LetIn,
         Type,
