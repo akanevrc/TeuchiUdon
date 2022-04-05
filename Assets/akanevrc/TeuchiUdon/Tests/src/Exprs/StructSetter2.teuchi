@@ -1,0 +1,2 @@
+// error
+this.transform.position.x <- 100.0;

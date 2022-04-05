@@ -918,7 +918,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var g  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qg, 0).ToArray();
                         var qs = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetSetterName(varCandidate2.Identifier.Name));
                         var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 1).ToArray();
-                        if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
+                        if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1 && IsValidSetter(expr1))
                         {
                             eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0]);
                             break;
@@ -928,7 +928,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0]);
                             break;
                         }
-                        else if (s.Length == 1)
+                        else if (s.Length == 1 && IsValidSetter(expr1))
                         {
                             eval = new EvalSetterResult(varCandidate2.Token, s[0].InTypes[1], qualifier, s[0]);
                             break;
@@ -976,7 +976,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         var g  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qg, 1).ToArray();
                         var qs = new TeuchiUdonMethod(type1, TeuchiUdonTables.GetSetterName(varCandidate2.Identifier.Name));
                         var s  = TeuchiUdonTables.Instance.GetMostCompatibleMethodsWithoutInTypes(qs, 2).ToArray();
-                        if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1)
+                        if (g.Length == 1 && s.Length == 1 && g[0].OutTypes.Length == 1 && IsValidSetter(expr1))
                         {
                             eval = new EvalGetterSetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0], s[0]);
                             break;
@@ -986,7 +986,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             eval = new EvalGetterResult(varCandidate2.Token, g[0].OutTypes[0], qualifier, g[0]);
                             break;
                         }
-                        else if (s.Length == 1)
+                        else if (s.Length == 1 && IsValidSetter(expr1))
                         {
                             eval = new EvalSetterResult(varCandidate2.Token, TeuchiUdonType.Setter.ApplyArgAsSetter(s[0].InTypes[1]), qualifier, s[0]);
                             break;
@@ -1012,6 +1012,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             var infix      = new InfixResult(expr1.Token, expr2.Inner.Type, qualifier, op, expr1, expr2);
             context.result = new ExprResult(infix.Token, infix);
+        }
+
+        private bool IsValidSetter(ExprResult expr)
+        {
+            var type = expr.Inner.Type;
+            if (type.LogicalTypeNameEquals(TeuchiUdonType.Type)) return true;
+            if (type.RealType == null) return false;
+            if (!type.RealType.IsValueType) return true;
+            return expr.Inner is EvalVarResult;
         }
 
         public override void ExitCastExpr([NotNull] CastExprContext context)

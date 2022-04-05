@@ -1,0 +1,4 @@
+// 100
+v = UnityEngine.Vector3(0.0, 0.0, 0.0);
+v.x <- 100.0;
+UnityEngine.Debug.Log(v.x);
