@@ -1,0 +1,2 @@
+// Null
+UnityEngine.Debug.Log(gameobject.cast(null)?.GetComponentsInChildren <| (typeof(udonbehaviour), false));

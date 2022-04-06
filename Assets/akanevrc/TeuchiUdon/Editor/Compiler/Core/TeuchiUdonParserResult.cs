@@ -1202,6 +1202,184 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
+    public class EvalCoalescingMethodResult : ExternResult
+    {
+        public ExprResult Expr1 { get; }
+        public ExprResult Expr2 { get; }
+        public ExprResult[] Args { get; }
+        private TeuchiUdonMethod Method { get; }
+
+        public EvalCoalescingMethodResult
+        (
+            IToken token,
+            TeuchiUdonType type,
+            TeuchiUdonQualifier qualifier,
+            TeuchiUdonMethod method,
+            ExprResult expr1,
+            ExprResult expr2,
+            IEnumerable<ExprResult> args
+        ) : base(token, type, qualifier)
+        {
+            Method = method;
+            Expr1  = expr1;
+            Expr2  = expr2;
+            Args   = args.ToArray();
+
+            Instance = expr2.Inner.Instance;
+
+            Init();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr1.Inner, Expr2.Inner }.Concat(Args.Select(x => x.Inner));
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+        
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType))
+            {
+                return new (string, TeuchiUdonMethod)[]
+                {
+                    ("method", Method)
+                };
+            }
+            else
+            {
+                return new (string, TeuchiUdonMethod)[]
+                {
+                    ("method", Method),
+                    (
+                        "==",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { Expr1.Inner.Type, TeuchiUdonType.Object },
+                            true,
+                            new string[] { "op_Equality" },
+                            new TeuchiUdonType[] { Expr1.Inner.Type, Expr1.Inner.Type }
+                        )
+                    )
+                };
+            };
+        }
+
+        protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return new (string, TeuchiUdonType)[] { ("tmp", Expr1.Inner.Type) };
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return new (string, TeuchiUdonLiteral)[]
+            {
+                ("null", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "null", TeuchiUdonType.NullType))
+            };
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return new (string, ICodeLabel)[]
+            {
+                ("1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("2", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex()))
+            };
+        }
+    }
+
+    public class EvalCoalescingSpreadMethodResult : ExternResult
+    {
+        public ExprResult Expr1 { get; }
+        public ExprResult Expr2 { get; }
+        public ExprResult Arg { get; }
+        private TeuchiUdonMethod Method { get; }
+
+        public EvalCoalescingSpreadMethodResult
+        (
+            IToken token,
+            TeuchiUdonType type,
+            TeuchiUdonQualifier qualifier,
+            TeuchiUdonMethod method,
+            ExprResult expr1,
+            ExprResult expr2,
+            ExprResult arg
+        ) : base(token, type, qualifier)
+        {
+            Method = method;
+            Expr1  = expr1;
+            Expr2  = expr2;
+            Arg    = arg;
+
+            Instance = expr2.Inner.Instance;
+
+            Init();
+        }
+
+        public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
+        public override IEnumerable<TypedResult> Children => new TypedResult[] { Expr1.Inner, Expr2.Inner, Arg.Inner };
+        public override IEnumerable<TypedResult> ReleasedChildren => Children;
+
+        public override void BindType(TeuchiUdonType type)
+        {
+        }
+        
+        protected override IEnumerable<(string key, TeuchiUdonMethod value)> GetMethods()
+        {
+            if (Expr1.Inner.Type.LogicalTypeEquals(TeuchiUdonType.NullType))
+            {
+                return new (string, TeuchiUdonMethod)[]
+                {
+                    ("method", Method)
+                };
+            }
+            else
+            {
+                return new (string, TeuchiUdonMethod)[]
+                {
+                    ("method", Method),
+                    (
+                        "==",
+                        GetMethodFromName
+                        (
+                            new TeuchiUdonType[] { Expr1.Inner.Type, TeuchiUdonType.Object },
+                            true,
+                            new string[] { "op_Equality" },
+                            new TeuchiUdonType[] { Expr1.Inner.Type, Expr1.Inner.Type }
+                        )
+                    )
+                };
+            };
+        }
+
+        protected override bool CreateOutValuesForMethods => true;
+
+        protected override IEnumerable<(string key, TeuchiUdonType type)> GetTmpValues()
+        {
+            return new (string, TeuchiUdonType)[] { ("tmp", Expr1.Inner.Type) };
+        }
+
+        protected override IEnumerable<(string key, TeuchiUdonLiteral value)> GetLiterals()
+        {
+            return new (string, TeuchiUdonLiteral)[]
+            {
+                ("null", TeuchiUdonLiteral.CreateValue(TeuchiUdonTables.Instance.GetLiteralIndex(), "null", TeuchiUdonType.NullType))
+            };
+        }
+
+        protected override IEnumerable<(string key, ICodeLabel value)> GetLabels()
+        {
+            return new (string, ICodeLabel)[]
+            {
+                ("1", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex())),
+                ("2", new TeuchiUdonBranch(TeuchiUdonTables.Instance.GetBranchIndex()))
+            };
+        }
+    }
+
     public class EvalCastResult : TypedResult
     {
         public ExprResult Expr { get; }

@@ -779,6 +779,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             return
                 obj1 is TeuchiUdonQualifier q1 && obj2 is TeuchiUdonQualifier q2 && q1.Equals(q2) ||
+                obj1 is TeuchiUdonMethod    m1 && obj2 is TeuchiUdonMethod    m2 && m1.Equals(m2) ||
                 obj1 is TeuchiUdonType      t1 && obj2 is TeuchiUdonType      t2 && t1.LogicalTypeEquals(t2);
         }
 

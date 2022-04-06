@@ -1145,7 +1145,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     )
                     {
                         var outType = TeuchiUdonType.ToOneType(method.OutTypes);
-                        evalFunc = new EvalMethodResult(token, outType, qual, method, expr, args);
+                        if (expr.Inner is InfixResult infix && infix.Op == "?.")
+                        {
+                            evalFunc = new EvalCoalescingMethodResult(token, outType, qual, method, infix.Expr1, infix.Expr2, args);
+                        }
+                        else
+                        {
+                            evalFunc = new EvalMethodResult(token, outType, qual, method, expr, args);
+                        }
                     }
                     else
                     {
@@ -1302,7 +1309,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     if (method.InParamInOuts.All(x => x != TeuchiUdonMethodParamInOut.InOut))
                     {
                         var outType = TeuchiUdonType.ToOneType(method.OutTypes);
-                        evalFunc = new EvalSpreadMethodResult(token, outType, qual, method, expr, arg);
+                        if (expr.Inner is InfixResult infix && infix.Op == "?.")
+                        {
+                            evalFunc = new EvalCoalescingSpreadMethodResult(token, outType, qual, method, infix.Expr1, infix.Expr2, arg);
+                        }
+                        else
+                        {
+                            evalFunc = new EvalSpreadMethodResult(token, outType, qual, method, expr, arg);
+                        }
                     }
                     else
                     {

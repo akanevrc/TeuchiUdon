@@ -1,0 +1,2 @@
+// /Component/
+UnityEngine.Debug.Log(this?.GetComponentsInChildren <| (typeof(udonbehaviour), false));
