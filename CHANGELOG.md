@@ -1,3 +1,20 @@
+## 0.2.0 2022/04/11
+
+- Type system
+  - Type argument
+  - Array type
+- Expressions
+  - Interpolated string
+  - Typeof operator
+  - Type cast
+  - If expression
+  - While expression
+  - For expression
+  - Loop expression
+- Return statement
+- UdonBehaviour support
+- Many improvements and bug fixes
+
 ## 0.1.0 2022/03/08
 
 - Basic grammar
