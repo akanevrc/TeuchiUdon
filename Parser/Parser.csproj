@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net471</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.3" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
+  <Target Name="Antlr" BeforeTargets="Build">
+    <Exec Command="java org.antlr.v4.Tool -package akanevrc.TeuchiUdon .\Grammars\TeuchiUdonLexer.g4" />
+    <Exec Command="java org.antlr.v4.Tool -package akanevrc.TeuchiUdon .\Grammars\TeuchiUdonParser.g4" />
+  </Target>
+
+  <Target Name="CopyTarget" AfterTargets="Build" Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net471'">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)..\Unity\Assets\akanevrc\TeuchiUdon\Editor\Compiler\External\akanevrc.TeuchiUdon.Parser\lib\$(TargetFramework)\" />
+  </Target>
+
+</Project>

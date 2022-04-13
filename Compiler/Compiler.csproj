@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net471</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Parser\Parser.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyTarget" AfterTargets="Build" Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net471'">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)..\Unity\Assets\akanevrc\TeuchiUdon\Editor\Compiler\External\akanevrc.TeuchiUdon.Compiler\lib\$(TargetFramework)\" />
+  </Target>
+
+</Project>
