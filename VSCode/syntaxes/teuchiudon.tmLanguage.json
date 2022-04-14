@@ -1,0 +1,393 @@
+{
+  "version": "0.2.0",
+  "name": "TeuchiUdon",
+  "scopeName": "source.teuchiudon",
+  "patterns": [
+    {
+      "include": "#target"
+    }
+  ],
+  "repository": {
+    "target": {
+      "name": "meta.section.target.teuchiudon",
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#body"
+        }
+      ]
+    },
+    "body": {
+      "name": "meta.section.body.teuchiudon",
+      "patterns": [
+        {
+          "include": "#top-statement"
+        }
+      ]
+    },
+    "top-statement": {
+      "name": "meta.section.top-statement.teuchiudon",
+      "patterns": [
+        {
+          "include": "#var-bind-top-statement"
+        },
+        {
+          "include": "#expr-top-statement"
+        }
+      ],
+      "end": "\b;\b",
+      "endCaptures": {
+        "0": "meta.section.top-statement.end.teuchiudon"
+      }
+    },
+    "var-bind-top-statement": {
+      "name": "meta.section.top-statement.var-bind.teuchiudon",
+      "patterns": [
+        {
+          "include": "#var-attr"
+        },
+        {
+          "include": "#var-bind"
+        }
+      ]
+    },
+    "expr-top-statement": {
+      "name": "meta.section.top-statement.expr.teuchiudon",
+      "patterns": [
+        {
+          "include": "#expr"
+        }
+      ]
+    },
+    "var-attr": {
+      "name": "keyword.other.attr.teuchiudon",
+      "match": "\b(@public|@sync|@linear|@smooth)?\b"
+    },
+    "var-bind": {
+      "name": "meta.section.var-bind.teuchiudon",
+      "begin": "\b(?:mut)?\b",
+      "beginCaptures": {
+        "0": "keyword.other.mut.teuchiudon"
+      },
+      "patterns": [
+        {
+          "include": "#var-decl"
+        },
+        {
+          "name": "keyword.operator.bind.teuchiudon",
+          "match": "\b=\b"
+        },
+        {
+          "include": "#expr"
+        }
+      ]
+    },
+    "var-decl": {
+      "name": "meta.section.var-decl.teuchiudon",
+      "begin": "\b\\(?\b",
+      "beginCaptures": {
+        "0": "meta.section.var-decl.open.teuchiudon"
+      },
+      "patterns": [
+        {
+          "include": "#qualified-var"
+        },
+        {
+          "name": "meta.section.var-decl.delimiter.teuchiudon",
+          "match": "\b,\b"
+        }
+      ],
+      "end": "\b\\)?\b",
+      "endCaptures": {
+        "0": "meta.section.var-decl.close.teuchiudon"
+      }
+    },
+    "qualified-var": {
+      "name": "meta.section.qualified-var.teuchiudon",
+      "patterns": [
+        {
+          "include": "#identifier"
+        },
+        {
+          "name": "meta.section.qualified-var.delimiter.teuchiudon",
+          "match": "\b:\b"
+        },
+        {
+          "include": "#expr"
+        }
+      ]
+    },
+    "identifier": {
+      "name": "meta.identifier.teuchiudon",
+      "match": "\b\\w+\b"
+    },
+    "statement": {
+      "name": "meta.section.statement.teuchiudon",
+      "patterns": [
+        {
+          "include": "#return-unit-statement"
+        },
+        {
+          "include": "#return-value-statement"
+        },
+        {
+          "include": "#continue-unit-statement"
+        },
+        {
+          "include": "#continue-value-statement"
+        },
+        {
+          "include": "#break-unit-statement"
+        },
+        {
+          "include": "#break-value-statement"
+        },
+        {
+          "include": "#let-bind-statement"
+        },
+        {
+          "include": "#expr"
+        }
+      ],
+      "end": "\b;\b",
+      "endCaptures": {
+        "0": "meta.section.statement.end.teuchiudon"
+      }
+    },
+    "return-unit-statement": {
+      "name": "keyword.control.return.teuchiudon",
+      "match": "\breturn\b"
+    },
+    "return-value-statement": {
+      "name": "meta.section.statement.return.teuchiudon",
+      "begin": "\breturn\b",
+      "beginCaptures": {
+        "0": "keyword.control.return.teuchiudon"
+      },
+      "patterns": [
+        {
+          "include": "#expr"
+        }
+      ]
+    },
+    "continue-unit-statement": {
+      "name": "keyword.control.continue.teuchiudon",
+      "match": "\bcontinue\b"
+    },
+    "continue-value-statement": {
+      "name": "meta.section.statement.continue.teuchiudon",
+      "begin": "\bcontinue\b",
+      "beginCaptures": {
+        "0": "keyword.control.continue.teuchiudon"
+      },
+      "patterns": [
+        {
+          "include": "#expr"
+        }
+      ]
+    },
+    "break-unit-statement": {
+      "name": "keyword.control.break.teuchiudon",
+      "match": "\bbreak\b"
+    },
+    "break-value-statement": {
+      "name": "meta.section.statement.break.teuchiudon",
+      "begin": "\bbreak\b",
+      "beginCaptures": {
+        "0": "keyword.control.break.teuchiudon"
+      },
+      "patterns": [
+        {
+          "include": "#expr"
+        }
+      ]
+    },
+    "let-bind-statement": {
+      "name": "meta.section.statement.let-bind.teuchiudon",
+      "begin": "\blet\b",
+      "beginCaptures": {
+        "0": "keyword.other.let.teuchiudon"
+      },
+      "patterns": [
+        {
+          "include": "#var-bind"
+        }
+      ]
+    },
+    "expr": {
+      "name": "meta.section.expr.teuchiudon",
+      "patterns": [
+        {
+          "include": "#unit-block-expr"
+        },
+        {
+          "include": "#value-block-expr"
+        },
+        {
+          "include": "#paren-expr"
+        },
+        {
+          "include": "#tuple-expr"
+        },
+        {
+          "include": "#array-ctor-expr"
+        },
+        {
+          "include": "#list-ctor-expr"
+        },
+        {
+          "include": "#literal-expr"
+        },
+        {
+          "include": "#interpolated-regular-string-expr"
+        },
+        {
+          "include": "#eval-var-expr"
+        },
+        {
+          "include": "#eval-type-of-expr"
+        },
+        {
+          "include": "#access-expr"
+        },
+        {
+          "include": "#cast-expr"
+        },
+        {
+          "include": "#eval-func-expr"
+        },
+        {
+          "include": "#eval-spread-func-expr"
+        },
+        {
+          "include": "#eval-key-expr"
+        },
+        {
+          "include": "#prefix-expr"
+        },
+        {
+          "include": "#infix-expr"
+        },
+        {
+          "include": "#let-in-bind-expr"
+        },
+        {
+          "include": "#if-expr"
+        },
+        {
+          "include": "#if-else-expr"
+        },
+        {
+          "include": "#while-expr"
+        },
+        {
+          "include": "#for-expr"
+        },
+        {
+          "include": "#loop-expr"
+        },
+        {
+          "include": "#func-expr"
+        }
+      ]
+    },
+    "unit-block-expr": {
+      "name": "meta.section.expr.unit-block.teuchiudon",
+      "match": ".+"
+    },
+    "value-block-expr": {
+      "name": "meta.section.expr.value-block.teuchiudon",
+      "match": ".+"
+    },
+    "paren-expr": {
+      "name": "meta.section.expr.paren.teuchiudon",
+      "match": ".+"
+    },
+    "tuple-expr": {
+      "name": "meta.section.expr.tuple.teuchiudon",
+      "match": ".+"
+    },
+    "array-ctor-expr": {
+      "name": "meta.section.expr.array-ctor.teuchiudon",
+      "match": ".+"
+    },
+    "list-ctor-expr": {
+      "name": "meta.section.expr.list-ctor.teuchiudon",
+      "match": ".+"
+    },
+    "literal-expr": {
+      "name": "meta.section.expr.literal.teuchiudon",
+      "match": ".+"
+    },
+    "interpolated-regular-string-expr": {
+      "name": "meta.section.expr.interpolated-regular-string.teuchiudon",
+      "match": ".+"
+    },
+    "eval-var-expr": {
+      "name": "meta.section.expr.eval-var.teuchiudon",
+      "match": ".+"
+    },
+    "eval-type-of-expr": {
+      "name": "meta.section.expr.eval-type-of.teuchiudon",
+      "match": ".+"
+    },
+    "access-expr": {
+      "name": "meta.section.expr.access.teuchiudon",
+      "match": ".+"
+    },
+    "cast-expr": {
+      "name": "meta.section.expr.cast.teuchiudon",
+      "match": ".+"
+    },
+    "eval-func-expr": {
+      "name": "meta.section.expr.eval-func.teuchiudon",
+      "match": ".+"
+    },
+    "eval-spread-func-expr": {
+      "name": "meta.section.expr.eval-spread-func.teuchiudon",
+      "match": ".+"
+    },
+    "eval-key-expr": {
+      "name": "meta.section.expr.eval-key.teuchiudon",
+      "match": ".+"
+    },
+    "prefix-expr": {
+      "name": "meta.section.expr.prefix.teuchiudon",
+      "match": ".+"
+    },
+    "infix-expr": {
+      "name": "meta.section.expr.infix.teuchiudon",
+      "match": ".+"
+    },
+    "let-in-bind-expr": {
+      "name": "meta.section.expr.let-in-bind.teuchiudon",
+      "match": ".+"
+    },
+    "if-expr": {
+      "name": "meta.section.expr.if.teuchiudon",
+      "match": ".+"
+    },
+    "if-else-expr": {
+      "name": "meta.section.expr.if-else.teuchiudon",
+      "match": ".+"
+    },
+    "while-expr": {
+      "name": "meta.section.expr.while.teuchiudon",
+      "match": ".+"
+    },
+    "for-expr": {
+      "name": "meta.section.expr.for.teuchiudon",
+      "match": ".+"
+    },
+    "loop-expr": {
+      "name": "meta.section.expr.loop.teuchiudon",
+      "match": ".+"
+    },
+    "func-expr": {
+      "name": "meta.section.expr.func.teuchiudon",
+      "match": ".+"
+    }
+  }
+}
