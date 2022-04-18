@@ -11,17 +11,6 @@ namespace akanevrc.TeuchiUdon.Server
     {
         private DocumentManager DocumentManager { get; }
 
-        private DocumentSelector DocumentSelector =
-            new
-            (
-                new DocumentFilter()
-                {
-                    Language = "teuchiudon"
-                }
-            );
-
-        private CompletionCapability? Capability;
-
         public CompletionHandler(DocumentManager documentManager)
         {
             DocumentManager = documentManager;
@@ -29,13 +18,13 @@ namespace akanevrc.TeuchiUdon.Server
 
         public CompletionRegistrationOptions GetRegistrationOptions
         (
-            CompletionCapability completionCapability,
-            ClientCapabilities   clientCapabilities
+            CompletionCapability capability,
+            ClientCapabilities clientCapabilities
         )
         {
             return new()
             {
-                DocumentSelector = DocumentSelector,
+                DocumentSelector = DocumentSelector.ForLanguage("teuchiudon"),
                 ResolveProvider  = false
             };
         }
@@ -54,11 +43,11 @@ namespace akanevrc.TeuchiUdon.Server
                 {
                     new CompletionItem()
                     {
-                        Label    = "Hello, TeuchiUdon LSP!",
+                        Label    = "helloTeuchiUdonLSP",
                         Kind     = CompletionItemKind.Text,
                         TextEdit = new TextEdit()
                         {
-                            NewText = "Hello, TeuchiUdon LSP!",
+                            NewText = "helloTeuchiUdonLSP",
                             Range   = new
                             (
                                 new Position
@@ -78,7 +67,7 @@ namespace akanevrc.TeuchiUdon.Server
             ));
         }
 
-        private static int GetPosition(string text, int line, int col)
+        private int GetPosition(string text, int line, int col)
         {
             var position = 0;
             for (var i = 0; i < line; i++)
@@ -88,14 +77,9 @@ namespace akanevrc.TeuchiUdon.Server
             return position + col;
         }
 
-        private static int GetWordHead(string text, int position)
+        private int GetWordHead(string text, int position)
         {
             return text.Take(position).Reverse().TakeWhile(x => !char.IsWhiteSpace(x)).Count();
-        }
-
-        public void SetCapability(CompletionCapability capability)
-        {
-            Capability = capability;
         }
     }
 }

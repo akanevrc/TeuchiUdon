@@ -19,6 +19,7 @@ namespace akanevrc.TeuchiUdon.Server
                 .WithServices(x => x.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace)))
                 .WithServices(ConfigureServices)
                 .WithHandler<TextDocumentSyncHandler>()
+                .WithHandler<SemanticTokensHandler>()
                 .WithHandler<CompletionHandler>()
             )
             .ConfigureAwait(false);
@@ -30,6 +31,7 @@ namespace akanevrc.TeuchiUdon.Server
         {
             services.AddSingleton<DocumentManager>();
             services.AddTransient<TextDocumentSyncHandler>();
+            services.AddTransient<SemanticTokensHandler>();
             services.AddTransient<CompletionHandler>();
         }
     }
