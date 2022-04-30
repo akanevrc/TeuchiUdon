@@ -52,26 +52,14 @@ namespace akanevrc.TeuchiUdon.Compiler
 
     public class AssemblySyncMode_NONE : TeuchiUdonAssemblySyncMode
     {
-        public override string ToString()
-        {
-            return "none";
-        }
     }
 
     public class AssemblySyncMode_LINEAR : TeuchiUdonAssemblySyncMode
     {
-        public override string ToString()
-        {
-            return "linear";
-        }
     }
 
     public class AssemblySyncMode_SMOOTH : TeuchiUdonAssemblySyncMode
     {
-        public override string ToString()
-        {
-            return "smooth";
-        }
     }
 
     public abstract class TeuchiUdonAssemblyLiteral
@@ -80,18 +68,10 @@ namespace akanevrc.TeuchiUdon.Compiler
 
     public class AssemblyLiteral_NULL : TeuchiUdonAssemblyLiteral
     {
-        public override string ToString()
-        {
-            return $"null";
-        }
     }
 
     public class AssemblyLiteral_THIS : TeuchiUdonAssemblyLiteral
     {
-        public override string ToString()
-        {
-            return $"this";
-        }
     }
 
     public class AssemblyLiteral_ADDRESS : TeuchiUdonAssemblyLiteral
@@ -102,11 +82,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             Address = address;
         }
-
-        public override string ToString()
-        {
-            return $"0x{Address.ToString("X8")}";
-        }
     }
 
     public class AssemblyLiteral_RAW : TeuchiUdonAssemblyLiteral
@@ -116,11 +91,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public AssemblyLiteral_RAW(string value)
         {
             Value = value;
-        }
-
-        public override string ToString()
-        {
-            return Value;
         }
     }
 
@@ -142,32 +112,20 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             return Label;
         }
-
-        public override string ToString()
-        {
-            return Label.GetFullLabel();
-        }
     }
 
     public class AssemblyAddress_INDIRECT_LABEL : TeuchiUdonAssemblyDataAddress
     {
         public TeuchiUdonIndirect Indirect { get; }
 
-        public AssemblyAddress_INDIRECT_LABEL(ICodeLabel label)
+        public AssemblyAddress_INDIRECT_LABEL(TeuchiUdonIndirect indirect)
         {
-            var index = TeuchiUdonTables.Instance.GetIndirectIndex();
-            Indirect  = new TeuchiUdonIndirect(index, label);
-            TeuchiUdonTables.Instance.Indirects.Add(Indirect, 0xFFFFFFFF);
+            Indirect = indirect;
         }
 
         public override IDataLabel GetLabel()
         {
             return Indirect;
-        }
-
-        public override string ToString()
-        {
-            return Indirect.GetFullLabel();
         }
     }
 
@@ -183,11 +141,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             Label = label;
         }
-
-        public override string ToString()
-        {
-            return Label.GetFullLabel();
-        }
     }
 
     public class AssemblyAddress_NUMBER : TeuchiUdonAssemblyCodeAddress
@@ -197,11 +150,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public AssemblyAddress_NUMBER(uint number)
         {
             Number = number;
-        }
-
-        public override string ToString()
-        {
-            return $"0x{Number.ToString("X8")}";
         }
     }
 
@@ -275,11 +223,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             Text = text;
         }
-        
-        public override string ToString()
-        {
-            return $"# {Text}";
-        }
     }
 
     public class Assembly_NOP : TeuchiUdonAssembly
@@ -287,11 +230,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_NOP()
             : base(TeuchiUdonAssemblyInstruction.NOP, 4)
         {
-        }
-        
-        public override string ToString()
-        {
-            return $"NOP";
         }
     }
 
@@ -301,11 +239,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.PUSH, 8, address)
         {
         }
-
-        public override string ToString()
-        {
-            return $"PUSH, {Address}";
-        }
     }
 
     public class Assembly_POP : TeuchiUdonAssembly
@@ -313,11 +246,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_POP()
             : base(TeuchiUdonAssemblyInstruction.POP, 4)
         {
-        }
-
-        public override string ToString()
-        {
-            return $"POP";
         }
     }
 
@@ -327,11 +255,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.JUMP_IF_FALSE, 8, address)
         {
         }
-
-        public override string ToString()
-        {
-            return $"JUMP_IF_FALSE, {Address}";
-        }
     }
 
     public class Assembly_JUMP : Assembly_UnaryCodeAddress
@@ -339,11 +262,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_JUMP(TeuchiUdonAssemblyCodeAddress address)
             : base(TeuchiUdonAssemblyInstruction.JUMP, 8, address)
         {
-        }
-
-        public override string ToString()
-        {
-            return $"JUMP, {Address}";
         }
     }
 
@@ -356,11 +274,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             Method = method;
         }
-
-        public override string ToString()
-        {
-            return $"EXTERN, \"{Method.UdonName}\"";
-        }
     }
 
     public class Assembly_ANNOTATION : TeuchiUdonAssembly
@@ -368,11 +281,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_ANNOTATION()
             : base(TeuchiUdonAssemblyInstruction.ANNOTATION, 4)
         {
-        }
-
-        public override string ToString()
-        {
-            return $"ANNOTATION";
         }
     }
 
@@ -382,11 +290,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.JUMP_INDIRECT, 8, address)
         {
         }
-
-        public override string ToString()
-        {
-            return $"JUMP_INDIRECT, {Address}";
-        }
     }
 
     public class Assembly_COPY : TeuchiUdonAssembly
@@ -394,11 +297,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_COPY()
             : base(TeuchiUdonAssemblyInstruction.COPY, 4)
         {
-        }
-
-        public override string ToString()
-        {
-            return $"COPY";
         }
     }
 
@@ -408,11 +306,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.DATA_START, 0)
         {
         }
-
-        public override string ToString()
-        {
-            return $".data_start";
-        }
     }
 
     public class Assembly_DATA_END : TeuchiUdonAssembly
@@ -420,11 +313,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_DATA_END()
             : base(TeuchiUdonAssemblyInstruction.DATA_END, 0)
         {
-        }
-
-        public override string ToString()
-        {
-            return $".data_end";
         }
     }
 
@@ -434,11 +322,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.CODE_START, 0)
         {
         }
-
-        public override string ToString()
-        {
-            return $".code_start";
-        }
     }
 
     public class Assembly_CODE_END : TeuchiUdonAssembly
@@ -446,11 +329,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         public Assembly_CODE_END()
             : base(TeuchiUdonAssemblyInstruction.CODE_END, 0)
         {
-        }
-
-        public override string ToString()
-        {
-            return $".code_end";
         }
     }
 
@@ -462,11 +340,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.EXPORT_DATA, 0)
         {
             Data = data;
-        }
-
-        public override string ToString()
-        {
-            return $".export {Data.GetFullLabel()}";
         }
     }
 
@@ -480,11 +353,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             Data     = data;
             SyncMode = syncMode;
-        }
-
-        public override string ToString()
-        {
-            return $".sync {Data.GetFullLabel()}, {SyncMode}";
         }
     }
 
@@ -501,11 +369,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             Type    = type;
             Literal = literal;
         }
-
-        public override string ToString()
-        {
-            return $"{Data.GetFullLabel()}: %{Type.GetRealName()}, {Literal}";
-        }
     }
 
     public class Assembly_EXPORT_CODE : TeuchiUdonAssembly
@@ -517,11 +380,6 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             Code = code;
         }
-
-        public override string ToString()
-        {
-            return $".export {Code.GetFullLabel()}";
-        }
     }
 
     public class Assembly_LABEL : TeuchiUdonAssembly
@@ -532,11 +390,6 @@ namespace akanevrc.TeuchiUdon.Compiler
             : base(TeuchiUdonAssemblyInstruction.LABEL, 0)
         {
             Label = label;
-        }
-
-        public override string ToString()
-        {
-            return $"{Label.GetFullLabel()}:";
         }
     }
 }

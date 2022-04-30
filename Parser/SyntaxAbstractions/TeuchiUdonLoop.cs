@@ -39,15 +39,5 @@ namespace akanevrc.TeuchiUdon
         {
             return !(obj1 == obj2);
         }
-
-        public string GetLabel()
-        {
-            return $"loop[{Index}]";
-        }
-
-        public string GetFullLabel()
-        {
-            return $"loop[{Index}]";
-        }
     }
 }

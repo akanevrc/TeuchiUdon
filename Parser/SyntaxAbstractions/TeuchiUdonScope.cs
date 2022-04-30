@@ -64,10 +64,5 @@ namespace akanevrc.TeuchiUdon
         {
             return !(obj1 == obj2);
         }
-
-        public override string ToString()
-        {
-            return Label.GetLabel();
-        }
     }
 }

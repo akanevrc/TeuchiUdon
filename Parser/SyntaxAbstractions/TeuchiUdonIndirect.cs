@@ -6,12 +6,13 @@ namespace akanevrc.TeuchiUdon
     {
         public int Index { get; }
         public ICodeLabel Label { get; }
-        public TeuchiUdonType Type { get; } = PrimitiveTypes.Instance.UInt;
+        public TeuchiUdonType Type { get; }
 
-        public TeuchiUdonIndirect(int index, ICodeLabel label)
+        public TeuchiUdonIndirect(int index, ICodeLabel label, TeuchiUdonType type)
         {
             Index = index;
             Label = label;
+            Type  = type;
         }
 
         public bool Equals(TeuchiUdonIndirect obj)
@@ -41,16 +42,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TeuchiUdonIndirect obj1, TeuchiUdonIndirect obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public string GetLabel()
-        {
-            return $"indirect[{Label.GetLabel()}]";
-        }
-
-        public string GetFullLabel()
-        {
-            return $"indirect[{Label.GetFullLabel()}]";
         }
     }
 }

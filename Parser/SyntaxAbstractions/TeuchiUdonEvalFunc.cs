@@ -41,15 +41,5 @@ namespace akanevrc.TeuchiUdon
         {
             return !(obj1 == obj2);
         }
-
-        public string GetLabel()
-        {
-            return $"evalfunc[{Index}]";
-        }
-
-        public string GetFullLabel()
-        {
-            return $"evalfunc[{Qualifier.Qualify(">", Index.ToString())}]";
-        }
     }
 }

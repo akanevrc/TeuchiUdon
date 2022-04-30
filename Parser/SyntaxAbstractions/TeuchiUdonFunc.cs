@@ -15,18 +15,27 @@ namespace akanevrc.TeuchiUdon
         public bool Deterministic { get; }
 
         public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier)
-            : this(index, qualifier, null, null, null, false)
+            : this(index, qualifier, null, null, null, false, null)
         {
         }
 
-        public TeuchiUdonFunc(int index, TeuchiUdonQualifier qualifier, TeuchiUdonType type, IEnumerable<TeuchiUdonVar> vars, ExprResult expr, bool deterministic)
+        public TeuchiUdonFunc
+        (
+            int index,
+            TeuchiUdonQualifier qualifier,
+            TeuchiUdonType type,
+            IEnumerable<TeuchiUdonVar> vars,
+            ExprResult expr,
+            bool deterministic,
+            TeuchiUdonType addressType
+        )
         {
             Index         = index;
             Qualifier     = qualifier;
             Type          = type;
             Vars          = vars?.ToArray();
             Expr          = expr;
-            Return        = new TeuchiUdonReturn(index, this);
+            Return        = new TeuchiUdonReturn(index, this, addressType);
             Deterministic = deterministic;
         }
 
@@ -57,21 +66,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TeuchiUdonFunc obj1, TeuchiUdonFunc obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public override string ToString()
-        {
-            return Qualifier.Qualify(".", $"func[{Index}]({string.Join(", ", Vars.Select(x => x.Type))})");
-        }
-
-        public string GetLabel()
-        {
-            return $"func[{Index}]";
-        }
-
-        public string GetFullLabel()
-        {
-            return $"func[{Qualifier.Qualify(">", Index.ToString())}]";
         }
     }
 }

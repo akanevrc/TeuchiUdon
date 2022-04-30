@@ -44,21 +44,6 @@ namespace akanevrc.TeuchiUdon
             return !(obj1 == obj2);
         }
 
-        public override string ToString()
-        {
-            return string.Join<TeuchiUdonScope>(".", Logical);
-        }
-
-        public string GetLogicalName()
-        {
-            return string.Join<TeuchiUdonScope>("", Logical);
-        }
-
-        public string Qualify(string separator, string text)
-        {
-            return string.Join(separator, Logical.Select(x => x.ToString()).Concat(new string[] { text }));
-        }
-
         public TeuchiUdonQualifier Append(TeuchiUdonScope logical)
         {
             var l = logical == null ? Logical : Logical.Concat(new TeuchiUdonScope[] { logical });

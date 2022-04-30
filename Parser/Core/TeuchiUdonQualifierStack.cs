@@ -4,15 +4,9 @@ namespace akanevrc.TeuchiUdon
 {
     public class TeuchiUdonQualifierStack
     {
-        public static TeuchiUdonQualifierStack Instance { get; } = new TeuchiUdonQualifierStack();
-
         public Stack<TeuchiUdonQualifier> Qualifiers { get; private set; }
 
-        protected TeuchiUdonQualifierStack()
-        {
-        }
-
-        public void Init()
+        public TeuchiUdonQualifierStack()
         {
             Qualifiers = new Stack<TeuchiUdonQualifier>();
         }

@@ -1,73 +1,80 @@
-using System;
-using System.Diagnostics;
 using System.IO;
-using UnityEditor;
-using UnityEngine;
 using akanevrc.TeuchiUdon.Compiler;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    public class TeuchiUdonCompilerException : Exception
+    public static class TeuchiUdonCompilerRunner
     {
-        public TeuchiUdonCompilerException(string message)
-            : base(message)
+        public static (string output, string error) CompileFromString
+        (
+            string input,
+            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
+            TeuchiUdonListener listener,
+            TeuchiUdonCompilerStrategy compilerStrategy,
+            TeuchiUdonAssemblyWriter assemblyWriter
+        )
         {
-        }
-    }
-
-    public static class TeuchiUdonUnityCompilerRunner
-    {
-        static TeuchiUdonUnityCompilerRunner()
-        {
-            TeuchiUdonCompilerRunner.Init
-            (
-                new string[]
-                {
-                    Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Data/Managed/UnityEngine.dll"),
-                    "./Assets/VRCSDK/Plugins/VRCSDKBase.dll",
-                    "./Assets/Udon/External/VRC.Udon.Common.dll",
-                    "./Assets/Udon/Editor/External/VRC.Udon.Graph.dll",
-                    "./Library/ScriptAssemblies/VRC.Udon.dll",
-                    "./Library/ScriptAssemblies/VRC.Udon.Editor.dll"
-                }
-            );
-        }
-
-        public static TeuchiUdonProgramAsset SaveTeuchiUdonAsset(string srcPath, string assetPath)
-        {
-            var (output, error) = CompileFromPath(srcPath);
-            if (!string.IsNullOrEmpty(error))
+            using (var inputReader = new StringReader(input))
             {
-                throw new TeuchiUdonCompilerException(error);
+                return CompileFromReader(inputReader, logicalErrorHandler, listener, compilerStrategy, assemblyWriter);
             }
+        }
 
-            var program = AssetDatabase.LoadAssetAtPath<TeuchiUdonProgramAsset>(assetPath);
-            if (program == null)
+        public static (string output, string error) CompileFromReader
+        (
+            TextReader inputReader,
+            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
+            TeuchiUdonListener listener,
+            TeuchiUdonCompilerStrategy compilerStrategy,
+            TeuchiUdonAssemblyWriter assemblyWriter
+        )
+        {
+            var (result, error) = TeuchiUdonParserRunner.ParseFromReader(inputReader, logicalErrorHandler, listener);
+
+            if (string.IsNullOrEmpty(error))
             {
-                program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-                program.SetUdonAssembly(output, TeuchiUdonTables.Instance.GetDefaultValues());
-                program.RefreshProgram();
-                AssetDatabase.CreateAsset(program, assetPath);
+                using (var outputWriter = new StringWriter())
+                {
+                    Compile(result, outputWriter, compilerStrategy, assemblyWriter);
+                    return (outputWriter.ToString(), "");
+                }
             }
             else
             {
-                program.SetUdonAssembly(output, TeuchiUdonTables.Instance.GetDefaultValues());
-                program.RefreshProgram();
+                return ("", error);
             }
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            return program;
         }
 
-        public static (string output, string error) CompileFromPath(string path)
+        private static void Compile
+        (
+            TargetResult result,
+            TextWriter outputWriter,
+            TeuchiUdonCompilerStrategy compilerStrategy,
+            TeuchiUdonAssemblyWriter assemblyWriter
+        )
         {
-            var script = AssetDatabase.LoadAssetAtPath<TeuchiUdonScript>(path);
-            if (script == null)
+            assemblyWriter.PushDataPart
+            (
+                compilerStrategy.GetDataPartFromTables(),
+                compilerStrategy.GetDataPartFromOutValuePool()
+            );
+            if (result != null && result.Valid)
             {
-                return ("", "asset file not found");
+                assemblyWriter.PushCodePart
+                (
+                    compilerStrategy.GetCodePartFromTables(),
+                    compilerStrategy.GetCodePartFromResult(result)
+                );
             }
-            return TeuchiUdonCompilerRunner.CompileFromString(script.text);
+            else
+            {
+                assemblyWriter.PushCodePart
+                (
+                    compilerStrategy.GetCodePartFromTables()
+                );
+            }
+            assemblyWriter.Prepare();
+            assemblyWriter.WriteAll(outputWriter);
         }
     }
 }

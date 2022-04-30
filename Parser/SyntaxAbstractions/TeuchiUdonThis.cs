@@ -7,9 +7,9 @@ namespace akanevrc.TeuchiUdon
         public int Index { get; } = 0;
         public TeuchiUdonType Type { get; }
 
-        public TeuchiUdonThis()
+        public TeuchiUdonThis(TeuchiUdonType type)
         {
-            Type = PrimitiveTypes.Instance.GameObject;
+            Type = type;
         }
 
         public bool Equals(TeuchiUdonThis obj)
@@ -39,21 +39,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TeuchiUdonThis obj1, TeuchiUdonThis obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public override string ToString()
-        {
-            return "this";
-        }
-
-        public string GetLabel()
-        {
-            return "literal[this]";
-        }
-
-        public string GetFullLabel()
-        {
-            return "literal[this]";
         }
     }
 }

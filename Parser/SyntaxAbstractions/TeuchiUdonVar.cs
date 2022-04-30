@@ -16,7 +16,15 @@ namespace akanevrc.TeuchiUdon
         {
         }
 
-        public TeuchiUdonVar(int index, TeuchiUdonQualifier qualifier, string name, TeuchiUdonType type, bool mut, bool isSystemVar)
+        public TeuchiUdonVar
+        (
+            int index,
+            TeuchiUdonQualifier qualifier,
+            string name,
+            TeuchiUdonType type,
+            bool mut,
+            bool isSystemVar
+        )
         {
             Index       = index;
             Qualifier   = qualifier;
@@ -54,51 +62,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TeuchiUdonVar obj1, TeuchiUdonVar obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public override string ToString()
-        {
-            return Qualifier.Qualify(".", Name);
-        }
-
-        public string GetLabel()
-        {
-            if (TeuchiUdonTables.Instance.Events.ContainsKey(Name) && Qualifier == TeuchiUdonQualifier.Top)
-            {
-                return TeuchiUdonTables.GetEventName(Name);
-            }
-            else if (IsSystemVar)
-            {
-                return Name;
-            }
-            else if (TeuchiUdonTables.Instance.EventFuncs.ContainsKey(this))
-            {
-                return $"event[{Name}]";
-            }
-            else
-            {
-                return $"var[{Name}]";
-            }
-        }
-
-        public string GetFullLabel()
-        {
-            if (TeuchiUdonTables.Instance.Events.ContainsKey(Name) && Qualifier == TeuchiUdonQualifier.Top)
-            {
-                return TeuchiUdonTables.GetEventName(Name);
-            }
-            else if (IsSystemVar)
-            {
-                return Name;
-            }
-            else if (TeuchiUdonTables.Instance.EventFuncs.ContainsKey(this))
-            {
-                return $"event[{Qualifier.Qualify(">", Name)}]";
-            }
-            else
-            {
-                return $"var[{Qualifier.Qualify(">", Name)}]";
-            }
         }
     }
 }

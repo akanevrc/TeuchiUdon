@@ -4,14 +4,6 @@ namespace akanevrc.TeuchiUdon
 {
     public class TeuchiUdonBlock : IIndexedLabel, IEquatable<TeuchiUdonBlock>
     {
-        public static TeuchiUdonBlock InvalidBlock { get; } =
-            new TeuchiUdonBlock(-1, TeuchiUdonQualifier.Top, PrimitiveTypes.Instance.Invalid)
-            {
-                Return   = InvalidLabel.Instance,
-                Continue = InvalidLabel.Instance,
-                Break    = InvalidLabel.Instance
-            };
-
         public int Index { get; }
         public TeuchiUdonQualifier Qualifier { get; }
         public TeuchiUdonType Type { get; }
@@ -58,16 +50,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TeuchiUdonBlock obj1, TeuchiUdonBlock obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public string GetLabel()
-        {
-            return $"block[{Index}]";
-        }
-
-        public string GetFullLabel()
-        {
-            return $"block[{Qualifier.Qualify(">", Index.ToString())}]";
         }
     }
 }

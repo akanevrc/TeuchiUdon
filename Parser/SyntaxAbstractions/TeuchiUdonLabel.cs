@@ -4,8 +4,6 @@ namespace akanevrc.TeuchiUdon
 {
     public interface ITeuchiUdonLabel
     {
-        string GetLabel();
-        string GetFullLabel();
     }
 
     public interface IIndexedLabel : ITeuchiUdonLabel
@@ -24,12 +22,12 @@ namespace akanevrc.TeuchiUdon
 
     public class InvalidLabel : IIndexedLabel, IDataLabel, ICodeLabel, IEquatable<InvalidLabel>
     {
-        public static InvalidLabel Instance = new InvalidLabel();
         public int Index { get; } = -1;
-        public TeuchiUdonType Type { get; } = PrimitiveTypes.Instance.Invalid;
+        public TeuchiUdonType Type { get; }
 
-        protected InvalidLabel()
+        public InvalidLabel(TeuchiUdonType type)
         {
+            Type = type;
         }
 
         public bool Equals(InvalidLabel obj)
@@ -60,9 +58,6 @@ namespace akanevrc.TeuchiUdon
         {
             return !(obj1 == obj2);
         }
-
-        public string GetLabel() => "[invalid]";
-        public string GetFullLabel() => "[invalid]";
     }
 
     public class TextLabel : ITeuchiUdonLabel, IEquatable<TextLabel>
@@ -108,16 +103,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TextLabel obj1, TextLabel obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public string GetLabel()
-        {
-            return Text;
-        }
-
-        public string GetFullLabel()
-        {
-            return Qualifier.Qualify(">", Text);
         }
     }
 

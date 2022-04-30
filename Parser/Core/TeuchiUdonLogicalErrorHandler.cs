@@ -4,15 +4,9 @@ namespace akanevrc.TeuchiUdon
 {
     public class TeuchiUdonLogicalErrorHandler
     {
-        public static TeuchiUdonLogicalErrorHandler Instance { get; } = new TeuchiUdonLogicalErrorHandler();
-
         private Parser Parser { get; set; }
 
-        protected TeuchiUdonLogicalErrorHandler()
-        {
-        }
-
-        public void Init(Parser parser)
+        public void SetParser(Parser parser)
         {
             Parser = parser;
         }

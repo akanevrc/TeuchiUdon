@@ -6,22 +6,19 @@ namespace akanevrc.TeuchiUdon
 {
     public class TeuchiUdonOutValuePool
     {
-        public static TeuchiUdonOutValuePool Instance { get; } = new TeuchiUdonOutValuePool();
-        private static TeuchiUdonOutValue InvalidOutValue = new TeuchiUdonOutValue(TeuchiUdonQualifier.Top, PrimitiveTypes.Instance.Invalid, -1);
-
         public Dictionary<TeuchiUdonOutValue, TeuchiUdonOutValue> OutValues { get; private set; }
         private Dictionary<TeuchiUdonQualifier, Stack<Dictionary<TeuchiUdonType, SortedList<int, TeuchiUdonOutValue>>>> Retained { get; set; }
         private Dictionary<TeuchiUdonQualifier, Stack<Dictionary<TeuchiUdonType, SortedList<int, TeuchiUdonOutValue>>>> Released { get; set; }
 
-        protected TeuchiUdonOutValuePool()
-        {
-        }
+        private TeuchiUdonInvalids Invalids { get; }
 
-        public void Init()
+        public TeuchiUdonOutValuePool(TeuchiUdonInvalids invalids)
         {
             OutValues = new Dictionary<TeuchiUdonOutValue , TeuchiUdonOutValue>();
             Retained  = new Dictionary<TeuchiUdonQualifier, Stack<Dictionary<TeuchiUdonType, SortedList<int, TeuchiUdonOutValue>>>>();
             Released  = new Dictionary<TeuchiUdonQualifier, Stack<Dictionary<TeuchiUdonType, SortedList<int, TeuchiUdonOutValue>>>>();
+
+            Invalids = invalids;
         }
 
         public void PushScope(TeuchiUdonQualifier qualifier)
@@ -72,7 +69,7 @@ namespace akanevrc.TeuchiUdon
 
         public TeuchiUdonOutValue RetainOutValue(TeuchiUdonQualifier qualifier, TeuchiUdonType type)
         {
-            if (!Retained.ContainsKey(qualifier) || !Released.ContainsKey(qualifier)) return InvalidOutValue;
+            if (!Retained.ContainsKey(qualifier) || !Released.ContainsKey(qualifier)) return Invalids.InvalidOutValue;
 
             var retDic = Retained[qualifier].Peek();
             if (!retDic.ContainsKey(type))

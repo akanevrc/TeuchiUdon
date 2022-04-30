@@ -2,27 +2,25 @@ using System;
 
 namespace akanevrc.TeuchiUdon
 {
-    public class TeuchiUdonReturn : IIndexedLabel, IDataLabel, IEquatable<TeuchiUdonReturn>
+    public class TeuchiUdonLetIn : IIndexedLabel, IEquatable<TeuchiUdonLetIn>
     {
         public int Index { get; }
-        public TeuchiUdonFunc Func { get; }
-        public TeuchiUdonType Type { get; }
+        public TeuchiUdonQualifier Qualifier { get; }
 
-        public TeuchiUdonReturn(int index, TeuchiUdonFunc func, TeuchiUdonType type)
+        public TeuchiUdonLetIn(int index, TeuchiUdonQualifier qualifier)
         {
-            Index = index;
-            Func  = func;
-            Type  = type;
+            Index     = index;
+            Qualifier = qualifier;
         }
 
-        public bool Equals(TeuchiUdonReturn obj)
+        public bool Equals(TeuchiUdonLetIn obj)
         {
             return !object.ReferenceEquals(obj, null) && Index == obj.Index;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is TeuchiUdonReturn ret ? Equals(ret) : base.Equals(obj);
+            return obj is TeuchiUdonLetIn letin ? Equals(letin) : base.Equals(obj);
         }
 
         public override int GetHashCode()
@@ -30,7 +28,7 @@ namespace akanevrc.TeuchiUdon
             return Index.GetHashCode();
         }
 
-        public static bool operator ==(TeuchiUdonReturn obj1, TeuchiUdonReturn obj2)
+        public static bool operator ==(TeuchiUdonLetIn obj1, TeuchiUdonLetIn obj2)
         {
             return
                  object.ReferenceEquals(obj1, null) &&
@@ -39,7 +37,7 @@ namespace akanevrc.TeuchiUdon
                 !object.ReferenceEquals(obj2, null) && obj1.Equals(obj2);
         }
 
-        public static bool operator !=(TeuchiUdonReturn obj1, TeuchiUdonReturn obj2)
+        public static bool operator !=(TeuchiUdonLetIn obj1, TeuchiUdonLetIn obj2)
         {
             return !(obj1 == obj2);
         }

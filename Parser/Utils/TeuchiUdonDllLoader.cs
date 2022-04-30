@@ -8,13 +8,23 @@ namespace akanevrc.TeuchiUdon
 {
     public class TeuchiUdonDllLoader
     {
-        public static TeuchiUdonDllLoader Instance { get; } = new TeuchiUdonDllLoader();
-
+        private string[] DllPaths { get; }
         private Dictionary<string, Assembly> Assemblies { get; set; }
 
-        public void Init(IEnumerable<string> dllPaths)
+        private bool IsInitialized { get; set; } = false;
+
+        public TeuchiUdonDllLoader(IEnumerable<string> dllPaths)
         {
-            Assemblies = dllPaths.ToDictionary(x => Path.GetFileName(x), x => Assembly.LoadFrom(x));
+            DllPaths = dllPaths.ToArray();
+        }
+
+        public void Init()
+        {
+            if (!IsInitialized)
+            {
+                Assemblies = DllPaths.ToDictionary(x => Path.GetFileName(x), x => Assembly.LoadFrom(x));
+                IsInitialized = true;
+            }
         }
 
         public Type GetTypeFromAssembly(string asmName, string typeName)

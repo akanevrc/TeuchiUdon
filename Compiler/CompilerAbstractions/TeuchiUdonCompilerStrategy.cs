@@ -6,72 +6,105 @@ namespace akanevrc.TeuchiUdon.Compiler
 {
     public class TeuchiUdonCompilerStrategy : TeuchiUdonCompilerAbstraction
     {
-        public static TeuchiUdonCompilerStrategy Instance { get; } = new TeuchiUdonCompilerStrategy();
+        private TeuchiUdonPrimitives Primitives { get; }
+        private TeuchiUdonTables Tables { get; }
+        private TeuchiUdonTypeOps TypeOps { get; }
+        private TeuchiUdonSyntaxOps SyntaxOps { get; }
+        private TeuchiUdonDataLabelWrapperOps DataLabelWrapperOps { get; }
 
-        protected TeuchiUdonCompilerStrategy()
+        public TeuchiUdonCompilerStrategy
+        (
+            TeuchiUdonPrimitives primitives,
+            TeuchiUdonStaticTables staticTables,
+            TeuchiUdonTables tables,
+            TeuchiUdonTypeOps typeOps,
+            TeuchiUdonLabelOps labelOps,
+            TeuchiUdonOutValuePool outValuePool,
+            TeuchiUdonSyntaxOps syntaxOps,
+            TeuchiUdonDataLabelWrapperOps dataLabelWrapperOps
+        ) : base(primitives, staticTables, tables, typeOps, labelOps, outValuePool)
         {
+            Primitives          = primitives;
+            Tables              = tables;
+            TypeOps             = typeOps;
+            SyntaxOps           = syntaxOps;
+            DataLabelWrapperOps = dataLabelWrapperOps;
         }
 
-        public override void Init()
+        private AssemblyAddress_INDIRECT_LABEL CreateIndirect(ICodeLabel label)
         {
+            var index    = Tables.GetIndirectIndex();
+            var indirect = new TeuchiUdonIndirect(index, label, Primitives.UInt);
+            Tables.Indirects.Add(indirect, 0xFFFFFFFF);
+
+            return new AssemblyAddress_INDIRECT_LABEL(indirect);
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Debug(IEnumerable<TeuchiUdonAssembly> asm)
         {
-            return EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { asm }, Enumerable.Empty<IDataLabel>(), TeuchiUdonMethod.GetDebugMethod());
+            return EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { asm }, Enumerable.Empty<IDataLabel>(), SyntaxOps.GetDebugMethod());
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> ExportData(IDataLabel label)
         {
-            return new TeuchiUdonDataLabelWrapper
-            (
-                label,
-                false,
-                l => new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_EXPORT_DATA(l)
-                    },
-                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
-            )
-            .Compile();
+            return
+                DataLabelWrapperOps.Compile
+                (
+                    DataLabelWrapperOps.CreateWrapper
+                    (
+                        label,
+                        false,
+                        l => new TeuchiUdonAssembly[]
+                            {
+                                new Assembly_EXPORT_DATA(l)
+                            },
+                        (l, thisObj) => DataLabelWrapperOps.IterateAssemblyLabels(l).SelectMany(x => DataLabelWrapperOps.VisitDataLabel(thisObj, x))
+                    )
+                );
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> SyncData(IDataLabel label, TeuchiUdonSyncMode mode)
         {
-            return new TeuchiUdonDataLabelWrapper
-            (
-                label,
-                false,
-                l => new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_SYNC_DATA(l, TeuchiUdonAssemblySyncMode.Create(mode))
-                    },
-                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
-            )
-            .Compile();
+            return
+                DataLabelWrapperOps.Compile
+                (
+                    DataLabelWrapperOps.CreateWrapper
+                    (
+                        label,
+                        false,
+                        l => new TeuchiUdonAssembly[]
+                            {
+                                new Assembly_SYNC_DATA(l, TeuchiUdonAssemblySyncMode.Create(mode))
+                            },
+                        (l, thisObj) => DataLabelWrapperOps.IterateAssemblyLabels(l).SelectMany(x => DataLabelWrapperOps.VisitDataLabel(thisObj, x))
+                    )
+                );
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> DeclData(IDataLabel label, TeuchiUdonAssemblyLiteral literal)
         {
-            return new TeuchiUdonDataLabelWrapper
-            (
-                label,
-                false,
-                l => new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_DECL_DATA(l, l.Type, literal)
-                    },
-                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
-            )
-            .Compile();
+            return
+                DataLabelWrapperOps.Compile
+                (
+                    DataLabelWrapperOps.CreateWrapper
+                    (
+                        label,
+                        false,
+                        l => new TeuchiUdonAssembly[]
+                            {
+                                new Assembly_DECL_DATA(l, l.Type, literal)
+                            },
+                        (l, thisObj) => DataLabelWrapperOps.IterateAssemblyLabels(l).SelectMany(x => DataLabelWrapperOps.VisitDataLabel(thisObj, x))
+                    )
+                );
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Pop(TeuchiUdonType type)
         {
             return
-                type.LogicalTypeNameEquals(PrimitiveTypes.Instance.Tuple) ?
+                type.LogicalTypeNameEquals(Primitives.Tuple) ?
                     type.GetArgsAsTuple().SelectMany(x => Pop(x)) :
-                type.LogicalTypeEquals(PrimitiveTypes.Instance.Unit) ?
+                type.LogicalTypeEquals(Primitives.Unit) ?
                     Enumerable.Empty<TeuchiUdonAssembly>() :
                     new TeuchiUdonAssembly[]
                     {
@@ -81,40 +114,46 @@ namespace akanevrc.TeuchiUdon.Compiler
 
         protected override IEnumerable<TeuchiUdonAssembly> Get(IDataLabel label)
         {
-            return new TeuchiUdonDataLabelWrapper
-            (
-                label,
-                false,
-                l => new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(l))
-                    },
-                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
-            )
-            .Compile();
+            return
+                DataLabelWrapperOps.Compile
+                (
+                    DataLabelWrapperOps.CreateWrapper
+                    (
+                        label,
+                        false,
+                        l => new TeuchiUdonAssembly[]
+                            {
+                                new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(l))
+                            },
+                        (l, thisObj) => DataLabelWrapperOps.IterateAssemblyLabels(l).SelectMany(x => DataLabelWrapperOps.VisitDataLabel(thisObj, x))
+                    )
+                );
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Set(IDataLabel label)
         {
-            return new TeuchiUdonDataLabelWrapper
-            (
-                label,
-                true,
-                l => new TeuchiUdonAssembly[]
-                    {
-                        new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(l)),
-                        new Assembly_COPY()
-                    },
-                (l, thisObj) => l.IterateAssemblyLabels().SelectMany(x => thisObj.VisitDataLabel(x))
-            )
-            .Compile();
+            return
+                DataLabelWrapperOps.Compile
+                (
+                    DataLabelWrapperOps.CreateWrapper
+                    (
+                        label,
+                        true,
+                        l => new TeuchiUdonAssembly[]
+                            {
+                                new Assembly_PUSH(new AssemblyAddress_DATA_LABEL(l)),
+                                new Assembly_COPY()
+                            },
+                        (l, thisObj) => DataLabelWrapperOps.IterateAssemblyLabels(l).SelectMany(x => DataLabelWrapperOps.VisitDataLabel(thisObj, x))
+                    )
+                );
         }
 
         protected override IEnumerable<TeuchiUdonAssembly> Indirect(ICodeLabel label)
         {
             return new TeuchiUdonAssembly[]
             {
-                new Assembly_PUSH(new AssemblyAddress_INDIRECT_LABEL(label))
+                new Assembly_PUSH(CreateIndirect(label))
             };
         }
 
@@ -154,12 +193,12 @@ namespace akanevrc.TeuchiUdon.Compiler
         protected override IEnumerable<TeuchiUdonAssembly> Event(string varName, string eventName, List<TopStatementResult> stats)
         {
             var v =
-                TeuchiUdonTables.Instance.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, varName)) ?
-                TeuchiUdonTables.Instance.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, varName)] :
+                Tables.Vars.ContainsKey(new TeuchiUdonVar(TeuchiUdonQualifier.Top, varName)) ?
+                Tables.Vars[new TeuchiUdonVar(TeuchiUdonQualifier.Top, varName)] :
                 null;
             var ev =
-                v != null && TeuchiUdonTables.Instance.EventFuncs.ContainsKey(v) ?
-                TeuchiUdonTables.Instance.EventFuncs[v] :
+                v != null && Tables.EventFuncs.ContainsKey(v) ?
+                Tables.EventFuncs[v] :
                 null;
             return
                 new TeuchiUdonAssembly[]
@@ -171,7 +210,7 @@ namespace akanevrc.TeuchiUdon.Compiler
                 .Concat(stats.SelectMany(x => VisitTopStatement(x)))
                 .Concat
                 (
-                    (v?.Type.IsFunc() ?? false) && ev != null ?
+                    (v == null ? false : TypeOps.IsFunc(v.Type)) && ev != null ?
                     EvalFunc(ev.Vars.Select(x => Get(x)), new TextCodeLabel($"topcall[{eventName}]"), v) :
                     Enumerable.Empty<TeuchiUdonAssembly>()
                 )
@@ -710,7 +749,7 @@ namespace akanevrc.TeuchiUdon.Compiler
                     (
                         EvalMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(value), Get(valueLimit) }, new IDataLabel[] { condition }, valueLessThanOrEqual),
                         (
-                            type.LogicalTypeEquals(PrimitiveTypes.Instance.Int) ?
+                            type.LogicalTypeEquals(Primitives.Int) ?
                                     CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLimit ), Get(value) }, new IDataLabel[] { length      }, valueSubtraction) :
                                     CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLimit ), Get(value) }, new IDataLabel[] { valueLength }, valueSubtraction)
                             .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLength)             }, new IDataLabel[] { length      }, valueToKey))
@@ -797,7 +836,7 @@ namespace akanevrc.TeuchiUdon.Compiler
                     loopLabel1,
                     loopLabel2,
                     (
-                        type.LogicalTypeEquals(PrimitiveTypes.Instance.Int) ?
+                        type.LogicalTypeEquals(Primitives.Int) ?
                                 CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLimit ), Get(value    ) }, new IDataLabel[] { length      }, valueSubtraction)
                         .Concat(CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(length     ), Get(valueStep) }, new IDataLabel[] { length      }, valueDivision)) :
                                 CallMethod(new IEnumerable<TeuchiUdonAssembly>[] { Get(valueLimit ), Get(value    ) }, new IDataLabel[] { valueLength }, valueSubtraction)

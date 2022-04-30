@@ -6,8 +6,6 @@ namespace akanevrc.TeuchiUdon.Compiler
 {
     public class TeuchiUdonAssemblyWriter
     {
-        public static TeuchiUdonAssemblyWriter Instance { get; } = new TeuchiUdonAssemblyWriter();
-
         private List<TeuchiUdonAssembly> DataPart { get; set; }
         private List<TeuchiUdonAssembly> CodePart { get; set; }
         private Dictionary<IDataLabel, uint> DataAddresses { get; set; }
@@ -15,12 +13,21 @@ namespace akanevrc.TeuchiUdon.Compiler
         private uint DataAddress { get; set; }
         private uint CodeAddress { get; set; }
 
-        protected TeuchiUdonAssemblyWriter()
+        private TeuchiUdonTables Tables { get; }
+        private TeuchiUdonCompilerStrategy CompilerStrategy { get; }
+        private TeuchiUdonAssemblyOps AssemblyOps { get; }
+
+        public TeuchiUdonAssemblyWriter
+        (
+            TeuchiUdonTables tables,
+            TeuchiUdonCompilerStrategy compilerStrategy,
+            TeuchiUdonAssemblyOps assemblyOps
+        )
         {
-        }
-        
-        public void Init()
-        {
+            Tables           = tables;
+            CompilerStrategy = compilerStrategy;
+            AssemblyOps      = assemblyOps;
+
             DataPart      = new List<TeuchiUdonAssembly>();
             CodePart      = new List<TeuchiUdonAssembly>();
             DataAddresses = new Dictionary<IDataLabel, uint>();
@@ -77,25 +84,25 @@ namespace akanevrc.TeuchiUdon.Compiler
                 {
                     var indirect = label.Indirect;
                     var address  = CodeAddresses[label.Indirect.Label];
-                    if (TeuchiUdonTables.Instance.Indirects.ContainsKey(indirect))
+                    if (Tables.Indirects.ContainsKey(indirect))
                     {
-                        TeuchiUdonTables.Instance.Indirects[indirect] = address;
+                        Tables.Indirects[indirect] = address;
                     }
                 }
             }
-            PushDataPart(TeuchiUdonCompilerStrategy.Instance.DeclIndirectAddresses(TeuchiUdonTables.Instance.Indirects.Select(x => (x.Key, x.Value))));
+            PushDataPart(CompilerStrategy.DeclIndirectAddresses(Tables.Indirects.Select(x => (x.Key, x.Value))));
 
             foreach (var asm in CodePart)
             {
                 if (asm is Assembly_UnaryDataAddress dasm)
                 {
-                    TeuchiUdonTables.Instance.UsedData.Add(dasm.Address.GetLabel());
+                    Tables.UsedData.Add(dasm.Address.GetLabel());
                 }
             }
 
             foreach (var asm in DataPart)
             {
-                if (asm is Assembly_DECL_DATA declData && TeuchiUdonTables.Instance.UsedData.Contains(declData.Data))
+                if (asm is Assembly_DECL_DATA declData && Tables.UsedData.Contains(declData.Data))
                 {
                     if (!DataAddresses.ContainsKey(declData.Data))
                     {
@@ -135,9 +142,9 @@ namespace akanevrc.TeuchiUdon.Compiler
         {
             if
             (
-                assembly is Assembly_EXPORT_DATA assemblyExportData && !TeuchiUdonTables.Instance.UsedData.Contains(assemblyExportData.Data) ||
-                assembly is Assembly_SYNC_DATA   assemblySyncData   && !TeuchiUdonTables.Instance.UsedData.Contains(assemblySyncData  .Data) ||
-                assembly is Assembly_DECL_DATA   assemblyDeclData   && !TeuchiUdonTables.Instance.UsedData.Contains(assemblyDeclData  .Data)
+                assembly is Assembly_EXPORT_DATA assemblyExportData && !Tables.UsedData.Contains(assemblyExportData.Data) ||
+                assembly is Assembly_SYNC_DATA   assemblySyncData   && !Tables.UsedData.Contains(assemblySyncData  .Data) ||
+                assembly is Assembly_DECL_DATA   assemblyDeclData   && !Tables.UsedData.Contains(assemblyDeclData  .Data)
             )
             {
                 return;
@@ -159,7 +166,7 @@ namespace akanevrc.TeuchiUdon.Compiler
             }
 
             WriteIndent(writer, indent);
-            writer.WriteLine(assembly);
+            writer.WriteLine(AssemblyOps.ToString(assembly));
         }
 
         private void WriteIndent(TextWriter writer, int indent)

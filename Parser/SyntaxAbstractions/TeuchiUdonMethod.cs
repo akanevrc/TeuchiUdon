@@ -13,19 +13,6 @@ namespace akanevrc.TeuchiUdon
 
     public class TeuchiUdonMethod : ITeuchiUdonTypeArg, ITeuchiUdonLeftValue, IEquatable<TeuchiUdonMethod>
     {
-        public static TeuchiUdonMethod InvalidMethod { get; } =
-            new TeuchiUdonMethod
-            (
-                PrimitiveTypes.Instance.Invalid,
-                "_",
-                Enumerable.Empty<TeuchiUdonType>(),
-                Enumerable.Empty<TeuchiUdonType>(),
-                Enumerable.Empty<TeuchiUdonType>(),
-                Enumerable.Empty<TeuchiUdonMethodParamInOut>(),
-                "_",
-                Enumerable.Empty<string>()
-            );
-
         public TeuchiUdonType Type { get; }
         public string Name { get; }
         public TeuchiUdonType[] AllParamTypes { get; }
@@ -100,95 +87,6 @@ namespace akanevrc.TeuchiUdon
         public static bool operator !=(TeuchiUdonMethod obj1, TeuchiUdonMethod obj2)
         {
             return !(obj1 == obj2);
-        }
-
-        public override string ToString()
-        {
-            return $"{Type}.{Name}({string.Join<TeuchiUdonType>(", ", InTypes)})";
-        }
-
-        public string GetLogicalName()
-        {
-            return $"{Type.GetLogicalName()}{Name}{string.Join("", InTypes.Select(x => x.GetLogicalName()))}";
-        }
-
-        public static string GetConvertMethodName(TeuchiUdonType type)
-        {
-            if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Bool))
-            {
-                return "ToBoolean";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Byte))
-            {
-                return "ToByte";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Char))
-            {
-                return "ToChar";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.DateTime))
-            {
-                return "ToDateTime";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Decimal))
-            {
-                return "ToDecimal";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Double))
-            {
-                return "ToDouble";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Short))
-            {
-                return "ToInt16";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Int))
-            {
-                return "ToInt32";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Long))
-            {
-                return "ToInt64";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.SByte))
-            {
-                return "ToSByte";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.Float))
-            {
-                return "ToSingle";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.String))
-            {
-                return "ToString";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.UShort))
-            {
-                return "ToUInt16";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.UInt))
-            {
-                return "ToUInt32";
-            }
-            else if (type.LogicalTypeEquals(PrimitiveTypes.Instance.ULong))
-            {
-                return "ToUInt64";
-            }
-            else
-            {
-                return "";
-            }
-        }
-
-        public static TeuchiUdonMethod GetDebugMethod()
-        {
-            return
-                TeuchiUdonTables.Instance.TypeToMethods[PrimitiveTypes.Instance.Type.ApplyArgAsType(new TeuchiUdonType("UnityEngineDebug"))]["Log"]
-                .First
-                (
-                    x => x.InTypes.Length == 1 &&
-                    x.InTypes[0].LogicalTypeEquals(PrimitiveTypes.Instance.Object)
-                );
         }
     }
 }

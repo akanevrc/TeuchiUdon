@@ -6,8 +6,29 @@ namespace akanevrc.TeuchiUdon.Compiler
 {
     public abstract class TeuchiUdonCompilerAbstraction
     {
-        public virtual void Init()
+        private TeuchiUdonPrimitives Primitives { get; }
+        private TeuchiUdonStaticTables StaticTables { get; }
+        private TeuchiUdonTables Tables { get; }
+        private TeuchiUdonTypeOps TypeOps { get; }
+        private TeuchiUdonLabelOps LabelOps { get; }
+        private TeuchiUdonOutValuePool OutValuePool { get; }
+
+        public TeuchiUdonCompilerAbstraction
+        (
+            TeuchiUdonPrimitives primitives,
+            TeuchiUdonStaticTables staticTables,
+            TeuchiUdonTables tables,
+            TeuchiUdonTypeOps typeOps,
+            TeuchiUdonLabelOps labelOps,
+            TeuchiUdonOutValuePool outValuePool
+        )
         {
+            Primitives   = primitives;
+            StaticTables = staticTables;
+            Tables       = tables;
+            TypeOps      = typeOps;
+            LabelOps     = labelOps;
+            OutValuePool = outValuePool;
         }
 
         protected abstract IEnumerable<TeuchiUdonAssembly> Debug(IEnumerable<TeuchiUdonAssembly> asm);
@@ -259,17 +280,17 @@ namespace akanevrc.TeuchiUdon.Compiler
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromTables()
         {
             return
-                        TeuchiUdonTables.Instance.PublicVars.Keys.SelectMany(x => ExportData(x))
-                .Concat(TeuchiUdonTables.Instance.SyncedVars     .SelectMany(x => SyncData(x.Key, x.Value)))
-                .Concat(TeuchiUdonTables.Instance.Vars.Values    .SelectMany(x => DeclData(x, new AssemblyLiteral_NULL())))
-                .Concat(TeuchiUdonTables.Instance.Literals.Values.SelectMany(x => DeclData(x, new AssemblyLiteral_NULL())))
-                .Concat(TeuchiUdonTables.Instance.This.Values    .SelectMany(x => DeclData(x, new AssemblyLiteral_THIS())))
-                .Concat(TeuchiUdonTables.Instance.Funcs.Values   .SelectMany(x => DeclData(x.Return, new AssemblyLiteral_NULL())));
+                        Tables.PublicVars.Keys.SelectMany(x => ExportData(x))
+                .Concat(Tables.SyncedVars     .SelectMany(x => SyncData(x.Key, x.Value)))
+                .Concat(Tables.Vars.Values    .SelectMany(x => DeclData(x, new AssemblyLiteral_NULL())))
+                .Concat(Tables.Literals.Values.SelectMany(x => DeclData(x, new AssemblyLiteral_NULL())))
+                .Concat(Tables.This.Values    .SelectMany(x => DeclData(x, new AssemblyLiteral_THIS())))
+                .Concat(Tables.Funcs.Values   .SelectMany(x => DeclData(x.Return, new AssemblyLiteral_NULL())));
         }
 
         public IEnumerable<TeuchiUdonAssembly> GetDataPartFromOutValuePool()
         {
-            return TeuchiUdonOutValuePool.Instance.OutValues.Values.SelectMany(x => DeclData(x, new AssemblyLiteral_NULL()));
+            return OutValuePool.OutValues.Values.SelectMany(x => DeclData(x, new AssemblyLiteral_NULL()));
         }
 
         public IEnumerable<TeuchiUdonAssembly> GetCodePartFromTables()
@@ -285,8 +306,8 @@ namespace akanevrc.TeuchiUdon.Compiler
         protected IEnumerable<TeuchiUdonAssembly> VisitTables()
         {
             return
-                TeuchiUdonTables.Instance.Funcs.Values.Count == 0 ? Enumerable.Empty<TeuchiUdonAssembly>() :
-                TeuchiUdonTables.Instance.Funcs.Values.Select(x => Func(x))
+                Tables.Funcs.Values.Count == 0 ? Enumerable.Empty<TeuchiUdonAssembly>() :
+                Tables.Funcs.Values.Select(x => Func(x))
                 .Aggregate((acc, x) => acc
                     .Concat(new TeuchiUdonAssembly[] { new Assembly_NEW_LINE() })
                     .Concat(x)
@@ -295,76 +316,91 @@ namespace akanevrc.TeuchiUdon.Compiler
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTopStatement(TopStatementResult result)
         {
-            if (result is TopBindResult topBind) return VisitTopBind(topBind);
-            if (result is TopExprResult topExpr) return VisitTopExpr(topExpr);
-            throw new InvalidOperationException("unsupported parser result type");
+            switch (result)
+            {
+                case TopBindResult topBind: return VisitTopBind(topBind);
+                case TopExprResult topExpr: return VisitTopExpr(topExpr);
+                default: throw new InvalidOperationException("unsupported parser result type");
+            }
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitStatement(StatementResult result)
         {
-            if (result is JumpResult    jump   ) return VisitJump   (jump);
-            if (result is LetBindResult letBind) return VisitLetBind(letBind);
-            if (result is ExprResult    expr   ) return VisitExpr   (expr);
-            throw new NotSupportedException("unsupported parser result type");
+            switch (result)
+            {
+                case JumpResult    jump   : return VisitJump   (jump);
+                case LetBindResult letBind: return VisitLetBind(letBind);
+                case ExprResult    expr   : return VisitExpr   (expr);
+                default: throw new NotSupportedException("unsupported parser result type");
+            }
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitTyped(TypedResult result)
         {
-            if (result is InvalidResult                    invalid                   ) return VisitInvalid                   (invalid);
-            if (result is UnknownTypeResult                unknownType               ) return VisitUnknownType               (unknownType);
-            if (result is UnitResult                       unit                      ) return VisitUnit                      (unit);
-            if (result is BlockResult                      block                     ) return VisitBlock                     (block);
-            if (result is ParenResult                      paren                     ) return VisitParen                     (paren);
-            if (result is TupleResult                      tuple                     ) return VisitTuple                     (tuple);
-            if (result is ArrayCtorResult                  arrayCtor                 ) return VisitArrayCtor                 (arrayCtor);
-            if (result is LiteralResult                    literal                   ) return VisitLiteral                   (literal);
-            if (result is ThisResult                       this_                     ) return VisitThis                      (this_);
-            if (result is InterpolatedStringResult         interpolatedString        ) return VisitInterpolatedString        (interpolatedString);
-            if (result is EvalVarResult                    evalVar                   ) return VisitEvalVar                   (evalVar);
-            if (result is EvalTypeResult                   evalType                  ) return VisitEvalType                  (evalType);
-            if (result is EvalQualifierResult              evalQualifier             ) return VisitEvalQualifier             (evalQualifier);
-            if (result is EvalGetterResult                 evalGetter                ) return VisitEvalGetter                (evalGetter);
-            if (result is EvalSetterResult                 evalSetter                ) return VisitEvalSetter                (evalSetter);
-            if (result is EvalGetterSetterResult           evalGetterSetter          ) return VisitEvalGetterSetter          (evalGetterSetter);
-            if (result is EvalFuncResult                   evalFunc                  ) return VisitEvalFunc                  (evalFunc);
-            if (result is EvalSpreadFuncResult             evalSpreadFunc            ) return VisitEvalSpreadFunc            (evalSpreadFunc);
-            if (result is EvalMethodResult                 evalMethod                ) return VisitEvalMethod                (evalMethod);
-            if (result is EvalSpreadMethodResult           evalSpreadMethod          ) return VisitEvalSpreadMethod          (evalSpreadMethod);
-            if (result is EvalCoalescingMethodResult       evalCoalescingMethod      ) return VisitEvalCoalescingMethod      (evalCoalescingMethod);
-            if (result is EvalCoalescingSpreadMethodResult evalCoalescingSpreadMethod) return VisitEvalCoalescingSpreadMethod(evalCoalescingSpreadMethod);
-            if (result is EvalCastResult                   evalCast                  ) return VisitEvalCast                  (evalCast);
-            if (result is EvalTypeOfResult                 evalTypeOf                ) return VisitEvalTypeOf                (evalTypeOf);
-            if (result is EvalArrayIndexerResult           evalArrayIndexer          ) return VisitEvalArrayIndexer          (evalArrayIndexer);
-            if (result is TypeCastResult                   typeCast                  ) return VisitTypeCast                  (typeCast);
-            if (result is TypeOfResult                     typeOf                    ) return VisitTypeOf                    (typeOf);
-            if (result is ConvertCastResult                convertCast               ) return VisitConvertCast               (convertCast);
-            if (result is PrefixResult                     prefix                    ) return VisitPrefix                    (prefix);
-            if (result is InfixResult                      infix                     ) return VisitInfix                     (infix);
-            if (result is LetInBindResult                  letInBind                 ) return VisitLetInBind                 (letInBind);
-            if (result is IfResult                         if_                       ) return VisitIf                        (if_);
-            if (result is IfElseResult                     ifElse                    ) return VisitIfElse                    (ifElse);
-            if (result is WhileResult                      while_                    ) return VisitWhile                     (while_);
-            if (result is ForResult                        for_                      ) return VisitFor                       (for_);
-            if (result is LoopResult                       loop                      ) return VisitLoop                      (loop);
-            if (result is FuncResult                       func                      ) return VisitFunc                      (func);
-            if (result is MethodResult                     method                    ) return VisitMethod                    (method);
-            throw new NotSupportedException("unsupported parser result type");
+            switch (result)
+            {
+                case InvalidResult                    invalid                   : return VisitInvalid                   (invalid);
+                case UnknownTypeResult                unknownType               : return VisitUnknownType               (unknownType);
+                case UnitResult                       unit                      : return VisitUnit                      (unit);
+                case BlockResult                      block                     : return VisitBlock                     (block);
+                case ParenResult                      paren                     : return VisitParen                     (paren);
+                case TupleResult                      tuple                     : return VisitTuple                     (tuple);
+                case ArrayCtorResult                  arrayCtor                 : return VisitArrayCtor                 (arrayCtor);
+                case LiteralResult                    literal                   : return VisitLiteral                   (literal);
+                case ThisResult                       this_                     : return VisitThis                      (this_);
+                case InterpolatedStringResult         interpolatedString        : return VisitInterpolatedString        (interpolatedString);
+                case EvalVarResult                    evalVar                   : return VisitEvalVar                   (evalVar);
+                case EvalTypeResult                   evalType                  : return VisitEvalType                  (evalType);
+                case EvalQualifierResult              evalQualifier             : return VisitEvalQualifier             (evalQualifier);
+                case EvalGetterResult                 evalGetter                : return VisitEvalGetter                (evalGetter);
+                case EvalSetterResult                 evalSetter                : return VisitEvalSetter                (evalSetter);
+                case EvalGetterSetterResult           evalGetterSetter          : return VisitEvalGetterSetter          (evalGetterSetter);
+                case EvalFuncResult                   evalFunc                  : return VisitEvalFunc                  (evalFunc);
+                case EvalSpreadFuncResult             evalSpreadFunc            : return VisitEvalSpreadFunc            (evalSpreadFunc);
+                case EvalMethodResult                 evalMethod                : return VisitEvalMethod                (evalMethod);
+                case EvalSpreadMethodResult           evalSpreadMethod          : return VisitEvalSpreadMethod          (evalSpreadMethod);
+                case EvalCoalescingMethodResult       evalCoalescingMethod      : return VisitEvalCoalescingMethod      (evalCoalescingMethod);
+                case EvalCoalescingSpreadMethodResult evalCoalescingSpreadMethod: return VisitEvalCoalescingSpreadMethod(evalCoalescingSpreadMethod);
+                case EvalCastResult                   evalCast                  : return VisitEvalCast                  (evalCast);
+                case EvalTypeOfResult                 evalTypeOf                : return VisitEvalTypeOf                (evalTypeOf);
+                case EvalArrayIndexerResult           evalArrayIndexer          : return VisitEvalArrayIndexer          (evalArrayIndexer);
+                case TypeCastResult                   typeCast                  : return VisitTypeCast                  (typeCast);
+                case TypeOfResult                     typeOf                    : return VisitTypeOf                    (typeOf);
+                case ConvertCastResult                convertCast               : return VisitConvertCast               (convertCast);
+                case PrefixResult                     prefix                    : return VisitPrefix                    (prefix);
+                case InfixResult                      infix                     : return VisitInfix                     (infix);
+                case LetInBindResult                  letInBind                 : return VisitLetInBind                 (letInBind);
+                case IfResult                         if_                       : return VisitIf                        (if_);
+                case IfElseResult                     ifElse                    : return VisitIfElse                    (ifElse);
+                case WhileResult                      while_                    : return VisitWhile                     (while_);
+                case ForResult                        for_                      : return VisitFor                       (for_);
+                case LoopResult                       loop                      : return VisitLoop                      (loop);
+                case FuncResult                       func                      : return VisitFunc                      (func);
+                case MethodResult                     method                    : return VisitMethod                    (method);
+                default: throw new NotSupportedException("unsupported parser result type");
+            }
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitArrayIter(ArrayCtorResult ctor, IterExprResult result)
         {
-            if (result is ElementsIterExprResult     elementsIter    ) return VisitArrayElementsIter    (ctor, elementsIter);
-            if (result is RangeIterExprResult        rangeIter       ) return VisitArrayRangeIter       (ctor, rangeIter);
-            if (result is SteppedRangeIterExprResult steppedRangeIter) return VisitArraySteppedRangeIter(ctor, steppedRangeIter);
-            if (result is SpreadIterExprResult       spreadIter      ) return VisitArraySpreadIter      (ctor, spreadIter);
-            throw new NotSupportedException("unsupported parser result type");
+            switch (result)
+            {
+                case ElementsIterExprResult     elementsIter    : return VisitArrayElementsIter    (ctor, elementsIter);
+                case RangeIterExprResult        rangeIter       : return VisitArrayRangeIter       (ctor, rangeIter);
+                case SteppedRangeIterExprResult steppedRangeIter: return VisitArraySteppedRangeIter(ctor, steppedRangeIter);
+                case SpreadIterExprResult       spreadIter      : return VisitArraySpreadIter      (ctor, spreadIter);
+                default: throw new NotSupportedException("unsupported parser result type");
+            }
         }
 
         protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForBindForSetter(ForBindResult result)
         {
-            if (result is LetForBindResult    letBind) return VisitLetForBindForSetter   (letBind);
-            if (result is AssignForBindResult assign ) return VisitAssignForBindForSetter(assign);
-            throw new NotSupportedException("unsupported parser result type");
+            switch (result)
+            {
+                case LetForBindResult    letBind: return VisitLetForBindForSetter   (letBind);
+                case AssignForBindResult assign : return VisitAssignForBindForSetter(assign);
+                default: throw new NotSupportedException("unsupported parser result type");
+            }
         }
 
         protected Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> VisitForIter
@@ -373,10 +409,13 @@ namespace akanevrc.TeuchiUdon.Compiler
             Func<IEnumerable<TeuchiUdonAssembly>, IEnumerable<TeuchiUdonAssembly>> setter
         )
         {
-            if (result is RangeIterExprResult        rangeIter       ) return VisitForRangeIter       (rangeIter       , setter);
-            if (result is SteppedRangeIterExprResult steppedRangeIter) return VisitForSteppedRangeIter(steppedRangeIter, setter);
-            if (result is SpreadIterExprResult       spreadIter      ) return VisitForSpreadIter      (spreadIter      , setter);
-            throw new NotSupportedException("unsupported parser result type");
+            switch (result)
+            {
+                case RangeIterExprResult        rangeIter       : return VisitForRangeIter       (rangeIter       , setter);
+                case SteppedRangeIterExprResult steppedRangeIter: return VisitForSteppedRangeIter(steppedRangeIter, setter);
+                case SpreadIterExprResult       spreadIter      : return VisitForSpreadIter      (spreadIter      , setter);
+                default: throw new NotSupportedException("unsupported parser result type");
+            }
         }
 
         protected IEnumerable<TeuchiUdonAssembly> VisitBody(BodyResult result)
@@ -384,26 +423,26 @@ namespace akanevrc.TeuchiUdon.Compiler
             var topEvents = result.TopStatements
                 .Where(x =>
                     x is TopBindResult topBind &&
-                    topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.IsFunc() &&
-                    (TeuchiUdonTables.Instance.Events.ContainsKey(topBind.VarBind.Vars[0].Name) || topBind.Public)
+                    topBind.VarBind.Vars.Length == 1 && TypeOps.IsFunc(topBind.VarBind.Vars[0].Type) &&
+                    (StaticTables.Events.ContainsKey(topBind.VarBind.Vars[0].Name) || topBind.Public)
                 )
                 .Cast<TopBindResult>()
                 .Select(x =>
                     (
                         varName  : x.VarBind.Vars[0].Name,
-                        eventName: x.VarBind.Vars[0].GetFullLabel()
+                        eventName: LabelOps.GetFullLabel(x.VarBind.Vars[0])
                     ))
                 .ToArray();
             var topStats = result.TopStatements
                 .Where(x =>
                     !(x is TopBindResult topBind) ||
-                    topBind.VarBind.Vars.Length == 1 && topBind.VarBind.Vars[0].Type.IsFunc() ||
+                    topBind.VarBind.Vars.Length == 1 && TypeOps.IsFunc(topBind.VarBind.Vars[0].Type) ||
                     !topBind.Public
                 )
                 .ToArray();
 
             var startVarName   = "Start";
-            var startEventName = TeuchiUdonTables.GetEventName(startVarName);
+            var startEventName = TeuchiUdonTableOps.GetEventName(startVarName);
             var topEventStats   = new Dictionary<string, (string eventName, List<TopStatementResult> stats)>();
             foreach (var ev in topEvents)
             {
@@ -886,7 +925,7 @@ namespace akanevrc.TeuchiUdon.Compiler
                 case "<-":
                 {
                     return
-                        result.Expr1.Inner.Type.LogicalTypeEquals(PrimitiveTypes.Instance.Unit) || result.Expr2.Inner.Type.LogicalTypeEquals(PrimitiveTypes.Instance.Unit) ?
+                        result.Expr1.Inner.Type.LogicalTypeEquals(Primitives.Unit) || result.Expr2.Inner.Type.LogicalTypeEquals(Primitives.Unit) ?
                             Enumerable.Empty<TeuchiUdonAssembly>() :
                         result.Expr1.Inner.LeftValues.Length == 1 ?
                             result.Expr1.Inner.LeftValues[0] is TeuchiUdonVar ?
@@ -934,7 +973,7 @@ namespace akanevrc.TeuchiUdon.Compiler
                     result.Conditions.Select(x => VisitExpr(x)),
                     result.Statements.Select(x => VisitStatement(x)),
                     result.Labels,
-                    result.Statements.Select(x => x is ExprResult expr ? expr.Inner.Type : PrimitiveTypes.Instance.Unit)
+                    result.Statements.Select(x => x is ExprResult expr ? expr.Inner.Type : Primitives.Unit)
                 );
         }
 
