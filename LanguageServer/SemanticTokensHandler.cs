@@ -5,8 +5,6 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-using Microsoft.Extensions.Logging;
-
 namespace akanevrc.TeuchiUdon.Server
 {
     public class SemanticTokensHandler : SemanticTokensHandlerBase
