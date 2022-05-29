@@ -13,24 +13,24 @@ namespace akanevrc.TeuchiUdon
             Tables       = tables;
         }
 
-        public string ToString(ITeuchiUdonLabel label)
+        public string GetDescription(object obj)
         {
-            switch (label)
+            switch (obj)
             {
                 case TeuchiUdonFunc func:
-                    return Qualify(func.Qualifier, ".", $"func[{func.Index}]({string.Join(", ", func.Vars.Select(x => x.Type))})");
+                    return Qualify(func.Qualifier, ".", $"func[{func.Index}]({string.Join(", ", func.Vars.Select(x => GetDescription(x.Type)))})");
                 case TextLabel text:
                     return text.Text;
                 case TeuchiUdonMethod method:
-                    return $"{method.Type}.{method.Name}({string.Join<TeuchiUdonType>(", ", method.InTypes)})";
+                    return $"{GetDescription(method.Type)}.{method.Name}({string.Join(", ", method.InTypes.Select(x => GetDescription(x)))})";
                 case TeuchiUdonQualifier qual:
-                    return string.Join<TeuchiUdonScope>(".", qual.Logical);
+                    return string.Join(".", qual.Logical.Select(x => GetDescription(x)));
                 case TeuchiUdonScope scope:
-                    return scope.Label.ToString();
+                    return GetLabel(scope.Label);
                 case TeuchiUdonThis this_:
                     return "this";
                 case TeuchiUdonType type:
-                    return $"{Qualify(type.Qualifier, ".", type.Name)}{(type.Args.Length == 0 ? "" : $"[{string.Join(", ", type.Args.Select(x => x.ToString()))}]")}";
+                    return $"{Qualify(type.Qualifier, ".", type.Name)}{(type.Args.Length == 0 ? "" : $"[{string.Join(", ", type.Args.Select(x => GetDescription(x)))}]")}";
                 case TeuchiUdonVar var_:
                     return Qualify(var_.Qualifier, ".", var_.Name);
                 default:
