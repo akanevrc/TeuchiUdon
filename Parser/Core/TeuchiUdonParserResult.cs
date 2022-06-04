@@ -11,11 +11,13 @@ namespace akanevrc.TeuchiUdon
         public IToken Stop { get; }
         public bool Valid { get; }
 
-        public TeuchiUdonParserResult(IToken start, IToken stop, bool valid)
+        public TeuchiUdonParserResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid)
         {
             Start = start;
             Stop  = stop;
             Valid = valid;
+
+            tables.ParserResults.Add(this);
         }
     }
 
@@ -23,13 +25,13 @@ namespace akanevrc.TeuchiUdon
     {
         public BodyResult Body { get; }
 
-        public TargetResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public TargetResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public TargetResult(IToken start, IToken stop, BodyResult body)
-            : base(start, stop, true)
+        public TargetResult(TeuchiUdonTables tables, IToken start, IToken stop, BodyResult body)
+            : base(tables, start, stop, true)
         {
             Body = body;
         }
@@ -39,13 +41,13 @@ namespace akanevrc.TeuchiUdon
     {
         public TopStatementResult[] TopStatements { get; }
 
-        public BodyResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public BodyResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public BodyResult(IToken start, IToken stop, IEnumerable<TopStatementResult> topStatements)
-            : base(start, stop, true)
+        public BodyResult(TeuchiUdonTables tables, IToken start, IToken stop, IEnumerable<TopStatementResult> topStatements)
+            : base(tables, start, stop, true)
         {
             TopStatements = topStatements.ToArray();
         }
@@ -53,8 +55,8 @@ namespace akanevrc.TeuchiUdon
 
     public abstract class TopStatementResult : TeuchiUdonParserResult
     {
-        public TopStatementResult(IToken start, IToken stop, bool valid)
-            : base(start, stop, valid)
+        public TopStatementResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid)
+            : base(tables, start, stop, valid)
         {
         }
     }
@@ -65,13 +67,13 @@ namespace akanevrc.TeuchiUdon
         public bool Public { get; }
         public TeuchiUdonSyncMode Sync { get; }
 
-        public TopBindResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public TopBindResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public TopBindResult(IToken start, IToken stop, VarBindResult varBind, bool pub, TeuchiUdonSyncMode sync)
-            : base(start, stop, true)
+        public TopBindResult(TeuchiUdonTables tables, IToken start, IToken stop, VarBindResult varBind, bool pub, TeuchiUdonSyncMode sync)
+            : base(tables, start, stop, true)
         {
             VarBind = varBind;
             Public  = pub;
@@ -83,13 +85,13 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult Expr { get; }
 
-        public TopExprResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public TopExprResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public TopExprResult(IToken start, IToken stop, ExprResult expr)
-            : base(start, stop, true)
+        public TopExprResult(TeuchiUdonTables tables, IToken start, IToken stop, ExprResult expr)
+            : base(tables, start, stop, true)
         {
             Expr = expr;
         }
@@ -97,70 +99,100 @@ namespace akanevrc.TeuchiUdon
 
     public abstract class VarAttrResult : TeuchiUdonParserResult
     {
-        public VarAttrResult(IToken start, IToken stop, bool valid)
-            : base(start, stop, valid)
+        public VarAttrResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid)
+            : base(tables, start, stop, valid)
         {
         }
     }
 
     public class PublicVarAttrResult : VarAttrResult
     {
-        public PublicVarAttrResult(IToken start, IToken stop)
-            : base(start, stop, true)
+        public KeywordResult Keyword { get; }
+
+        public PublicVarAttrResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
+        }
+
+        public PublicVarAttrResult(TeuchiUdonTables tables, IToken start, IToken stop, KeywordResult keyword)
+            : base(tables, start, stop, true)
+        {
+            Keyword = keyword;
         }
     }
 
     public class SyncVarAttrResult : VarAttrResult
     {
+        public KeywordResult Keyword { get; }
         public TeuchiUdonSyncMode Mode { get; }
 
-        public SyncVarAttrResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public SyncVarAttrResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public SyncVarAttrResult(IToken start, IToken stop, TeuchiUdonSyncMode mode)
-            : base(start, stop, true)
+        public SyncVarAttrResult(TeuchiUdonTables tables, IToken start, IToken stop, KeywordResult keyword, TeuchiUdonSyncMode mode)
+            : base(tables, start, stop, true)
         {
-            Mode = mode;
+            Keyword = keyword;
+            Mode    = mode;
         }
     }
 
     public abstract class ExprAttrResult : TeuchiUdonParserResult
     {
-        public ExprAttrResult(IToken start, IToken stop, bool valid)
-            : base(start, stop, valid)
+        public ExprAttrResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid)
+            : base(tables, start, stop, valid)
         {
+        }
+    }
+
+    public class KeywordResult : TeuchiUdonParserResult
+    {
+        public string Name { get; }
+
+        public KeywordResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
+        {
+        }
+
+        public KeywordResult(TeuchiUdonTables tables, IToken start, IToken stop, string name)
+            : base(tables, start, stop, true)
+        {
+            Name = name;
         }
     }
 
     public class VarBindResult : TeuchiUdonParserResult
     {
+        public KeywordResult MutKeyword { get; }
         public TeuchiUdonVarBind VarBind { get; }
         public TeuchiUdonVar[] Vars { get; }
         public VarDeclResult VarDecl { get; }
         public ExprResult Expr { get; }
 
-        public VarBindResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public VarBindResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
         public VarBindResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
+            KeywordResult mutKeyword,
             TeuchiUdonVarBind varBind,
             IEnumerable<TeuchiUdonVar> vars,
             VarDeclResult varDecl,
             ExprResult expr
-        ) : base(start, stop, true)
+        ) : base(tables, start, stop, true)
         {
-            VarBind = varBind;
-            Vars    = vars.ToArray();
-            VarDecl = varDecl;
-            Expr    = expr;
+            MutKeyword = mutKeyword;
+            VarBind    = varBind;
+            Vars       = vars.ToArray();
+            VarDecl    = varDecl;
+            Expr       = expr;
         }
     }
 
@@ -170,19 +202,20 @@ namespace akanevrc.TeuchiUdon
         public TeuchiUdonType[] Types { get; }
         public QualifiedVarResult[] QualifiedVars { get; }
 
-        public VarDeclResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public VarDeclResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
         public VarDeclResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             IEnumerable<TeuchiUdonVar> vars,
             IEnumerable<TeuchiUdonType> types,
             IEnumerable<QualifiedVarResult> qualifiedVars
-        ) : base(start, stop, true)
+        ) : base(tables, start, stop, true)
         {
             Vars          = vars         .ToArray();
             Types         = types        .ToArray();
@@ -195,13 +228,13 @@ namespace akanevrc.TeuchiUdon
         public IdentifierResult Identifier { get; }
         public ExprResult Qualified { get; }
 
-        public QualifiedVarResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public QualifiedVarResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public QualifiedVarResult(IToken start, IToken stop, IdentifierResult identifier, ExprResult qualified)
-            : base(start, stop, true)
+        public QualifiedVarResult(TeuchiUdonTables tables, IToken start, IToken stop, IdentifierResult identifier, ExprResult qualified)
+            : base(tables, start, stop, true)
         {
             Identifier = identifier;
             Qualified  = qualified;
@@ -212,13 +245,13 @@ namespace akanevrc.TeuchiUdon
     {
         public string Name { get; }
 
-        public IdentifierResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public IdentifierResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public IdentifierResult(IToken start, IToken stop, string name)
-            : base(start, stop, true)
+        public IdentifierResult(TeuchiUdonTables tables, IToken start, IToken stop, string name)
+            : base(tables, start, stop, true)
         {
             Name = name;
         }
@@ -226,45 +259,57 @@ namespace akanevrc.TeuchiUdon
 
     public abstract class StatementResult : TeuchiUdonParserResult
     {
-        public StatementResult(IToken start, IToken stop, bool valid)
-            : base(start, stop, valid)
+        public StatementResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid)
+            : base(tables, start, stop, valid)
         {
         }
     }
 
     public class JumpResult : StatementResult
     {
+        public KeywordResult JumpKeyword { get; }
         public ExprResult Value { get; }
         public Func<TeuchiUdonBlock> Block { get; }
         public Func<ITeuchiUdonLabel> Label { get; }
 
-        public JumpResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public JumpResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public JumpResult(IToken start, IToken stop, ExprResult value, Func<TeuchiUdonBlock> block, Func<ITeuchiUdonLabel> label)
-            : base(start, stop, true)
+        public JumpResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            KeywordResult jumpKeyword,
+            ExprResult value,
+            Func<TeuchiUdonBlock> block,
+            Func<ITeuchiUdonLabel> label
+        ) : base(tables, start, stop, true)
         {
-            Value = value;
-            Block = block;
-            Label = label;
+            JumpKeyword = jumpKeyword;
+            Value       = value;
+            Block       = block;
+            Label       = label;
         }
     }
 
     public class LetBindResult : StatementResult
     {
+        public KeywordResult LetKeyword { get; }
         public VarBindResult VarBind { get; }
 
-        public LetBindResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public LetBindResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public LetBindResult(IToken start, IToken stop, VarBindResult varBind)
-            : base(start, stop, true)
+        public LetBindResult(TeuchiUdonTables tables, IToken start, IToken stop, KeywordResult letKeyword, VarBindResult varBind)
+            : base(tables, start, stop, true)
         {
-            VarBind = varBind;
+            LetKeyword = letKeyword;
+            VarBind    = varBind;
         }
     }
 
@@ -273,13 +318,13 @@ namespace akanevrc.TeuchiUdon
         public TypedResult Inner { get; }
         public bool ReturnsValue { get; set; } = true;
 
-        public ExprResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public ExprResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public ExprResult(IToken start, IToken stop, TypedResult inner)
-            : base(start, stop, true)
+        public ExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TypedResult inner)
+            : base(tables, start, stop, true)
         {
             Inner = inner;
         }
@@ -289,8 +334,8 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonType Type { get; set; }
 
-        public TypedResult(IToken start, IToken stop, bool valid, TeuchiUdonType type, bool typeBound)
-            : base(start, stop, valid)
+        public TypedResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid, TeuchiUdonType type, bool typeBound)
+            : base(tables, start, stop, valid)
         {
             Type      = type;
             TypeBound = typeBound;
@@ -314,13 +359,13 @@ namespace akanevrc.TeuchiUdon
         public Dictionary<string, TeuchiUdonLiteral> Literals { get; set; }
         public Dictionary<string, ICodeLabel> Labels { get; set; }
 
-        public ExternResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public ExternResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public ExternResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier)
-            : base(start, stop, true, type, typeBound)
+        public ExternResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Qualifier = qualifier;
         }
@@ -330,8 +375,8 @@ namespace akanevrc.TeuchiUdon
 
     public class InvalidResult : TypedResult
     {
-        public InvalidResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
-            : base(start, stop, false, type, typeBound)
+        public InvalidResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
+            : base(tables, start, stop, false, type, typeBound)
         {
         }
 
@@ -343,8 +388,8 @@ namespace akanevrc.TeuchiUdon
 
     public class UnknownTypeResult : TypedResult
     {
-        public UnknownTypeResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
-            : base(start, stop, true, type, typeBound)
+        public UnknownTypeResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
+            : base(tables, start, stop, true, type, typeBound)
         {
         }
 
@@ -356,8 +401,8 @@ namespace akanevrc.TeuchiUdon
 
     public class UnitResult : TypedResult
     {
-        public UnitResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
-            : base(start, stop, true, type, typeBound)
+        public UnitResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
+            : base(tables, start, stop, true, type, typeBound)
         {
         }
 
@@ -373,13 +418,14 @@ namespace akanevrc.TeuchiUdon
         public StatementResult[] Statements { get; }
         public ExprResult Expr { get; }
 
-        public BlockResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public BlockResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public BlockResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -387,7 +433,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonBlock block,
             IEnumerable<StatementResult> statements,
             ExprResult expr
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
             Block      = block;
             Statements = statements.ToArray();
@@ -417,13 +463,13 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult Expr { get; }
 
-        public ParenResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public ParenResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public ParenResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
-            : base(start, stop, true, type, typeBound)
+        public ParenResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Expr = expr;
         }
@@ -438,13 +484,13 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult[] Exprs { get; }
 
-        public TupleResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public TupleResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public TupleResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, IEnumerable<ExprResult> exprs)
-            : base(start, stop, true, type, typeBound)
+        public TupleResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, IEnumerable<ExprResult> exprs)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Exprs = exprs.ToArray();
         }
@@ -459,13 +505,21 @@ namespace akanevrc.TeuchiUdon
     {
         public IterExprResult[] Iters { get; }
 
-        public ArrayCtorResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public ArrayCtorResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public ArrayCtorResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, IEnumerable<IterExprResult> iters)
-            : base(start, stop, type, typeBound, qualifier)
+        public ArrayCtorResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            IEnumerable<IterExprResult> iters
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Iters = iters.ToArray();
         }
@@ -480,13 +534,13 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonLiteral Literal { get; }
 
-        public LiteralResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public LiteralResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public LiteralResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonLiteral literal)
-            : base(start, stop, true, type, typeBound)
+        public LiteralResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonLiteral literal)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Literal = literal;
         }
@@ -501,8 +555,8 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonThis This { get; }
 
-        public ThisResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonThis this_)
-            : base(start, stop, true, type, typeBound)
+        public ThisResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonThis this_)
+            : base(tables, start, stop, true, type, typeBound)
         {
             This = this_;
         }
@@ -518,13 +572,14 @@ namespace akanevrc.TeuchiUdon
         public TeuchiUdonLiteral StringLiteral { get; }
         public ExprResult[] Exprs { get; }
 
-        public InterpolatedStringResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public InterpolatedStringResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public InterpolatedStringResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -532,7 +587,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonQualifier qualifier,
             TeuchiUdonLiteral stringLiteral,
             IEnumerable<ExprResult> exprs
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             StringLiteral = stringLiteral;
             Exprs         = exprs.ToArray();
@@ -546,8 +601,8 @@ namespace akanevrc.TeuchiUdon
 
     public abstract class InterpolatedStringPartResult : TypedResult
     {
-        public InterpolatedStringPartResult(IToken start, IToken stop, bool valid, TeuchiUdonType type, bool typeBound)
-            : base(start, stop, valid, type, typeBound)
+        public InterpolatedStringPartResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid, TeuchiUdonType type, bool typeBound)
+            : base(tables, start, stop, valid, type, typeBound)
         {
         }
 
@@ -559,13 +614,13 @@ namespace akanevrc.TeuchiUdon
     {
         public string RawString { get; }
 
-        public RegularStringInterpolatedStringPartResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public RegularStringInterpolatedStringPartResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public RegularStringInterpolatedStringPartResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, string rawString)
-            : base(start, stop, true, type, typeBound)
+        public RegularStringInterpolatedStringPartResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, string rawString)
+            : base(tables, start, stop, true, type, typeBound)
         {
             RawString = rawString;
         }
@@ -578,13 +633,13 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult Expr { get; }
 
-        public ExprInterpolatedStringPartResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public ExprInterpolatedStringPartResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public ExprInterpolatedStringPartResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
-            : base(start, stop, true, type, typeBound)
+        public ExprInterpolatedStringPartResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Expr = expr;
         }
@@ -597,13 +652,13 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonVar Var { get; }
 
-        public EvalVarResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalVarResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public EvalVarResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonVar v)
-            : base(start, stop, true, type, typeBound)
+        public EvalVarResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonVar v)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Var = v;
         }
@@ -618,13 +673,13 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonType InnerType { get; }
 
-        public EvalTypeResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalTypeResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public EvalTypeResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonType innerType)
-            : base(start, stop, true, type, typeBound)
+        public EvalTypeResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonType innerType)
+            : base(tables, start, stop, true, type, typeBound)
         {
             InnerType = innerType;
         }
@@ -639,13 +694,13 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonQualifier Qualifier { get; }
 
-        public EvalQualifierResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalQualifierResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public EvalQualifierResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier)
-            : base(start, stop, true, type, typeBound)
+        public EvalQualifierResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Qualifier = qualifier;
         }
@@ -660,13 +715,21 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonMethod Getter { get; }
 
-        public EvalGetterResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalGetterResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public EvalGetterResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, TeuchiUdonMethod getter)
-            : base(start, stop, type, typeBound, qualifier)
+        public EvalGetterResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            TeuchiUdonMethod getter
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Getter = getter;
         }
@@ -680,13 +743,21 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonMethod Setter { get; }
 
-        public EvalSetterResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalSetterResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public EvalSetterResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, TeuchiUdonMethod setter)
-            : base(start, stop, type, typeBound, qualifier)
+        public EvalSetterResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            TeuchiUdonMethod setter
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Setter = setter;
         }
@@ -701,13 +772,14 @@ namespace akanevrc.TeuchiUdon
         public TeuchiUdonMethod Getter { get; }
         public TeuchiUdonMethod Setter { get; }
 
-        public EvalGetterSetterResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalGetterSetterResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public EvalGetterSetterResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -715,7 +787,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonQualifier qualifier,
             TeuchiUdonMethod getter,
             TeuchiUdonMethod setter
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Getter = getter;
             Setter = setter;
@@ -733,13 +805,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public ExprResult[] Args { get; }
 
-        public EvalFuncResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalFuncResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public EvalFuncResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -748,7 +821,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonOutValue outValue,
             ExprResult expr,
             IEnumerable<ExprResult> args
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
             EvalFunc = evalFunc;
             OutValue = outValue;
@@ -769,13 +842,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public ExprResult Arg { get; }
 
-        public EvalSpreadFuncResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalSpreadFuncResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public EvalSpreadFuncResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -784,7 +858,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonOutValue outValue,
             ExprResult expr,
             ExprResult arg
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
             EvalFunc = evalFunc;
             OutValue = outValue;
@@ -804,13 +878,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult[] Args { get; }
         public TeuchiUdonMethod Method { get; }
 
-        public EvalMethodResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalMethodResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public EvalMethodResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -819,7 +894,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonMethod method,
             ExprResult expr,
             IEnumerable<ExprResult> args
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Method = method;
             Expr   = expr;
@@ -837,13 +912,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Arg { get; }
         public TeuchiUdonMethod Method { get; }
 
-        public EvalSpreadMethodResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalSpreadMethodResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public EvalSpreadMethodResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -852,7 +928,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonMethod method,
             ExprResult expr,
             ExprResult arg
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Method = method;
             Expr   = expr;
@@ -871,13 +947,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult[] Args { get; }
         public TeuchiUdonMethod Method { get; }
 
-        public EvalCoalescingMethodResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalCoalescingMethodResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public EvalCoalescingMethodResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -887,7 +964,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult expr1,
             ExprResult expr2,
             IEnumerable<ExprResult> args
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Method = method;
             Expr1  = expr1;
@@ -907,13 +984,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Arg { get; }
         public TeuchiUdonMethod Method { get; }
 
-        public EvalCoalescingSpreadMethodResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalCoalescingSpreadMethodResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public EvalCoalescingSpreadMethodResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -923,7 +1001,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult expr1,
             ExprResult expr2,
             ExprResult arg
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Method = method;
             Expr1  = expr1;
@@ -940,13 +1018,13 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult Expr { get; }
 
-        public EvalCastResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public EvalCastResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
-            : base(start, stop, true, type, typeBound)
+        public EvalCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Expr = expr;
         }
@@ -959,8 +1037,8 @@ namespace akanevrc.TeuchiUdon
 
     public class EvalTypeOfResult : TypedResult
     {
-        public EvalTypeOfResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
-            : base(start, stop, true, type, typeBound)
+        public EvalTypeOfResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound)
+            : base(tables, start, stop, true, type, typeBound)
         {
         }
 
@@ -974,13 +1052,13 @@ namespace akanevrc.TeuchiUdon
     {
         public IdentifierResult Identifier { get; }
 
-        public EvalVarCandidateResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public EvalVarCandidateResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public EvalVarCandidateResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, IdentifierResult identifier)
-            : base(start, stop, true, type, typeBound)
+        public EvalVarCandidateResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, IdentifierResult identifier)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Identifier = identifier;
         }
@@ -996,13 +1074,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public ExprResult Arg { get; }
 
-        public EvalArrayIndexerResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public EvalArrayIndexerResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public EvalArrayIndexerResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -1010,7 +1089,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonQualifier qualifier,
             ExprResult expr,
             ExprResult arg
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Expr = expr;
             Arg  = arg;
@@ -1041,13 +1120,13 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public ExprResult Arg { get; }
 
-        public TypeCastResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public TypeCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public TypeCastResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr, ExprResult arg)
-            : base(start, stop, true, type, typeBound)
+        public TypeCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr, ExprResult arg)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Expr = expr;
             Arg  = arg;
@@ -1064,13 +1143,22 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public ExprResult Arg { get; }
 
-        public ConvertCastResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public ConvertCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public ConvertCastResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, ExprResult expr, ExprResult arg)
-            : base(start, stop, type, typeBound, qualifier)
+        public ConvertCastResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            ExprResult expr,
+            ExprResult arg
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Expr = expr;
             Arg  = arg;
@@ -1085,13 +1173,13 @@ namespace akanevrc.TeuchiUdon
     {
         public TeuchiUdonLiteral Literal { get; }
 
-        public TypeOfResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public TypeOfResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public TypeOfResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonLiteral literal)
-            : base(start, stop, true, type, typeBound)
+        public TypeOfResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonLiteral literal)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Literal = literal;
         }
@@ -1106,13 +1194,13 @@ namespace akanevrc.TeuchiUdon
     {
         public string Op { get; }
 
-        public OpResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public OpResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public OpResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, string op)
-            : base(start, stop, type, typeBound, qualifier)
+        public OpResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, string op)
+            : base(tables, start, stop, type, typeBound, qualifier)
         {
             Op = op;
         }
@@ -1122,13 +1210,22 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult Expr { get; }
 
-        public UnaryOpResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public UnaryOpResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public UnaryOpResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, string op, ExprResult expr)
-            : base(start, stop, type, typeBound, qualifier, op)
+        public UnaryOpResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            string op,
+            ExprResult expr
+        ) : base(tables, start, stop, type, typeBound, qualifier, op)
         {
             Expr = expr;
         }
@@ -1139,13 +1236,22 @@ namespace akanevrc.TeuchiUdon
 
     public class PrefixResult : UnaryOpResult
     {
-        public PrefixResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public PrefixResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public PrefixResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, string op, ExprResult expr)
-            : base(start, stop, type, typeBound, qualifier, op, expr)
+        public PrefixResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            string op,
+            ExprResult expr
+        ) : base(tables, start, stop, type, typeBound, qualifier, op, expr)
         {
         }
 
@@ -1157,13 +1263,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr1 { get; }
         public ExprResult Expr2 { get; }
 
-        public BinaryOpResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public BinaryOpResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public BinaryOpResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -1172,7 +1279,7 @@ namespace akanevrc.TeuchiUdon
             string op,
             ExprResult expr1,
             ExprResult expr2
-        ) : base(start, stop, type, typeBound, qualifier, op)
+        ) : base(tables, start, stop, type, typeBound, qualifier, op)
         {
             Expr1 = expr1;
             Expr2 = expr2;
@@ -1184,13 +1291,14 @@ namespace akanevrc.TeuchiUdon
 
     public class InfixResult : BinaryOpResult
     {
-        public InfixResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public InfixResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public InfixResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -1199,7 +1307,7 @@ namespace akanevrc.TeuchiUdon
             string op,
             ExprResult expr1,
             ExprResult expr2
-        ) : base(start, stop, type, typeBound, qualifier, op, expr1, expr2)
+        ) : base(tables, start, stop, type, typeBound, qualifier, op, expr1, expr2)
         {
         }
 
@@ -1208,29 +1316,36 @@ namespace akanevrc.TeuchiUdon
 
     public class LetInBindResult : TypedResult
     {
+        public KeywordResult LetKeyword { get; }
+        public KeywordResult InKeyword { get; }
         public TeuchiUdonLetIn LetIn { get; }
         public VarBindResult VarBind { get; }
         public ExprResult Expr { get; }
 
-        public LetInBindResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public LetInBindResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public LetInBindResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
             bool typeBound,
+            KeywordResult letKeyword,
+            KeywordResult inKeyword,
             TeuchiUdonLetIn letIn,
             VarBindResult varBind,
             ExprResult expr
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
-            LetIn   = LetIn;
-            VarBind = varBind;
-            Expr    = expr;
+            LetKeyword = letKeyword;
+            InKeyword  = inKeyword;
+            LetIn      = LetIn;
+            VarBind    = varBind;
+            Expr       = expr;
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1241,29 +1356,39 @@ namespace akanevrc.TeuchiUdon
 
     public class IfResult : TypedResult
     {
+        public KeywordResult IfKeyword { get; }
+        public KeywordResult[] ThenKeywords { get; }
+        public KeywordResult[] ElifKeywords { get; }
         public ExprResult[] Conditions { get; }
         public StatementResult[] Statements { get; }
         public ICodeLabel[] Labels { get; }
 
-        public IfResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public IfResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public IfResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
             bool typeBound,
+            KeywordResult ifKeyword,
+            IEnumerable<KeywordResult> thenKeywords,
+            IEnumerable<KeywordResult> elifKeywords,
             IEnumerable<ExprResult> conditions,
             IEnumerable<StatementResult> statements,
             IEnumerable<ICodeLabel> labels
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
-            Conditions = conditions.ToArray();
-            Statements = statements.ToArray();
-            Labels     = labels    .ToArray();
+            IfKeyword    = ifKeyword;
+            ThenKeywords = thenKeywords.ToArray();
+            ElifKeywords = elifKeywords.ToArray();
+            Conditions   = conditions  .ToArray();
+            Statements   = statements  .ToArray();
+            Labels       = labels      .ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1282,32 +1407,45 @@ namespace akanevrc.TeuchiUdon
 
     public class IfElseResult : TypedResult
     {
+        public KeywordResult IfKeyword { get; }
+        public KeywordResult ElseKeyword { get; }
+        public KeywordResult[] ThenKeywords { get; }
+        public KeywordResult[] ElifKeywords { get; }
         public ExprResult[] Conditions { get; }
         public ExprResult[] ThenParts { get; }
         public ExprResult ElsePart { get; }
         public ICodeLabel[] Labels { get; }
 
-        public IfElseResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public IfElseResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public IfElseResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
             bool typeBound,
+            KeywordResult ifKeyword,
+            KeywordResult elseKeyword,
+            IEnumerable<KeywordResult> thenKeywords,
+            IEnumerable<KeywordResult> elifKeywords,
             IEnumerable<ExprResult> conditions,
             IEnumerable<ExprResult> thenParts,
             ExprResult elsePart,
             IEnumerable<ICodeLabel> labels
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
-            Conditions = conditions.ToArray();
-            ThenParts  = thenParts .ToArray();
-            ElsePart   = elsePart;
-            Labels     = labels.ToArray();
+            IfKeyword    = ifKeyword;
+            ElseKeyword  = elseKeyword;
+            ThenKeywords = thenKeywords.ToArray();
+            ElifKeywords = elifKeywords.ToArray();
+            Conditions   = conditions  .ToArray();
+            ThenParts    = thenParts   .ToArray();
+            ElsePart     = elsePart;
+            Labels       = labels.ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1322,21 +1460,36 @@ namespace akanevrc.TeuchiUdon
 
     public class WhileResult : TypedResult
     {
+        public KeywordResult WhileKeyword { get; }
+        public KeywordResult DoKeyword { get; }
         public ExprResult Condition { get; }
         public ExprResult Expr { get; }
         public ICodeLabel[] Labels { get; }
 
-        public WhileResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public WhileResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public WhileResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult condition, ExprResult expr, IEnumerable<ICodeLabel> labels)
-            : base(start, stop, true, type, typeBound)
+        public WhileResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            KeywordResult whileKeyword,
+            KeywordResult doKeyword,
+            ExprResult condition,
+            ExprResult expr,
+            IEnumerable<ICodeLabel> labels
+        ) : base(tables, start, stop, true, type, typeBound)
         {
-            Condition = condition;
-            Expr      = expr;
-            Labels    = labels.ToArray();
+            WhileKeyword = whileKeyword;
+            DoKeyword    = doKeyword;
+            Condition    = condition;
+            Expr         = expr;
+            Labels       = labels.ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1347,28 +1500,35 @@ namespace akanevrc.TeuchiUdon
 
     public class ForResult : TypedResult
     {
+        public KeywordResult[] ForKeywords { get; }
+        public KeywordResult DoKeyword { get; }
         public TeuchiUdonFor For { get; }
         public ForBindResult[] ForBinds { get; }
         public ExprResult Expr { get; }
         public ICodeLabel ContinueLabel { get; }
 
-        public ForResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public ForResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public ForResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
             bool typeBound,
             int index,
+            IEnumerable<KeywordResult> forKeywords,
+            KeywordResult doKeyword,
             IEnumerable<ForBindResult> forBinds,
             ExprResult expr,
             ICodeLabel continueLabel
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
+            ForKeywords   = forKeywords.ToArray();
+            DoKeyword     = doKeyword;
             For           = new TeuchiUdonFor(index);
             ForBinds      = forBinds.ToArray();
             Expr          = expr;
@@ -1390,19 +1550,30 @@ namespace akanevrc.TeuchiUdon
 
     public class LoopResult : TypedResult
     {
+        public KeywordResult LoopKeyword { get; }
         public ExprResult Expr { get; }
         public ICodeLabel[] Labels { get; }
 
-        public LoopResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public LoopResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public LoopResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr, IEnumerable<ICodeLabel> labels)
-            : base(start, stop, true, type, typeBound)
+        public LoopResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            KeywordResult loopKeyword,
+            ExprResult expr,
+            IEnumerable<ICodeLabel> labels
+        ) : base(tables, start, stop, true, type, typeBound)
         {
-            Expr   = expr;
-            Labels = labels.ToArray();
+            LoopKeyword = loopKeyword;
+            Expr        = expr;
+            Labels      = labels.ToArray();
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
@@ -1418,13 +1589,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public bool IsDet { get; }
 
-        public FuncResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public FuncResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
         public FuncResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -1433,7 +1605,7 @@ namespace akanevrc.TeuchiUdon
             VarDeclResult varDecl,
             ExprResult expr,
             bool deterministic
-        ) : base(start, stop, true, type, typeBound)
+        ) : base(tables, start, stop, true, type, typeBound)
         {
             Func    = func;
             VarDecl = varDecl;
@@ -1451,13 +1623,13 @@ namespace akanevrc.TeuchiUdon
     {
         public IdentifierResult Identifier { get; }
 
-        public MethodResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, false, type, true)
+        public MethodResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, false, type, true)
         {
         }
 
-        public MethodResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, IdentifierResult identifier)
-            : base(start, stop, true, type, typeBound)
+        public MethodResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, IdentifierResult identifier)
+            : base(tables, start, stop, true, type, typeBound)
         {
             Identifier = identifier;
         }
@@ -1472,13 +1644,13 @@ namespace akanevrc.TeuchiUdon
     {
         public abstract ICodeLabel BreakLabel { get; }
 
-        public IterExprResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public IterExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public IterExprResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier)
-            : base(start, stop, type, typeBound, qualifier)
+        public IterExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier)
+            : base(tables, start, stop, type, typeBound, qualifier)
         {
         }
 
@@ -1490,20 +1662,21 @@ namespace akanevrc.TeuchiUdon
         public ExprResult[] Exprs { get; }
         public override ICodeLabel BreakLabel { get; } = null;
 
-        public ElementsIterExprResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public ElementsIterExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public ElementsIterExprResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
             bool typeBound,
             TeuchiUdonQualifier qualifier,
             IEnumerable<ExprResult> exprs
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Exprs = exprs.ToArray();
         }
@@ -1518,13 +1691,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Last { get; }
         public override ICodeLabel BreakLabel => Labels["loop2"];
 
-        public RangeIterExprResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public RangeIterExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public RangeIterExprResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -1532,7 +1706,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonQualifier qualifier,
             ExprResult first,
             ExprResult last
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             First = first;
             Last  = last;
@@ -1549,13 +1723,14 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Step { get; }
         public override ICodeLabel BreakLabel => Labels["loop2"];
 
-        public SteppedRangeIterExprResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public SteppedRangeIterExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
         public SteppedRangeIterExprResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
             TeuchiUdonType type,
@@ -1564,7 +1739,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult first,
             ExprResult last,
             ExprResult step
-        ) : base(start, stop, type, typeBound, qualifier)
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             First = first;
             Last  = last;
@@ -1580,13 +1755,21 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public override ICodeLabel BreakLabel => Labels["loop2"];
 
-        public SpreadIterExprResult(IToken start, IToken stop, TeuchiUdonType type)
-            : base(start, stop, type)
+        public SpreadIterExprResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
+            : base(tables, start, stop, type)
         {
         }
 
-        public SpreadIterExprResult(IToken start, IToken stop, TeuchiUdonType type, bool typeBound, TeuchiUdonQualifier qualifier, ExprResult expr)
-            : base(start, stop, type, typeBound, qualifier)
+        public SpreadIterExprResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            TeuchiUdonQualifier qualifier,
+            ExprResult expr
+        ) : base(tables, start, stop, type, typeBound, qualifier)
         {
             Expr = expr;
         }
@@ -1599,13 +1782,13 @@ namespace akanevrc.TeuchiUdon
     {
         public ExprResult Expr { get; }
 
-        public IsoExprResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public IsoExprResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public IsoExprResult(IToken start, IToken stop, ExprResult expr)
-            : base(start, stop, true)
+        public IsoExprResult(TeuchiUdonTables tables, IToken start, IToken stop, ExprResult expr)
+            : base(tables, start, stop, true)
         {
             Expr = expr;
         }
@@ -1613,56 +1796,62 @@ namespace akanevrc.TeuchiUdon
 
     public class ArgExprResult : TeuchiUdonParserResult
     {
+        public KeywordResult RefKeyword { get; }
         public ExprResult Expr { get; }
         public bool Ref { get; }
 
-        public ArgExprResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public ArgExprResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public ArgExprResult(IToken start, IToken stop, ExprResult expr, bool rf)
-            : base(start, stop, true)
+        public ArgExprResult(TeuchiUdonTables tables, IToken start, IToken stop, KeywordResult refKeyword, ExprResult expr, bool rf)
+            : base(tables, start, stop, true)
         {
-            Expr = expr;
-            Ref  = rf;
+            RefKeyword = refKeyword;
+            Expr       = expr;
+            Ref        = rf;
         }
     }
 
     public abstract class ForBindResult : TeuchiUdonParserResult
     {
-        public ForBindResult(IToken start, IToken stop, bool valid)
-            : base(start, stop, valid)
+        public ForBindResult(TeuchiUdonTables tables, IToken start, IToken stop, bool valid)
+            : base(tables, start, stop, valid)
         {
         }
     }
 
     public class LetForBindResult : ForBindResult
     {
+        public KeywordResult LetKeyword { get; }
         public TeuchiUdonVarBind VarBind { get; }
         public TeuchiUdonVar[] Vars { get; }
         public VarDeclResult VarDecl { get; }
         public IterExprResult Iter { get; }
 
-        public LetForBindResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public LetForBindResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
         public LetForBindResult
         (
+            TeuchiUdonTables tables,
             IToken start,
             IToken stop,
+            KeywordResult letKeyword,
             TeuchiUdonVarBind varBind,
             IEnumerable<TeuchiUdonVar> vars,
             VarDeclResult varDecl,
             IterExprResult iter
-        ) : base(start, stop, true)
+        ) : base(tables, start, stop, true)
         {
-            VarBind = varBind;
-            Vars    = vars.ToArray();
-            VarDecl = varDecl;
-            Iter    = iter;
+            LetKeyword = letKeyword;
+            VarBind    = varBind;
+            Vars       = vars.ToArray();
+            VarDecl    = varDecl;
+            Iter       = iter;
         }
     }
 
@@ -1671,13 +1860,13 @@ namespace akanevrc.TeuchiUdon
         public ExprResult Expr { get; }
         public IterExprResult Iter { get; }
 
-        public AssignForBindResult(IToken start, IToken stop)
-            : base(start, stop, false)
+        public AssignForBindResult(TeuchiUdonTables tables, IToken start, IToken stop)
+            : base(tables, start, stop, false)
         {
         }
 
-        public AssignForBindResult(IToken start, IToken stop, ExprResult expr, IterExprResult iter)
-            : base(start, stop, true)
+        public AssignForBindResult(TeuchiUdonTables tables, IToken start, IToken stop, ExprResult expr, IterExprResult iter)
+            : base(tables, start, stop, true)
         {
             Expr = expr;
             Iter = iter;

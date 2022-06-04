@@ -307,22 +307,50 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitPublicVarAttr([NotNull] PublicVarAttrContext context)
         {
-            context.result = ParserResultOps.CreatePublicVarAttr(context.Start, context.Stop);
+            var token = context.PUBLIC();
+            if (token == null)
+            {
+                context.result = ParserResultOps.CreatePublicVarAttr(context.Start, context.Stop);
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ParserResultOps.CreatePublicVarAttr(context.Start, context.Stop, keyword);
         }
 
         public override void ExitSyncVarAttr([NotNull] SyncVarAttrContext context)
         {
-            context.result = ParserResultOps.CreateSyncVarAttr(context.Start, context.Stop, TeuchiUdonSyncMode.Sync);
+            var token = context.SYNC();
+            if (token == null)
+            {
+                context.result = ParserResultOps.CreatePublicVarAttr(context.Start, context.Stop);
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ParserResultOps.CreateSyncVarAttr(context.Start, context.Stop, keyword, TeuchiUdonSyncMode.Sync);
         }
 
         public override void ExitLinearVarAttr([NotNull] LinearVarAttrContext context)
         {
-            context.result = ParserResultOps.CreateSyncVarAttr(context.Start, context.Stop, TeuchiUdonSyncMode.Linear);
+            var token = context.LINEAR();
+            if (token == null)
+            {
+                context.result = ParserResultOps.CreatePublicVarAttr(context.Start, context.Stop);
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ParserResultOps.CreateSyncVarAttr(context.Start, context.Stop, keyword, TeuchiUdonSyncMode.Linear);
         }
 
         public override void ExitSmoothVarAttr([NotNull] SmoothVarAttrContext context)
         {
-            context.result = ParserResultOps.CreateSyncVarAttr(context.Start, context.Stop, TeuchiUdonSyncMode.Smooth);
+            var token = context.SMOOTH();
+            if (token == null)
+            {
+                context.result = ParserResultOps.CreatePublicVarAttr(context.Start, context.Stop);
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ParserResultOps.CreateSyncVarAttr(context.Start, context.Stop, keyword, TeuchiUdonSyncMode.Smooth);
         }
 
         public override void EnterVarBind([NotNull] VarBindContext context)
@@ -357,7 +385,8 @@ namespace akanevrc.TeuchiUdon
 
             QualifierStack.Pop();
 
-            var mut = context.MUT() != null;
+            var mutToken = context.MUT();
+            var mut      = mutToken != null;
 
             var index = context.tableIndex;
             var qual  = QualifierStack.Peek();
@@ -444,7 +473,8 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop, index, qual, vars, varDecl, expr);
+            var mutKeyword = ParserResultOps.CreateKeyword(mutToken?.Symbol, mutToken?.Symbol, mutToken?.GetText());
+            context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop, index, mutKeyword, qual, vars, varDecl, expr);
         }
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
@@ -538,23 +568,33 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitReturnUnitStatement([NotNull] ReturnUnitStatementContext context)
         {
-            var value      = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnit(context.Start, context.Stop));
-            context.result = ExitReturnStatement(context.Start, context.Stop, value);
-        }
-
-        public override void ExitReturnValueStatement([NotNull] ReturnValueStatementContext context)
-        {
-            var value = context.expr()?.result;
-            if (IsInvalid(value))
+            var token = context.RETURN();
+            if (token == null)
             {
                 context.result = ParserResultOps.CreateJump(context.Start, context.Stop);
                 return;
             }
 
-            context.result = ExitReturnStatement(context.Start, context.Stop, value);
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            var value      = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnit(context.Start, context.Stop));
+            context.result = ExitReturnStatement(context.Start, context.Stop, keyword, value);
         }
 
-        private JumpResult ExitReturnStatement(IToken start, IToken stop, ExprResult value)
+        public override void ExitReturnValueStatement([NotNull] ReturnValueStatementContext context)
+        {
+            var token = context.RETURN();
+            var value = context.expr()?.result;
+            if (token == null || IsInvalid(value))
+            {
+                context.result = ParserResultOps.CreateJump(context.Start, context.Stop);
+                return;
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ExitReturnStatement(context.Start, context.Stop, keyword, value);
+        }
+
+        private JumpResult ExitReturnStatement(IToken start, IToken stop, KeywordResult keyword, ExprResult value)
         {
             var qb = QualifierStack.Peek().GetFuncBlock();
             if (qb == null)
@@ -569,6 +609,7 @@ namespace akanevrc.TeuchiUdon
                 (
                     start,
                     stop,
+                    keyword,
                     value,
                     () => Tables.Blocks.ContainsKey(qb) ? Tables.Blocks[qb]        : Invalids.InvalidBlock,
                     () => Tables.Blocks.ContainsKey(qb) ? Tables.Blocks[qb].Return : Invalids.InvalidBlock
@@ -578,23 +619,33 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitContinueUnitStatement([NotNull] ContinueUnitStatementContext context)
         {
-            var value      = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnit(context.Start, context.Stop));
-            context.result = ExitContinueStatement(context.Start, context.Stop, value);
-        }
-
-        public override void ExitContinueValueStatement([NotNull] ContinueValueStatementContext context)
-        {
-            var value = context.expr()?.result;
-            if (IsInvalid(value))
+            var token = context.CONTINUE();
+            if (token == null)
             {
                 context.result = ParserResultOps.CreateJump(context.Start, context.Stop);
                 return;
             }
 
-            context.result = ExitContinueStatement(context.Start, context.Stop, value);
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            var value      = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnit(context.Start, context.Stop));
+            context.result = ExitContinueStatement(context.Start, context.Stop, keyword, value);
         }
 
-        private JumpResult ExitContinueStatement(IToken start, IToken stop, ExprResult value)
+        public override void ExitContinueValueStatement([NotNull] ContinueValueStatementContext context)
+        {
+            var token = context.CONTINUE();
+            var value = context.expr()?.result;
+            if (token == null || IsInvalid(value))
+            {
+                context.result = ParserResultOps.CreateJump(context.Start, context.Stop);
+                return;
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ExitContinueStatement(context.Start, context.Stop, keyword, value);
+        }
+
+        private JumpResult ExitContinueStatement(IToken start, IToken stop, KeywordResult keyword, ExprResult value)
         {
             var qb = QualifierStack.Peek().GetLoopBlock();
             if (qb == null)
@@ -605,29 +656,39 @@ namespace akanevrc.TeuchiUdon
 
             return StoreJumpResult
             (
-                ParserResultOps.CreateJump(start, stop, value, () => Tables.Blocks[qb], () => Tables.Blocks[qb].Continue)
+                ParserResultOps.CreateJump(start, stop, keyword, value, () => Tables.Blocks[qb], () => Tables.Blocks[qb].Continue)
             );
         }
 
         public override void ExitBreakUnitStatement([NotNull] BreakUnitStatementContext context)
         {
-            var value      = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnit(context.Start, context.Stop));
-            context.result = ExitBreakStatement(context.Start, context.Stop, value);
-        }
-
-        public override void ExitBreakValueStatement([NotNull] BreakValueStatementContext context)
-        {
-            var value = context.expr()?.result;
-            if (IsInvalid(value))
+            var token = context.BREAK();
+            if (token == null)
             {
                 context.result = ParserResultOps.CreateJump(context.Start, context.Stop);
                 return;
             }
 
-            context.result = ExitBreakStatement(context.Start, context.Stop, value);
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            var value      = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnit(context.Start, context.Stop));
+            context.result = ExitBreakStatement(context.Start, context.Stop, keyword, value);
         }
 
-        private JumpResult ExitBreakStatement(IToken start, IToken stop, ExprResult value)
+        public override void ExitBreakValueStatement([NotNull] BreakValueStatementContext context)
+        {
+            var token = context.BREAK();
+            var value = context.expr()?.result;
+            if (token == null || IsInvalid(value))
+            {
+                context.result = ParserResultOps.CreateJump(context.Start, context.Stop);
+                return;
+            }
+
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ExitBreakStatement(context.Start, context.Stop, keyword, value);
+        }
+
+        private JumpResult ExitBreakStatement(IToken start, IToken stop, KeywordResult keyword, ExprResult value)
         {
             var qb = QualifierStack.Peek().GetLoopBlock();
             if (qb == null)
@@ -638,20 +699,22 @@ namespace akanevrc.TeuchiUdon
 
             return StoreJumpResult
             (
-                ParserResultOps.CreateJump(start, stop, value, () => Tables.Blocks[qb], () => Tables.Blocks[qb].Break)
+                ParserResultOps.CreateJump(start, stop, keyword, value, () => Tables.Blocks[qb], () => Tables.Blocks[qb].Break)
             );
         }
 
         public override void ExitLetBindStatement([NotNull] LetBindStatementContext context)
         {
+            var token   = context.LET();
             var varBind = context.varBind()?.result;
-            if (IsInvalid(varBind))
+            if (token == null || IsInvalid(varBind))
             {
                 context.result = ParserResultOps.CreateLetBind(context.Start, context.Stop);
                 return;
             }
 
-            context.result = ParserResultOps.CreateLetBind(context.Start, context.Stop, varBind);
+            var keyword    = ParserResultOps.CreateKeyword(token.Symbol, token.Symbol, token.GetText());
+            context.result = ParserResultOps.CreateLetBind(context.Start, context.Stop, keyword, varBind);
         }
 
         public override void ExitExprStatement([NotNull] ExprStatementContext context)
@@ -1992,7 +2055,7 @@ namespace akanevrc.TeuchiUdon
             }
             else
             {
-                var args       = new ArgExprResult[] { ParserResultOps.CreateArgExpr(exprs[0].Start, exprs[0].Stop, exprs[0], false) };
+                var args       = new ArgExprResult[] { ParserResultOps.CreateArgExpr(exprs[0].Start, exprs[0].Stop, null, exprs[0], false) };
                 context.result = ExitEvalFuncExprWithArgs(context.Start, context.Stop, exprs[1], args);
             }
         }
@@ -2012,7 +2075,7 @@ namespace akanevrc.TeuchiUdon
             }
             else
             {
-                var args       = new ArgExprResult[] { ParserResultOps.CreateArgExpr(exprs[1].Start, exprs[1].Stop, exprs[1], false) };
+                var args       = new ArgExprResult[] { ParserResultOps.CreateArgExpr(exprs[1].Start, exprs[1].Stop, null, exprs[1], false) };
                 context.result = ExitEvalFuncExprWithArgs(context.Start, context.Stop, exprs[0], args);
             }
         }
@@ -2058,9 +2121,11 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitLetInBindExpr([NotNull] LetInBindExprContext context)
         {
-            var varBind = context.varBind()?.result;
-            var expr    = context.expr   ()?.result;
-            if (IsInvalid(varBind) || IsInvalid(expr))
+            var letToken = context.LET();
+            var inToken  = context.IN();
+            var varBind  = context.varBind()?.result;
+            var expr     = context.expr   ()?.result;
+            if (letToken == null || inToken == null || IsInvalid(varBind) || IsInvalid(expr))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2069,16 +2134,20 @@ namespace akanevrc.TeuchiUdon
             QualifierStack.Pop();
 
             var index      = context.tableIndex;
+            var letKeyword = ParserResultOps.CreateKeyword(letToken.Symbol, letToken.Symbol, letToken.GetText());
+            var inKeyword  = ParserResultOps.CreateKeyword(inToken .Symbol, inToken .Symbol, inToken .GetText());
             var qual       = QualifierStack.Peek();
-            var letInBind  = ParserResultOps.CreateLetInBind(context.Start, context.Stop, expr.Inner.Type, index, qual, varBind, expr);
+            var letInBind  = ParserResultOps.CreateLetInBind(context.Start, context.Stop, expr.Inner.Type, index, letKeyword, inKeyword, qual, varBind, expr);
             context.result = ParserResultOps.CreateExpr(letInBind.Start, letInBind.Stop, letInBind);
         }
 
         public override void ExitIfExpr([NotNull] IfExprContext context)
         {
+            var ifToken   = context.IF();
+            var thenToken = context.THEN();
             var isoExpr   = context.isoExpr  ()?.result;
             var statement = context.statement()?.result;
-            if (IsInvalid(isoExpr) || IsInvalid(statement))
+            if (ifToken == null || thenToken == null || IsInvalid(isoExpr) || IsInvalid(statement))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2098,15 +2167,30 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            var if_        = ParserResultOps.CreateIf(context.Start, context.Stop, Primitives.Unit, new ExprResult[] { isoExpr.Expr }, new StatementResult[] { statement });
+            var ifKeyword   = ParserResultOps.CreateKeyword(ifToken  .Symbol, ifToken  .Symbol, ifToken  .GetText());
+            var thenKeyword = ParserResultOps.CreateKeyword(thenToken.Symbol, thenToken.Symbol, thenToken.GetText());
+            var if_         = ParserResultOps.CreateIf
+            (
+                context.Start,
+                context.Stop,
+                Primitives.Unit,
+                ifKeyword,
+                new KeywordResult[] { thenKeyword },
+                Enumerable.Empty<KeywordResult>(),
+                new ExprResult     [] { isoExpr.Expr },
+                new StatementResult[] { statement }
+            );
             context.result = ParserResultOps.CreateExpr(if_.Start, if_.Stop, if_);
         }
 
         public override void ExitIfElifExpr([NotNull] IfElifExprContext context)
         {
+            var ifToken    = context.IF();
+            var thenTokens = context.THEN();
+            var elifTokens = context.ELIF();
             var isoExprs   = context.isoExpr  ().Select(x => x?.result);
             var statements = context.statement().Select(x => x?.result);
-            if (isoExprs.Any(x => IsInvalid(x)) || statements.Any(x => IsInvalid(x)))
+            if (ifToken == null || !thenTokens.Any() || !elifTokens.Any() || isoExprs.Any(x => IsInvalid(x)) || statements.Any(x => IsInvalid(x)))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2126,14 +2210,30 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            var if_        = ParserResultOps.CreateIf(context.Start, context.Stop, Primitives.Unit, isoExprs.Select(x => x.Expr), statements);
+            var ifKeyword    = ParserResultOps.CreateKeyword(ifToken.Symbol, ifToken.Symbol, ifToken.GetText());
+            var thenKeywords = thenTokens.Select(x => ParserResultOps.CreateKeyword(x.Symbol, x.Symbol, x.GetText()));
+            var elifKeywords = elifTokens.Select(x => ParserResultOps.CreateKeyword(x.Symbol, x.Symbol, x.GetText()));
+            var if_       = ParserResultOps.CreateIf
+            (
+                context.Start,
+                context.Stop,
+                Primitives.Unit,
+                ifKeyword,
+                thenKeywords,
+                elifKeywords,
+                isoExprs.Select(x => x.Expr),
+                statements
+            );
             context.result = ParserResultOps.CreateExpr(if_.Start, if_.Stop, if_);
         }
 
         public override void ExitIfElseExpr([NotNull] IfElseExprContext context)
         {
+            var ifToken   = context.IF();
+            var thenToken = context.THEN();
+            var elseToken = context.ELSE();
             var isoExprs = context.isoExpr().Select(x => x?.result);
-            if (isoExprs.Any(x => IsInvalid(x)))
+            if (ifToken == null || thenToken == null || elseToken == null || isoExprs.Any(x => IsInvalid(x)))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2155,14 +2255,33 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            var if_        = ParserResultOps.CreateIfElse(context.Start, context.Stop, type, new ExprResult[] { exprs[0] }, new ExprResult[] { exprs[1] }, exprs[2]);
+            var ifKeyword   = ParserResultOps.CreateKeyword(ifToken  .Symbol, ifToken  .Symbol, ifToken  .GetText());
+            var thenKeyword = ParserResultOps.CreateKeyword(thenToken.Symbol, thenToken.Symbol, thenToken.GetText());
+            var elseKeyword = ParserResultOps.CreateKeyword(elseToken.Symbol, elseToken.Symbol, elseToken.GetText());
+            var if_         = ParserResultOps.CreateIfElse
+            (
+                context.Start,
+                context.Stop,
+                type,
+                ifKeyword,
+                elseKeyword,
+                new KeywordResult[] { thenKeyword },
+                Enumerable.Empty<KeywordResult>(),
+                new ExprResult[] { exprs[0] },
+                new ExprResult[] { exprs[1] },
+                exprs[2]
+            );
             context.result = ParserResultOps.CreateExpr(if_.Start, if_.Stop, if_);
         }
 
         public override void ExitIfElifElseExpr([NotNull] IfElifElseExprContext context)
         {
+            var ifToken    = context.IF();
+            var elseToken  = context.ELSE();
+            var thenTokens = context.THEN();
+            var elifTokens = context.ELIF();
             var isoExprs = context.isoExpr().Select(x => x?.result);
-            if (isoExprs.Any(x => IsInvalid(x)))
+            if (ifToken == null || elseToken == null || !thenTokens.Any() || !elifTokens.Any() || isoExprs.Any(x => IsInvalid(x)))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2189,15 +2308,33 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            var if_        = ParserResultOps.CreateIfElse(context.Start, context.Stop, type, conditions, thenParts, elsePart);
+            var ifKeyword    = ParserResultOps.CreateKeyword(ifToken  .Symbol, ifToken  .Symbol, ifToken  .GetText());
+            var elseKeyword  = ParserResultOps.CreateKeyword(elseToken.Symbol, elseToken.Symbol, elseToken.GetText());
+            var thenKeywords = thenTokens.Select(x => ParserResultOps.CreateKeyword(x.Symbol, x.Symbol, x.GetText()));
+            var elifKeywords = elifTokens.Select(x => ParserResultOps.CreateKeyword(x.Symbol, x.Symbol, x.GetText()));
+            var if_          = ParserResultOps.CreateIfElse
+            (
+                context.Start,
+                context.Stop,
+                type,
+                ifKeyword,
+                elseKeyword,
+                thenKeywords,
+                elifKeywords,
+                conditions,
+                thenParts,
+                elsePart
+            );
             context.result = ParserResultOps.CreateExpr(if_.Start, if_.Stop, if_);
         }
 
         public override void ExitWhileExpr([NotNull] WhileExprContext context)
         {
-            var isoExpr = context.isoExpr()?.result;
-            var expr    = context.expr   ()?.result;
-            if (IsInvalid(isoExpr) || IsInvalid(expr))
+            var whileToken = context.WHILE();
+            var doToken    = context.DO();
+            var isoExpr    = context.isoExpr()?.result;
+            var expr       = context.expr   ()?.result;
+            if (whileToken == null || doToken == null || IsInvalid(isoExpr) || IsInvalid(expr))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2210,8 +2347,10 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            var while_     = ParserResultOps.CreateWhile(context.Start, context.Stop, Primitives.Unit, isoExpr.Expr, expr);
-            context.result = ParserResultOps.CreateExpr(while_.Start, while_.Stop, while_);
+            var whileKeyword = ParserResultOps.CreateKeyword(whileToken.Symbol, whileToken.Symbol, whileToken.GetText());
+            var doKeyword    = ParserResultOps.CreateKeyword(doToken   .Symbol, doToken   .Symbol, doToken   .GetText());
+            var while_       = ParserResultOps.CreateWhile(context.Start, context.Stop, Primitives.Unit, whileKeyword, doKeyword, isoExpr.Expr, expr);
+            context.result   = ParserResultOps.CreateExpr(while_.Start, while_.Stop, while_);
         }
 
         public override void EnterForExpr([NotNull] ForExprContext context)
@@ -2225,9 +2364,11 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitForExpr([NotNull] ForExprContext context)
         {
-            var forBinds = context.forBind().Select(x => x?.result);
-            var expr     = context.expr()?.result;
-            if (forBinds.Any(x => IsInvalid(x)) || IsInvalid(expr))
+            var forTokens = context.FOR();
+            var doToken   = context.DO();
+            var forBinds  = context.forBind().Select(x => x?.result);
+            var expr      = context.expr()?.result;
+            if (!forTokens.Any() || doToken == null || forBinds.Any(x => IsInvalid(x)) || IsInvalid(expr))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -2235,22 +2376,26 @@ namespace akanevrc.TeuchiUdon
 
             QualifierStack.Pop();
 
-            var index      = context.tableIndex;
-            var for_       = ParserResultOps.CreateFor(context.Start, context.Stop, Primitives.Unit, index, forBinds, expr);
-            context.result = ParserResultOps.CreateExpr(for_.Start, for_.Stop, for_);
+            var index       = context.tableIndex;
+            var forKeywords = forTokens.Select(x => ParserResultOps.CreateKeyword(x.Symbol, x.Symbol, x.GetText()));
+            var doKeyword   = ParserResultOps.CreateKeyword(doToken.Symbol, doToken.Symbol, doToken.GetText());
+            var for_        = ParserResultOps.CreateFor(context.Start, context.Stop, Primitives.Unit, index, forKeywords, doKeyword, forBinds, expr);
+            context.result  = ParserResultOps.CreateExpr(for_.Start, for_.Stop, for_);
         }
 
         public override void ExitLoopExpr([NotNull] LoopExprContext context)
         {
-            var expr = context.expr()?.result;
-            if (IsInvalid(expr))
+            var loopToken = context.LOOP();
+            var expr      = context.expr()?.result;
+            if (loopToken == null || IsInvalid(expr))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
             
-            var loop       = ParserResultOps.CreateLoop(context.Start, context.Stop, Primitives.Unit, expr);
-            context.result = ParserResultOps.CreateExpr(loop.Start, loop.Stop, loop);
+            var loopKeyword = ParserResultOps.CreateKeyword(loopToken.Symbol, loopToken.Symbol, loopToken.GetText());
+            var loop        = ParserResultOps.CreateLoop(context.Start, context.Stop, Primitives.Unit, loopKeyword, expr);
+            context.result  = ParserResultOps.CreateExpr(loop.Start, loop.Stop, loop);
         }
 
         public override void EnterFuncExpr([NotNull] FuncExprContext context)
@@ -2471,15 +2616,17 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitArgExpr([NotNull] ArgExprContext context)
         {
-            var expr = context.expr()?.result;
-            var rf   = context.REF() != null;
+            var refToken = context.REF();
+            var expr     = context.expr()?.result;
+            var rf       = refToken != null;
             if (IsInvalid(expr))
             {
                 context.result = ParserResultOps.CreateArgExpr(context.Start, context.Stop);
                 return;
             }
 
-            context.result = ParserResultOps.CreateArgExpr(context.Start, context.Stop, expr, rf);
+            var refKeyword = ParserResultOps.CreateKeyword(refToken?.Symbol, refToken?.Symbol, refToken?.GetText());
+            context.result = ParserResultOps.CreateArgExpr(context.Start, context.Stop, refKeyword, expr, rf);
         }
 
         public override void EnterLetForBind([NotNull] LetForBindContext context)
@@ -2504,9 +2651,10 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitLetForBind([NotNull] LetForBindContext context)
         {
+            var letToken    = context.LET();
             var varDecl     = context.varDecl    ()?.result;
             var forIterExpr = context.forIterExpr()?.result;
-            if (IsInvalid(varDecl) || IsInvalid(forIterExpr))
+            if (letToken == null || IsInvalid(varDecl) || IsInvalid(forIterExpr))
             {
                 context.result = ParserResultOps.CreateLetForBind(context.Start, context.Stop);
                 return;
@@ -2594,7 +2742,8 @@ namespace akanevrc.TeuchiUdon
                 LogicalErrorHandler.ReportError(context.Start, $"function variable cannot be mutable");
             }
 
-            context.result = ParserResultOps.CreateLetForBind(context.Start, context.Stop, index, qual, vars, varDecl, forIterExpr);
+            var letKeyword = ParserResultOps.CreateKeyword(letToken.Symbol, letToken.Symbol, letToken.GetText());
+            context.result = ParserResultOps.CreateLetForBind(context.Start, context.Stop, index, letKeyword, qual, vars, varDecl, forIterExpr);
         }
 
         public override void ExitAssignForBind([NotNull] AssignForBindContext context)

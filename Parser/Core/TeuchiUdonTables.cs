@@ -4,6 +4,7 @@ namespace akanevrc.TeuchiUdon
 {
     public class TeuchiUdonTables
     {
+        public List<TeuchiUdonParserResult> ParserResults { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> PublicVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
@@ -33,16 +34,17 @@ namespace akanevrc.TeuchiUdon
         {
             Primitives = primitives;
 
-            Vars       = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
-            PublicVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
-            SyncedVars = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
-            EventFuncs = new Dictionary<TeuchiUdonVar     , TeuchiUdonFunc>();
-            Literals   = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
-            This       = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
-            Funcs      = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
-            Indirects  = new Dictionary<TeuchiUdonIndirect, uint>();
-            Blocks     = new Dictionary<TeuchiUdonBlock   , TeuchiUdonBlock>();
-            UsedData   = new HashSet<IDataLabel>();
+            ParserResults = new List<TeuchiUdonParserResult>();
+            Vars          = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
+            PublicVars    = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
+            SyncedVars    = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();
+            EventFuncs    = new Dictionary<TeuchiUdonVar     , TeuchiUdonFunc>();
+            Literals      = new Dictionary<TeuchiUdonLiteral , TeuchiUdonLiteral>();
+            This          = new Dictionary<TeuchiUdonThis    , TeuchiUdonThis>();
+            Funcs         = new Dictionary<TeuchiUdonFunc    , TeuchiUdonFunc>();
+            Indirects     = new Dictionary<TeuchiUdonIndirect, uint>();
+            Blocks        = new Dictionary<TeuchiUdonBlock   , TeuchiUdonBlock>();
+            UsedData      = new HashSet<IDataLabel>();
 
             VarCounter      = 0;
             OutValueCounter = 0;

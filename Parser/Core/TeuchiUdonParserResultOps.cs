@@ -43,62 +43,77 @@ namespace akanevrc.TeuchiUdon
 
         public TargetResult CreateTarget(IToken start, IToken stop)
         {
-            return new TargetResult(start, stop);
+            return new TargetResult(Tables, start, stop);
         }
 
         public TargetResult CreateTarget(IToken start, IToken stop, BodyResult body)
         {
-            return new TargetResult(start, stop, body);
+            return new TargetResult(Tables, start, stop, body);
         }
 
         public BodyResult CreateBody(IToken start, IToken stop)
         {
-            return new BodyResult(start, stop);
+            return new BodyResult(Tables, start, stop);
         }
 
         public BodyResult CreateBody(IToken start, IToken stop, IEnumerable<TopStatementResult> topStatements)
         {
-            return new BodyResult(start, stop, topStatements);
+            return new BodyResult(Tables, start, stop, topStatements);
         }
 
         public TopBindResult CreateTopBind(IToken start, IToken stop)
         {
-            return new TopBindResult(start, stop);
+            return new TopBindResult(Tables, start, stop);
         }
 
         public TopBindResult CreateTopBind(IToken start, IToken stop, VarBindResult varBind, bool pub, TeuchiUdonSyncMode sync)
         {
-            return new TopBindResult(start, stop, varBind, pub, sync);
+            return new TopBindResult(Tables, start, stop, varBind, pub, sync);
         }
 
         public TopExprResult CreateTopExpr(IToken start, IToken stop)
         {
-            return new TopExprResult(start, stop);
+            return new TopExprResult(Tables, start, stop);
         }
 
         public TopExprResult CreateTopExpr(IToken start, IToken stop, ExprResult expr)
         {
-            return new TopExprResult(start, stop, expr);
+            return new TopExprResult(Tables, start, stop, expr);
         }
 
         public PublicVarAttrResult CreatePublicVarAttr(IToken start, IToken stop)
         {
-            return new PublicVarAttrResult(start, stop);
+            return new PublicVarAttrResult(Tables, start, stop);
+        }
+
+        public PublicVarAttrResult CreatePublicVarAttr(IToken start, IToken stop, KeywordResult keyword)
+        {
+            return new PublicVarAttrResult(Tables, start, stop, keyword);
         }
 
         public SyncVarAttrResult CreateSyncVarAttr(IToken start, IToken stop)
         {
-            return new SyncVarAttrResult(start, stop);
+            return new SyncVarAttrResult(Tables, start, stop);
         }
 
-        public SyncVarAttrResult CreateSyncVarAttr(IToken start, IToken stop, TeuchiUdonSyncMode mode)
+        public SyncVarAttrResult CreateSyncVarAttr(IToken start, IToken stop, KeywordResult keyword, TeuchiUdonSyncMode mode)
         {
-            return new SyncVarAttrResult(start, stop, mode);
+            return new SyncVarAttrResult(Tables, start, stop, keyword, mode);
+        }
+
+        public KeywordResult CreateKeyword(IToken start, IToken stop)
+        {
+            return new KeywordResult(Tables, start, stop);
+        }
+
+        public KeywordResult CreateKeyword(IToken start, IToken stop, string name)
+        {
+            return new KeywordResult(Tables, start, stop, name);
         }
 
         public VarBindResult CreateVarBind(IToken start, IToken stop)
         {
-            return new VarBindResult(start, stop);
+            return new VarBindResult(Tables, start, stop);
         }
 
         public VarBindResult CreateVarBind
@@ -106,6 +121,7 @@ namespace akanevrc.TeuchiUdon
             IToken start,
             IToken stop,
             int index,
+            KeywordResult mutKeyword,
             TeuchiUdonQualifier qualifier,
             IEnumerable<TeuchiUdonVar> vars,
             VarDeclResult varDecl,
@@ -119,12 +135,12 @@ namespace akanevrc.TeuchiUdon
                 Tables.Vars[v] = v;
             }
 
-            return new VarBindResult(start, stop, varBind, vars, varDecl, expr);
+            return new VarBindResult(Tables, start, stop, mutKeyword, varBind, vars, varDecl, expr);
         }
 
         public VarDeclResult CreateVarDecl(IToken start, IToken stop)
         {
-            return new VarDeclResult(start, stop);
+            return new VarDeclResult(Tables, start, stop);
         }
 
         public VarDeclResult CreateVarDecl(IToken start, IToken stop, TeuchiUdonQualifier qualifier, IEnumerable<QualifiedVarResult> qualifiedVars)
@@ -158,82 +174,90 @@ namespace akanevrc.TeuchiUdon
                 }
             }
 
-            return new VarDeclResult(start, stop, vars, types, qualifiedVars);
+            return new VarDeclResult(Tables, start, stop, vars, types, qualifiedVars);
         }
 
         public QualifiedVarResult CreateQualifiedVar(IToken start, IToken stop)
         {
-            return new QualifiedVarResult(start, stop);
+            return new QualifiedVarResult(Tables, start, stop);
         }
 
         public QualifiedVarResult CreateQualifiedVar(IToken start, IToken stop, IdentifierResult identifier, ExprResult qualified)
         {
-            return new QualifiedVarResult(start, stop, identifier, qualified);
+            return new QualifiedVarResult(Tables, start, stop, identifier, qualified);
         }
 
         public IdentifierResult CreateIdentifier(IToken start, IToken stop)
         {
-            return new IdentifierResult(start, stop);
+            return new IdentifierResult(Tables, start, stop);
         }
 
         public IdentifierResult CreateIdentifier(IToken start, IToken stop, string name)
         {
-            return new IdentifierResult(start, stop, name);
+            return new IdentifierResult(Tables, start, stop, name);
         }
 
         public JumpResult CreateJump(IToken start, IToken stop)
         {
-            return new JumpResult(start, stop);
+            return new JumpResult(Tables, start, stop);
         }
 
-        public JumpResult CreateJump(IToken start, IToken stop, ExprResult value, Func<TeuchiUdonBlock> block, Func<ITeuchiUdonLabel> label)
+        public JumpResult CreateJump
+        (
+            IToken start,
+            IToken stop,
+            KeywordResult jumpKeyword,
+            ExprResult value,
+            Func<TeuchiUdonBlock> block,
+            Func<ITeuchiUdonLabel> label
+        )
         {
-            return new JumpResult(start, stop, value, block, label);
+            return new JumpResult(Tables, start, stop, jumpKeyword, value, block, label);
         }
 
         public LetBindResult CreateLetBind(IToken start, IToken stop)
         {
-            return new LetBindResult(start, stop);
+            return new LetBindResult(Tables, start, stop);
         }
 
-        public LetBindResult CreateLetBind(IToken start, IToken stop, VarBindResult varBind)
+        public LetBindResult CreateLetBind(IToken start, IToken stop, KeywordResult letKeyword, VarBindResult varBind)
         {
-            return new LetBindResult(start, stop, varBind);
+            return new LetBindResult(Tables, start, stop, letKeyword, varBind);
         }
 
         public ExprResult CreateExpr(IToken start, IToken stop)
         {
-            return new ExprResult(start, stop);
+            return new ExprResult(Tables, start, stop);
         }
 
         public ExprResult CreateExpr(IToken start, IToken stop, TypedResult inner)
         {
-            return new ExprResult(start, stop, inner);
+            return new ExprResult(Tables, start, stop, inner);
         }
 
         public ExprResult CreateExpr(IToken start, IToken stop, TypedResult inner, bool returnsValue)
         {
-            return new ExprResult(start, stop, inner) { ReturnsValue = returnsValue };
+            return new ExprResult(Tables, start, stop, inner) { ReturnsValue = returnsValue };
         }
 
         public InvalidResult CreateInvalid(IToken start, IToken stop)
         {
-            return new InvalidResult(start, stop, Invalids.InvalidType, true);
+            return new InvalidResult(Tables, start, stop, Invalids.InvalidType, true);
         }
 
         public UnknownTypeResult CreateUnknownType(IToken start, IToken stop)
         {
-            return new UnknownTypeResult(start, stop, Primitives.Type.ApplyArgAsType(Primitives.Unknown), false);
+            return new UnknownTypeResult(Tables, start, stop, Primitives.Type.ApplyArgAsType(Primitives.Unknown), false);
         }
 
         public UnitResult CreateUnit(IToken start, IToken stop)
         {
-            return new UnitResult(start, stop, Primitives.Unit, true);
+            return new UnitResult(Tables, start, stop, Primitives.Unit, true);
         }
 
         public BlockResult CreateBlock(IToken start, IToken stop)
         {
-            return new BlockResult(start, stop, Invalids.InvalidType);
+            return new BlockResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public BlockResult CreateBlock
@@ -254,37 +278,37 @@ namespace akanevrc.TeuchiUdon
                 Tables.Blocks.Add(block, block);
             }
 
-            return new BlockResult(start, stop, type, !TypeOps.ContainsUnknown(type), block, statements, expr);
+            return new BlockResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), block, statements, expr);
         }
 
         public ParenResult CreateParen(IToken start, IToken stop)
         {
-            return new ParenResult(start, stop, Invalids.InvalidType);
+            return new ParenResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public ParenResult CreateParen(IToken start, IToken stop, TeuchiUdonType type, ExprResult expr)
         {
-            return new ParenResult(start, stop, type, !TypeOps.ContainsUnknown(type), expr);
+            return new ParenResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), expr);
         }
 
         public TupleResult CreateTuple(IToken start, IToken stop)
         {
-            return new TupleResult(start, stop, Invalids.InvalidType);
+            return new TupleResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public TupleResult CreateTuple(IToken start, IToken stop, TeuchiUdonType type, IEnumerable<ExprResult> exprs)
         {
-            return new TupleResult(start, stop, type, !TypeOps.ContainsUnknown(type), exprs);
+            return new TupleResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), exprs);
         }
 
         public ArrayCtorResult CreateArrayCtor(IToken start, IToken stop)
         {
-            return new ArrayCtorResult(start, stop, Invalids.InvalidType);
+            return new ArrayCtorResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public ArrayCtorResult CreateArrayCtor(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier, IEnumerable<IterExprResult> iters)
         {
-            var result = new ArrayCtorResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, iters);
+            var result = new ArrayCtorResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, iters);
 
             foreach (var o in result.Children.SelectMany(x => x.ReleasedOutValues))
             {
@@ -298,7 +322,7 @@ namespace akanevrc.TeuchiUdon
 
         public LiteralResult CreateLiteral(IToken start, IToken stop)
         {
-            return new LiteralResult(start, stop, Invalids.InvalidType);
+            return new LiteralResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public LiteralResult CreateLiteral(IToken start, IToken stop, TeuchiUdonType type, int index, string text, object value)
@@ -314,7 +338,7 @@ namespace akanevrc.TeuchiUdon
                 Tables.Literals.Add(literal, literal);
             }
 
-            return new LiteralResult(start, stop, type, !TypeOps.ContainsUnknown(type), literal);
+            return new LiteralResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), literal);
         }
 
         public ThisResult CreateThis(IToken start, IToken stop)
@@ -330,12 +354,12 @@ namespace akanevrc.TeuchiUdon
                 Tables.This.Add(this_, this_);
             }
 
-            return new ThisResult(start, stop, Primitives.GameObject, true, this_);
+            return new ThisResult(Tables, start, stop, Primitives.GameObject, true, this_);
         }
 
         public InterpolatedStringResult CreateInterpolatedString(IToken start, IToken stop)
         {
-            return new InterpolatedStringResult(start, stop, Invalids.InvalidType);
+            return new InterpolatedStringResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public InterpolatedStringResult CreateInterpolatedString
@@ -347,7 +371,7 @@ namespace akanevrc.TeuchiUdon
             IEnumerable<ExprResult> exprs
         )
         {
-            var result = new InterpolatedStringResult(start, stop, Primitives.String, true, qualifier, stringLiteral, exprs);
+            var result = new InterpolatedStringResult(Tables, start, stop, Primitives.String, true, qualifier, stringLiteral, exprs);
 
             foreach (var o in result.Children.SelectMany(x => x.ReleasedOutValues))
             {
@@ -361,62 +385,62 @@ namespace akanevrc.TeuchiUdon
 
         public RegularStringInterpolatedStringPartResult CreateRegularStringInterpolatedStringPart(IToken start, IToken stop)
         {
-            return new RegularStringInterpolatedStringPartResult(start, stop, Invalids.InvalidType);
+            return new RegularStringInterpolatedStringPartResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public RegularStringInterpolatedStringPartResult CreateRegularStringInterpolatedStringPart(IToken start, IToken stop, string rawString)
         {
-            return new RegularStringInterpolatedStringPartResult(start, stop, Primitives.String, true, rawString);
+            return new RegularStringInterpolatedStringPartResult(Tables, start, stop, Primitives.String, true, rawString);
         }
 
         public ExprInterpolatedStringPartResult CreateExprInterpolatedStringPart(IToken start, IToken stop)
         {
-            return new ExprInterpolatedStringPartResult(start, stop, Invalids.InvalidType);
+            return new ExprInterpolatedStringPartResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public ExprInterpolatedStringPartResult CreateExprInterpolatedStringPart(IToken start, IToken stop, ExprResult expr)
         {
-            return new ExprInterpolatedStringPartResult(start, stop, Primitives.String, true, expr);
+            return new ExprInterpolatedStringPartResult(Tables, start, stop, Primitives.String, true, expr);
         }
 
         public EvalVarResult CreateEvalVar(IToken start, IToken stop)
         {
-            return new EvalVarResult(start, stop, Invalids.InvalidType);
+            return new EvalVarResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalVarResult CreateEvalVar(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonVar v)
         {
-            return new EvalVarResult(start, stop, type, !TypeOps.ContainsUnknown(type), v);
+            return new EvalVarResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), v);
         }
 
         public EvalTypeResult CreateEvalType(IToken start, IToken stop)
         {
-            return new EvalTypeResult(start, stop, Invalids.InvalidType);
+            return new EvalTypeResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalTypeResult CreateEvalType(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonType innerType)
         {
-            return new EvalTypeResult(start, stop, type, !TypeOps.ContainsUnknown(type), innerType);
+            return new EvalTypeResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), innerType);
         }
 
         public EvalQualifierResult CreateEvalQualifier(IToken start, IToken stop)
         {
-            return new EvalQualifierResult(start, stop, Invalids.InvalidType);
+            return new EvalQualifierResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalQualifierResult CreateEvalQualifier(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier)
         {
-            return new EvalQualifierResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier);
+            return new EvalQualifierResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier);
         }
 
         public EvalGetterResult CreateEvalGetter(IToken start, IToken stop)
         {
-            return new EvalGetterResult(start, stop, Invalids.InvalidType);
+            return new EvalGetterResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalGetterResult CreateEvalGetter(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod getter)
         {
-            var result = new EvalGetterResult(start, start, type, !TypeOps.ContainsUnknown(type), qualifier, getter);
+            var result = new EvalGetterResult(Tables, start, start, type, !TypeOps.ContainsUnknown(type), qualifier, getter);
 
             InitExternResult(result);
 
@@ -425,12 +449,12 @@ namespace akanevrc.TeuchiUdon
 
         public EvalSetterResult CreateEvalSetter(IToken start, IToken stop)
         {
-            return new EvalSetterResult(start, stop, Invalids.InvalidType);
+            return new EvalSetterResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalSetterResult CreateEvalSetter(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier, TeuchiUdonMethod setter)
         {
-            var result = new EvalSetterResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, setter);
+            var result = new EvalSetterResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, setter);
 
             InitExternResult(result);
 
@@ -439,7 +463,7 @@ namespace akanevrc.TeuchiUdon
 
         public EvalGetterSetterResult CreateEvalGetterSetter(IToken start, IToken stop)
         {
-            return new EvalGetterSetterResult(start, stop, Invalids.InvalidType);
+            return new EvalGetterSetterResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalGetterSetterResult CreateEvalGetterSetter
@@ -452,7 +476,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonMethod setter
         )
         {
-            var result = new EvalGetterSetterResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, getter, setter);
+            var result = new EvalGetterSetterResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, getter, setter);
 
             InitExternResult(result);
 
@@ -461,7 +485,7 @@ namespace akanevrc.TeuchiUdon
 
         public EvalFuncResult CreateEvalFunc(IToken start, IToken stop)
         {
-            return new EvalFuncResult(start, stop, Invalids.InvalidType);
+            return new EvalFuncResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalFuncResult CreateEvalFunc
@@ -478,12 +502,12 @@ namespace akanevrc.TeuchiUdon
             var evalFunc = new TeuchiUdonEvalFunc(index, qualifier);
             var outValue = OutValuePool.RetainOutValue(qualifier.GetFuncQualifier(), Primitives.UInt);
 
-            return new EvalFuncResult(start, stop, type, !TypeOps.ContainsUnknown(type), evalFunc, outValue, expr, args);
+            return new EvalFuncResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), evalFunc, outValue, expr, args);
         }
 
         public EvalSpreadFuncResult CreateEvalSpreadFunc(IToken start, IToken stop)
         {
-            return new EvalSpreadFuncResult(start, stop, Invalids.InvalidType);
+            return new EvalSpreadFuncResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalSpreadFuncResult CreateEvalSpreadFunc
@@ -500,12 +524,12 @@ namespace akanevrc.TeuchiUdon
             var evalFunc = new TeuchiUdonEvalFunc(index, qualifier);
             var outValue = OutValuePool.RetainOutValue(qualifier.GetFuncQualifier(), Primitives.UInt);
 
-            return new EvalSpreadFuncResult(start, stop, type, !TypeOps.ContainsUnknown(type), evalFunc, outValue, expr, arg);
+            return new EvalSpreadFuncResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), evalFunc, outValue, expr, arg);
         }
 
         public EvalMethodResult CreateEvalMethod(IToken start, IToken stop)
         {
-            return new EvalMethodResult(start, stop, Invalids.InvalidType);
+            return new EvalMethodResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalMethodResult CreateEvalMethod
@@ -519,7 +543,7 @@ namespace akanevrc.TeuchiUdon
             IEnumerable<ExprResult> args
         )
         {
-            var result = new EvalMethodResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr, args);
+            var result = new EvalMethodResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr, args);
 
             result.Instance = expr.Inner.Instance;
 
@@ -530,7 +554,7 @@ namespace akanevrc.TeuchiUdon
 
         public EvalSpreadMethodResult CreateEvalSpreadMethod(IToken start, IToken stop)
         {
-            return new EvalSpreadMethodResult(start, stop, Invalids.InvalidType);
+            return new EvalSpreadMethodResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalSpreadMethodResult CreateEvalSpreadMethod
@@ -544,7 +568,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult arg
         )
         {
-            var result = new EvalSpreadMethodResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr, arg);
+            var result = new EvalSpreadMethodResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr, arg);
 
             result.Instance = expr.Inner.Instance;
 
@@ -555,7 +579,7 @@ namespace akanevrc.TeuchiUdon
 
         public EvalCoalescingMethodResult CreateEvalCoalescingMethod(IToken start, IToken stop)
         {
-            return new EvalCoalescingMethodResult(start, stop, Invalids.InvalidType);
+            return new EvalCoalescingMethodResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalCoalescingMethodResult CreateEvalCoalescingMethod
@@ -570,7 +594,7 @@ namespace akanevrc.TeuchiUdon
             IEnumerable<ExprResult> args
         )
         {
-            var result = new EvalCoalescingMethodResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr1, expr2, args);
+            var result = new EvalCoalescingMethodResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr1, expr2, args);
 
             result.Instance = expr2.Inner.Instance;
 
@@ -581,7 +605,7 @@ namespace akanevrc.TeuchiUdon
 
         public EvalCoalescingSpreadMethodResult CreateEvalCoalescingSpreadMethod(IToken start, IToken stop)
         {
-            return new EvalCoalescingSpreadMethodResult(start, stop, Invalids.InvalidType);
+            return new EvalCoalescingSpreadMethodResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalCoalescingSpreadMethodResult CreateEvalCoalescingSpreadMethod
@@ -596,7 +620,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult arg
         )
         {
-            var result = new EvalCoalescingSpreadMethodResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr1, expr2, arg);
+            var result = new EvalCoalescingSpreadMethodResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, method, expr1, expr2, arg);
 
             result.Instance = expr2.Inner.Instance;
 
@@ -607,32 +631,32 @@ namespace akanevrc.TeuchiUdon
 
         public EvalCastResult CreateEvalCast(IToken start, IToken stop)
         {
-            return new EvalCastResult(start, stop, Invalids.InvalidType);
+            return new EvalCastResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalCastResult CreateEvalCast(IToken start, IToken stop, TeuchiUdonType type, ExprResult expr)
         {
-            return new EvalCastResult(start, stop, type, !TypeOps.ContainsUnknown(type), expr);
+            return new EvalCastResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), expr);
         }
 
         public EvalTypeOfResult CreateEvalTypeOf(IToken start, IToken stop)
         {
-            return new EvalTypeOfResult(start, stop, Primitives.TypeOf, true);
+            return new EvalTypeOfResult(Tables, start, stop, Primitives.TypeOf, true);
         }
 
         public EvalVarCandidateResult CreateEvalVarCandidate(IToken start, IToken stop)
         {
-            return new EvalVarCandidateResult(start, stop, Invalids.InvalidType);
+            return new EvalVarCandidateResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalVarCandidateResult CreateEvalVarCandidate(IToken start, IToken stop, IdentifierResult identifier)
         {
-            return new EvalVarCandidateResult(start, stop, Primitives.Unknown, false, identifier);
+            return new EvalVarCandidateResult(Tables, start, stop, Primitives.Unknown, false, identifier);
         }
 
         public EvalArrayIndexerResult CreateEvalArrayIndexer(IToken start, IToken stop)
         {
-            return new EvalArrayIndexerResult(start, stop, Invalids.InvalidType);
+            return new EvalArrayIndexerResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public EvalArrayIndexerResult CreateEvalArrayIndexer
@@ -645,7 +669,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult arg
         )
         {
-            var result = new EvalArrayIndexerResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, expr, arg);
+            var result = new EvalArrayIndexerResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, expr, arg);
 
             InitExternResult(result);
 
@@ -654,22 +678,22 @@ namespace akanevrc.TeuchiUdon
 
         public TypeCastResult CreateTypeCast(IToken start, IToken stop)
         {
-            return new TypeCastResult(start, stop, Invalids.InvalidType);
+            return new TypeCastResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public TypeCastResult CreateTypeCast(IToken start, IToken stop, TeuchiUdonType type, ExprResult expr, ExprResult arg)
         {
-            return new TypeCastResult(start, stop, type, !TypeOps.ContainsUnknown(type), expr, arg);
+            return new TypeCastResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), expr, arg);
         }
 
         public ConvertCastResult CreateConvertCast(IToken start, IToken stop)
         {
-            return new ConvertCastResult(start, stop, Invalids.InvalidType);
+            return new ConvertCastResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public ConvertCastResult CreateConvertCast(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult expr, ExprResult arg)
         {
-            var result = new ConvertCastResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, expr, arg);
+            var result = new ConvertCastResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, expr, arg);
 
             InitExternResult(result);
 
@@ -678,24 +702,24 @@ namespace akanevrc.TeuchiUdon
 
         public TypeOfResult CreateTypeOf(IToken start, IToken stop)
         {
-            return new TypeOfResult(start, stop, Invalids.InvalidType);
+            return new TypeOfResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public TypeOfResult CreateTypeOf(IToken start, IToken stop, TeuchiUdonType type)
         {
             var literal = SyntaxOps.CreateDotNetTypeLiteral(Tables.GetLiteralIndex(), type);
 
-            return new TypeOfResult(start, stop, Primitives.DotNetType, true, literal);
+            return new TypeOfResult(Tables, start, stop, Primitives.DotNetType, true, literal);
         }
 
         public PrefixResult CreatePrefix(IToken start, IToken stop)
         {
-            return new PrefixResult(start, stop, Invalids.InvalidType);
+            return new PrefixResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public PrefixResult CreatePrefix(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier, string op, ExprResult expr)
         {
-            var result = new PrefixResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, op, expr);
+            var result = new PrefixResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, op, expr);
 
             InitExternResult(result);
 
@@ -704,7 +728,7 @@ namespace akanevrc.TeuchiUdon
 
         public InfixResult CreateInfix(IToken start, IToken stop)
         {
-            return new InfixResult(start, stop, Invalids.InvalidType);
+            return new InfixResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public InfixResult CreateInfix
@@ -718,7 +742,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult expr2
         )
         {
-            var result = new InfixResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, op, expr1, expr2);
+            var result = new InfixResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, op, expr1, expr2);
 
             if (op == "." || op == "?.")
             {
@@ -733,7 +757,7 @@ namespace akanevrc.TeuchiUdon
 
         public LetInBindResult CreateLetInBind(IToken start, IToken stop)
         {
-            return new LetInBindResult(start, stop, Invalids.InvalidType);
+            return new LetInBindResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public LetInBindResult CreateLetInBind
@@ -742,6 +766,8 @@ namespace akanevrc.TeuchiUdon
             IToken stop,
             TeuchiUdonType type,
             int index,
+            KeywordResult letKeyword,
+            KeywordResult inKeyword,
             TeuchiUdonQualifier qualifier,
             VarBindResult varBind,
             ExprResult expr
@@ -749,27 +775,50 @@ namespace akanevrc.TeuchiUdon
         {
             var letIn = new TeuchiUdonLetIn(index, qualifier);
 
-            return new LetInBindResult(start, stop, type, !TypeOps.ContainsUnknown(type), letIn, varBind, expr);
+            return new LetInBindResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), letKeyword, inKeyword, letIn, varBind, expr);
         }
 
         public IfResult CreateIf(IToken start, IToken stop)
         {
-            return new IfResult(start, stop, Invalids.InvalidType);
+            return new IfResult(Tables, start, stop, Invalids.InvalidType);
         }
 
-        public IfResult CreateIf(IToken start, IToken stop, TeuchiUdonType type, IEnumerable<ExprResult> conditions, IEnumerable<StatementResult> statements)
+        public IfResult CreateIf
+        (
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            KeywordResult ifKeyword,
+            IEnumerable<KeywordResult> thenKeyword,
+            IEnumerable<KeywordResult> elifKeyword,
+            IEnumerable<ExprResult> conditions,
+            IEnumerable<StatementResult> statements
+        )
         {
             var labels =
                 Enumerable
                 .Range(0, conditions.Count())
                 .Select(_ => new TeuchiUdonBranch(Tables.GetBranchIndex()));
 
-            return new IfResult(start, stop, type, !TypeOps.ContainsUnknown(type), conditions, statements, labels);
+            return new IfResult
+            (
+                Tables,
+                start,
+                stop,
+                type,
+                !TypeOps.ContainsUnknown(type),
+                ifKeyword,
+                thenKeyword,
+                elifKeyword,
+                conditions,
+                statements,
+                labels
+            );
         }
 
         public IfElseResult CreateIfElse(IToken start, IToken stop)
         {
-            return new IfElseResult(start, stop, Invalids.InvalidType);
+            return new IfElseResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public IfElseResult CreateIfElse
@@ -777,6 +826,10 @@ namespace akanevrc.TeuchiUdon
             IToken start,
             IToken stop,
             TeuchiUdonType type,
+            KeywordResult ifKeyword,
+            KeywordResult elseKeyword,
+            IEnumerable<KeywordResult> thenKeyword,
+            IEnumerable<KeywordResult> elifKeyword,
             IEnumerable<ExprResult> conditions,
             IEnumerable<ExprResult> thenParts,
             ExprResult elsePart
@@ -788,7 +841,22 @@ namespace akanevrc.TeuchiUdon
                 .Select(_ => new TeuchiUdonBranch(Tables.GetBranchIndex()))
                 .ToArray();
 
-            var result = new IfElseResult(start, stop, type, !TypeOps.ContainsUnknown(type), conditions, thenParts, elsePart, labels);
+            var result = new IfElseResult
+            (
+                Tables,
+                start,
+                stop,
+                type,
+                !TypeOps.ContainsUnknown(type),
+                ifKeyword,
+                elseKeyword,
+                thenKeyword,
+                elifKeyword,
+                conditions,
+                thenParts,
+                elsePart,
+                labels
+            );
 
             foreach (var o in result.Children.SelectMany(x => x.ReleasedOutValues))
             {
@@ -800,10 +868,19 @@ namespace akanevrc.TeuchiUdon
 
         public WhileResult CreateWhile(IToken start, IToken stop)
         {
-            return new WhileResult(start, stop, Invalids.InvalidType);
+            return new WhileResult(Tables, start, stop, Invalids.InvalidType);
         }
 
-        public WhileResult CreateWhile(IToken start, IToken stop, TeuchiUdonType type, ExprResult condition, ExprResult expr)
+        public WhileResult CreateWhile
+        (
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            KeywordResult whileKeyword,
+            KeywordResult doKeyword,
+            ExprResult condition,
+            ExprResult expr
+        )
         {
             var labels = new ICodeLabel[]
             {
@@ -817,15 +894,37 @@ namespace akanevrc.TeuchiUdon
                 block.Block.Break    = labels[1];
             }
 
-            return new WhileResult(start, stop, type, !TypeOps.ContainsUnknown(type), condition, expr, labels);
+            return new WhileResult
+            (
+                Tables,
+                start,
+                stop,
+                type,
+                !TypeOps.ContainsUnknown(type),
+                whileKeyword,
+                doKeyword,
+                condition,
+                expr,
+                labels
+            );
         }
 
         public ForResult CreateFor(IToken start, IToken stop)
         {
-            return new ForResult(start, stop, Invalids.InvalidType);
+            return new ForResult(Tables, start, stop, Invalids.InvalidType);
         }
 
-        public ForResult CreateFor(IToken start, IToken stop, TeuchiUdonType type, int index, IEnumerable<ForBindResult> forBinds, ExprResult expr)
+        public ForResult CreateFor
+        (
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            int index,
+            IEnumerable<KeywordResult> forKeywords,
+            KeywordResult doKeyword,
+            IEnumerable<ForBindResult> forBinds,
+            ExprResult expr
+        )
         {
             var continueLabel = new TeuchiUdonLoop(Tables.GetLoopIndex());
 
@@ -840,15 +939,28 @@ namespace akanevrc.TeuchiUdon
                         null;
             }
 
-            return new ForResult(start, stop, type, !TypeOps.ContainsUnknown(type), index, forBinds, expr, continueLabel);
+            return new ForResult
+            (
+                Tables,
+                start,
+                stop,
+                type,
+                !TypeOps.ContainsUnknown(type),
+                index,
+                forKeywords,
+                doKeyword,
+                forBinds,
+                expr,
+                continueLabel
+            );
         }
 
         public LoopResult CreateLoop(IToken start, IToken stop)
         {
-            return new LoopResult(start, stop, Invalids.InvalidType);
+            return new LoopResult(Tables, start, stop, Invalids.InvalidType);
         }
 
-        public LoopResult CreateLoop(IToken start, IToken stop, TeuchiUdonType type, ExprResult expr)
+        public LoopResult CreateLoop(IToken start, IToken stop, TeuchiUdonType type, KeywordResult loopKeyword, ExprResult expr)
         {
             var labels = new ICodeLabel[]
             {
@@ -862,12 +974,12 @@ namespace akanevrc.TeuchiUdon
                 block.Block.Break    = labels[1];
             }
 
-            return new LoopResult(start, stop, type, !TypeOps.ContainsUnknown(type), expr, labels);
+            return new LoopResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), loopKeyword, expr, labels);
         }
 
         public FuncResult CreateFunc(IToken start, IToken stop)
         {
-            return new FuncResult(start, stop, Invalids.InvalidType);
+            return new FuncResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public FuncResult CreateFunc
@@ -899,22 +1011,22 @@ namespace akanevrc.TeuchiUdon
                 block.Block.Return = func.Return;
             }
 
-            return new FuncResult(start, stop, type, !TypeOps.ContainsUnknown(type), func, varDecl, expr, deterministic);
+            return new FuncResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), func, varDecl, expr, deterministic);
         }
 
         public MethodResult CreateMethod(IToken start, IToken stop)
         {
-            return new MethodResult(start, stop, Invalids.InvalidType);
+            return new MethodResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public MethodResult CreateMethod(IToken start, IToken stop, TeuchiUdonType type, IdentifierResult identifier)
         {
-            return new MethodResult(start, stop, type, !TypeOps.ContainsUnknown(type), identifier);
+            return new MethodResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), identifier);
         }
 
         public ElementsIterExprResult CreateElementsIterExpr(IToken start, IToken stop)
         {
-            return new ElementsIterExprResult(start, stop, Invalids.InvalidType);
+            return new ElementsIterExprResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public ElementsIterExprResult CreateElementsIterExpr
@@ -926,7 +1038,7 @@ namespace akanevrc.TeuchiUdon
             IEnumerable<ExprResult> exprs
         )
         {
-            var result = new ElementsIterExprResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, exprs);
+            var result = new ElementsIterExprResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, exprs);
 
             InitExternResult(result);
 
@@ -935,7 +1047,7 @@ namespace akanevrc.TeuchiUdon
 
         public RangeIterExprResult CreateRangeIterExpr(IToken start, IToken stop)
         {
-            return new RangeIterExprResult(start, stop, Invalids.InvalidType);
+            return new RangeIterExprResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public RangeIterExprResult CreateRangeIterExpr
@@ -948,7 +1060,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult last
         )
         {
-            var result = new RangeIterExprResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, first, last);
+            var result = new RangeIterExprResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, first, last);
 
             InitExternResult(result);
 
@@ -957,7 +1069,7 @@ namespace akanevrc.TeuchiUdon
 
         public SteppedRangeIterExprResult CreateSteppedRangeIterExpr(IToken start, IToken stop)
         {
-            return new SteppedRangeIterExprResult(start, stop, Invalids.InvalidType);
+            return new SteppedRangeIterExprResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public SteppedRangeIterExprResult CreateSteppedRangeIterExpr
@@ -971,7 +1083,7 @@ namespace akanevrc.TeuchiUdon
             ExprResult step
         )
         {
-            var result = new SteppedRangeIterExprResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, first, last, step);
+            var result = new SteppedRangeIterExprResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, first, last, step);
 
             InitExternResult(result);
 
@@ -980,12 +1092,12 @@ namespace akanevrc.TeuchiUdon
 
         public SpreadIterExprResult CreateSpreadIterExpr(IToken start, IToken stop)
         {
-            return new SpreadIterExprResult(start, stop, Invalids.InvalidType);
+            return new SpreadIterExprResult(Tables, start, stop, Invalids.InvalidType);
         }
 
         public SpreadIterExprResult CreateSpreadIterExpr(IToken start, IToken stop, TeuchiUdonType type, TeuchiUdonQualifier qualifier, ExprResult expr)
         {
-            var result = new SpreadIterExprResult(start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, expr);
+            var result = new SpreadIterExprResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), qualifier, expr);
 
             InitExternResult(result);
 
@@ -994,27 +1106,27 @@ namespace akanevrc.TeuchiUdon
 
         public IsoExprResult CreateIsoExpr(IToken start, IToken stop)
         {
-            return new IsoExprResult(start, stop);
+            return new IsoExprResult(Tables, start, stop);
         }
 
         public IsoExprResult CreateIsoExpr(IToken start, IToken stop, ExprResult expr)
         {
-            return new IsoExprResult(start, stop, expr);
+            return new IsoExprResult(Tables, start, stop, expr);
         }
 
         public ArgExprResult CreateArgExpr(IToken start, IToken stop)
         {
-            return new ArgExprResult(start, stop);
+            return new ArgExprResult(Tables, start, stop);
         }
 
-        public ArgExprResult CreateArgExpr(IToken start, IToken stop, ExprResult expr, bool rf)
+        public ArgExprResult CreateArgExpr(IToken start, IToken stop, KeywordResult refKeyword, ExprResult expr, bool rf)
         {
-            return new ArgExprResult(start, stop, expr, rf);
+            return new ArgExprResult(Tables, start, stop, refKeyword, expr, rf);
         }
 
         public LetForBindResult CreateLetForBind(IToken start, IToken stop)
         {
-            return new LetForBindResult(start, stop);
+            return new LetForBindResult(Tables, start, stop);
         }
 
         public LetForBindResult CreateLetForBind
@@ -1022,6 +1134,7 @@ namespace akanevrc.TeuchiUdon
             IToken start,
             IToken stop,
             int index,
+            KeywordResult letKeyword,
             TeuchiUdonQualifier qualifier,
             IEnumerable<TeuchiUdonVar> vars,
             VarDeclResult varDecl,
@@ -1035,17 +1148,17 @@ namespace akanevrc.TeuchiUdon
                 Tables.Vars[v] = v;
             }
 
-            return new LetForBindResult(start, stop, varBind, vars, varDecl, iter);
+            return new LetForBindResult(Tables, start, stop, letKeyword, varBind, vars, varDecl, iter);
         }
 
         public AssignForBindResult CreateAssignForBind(IToken start, IToken stop)
         {
-            return new AssignForBindResult(start, stop);
+            return new AssignForBindResult(Tables, start, stop);
         }
 
         public AssignForBindResult CreateAssignForBind(IToken start, IToken stop, ExprResult expr, IterExprResult iter)
         {
-            return new AssignForBindResult(start, stop, expr, iter);
+            return new AssignForBindResult(Tables, start, stop, expr, iter);
         }
 
         private void InitExternResult(ExternResult result)
