@@ -34,8 +34,16 @@ namespace akanevrc.TeuchiUdon.Server
             .AddParserServices()
             .AddSingleton<DocumentManager>()
             .AddSingleton<TextDocumentSyncHandler>()
-            .AddSingleton<SemanticTokensHandler>(services => new SemanticTokensHandler(services, services.GetService<DocumentManager>()!))
-            .AddSingleton<CompletionHandler>    (services => new CompletionHandler    (services, services.GetService<DocumentManager>()!));
+            .AddSingleton<SemanticTokensHandler>
+                (
+                    services =>
+                        new SemanticTokensHandler(services, services.GetService<DocumentManager>()!)
+                )
+            .AddSingleton<CompletionHandler>
+                (
+                    services =>
+                        new CompletionHandler(services, services.GetService<DocumentManager>()!)
+                );
         }
     }
 }

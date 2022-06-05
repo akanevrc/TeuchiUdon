@@ -116,13 +116,13 @@ namespace akanevrc.TeuchiUdon.Server
                 .AddScoped<TeuchiUdonListener>();
         }
 
-        public static (TargetResult? result, string error) ParseFromString(IServiceProvider services, string input)
+        public static (TargetResult? result, string error, TeuchiUdonTables tables) ParseFromString(IServiceProvider services, string input)
         {
             using var inputReader = new StringReader(input);
             return ParseFromReader(services, inputReader);
         }
 
-        public static (TargetResult? result, string error) ParseFromReader(IServiceProvider services, TextReader inputReader)
+        public static (TargetResult? result, string error, TeuchiUdonTables tables) ParseFromReader(IServiceProvider services, TextReader inputReader)
         {
             using var outputWriter = new StringWriter();
             using var errorWriter  = new StringWriter();
@@ -137,6 +137,7 @@ namespace akanevrc.TeuchiUdon.Server
 
             provider.GetService<TeuchiUdonLogicalErrorHandler>()!.SetParser(parser);
             var listener = provider.GetService<TeuchiUdonListener>()!;
+            var tables   = provider.GetService<TeuchiUdonTables>  ()!;
 
             try
             {
@@ -144,10 +145,10 @@ namespace akanevrc.TeuchiUdon.Server
             }
             catch (Exception ex)
             {
-                return (null, $"{ex}\n{errorWriter}");
+                return (null, $"{ex}\n{errorWriter}", tables);
             }
 
-            return (listener.TargetResult, errorWriter.ToString());
+            return (listener.TargetResult, errorWriter.ToString(), tables);
         }
     }
 }
