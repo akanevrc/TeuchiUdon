@@ -634,9 +634,9 @@ namespace akanevrc.TeuchiUdon
             return new EvalCastResult(Tables, start, stop, Invalids.InvalidType);
         }
 
-        public EvalCastResult CreateEvalCast(IToken start, IToken stop, TeuchiUdonType type, ExprResult expr)
+        public EvalCastResult CreateEvalCast(IToken start, IToken stop, TeuchiUdonType type, KeywordResult castKeyword, ExprResult expr)
         {
-            return new EvalCastResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), expr);
+            return new EvalCastResult(Tables, start, stop, type, !TypeOps.ContainsUnknown(type), castKeyword, expr);
         }
 
         public EvalTypeOfResult CreateEvalTypeOf(IToken start, IToken stop)

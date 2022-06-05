@@ -538,7 +538,7 @@ namespace akanevrc.TeuchiUdon
 
             if (qualified == null)
             {
-                qualified = ParserResultOps.CreateExpr(context.Start, context.Stop, ParserResultOps.CreateUnknownType(context.Start, context.Stop), false);
+                qualified = ParserResultOps.CreateExpr(null, null, ParserResultOps.CreateUnknownType(null, null), false);
             }
             else
             {
@@ -1251,8 +1251,9 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitCastExpr([NotNull] CastExprContext context)
         {
-            var expr = context.expr()?.result;
-            if (IsInvalid(expr))
+            var castToken = context.CAST();
+            var expr      = context.expr()?.result;
+            if (castToken == null || IsInvalid(expr))
             {
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
@@ -1266,8 +1267,9 @@ namespace akanevrc.TeuchiUdon
                 return;
             }
 
-            var cast = ParserResultOps.CreateEvalCast(context.Start, context.Stop, Primitives.Cast.ApplyArgAsCast(type.GetArgAsType()), expr);
-            context.result = ParserResultOps.CreateExpr(cast.Start, cast.Stop, cast);
+            var castKeyword = ParserResultOps.CreateKeyword(castToken.Symbol, castToken.Symbol, castToken.GetText());
+            var cast        = ParserResultOps.CreateEvalCast(context.Start, context.Stop, Primitives.Cast.ApplyArgAsCast(type.GetArgAsType()), castKeyword, expr);
+            context.result  = ParserResultOps.CreateExpr(cast.Start, cast.Stop, cast);
         }
 
         private bool IsValidConvertType(TeuchiUdonType type)

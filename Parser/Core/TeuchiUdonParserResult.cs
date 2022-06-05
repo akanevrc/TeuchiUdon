@@ -1016,6 +1016,7 @@ namespace akanevrc.TeuchiUdon
 
     public class EvalCastResult : TypedResult
     {
+        public KeywordResult CastKeyword { get; }
         public ExprResult Expr { get; }
 
         public EvalCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type)
@@ -1023,10 +1024,19 @@ namespace akanevrc.TeuchiUdon
         {
         }
 
-        public EvalCastResult(TeuchiUdonTables tables, IToken start, IToken stop, TeuchiUdonType type, bool typeBound, ExprResult expr)
-            : base(tables, start, stop, true, type, typeBound)
+        public EvalCastResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            TeuchiUdonType type,
+            bool typeBound,
+            KeywordResult castKeyword,
+            ExprResult expr
+        ) : base(tables, start, stop, true, type, typeBound)
         {
-            Expr = expr;
+            CastKeyword = castKeyword;
+            Expr        = expr;
         }
 
         public override ITeuchiUdonLeftValue[] LeftValues => Array.Empty<ITeuchiUdonLeftValue>();
