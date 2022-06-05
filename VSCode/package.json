@@ -42,13 +42,7 @@
 				"configuration": "./configs/language-configuration.json"
 			}
 		],
-		"grammars": [
-			{
-				"language": "teuchiudon",
-				"scopeName": "source.teuchiudon",
-				"path": "./syntaxes/teuchiudon.tmLanguage.json"
-			}
-		],
+		"grammars": [],
 		"snippets": [
 			{
 				"language": "teuchiudon",
