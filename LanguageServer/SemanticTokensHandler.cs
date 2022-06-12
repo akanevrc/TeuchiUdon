@@ -13,7 +13,7 @@ namespace akanevrc.TeuchiUdon.Server
     {
         private record SemanticTokenAttribute
         (
-            OmniSharp.Extensions.LanguageServer.Protocol.Models.Range Range,
+            Range Range,
             SemanticTokenType Type,
             SemanticTokenModifier Modifier
         )
@@ -30,7 +30,7 @@ namespace akanevrc.TeuchiUdon.Server
 
                 return new SemanticTokenAttribute
                 (
-                    new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range
+                    new Range
                     (
                         start.Line - 1,
                         start.Column,

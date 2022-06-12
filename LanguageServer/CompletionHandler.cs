@@ -42,7 +42,7 @@ namespace akanevrc.TeuchiUdon.Server
             var wordHead = GetWordHead(text, position);
             var word     = text.Substring(position - wordHead, wordHead);
             var range    =
-                new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range
+                new Range
                 (
                     new Position
                     {
