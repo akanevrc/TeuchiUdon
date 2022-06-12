@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
@@ -45,11 +46,18 @@ namespace akanevrc.TeuchiUdon.Server
 
         private IServiceProvider Services { get; }
         private DocumentManager DocumentManager { get; }
+        private PublishDiagnosticsHandler PublishDiagnosticsHandler { get; }
 
-        public SemanticTokensHandler(IServiceProvider services, DocumentManager documentManager)
+        public SemanticTokensHandler
+        (
+            IServiceProvider services,
+            DocumentManager documentManager,
+            PublishDiagnosticsHandler publishDiagnosticsHandler
+        )
         {
-            Services        = services;
-            DocumentManager = documentManager;
+            Services                  = services;
+            DocumentManager           = documentManager;
+            PublishDiagnosticsHandler = publishDiagnosticsHandler;
         }
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions
@@ -86,27 +94,29 @@ namespace akanevrc.TeuchiUdon.Server
 
             await Task.Yield();
 
-            var (result, error, tables) = TeuchiUdonParserRunner.ParseFromString(Services, text);
+            var (results, errors) = TeuchiUdonParserRunner.ParseFromString(Services, text);
             var attributeList = new List<SemanticTokenAttribute>();
 
-            foreach (var res in tables.ParserResults)
+            foreach (var res in results)
             {
                 AddRangeToAttributeList(attributeList, ResultToAttribute(res));
-            }
-
-            if (!string.IsNullOrEmpty(error))
-            {
-                var errors = error.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                foreach (var err in errors)
-                {
-                    AddRangeToAttributeList(attributeList, ErrorToAttribute(err));
-                }
             }
 
             foreach (var attr in attributeList)
             {
                 builder.Push(attr.Range, attr.Type, attr.Modifier);
             }
+
+            await PublishDiagnosticsHandler.Handle
+            (
+                new PublishDiagnosticsParams()
+                {
+                    Uri         = request.TextDocument.Uri,
+                    Diagnostics = new Container<Diagnostic>(errors.Select(x => ErrorToDiagnostic(x)!).Where(x => x != null))
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
         }
 
         private IEnumerable<SemanticTokenAttribute?> ResultToAttribute(TeuchiUdonParserResult result)
@@ -599,10 +609,48 @@ namespace akanevrc.TeuchiUdon.Server
             }
         }
 
-        private IEnumerable<SemanticTokenAttribute?> ErrorToAttribute(string error)
+        private Diagnostic? ErrorToDiagnostic(TeuchiUdonParserError error)
         {
-            // TODO
-            yield break;
+            return error.Start == null && error.Stop == null ? null
+            : error.Start != null ?
+            new Diagnostic()
+            {
+                Range = new Range
+                (
+                    error.Start.Line - 1,
+                    error.Start.Column,
+                    error.Start.Line - 1,
+                    error.Start.Column + error.Start.Text.Length
+                ),
+                Message  = error.Message,
+                Severity = DiagnosticSeverity.Error
+            }
+            : error.Stop != null ?
+            new Diagnostic()
+            {
+                Range = new Range
+                (
+                    error.Stop.Line - 1,
+                    error.Stop.Column,
+                    error.Stop.Line - 1,
+                    error.Stop.Column + error.Stop.Text.Length
+                ),
+                Message  = error.Message,
+                Severity = DiagnosticSeverity.Error
+            }
+            :
+            new Diagnostic()
+            {
+                Range = new Range
+                (
+                    error.Start!.Line - 1,
+                    error.Start!.Column,
+                    error.Stop !.Line - 1,
+                    error.Stop !.Column + error.Stop!.Text.Length
+                ),
+                Message  = error.Message,
+                Severity = DiagnosticSeverity.Error
+            };
         }
 
         private void AddRangeToAttributeList(List<SemanticTokenAttribute> list, IEnumerable<SemanticTokenAttribute?> attributes)

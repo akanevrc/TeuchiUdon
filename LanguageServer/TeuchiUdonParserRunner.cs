@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Antlr4.Runtime;
@@ -104,8 +106,8 @@ namespace akanevrc.TeuchiUdon.Server
                 .AddSingleton(primitives)
                 .AddSingleton(staticTables)
                 .AddSingleton(invalids)
-                .AddScoped<TeuchiUdonLogicalErrorHandler>()
                 .AddScoped<TeuchiUdonTables>()
+                .AddScoped<TeuchiUdonParserErrorOps>()
                 .AddScoped<TeuchiUdonTypeOps>()
                 .AddScoped<TeuchiUdonLabelOps>()
                 .AddScoped<TeuchiUdonTableOps>()
@@ -116,13 +118,21 @@ namespace akanevrc.TeuchiUdon.Server
                 .AddScoped<TeuchiUdonListener>();
         }
 
-        public static (TargetResult? result, string error, TeuchiUdonTables tables) ParseFromString(IServiceProvider services, string input)
+        public static (IEnumerable<TeuchiUdonParserResult> results, IEnumerable<TeuchiUdonParserError> errors) ParseFromString
+        (
+            IServiceProvider services,
+            string input
+        )
         {
             using var inputReader = new StringReader(input);
             return ParseFromReader(services, inputReader);
         }
 
-        public static (TargetResult? result, string error, TeuchiUdonTables tables) ParseFromReader(IServiceProvider services, TextReader inputReader)
+        public static (IEnumerable<TeuchiUdonParserResult> results, IEnumerable<TeuchiUdonParserError> errors) ParseFromReader
+        (
+            IServiceProvider services,
+            TextReader inputReader
+        )
         {
             using var outputWriter = new StringWriter();
             using var errorWriter  = new StringWriter();
@@ -135,9 +145,9 @@ namespace akanevrc.TeuchiUdon.Server
             using var scope = services.CreateScope();
             var provider    = scope.ServiceProvider;
 
-            provider.GetService<TeuchiUdonLogicalErrorHandler>()!.SetParser(parser);
-            var listener = provider.GetService<TeuchiUdonListener>()!;
-            var tables   = provider.GetService<TeuchiUdonTables>  ()!;
+            parser.ParserErrorOps = provider.GetService<TeuchiUdonParserErrorOps>()!;
+            var listener          = provider.GetService<TeuchiUdonListener>()!;
+            var tables            = provider.GetService<TeuchiUdonTables>()!;
 
             try
             {
@@ -145,10 +155,10 @@ namespace akanevrc.TeuchiUdon.Server
             }
             catch (Exception ex)
             {
-                return (null, $"{ex}\n{errorWriter}", tables);
+                return (tables.ParserResults, new TeuchiUdonParserError[] { new TeuchiUdonParserError(null, null, ex.ToString()) }.Concat(tables.ParserErrors));
             }
 
-            return (listener.TargetResult, errorWriter.ToString(), tables);
+            return (tables.ParserResults, tables.ParserErrors);
         }
     }
 }

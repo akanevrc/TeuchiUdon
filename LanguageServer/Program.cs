@@ -22,6 +22,7 @@ namespace akanevrc.TeuchiUdon.Server
                     .WithHandler<TextDocumentSyncHandler>()
                     .WithHandler<SemanticTokensHandler>()
                     .WithHandler<CompletionHandler>()
+                    .WithHandler<PublishDiagnosticsHandler>()
                 )
                 .ConfigureAwait(false);
 
@@ -32,18 +33,7 @@ namespace akanevrc.TeuchiUdon.Server
         {
             services
             .AddParserServices()
-            .AddSingleton<DocumentManager>()
-            .AddSingleton<TextDocumentSyncHandler>()
-            .AddSingleton<SemanticTokensHandler>
-                (
-                    services =>
-                        new SemanticTokensHandler(services, services.GetService<DocumentManager>()!)
-                )
-            .AddSingleton<CompletionHandler>
-                (
-                    services =>
-                        new CompletionHandler(services, services.GetService<DocumentManager>()!)
-                );
+            .AddSingleton<DocumentManager>();
         }
     }
 }
