@@ -57,23 +57,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             Init();
 
-            var logicalErrorHandler = new TeuchiUdonLogicalErrorHandler();
-            var tables              = new TeuchiUdonTables(Primitives);
-            var typeOps             = new TeuchiUdonTypeOps(Primitives, StaticTables, Invalids, logicalErrorHandler);
-            var labelOps            = new TeuchiUdonLabelOps(StaticTables, tables);
-            var tableOps            = new TeuchiUdonTableOps(Primitives, StaticTables, tables, typeOps, labelOps);
-            var qualifierStack      = new TeuchiUdonQualifierStack();
-            var outValuePool        = new TeuchiUdonOutValuePool(Invalids);
-            var syntaxOps           = new TeuchiUdonSyntaxOps(Primitives, StaticTables, typeOps, tables);
-            var parserResultOps     = new TeuchiUdonParserResultOps(Primitives, StaticTables, Invalids, logicalErrorHandler, tables, typeOps, tableOps, outValuePool, syntaxOps);
-            var listener            = new TeuchiUdonListener(Primitives, StaticTables, Invalids, logicalErrorHandler, tables, typeOps, tableOps, qualifierStack, outValuePool, syntaxOps, parserResultOps);
+            var tables          = new TeuchiUdonTables(Primitives);
+            var parserErrorOps  = new TeuchiUdonParserErrorOps(tables);
+            var typeOps         = new TeuchiUdonTypeOps(Primitives, StaticTables, Invalids, parserErrorOps);
+            var labelOps        = new TeuchiUdonLabelOps(StaticTables, tables);
+            var tableOps        = new TeuchiUdonTableOps(Primitives, StaticTables, tables, typeOps, labelOps);
+            var qualifierStack  = new TeuchiUdonQualifierStack();
+            var outValuePool    = new TeuchiUdonOutValuePool(Invalids);
+            var syntaxOps       = new TeuchiUdonSyntaxOps(Primitives, StaticTables, typeOps, tables);
+            var parserResultOps = new TeuchiUdonParserResultOps(Primitives, StaticTables, Invalids, parserErrorOps, tables, typeOps, tableOps, outValuePool, syntaxOps);
+            var listener        = new TeuchiUdonListener(Primitives, StaticTables, Invalids, parserErrorOps, tables, typeOps, tableOps, qualifierStack, outValuePool, syntaxOps, parserResultOps);
 
             var dataLabelWrapperOps = new TeuchiUdonDataLabelWrapperOps(Primitives, typeOps, labelOps);
             var compilerStrategy    = new TeuchiUdonCompilerStrategy(Primitives, StaticTables, tables, typeOps, labelOps, outValuePool, syntaxOps, dataLabelWrapperOps);
             var assemblyOps         = new TeuchiUdonAssemblyOps(typeOps, labelOps);
             var assemblyWriter      = new TeuchiUdonAssemblyWriter(tables, compilerStrategy, assemblyOps);
 
-            var (output, error) = CompileFromPath(srcPath, logicalErrorHandler, listener, compilerStrategy, assemblyWriter);
+            var (output, error) = CompileFromPath(srcPath, listener, tables, parserErrorOps, compilerStrategy, assemblyWriter);
             if (!string.IsNullOrEmpty(error))
             {
                 throw new TeuchiUdonCompilerException(error);
@@ -101,8 +101,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private static (string output, string error) CompileFromPath
         (
             string path,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
             TeuchiUdonListener listener,
+            TeuchiUdonTables tables,
+            TeuchiUdonParserErrorOps parserErrorOps,
             TeuchiUdonCompilerStrategy compilerStrategy,
             TeuchiUdonAssemblyWriter assemblyWriter
         )
@@ -112,7 +113,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 return ("", "asset file not found");
             }
-            return TeuchiUdonCompilerRunner.CompileFromString(script.text, logicalErrorHandler, listener, compilerStrategy, assemblyWriter);
+            return TeuchiUdonCompilerRunner.CompileFromString(script.text, listener, tables, parserErrorOps, compilerStrategy, assemblyWriter);
         }
     }
 }

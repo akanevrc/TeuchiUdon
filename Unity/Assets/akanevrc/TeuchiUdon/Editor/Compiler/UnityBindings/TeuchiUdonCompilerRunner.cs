@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using akanevrc.TeuchiUdon.Compiler;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
@@ -8,30 +9,32 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public static (string output, string error) CompileFromString
         (
             string input,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
             TeuchiUdonListener listener,
+            TeuchiUdonTables tables,
+            TeuchiUdonParserErrorOps parserErrorOps,
             TeuchiUdonCompilerStrategy compilerStrategy,
             TeuchiUdonAssemblyWriter assemblyWriter
         )
         {
             using (var inputReader = new StringReader(input))
             {
-                return CompileFromReader(inputReader, logicalErrorHandler, listener, compilerStrategy, assemblyWriter);
+                return CompileFromReader(inputReader, listener, tables, parserErrorOps, compilerStrategy, assemblyWriter);
             }
         }
 
         public static (string output, string error) CompileFromReader
         (
             TextReader inputReader,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
             TeuchiUdonListener listener,
+            TeuchiUdonTables tables,
+            TeuchiUdonParserErrorOps parserErrorOps,
             TeuchiUdonCompilerStrategy compilerStrategy,
             TeuchiUdonAssemblyWriter assemblyWriter
         )
         {
-            var (result, error) = TeuchiUdonParserRunner.ParseFromReader(inputReader, logicalErrorHandler, listener);
+            var (result, errors) = TeuchiUdonParserRunner.ParseFromReader(inputReader, listener, tables, parserErrorOps);
 
-            if (string.IsNullOrEmpty(error))
+            if (!errors.Any())
             {
                 using (var outputWriter = new StringWriter())
                 {
@@ -41,7 +44,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
             else
             {
-                return ("", error);
+                return ("", string.Join("\n", errors));
             }
         }
 

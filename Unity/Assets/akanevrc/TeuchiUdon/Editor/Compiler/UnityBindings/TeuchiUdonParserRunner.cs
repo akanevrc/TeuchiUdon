@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -7,24 +9,26 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     public static class TeuchiUdonParserRunner
     {
-        public static (TargetResult result, string error) ParseFromString
+        public static (TargetResult result, IEnumerable<TeuchiUdonParserError> errors) ParseFromString
         (
             string input,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
-            TeuchiUdonListener listener
+            TeuchiUdonListener listener,
+            TeuchiUdonTables tables,
+            TeuchiUdonParserErrorOps parserErrorOps
         )
         {
             using (var inputReader = new StringReader(input))
             {
-                return ParseFromReader(inputReader, logicalErrorHandler, listener);
+                return ParseFromReader(inputReader, listener, tables, parserErrorOps);
             }
         }
 
-        public static (TargetResult result, string error) ParseFromReader
+        public static (TargetResult result, IEnumerable<TeuchiUdonParserError> errors) ParseFromReader
         (
             TextReader inputReader,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
-            TeuchiUdonListener listener
+            TeuchiUdonListener listener,
+            TeuchiUdonTables tables,
+            TeuchiUdonParserErrorOps parserErrorOps
         )
         {
             using (var outputWriter = new StringWriter())
@@ -35,7 +39,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var tokenStream = new CommonTokenStream(lexer);
                 var parser      = new TeuchiUdonParser(tokenStream, outputWriter, errorWriter);
 
-                logicalErrorHandler.SetParser(parser);
+                parser.ParserErrorOps = parserErrorOps;
 
                 try
                 {
@@ -43,10 +47,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 }
                 catch (Exception ex)
                 {
-                    return (null, $"{ex}\n{errorWriter}");
+                    return (null, new TeuchiUdonParserError[] { new TeuchiUdonParserError(null, null, ex.ToString()) }.Concat(tables.ParserErrors));
                 }
 
-                return (listener.TargetResult, errorWriter.ToString());
+                return (listener.TargetResult, tables.ParserErrors);
             }
         }
     }
