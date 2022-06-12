@@ -107,7 +107,6 @@ namespace akanevrc.TeuchiUdon.Server
             {
                 builder.Push(attr.Range, attr.Type, attr.Modifier);
             }
-            builder.Commit();
         }
 
         private IEnumerable<SemanticTokenAttribute?> ResultToAttribute(TeuchiUdonParserResult result)
