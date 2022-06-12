@@ -5,6 +5,7 @@ namespace akanevrc.TeuchiUdon
     public class TeuchiUdonTables
     {
         public List<TeuchiUdonParserResult> ParserResults { get; private set; }
+        public List<TeuchiUdonParserError> ParserErrors { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonVar> Vars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonLiteral> PublicVars { get; private set; }
         public Dictionary<TeuchiUdonVar, TeuchiUdonSyncMode> SyncedVars { get; private set; }
@@ -35,6 +36,7 @@ namespace akanevrc.TeuchiUdon
             Primitives = primitives;
 
             ParserResults = new List<TeuchiUdonParserResult>();
+            ParserErrors  = new List<TeuchiUdonParserError>();
             Vars          = new Dictionary<TeuchiUdonVar     , TeuchiUdonVar>();
             PublicVars    = new Dictionary<TeuchiUdonVar     , TeuchiUdonLiteral>();
             SyncedVars    = new Dictionary<TeuchiUdonVar     , TeuchiUdonSyncMode>();

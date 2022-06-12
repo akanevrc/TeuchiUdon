@@ -19,7 +19,7 @@ namespace akanevrc.TeuchiUdon
         private TeuchiUdonPrimitives Primitives { get; }
         private TeuchiUdonStaticTables StaticTables { get; }
         private TeuchiUdonInvalids Invalids { get; }
-        private TeuchiUdonLogicalErrorHandler LogicalErrorHandler { get; }
+        private TeuchiUdonParserErrorOps ParserErrorOps { get; }
         private TeuchiUdonTables Tables { get; }
         private TeuchiUdonTypeOps TypeOps { get; }
         private TeuchiUdonTableOps TableOps { get; }
@@ -33,7 +33,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonPrimitives primitives,
             TeuchiUdonStaticTables staticTables,
             TeuchiUdonInvalids invalids,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
+            TeuchiUdonParserErrorOps parserErrorOps,
             TeuchiUdonTables tables,
             TeuchiUdonTypeOps typeOps,
             TeuchiUdonTableOps tableOps,
@@ -43,17 +43,17 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonParserResultOps parserResultOps
         )
         {
-            Primitives          = primitives;
-            StaticTables        = staticTables;
-            Invalids            = invalids;
-            LogicalErrorHandler = logicalErrorHandler;
-            Tables              = tables;
-            TypeOps             = typeOps;
-            TableOps            = tableOps;
-            QualifierStack      = qualifierStack;
-            OutValuePool        = outValuePool;
-            SyntaxOps           = syntaxOps;
-            ParserResultOps     = parserResultOps;
+            Primitives      = primitives;
+            StaticTables    = staticTables;
+            Invalids        = invalids;
+            ParserErrorOps  = parserErrorOps;
+            Tables          = tables;
+            TypeOps         = typeOps;
+            TableOps        = tableOps;
+            QualifierStack  = qualifierStack;
+            OutValuePool    = outValuePool;
+            SyntaxOps       = syntaxOps;
+            ParserResultOps = parserResultOps;
         }
 
         private JumpResult StoreJumpResult(JumpResult result)
@@ -69,7 +69,7 @@ namespace akanevrc.TeuchiUdon
                 var block = jump.Block();
                 if (!TypeOps.IsAssignableFrom(block.Type, jump.Value.Inner.Type))
                 {
-                    LogicalErrorHandler.ReportError(jump.Start, $"jump value type is not compatible");
+                    ParserErrorOps.AppendError(jump.Start, jump.Stop, $"jump value type is not compatible");
                 }
             }
         }
@@ -168,7 +168,7 @@ namespace akanevrc.TeuchiUdon
             {
                 if (pub || sync != TeuchiUdonSyncMode.Disable)
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"tuple cannot be specified with any attributes");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"tuple cannot be specified with any attributes");
                     context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                     return;
                 }
@@ -186,14 +186,14 @@ namespace akanevrc.TeuchiUdon
 
                     if (sync != TeuchiUdonSyncMode.Disable)
                     {
-                        LogicalErrorHandler.ReportError(context.Start, $"function cannot be specified with @sync, @linear, or @smooth");
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"function cannot be specified with @sync, @linear, or @smooth");
                         context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                         return;
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"toplevel variable cannot be assigned from function indirectly");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"toplevel variable cannot be assigned from function indirectly");
                     context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                     return;
                 }
@@ -204,7 +204,7 @@ namespace akanevrc.TeuchiUdon
 
                 if (StaticTables.Events.ContainsKey(v.Name))
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"event must be function");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"event must be function");
                     context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                     return;
                 }
@@ -220,7 +220,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(context.Start, $"public valiable cannot be bound non-literal expression");
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"public valiable cannot be bound non-literal expression");
                         context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                         return;
                     }
@@ -228,19 +228,19 @@ namespace akanevrc.TeuchiUdon
 
                 if (sync == TeuchiUdonSyncMode.Sync && !TypeOps.IsSyncableType(v.Type))
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"invalid valiable type to be specified with @sync");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid valiable type to be specified with @sync");
                     context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                     return;
                 }
                 else if (sync == TeuchiUdonSyncMode.Linear && !TypeOps.IsLinearSyncableType(v.Type))
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"invalid valiable type to be specified with @linear");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid valiable type to be specified with @linear");
                     context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                     return;
                 }
                 else if (sync == TeuchiUdonSyncMode.Smooth && !TypeOps.IsSmoothSyncableType(v.Type))
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"invalid valiable type to be specified with @smooth");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid valiable type to be specified with @smooth");
                     context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
                     return;
                 }
@@ -271,7 +271,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(publicAttr.Start, $"multiple @public detected");
+                        ParserErrorOps.AppendError(publicAttr.Start, publicAttr.Stop, $"multiple @public detected");
                         return (false, TeuchiUdonSyncMode.Disable, false);
                     }
                 }
@@ -283,7 +283,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(syncAttr.Start, $"multiple @sync, @linear, or @smooth detected");
+                        ParserErrorOps.AppendError(syncAttr.Start, syncAttr.Stop, $"multiple @sync, @linear, or @smooth detected");
                         return (false, TeuchiUdonSyncMode.Disable, false);
                     }
                 }
@@ -418,7 +418,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"expression cannot be assigned to variable");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"expression cannot be assigned to variable");
                     context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop);
                     return;
                 }
@@ -453,14 +453,14 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(context.Start, $"expression cannot be assigned to variables");
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"expression cannot be assigned to variables");
                         context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop);
                         return;
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"expression cannot be assigned to variables");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"expression cannot be assigned to variables");
                     context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop);
                     return;
                 }
@@ -468,7 +468,7 @@ namespace akanevrc.TeuchiUdon
 
             if (mut && TypeOps.IsFunc(expr.Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"function variable cannot be mutable");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"function variable cannot be mutable");
                 context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop);
                 return;
             }
@@ -512,7 +512,7 @@ namespace akanevrc.TeuchiUdon
         {
             if (!isActual && qualifiedVars.Any(x => TypeOps.ContainsNonDetFunc(x.Qualified.Inner.Type)))
             {
-                LogicalErrorHandler.ReportError(start, $"function arguments cannot contain nondeterministic function");
+                ParserErrorOps.AppendError(start, stop, $"function arguments cannot contain nondeterministic function");
                 return ParserResultOps.CreateVarDecl(start, stop);
             }
 
@@ -544,7 +544,7 @@ namespace akanevrc.TeuchiUdon
             {
                 if (!qualified.Inner.Type.LogicalTypeNameEquals(Primitives.Type))
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"qualified type {qualified.Inner.Type} is not a type");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"qualified type {qualified.Inner.Type} is not a type");
                     context.result = ParserResultOps.CreateQualifiedVar(context.Start, context.Stop);
                     return;
                 }
@@ -599,7 +599,7 @@ namespace akanevrc.TeuchiUdon
             var qb = QualifierStack.Peek().GetFuncBlock();
             if (qb == null)
             {
-                LogicalErrorHandler.ReportError(start, "no func exists for return");
+                ParserErrorOps.AppendError(start, stop, "no func exists for return");
                 return ParserResultOps.CreateJump(start, stop);
             }
 
@@ -650,7 +650,7 @@ namespace akanevrc.TeuchiUdon
             var qb = QualifierStack.Peek().GetLoopBlock();
             if (qb == null)
             {
-                LogicalErrorHandler.ReportError(start, "no loop exists for continue");
+                ParserErrorOps.AppendError(start, stop, "no loop exists for continue");
                 return ParserResultOps.CreateJump(start, stop);
             }
 
@@ -693,7 +693,7 @@ namespace akanevrc.TeuchiUdon
             var qb = QualifierStack.Peek().GetLoopBlock();
             if (qb == null)
             {
-                LogicalErrorHandler.ReportError(start, "no loop exists for break");
+                ParserErrorOps.AppendError(start, stop, "no loop exists for break");
                 return ParserResultOps.CreateJump(start, stop);
             }
 
@@ -960,7 +960,7 @@ namespace akanevrc.TeuchiUdon
 
                 if (evalVar == null)
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"'{identifier.Name}' is not defined");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"'{identifier.Name}' is not defined");
                     context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                     return;
                 }
@@ -1042,7 +1042,7 @@ namespace akanevrc.TeuchiUdon
 
                 if (eval == null)
                 {
-                    LogicalErrorHandler.ReportError(varCandidate1.Start, $"'{varCandidate1.Identifier.Name}' is not defined");
+                    ParserErrorOps.AppendError(varCandidate1.Start, varCandidate1.Stop, $"'{varCandidate1.Identifier.Name}' is not defined");
                     context.result = ParserResultOps.CreateExpr(varCandidate1.Start, varCandidate1.Stop);
                     return;
                 }
@@ -1158,7 +1158,7 @@ namespace akanevrc.TeuchiUdon
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
                         {
-                            LogicalErrorHandler.ReportError(varCandidate2.Start, $"method '{varCandidate2.Identifier.Name}' has multiple overloads");
+                            ParserErrorOps.AppendError(varCandidate2.Start, varCandidate2.Stop, $"method '{varCandidate2.Identifier.Name}' has multiple overloads");
                             context.result = ParserResultOps.CreateExpr(varCandidate2.Start, varCandidate2.Stop);
                             return;
                         }
@@ -1175,7 +1175,7 @@ namespace akanevrc.TeuchiUdon
                             }
                             else
                             {
-                                LogicalErrorHandler.ReportError(varCandidate2.Start, $"'{name}' is not enum value");
+                                ParserErrorOps.AppendError(varCandidate2.Start, varCandidate2.Stop, $"'{name}' is not enum value");
                                 context.result = ParserResultOps.CreateExpr(varCandidate2.Start, varCandidate2.Stop);
                                 return;
                             }
@@ -1216,13 +1216,13 @@ namespace akanevrc.TeuchiUdon
                         }
                         else if (g.Length >= 2 || s.Length >= 2)
                         {
-                            LogicalErrorHandler.ReportError(varCandidate2.Start, $"method '{varCandidate2.Identifier.Name}' has multiple overloads");
+                            ParserErrorOps.AppendError(varCandidate2.Start, varCandidate2.Stop, $"method '{varCandidate2.Identifier.Name}' has multiple overloads");
                             context.result = ParserResultOps.CreateExpr(varCandidate2.Start, varCandidate2.Stop);
                             return;
                         }
                     }
 
-                    LogicalErrorHandler.ReportError(varCandidate2.Start, $"'{varCandidate2.Identifier.Name}' is not defined");
+                    ParserErrorOps.AppendError(varCandidate2.Start, varCandidate2.Stop, $"'{varCandidate2.Identifier.Name}' is not defined");
                     context.result = ParserResultOps.CreateExpr(varCandidate2.Start, varCandidate2.Stop);
                     return;
                 } while (false);
@@ -1231,7 +1231,7 @@ namespace akanevrc.TeuchiUdon
             }
             else
             {
-                LogicalErrorHandler.ReportError(expr1.Start, $"invalid '{op}' operator");
+                ParserErrorOps.AppendError(expr1.Start, expr1.Stop, $"invalid '{op}' operator");
                 context.result = ParserResultOps.CreateExpr(expr1.Start, expr1.Stop);
                 return;
             }
@@ -1262,7 +1262,7 @@ namespace akanevrc.TeuchiUdon
             var type = expr.Inner.Type;
             if (!type.LogicalTypeNameEquals(Primitives.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"expression is not a type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"expression is not a type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -1347,7 +1347,7 @@ namespace akanevrc.TeuchiUdon
             {
                 if (argRefs.Any(x => x))
                 {
-                    LogicalErrorHandler.ReportError(start, $"arguments of func cannot be ref");
+                    ParserErrorOps.AppendError(start, stop, $"arguments of func cannot be ref");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else
@@ -1363,7 +1363,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"arguments of func is not compatible");
+                        ParserErrorOps.AppendError(start, stop, $"arguments of func is not compatible");
                         return ParserResultOps.CreateExpr(start, stop);
                     }
                 }
@@ -1376,7 +1376,7 @@ namespace akanevrc.TeuchiUdon
                 var ms           = TypeOps.GetMostCompatibleMethods(type, inTypes).ToArray();
                 if (ms.Length == 0)
                 {
-                    LogicalErrorHandler.ReportError(start, $"method is not defined");
+                    ParserErrorOps.AppendError(start, stop, $"method is not defined");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else if (ms.Length == 1)
@@ -1401,13 +1401,13 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"ref mark of method is not compatible");
+                        ParserErrorOps.AppendError(start, stop, $"ref mark of method is not compatible");
                         return ParserResultOps.CreateExpr(start, stop);
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"method has multiple overloads");
+                    ParserErrorOps.AppendError(start, stop, $"method has multiple overloads");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
             }
@@ -1418,7 +1418,7 @@ namespace akanevrc.TeuchiUdon
                 var ms      = TableOps.GetMostCompatibleMethods(qm).ToArray();
                 if (ms.Length == 0)
                 {
-                    LogicalErrorHandler.ReportError(start, $"ctor is not defined");
+                    ParserErrorOps.AppendError(start, stop, $"ctor is not defined");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else if (ms.Length == 1)
@@ -1436,13 +1436,13 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"ref mark of ctor is not compatible");
+                        ParserErrorOps.AppendError(start, stop, $"ref mark of ctor is not compatible");
                         return ParserResultOps.CreateExpr(start, stop);
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"ctor has multiple overloads");
+                    ParserErrorOps.AppendError(start, stop, $"ctor has multiple overloads");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
             }
@@ -1450,7 +1450,7 @@ namespace akanevrc.TeuchiUdon
             {
                 if (args.Length != 1 || argRefs.Any(x => x))
                 {
-                    LogicalErrorHandler.ReportError(start, $"cast must be specified with one argument");
+                    ParserErrorOps.AppendError(start, stop, $"cast must be specified with one argument");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else
@@ -1471,7 +1471,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"specified type cannot be cast");
+                        ParserErrorOps.AppendError(start, stop, $"specified type cannot be cast");
                         return ParserResultOps.CreateExpr(start, stop);
                     }
                 }
@@ -1480,7 +1480,7 @@ namespace akanevrc.TeuchiUdon
             {
                 if (args.Length != 1 || argRefs.Any(x => x))
                 {
-                    LogicalErrorHandler.ReportError(start, $"typeof must be specified with one argument");
+                    ParserErrorOps.AppendError(start, stop, $"typeof must be specified with one argument");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else if (args[0].Inner.Type.LogicalTypeNameEquals(Primitives.Type) && args[0].Inner.Type.GetArgAsType().RealType != null)
@@ -1489,13 +1489,13 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"typeof argument must be a type");
+                    ParserErrorOps.AppendError(start, stop, $"typeof argument must be a type");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
             }
             else
             {
-                LogicalErrorHandler.ReportError(start, $"expression is not a function or method");
+                ParserErrorOps.AppendError(start, stop, $"expression is not a function or method");
                 return ParserResultOps.CreateExpr(start, stop);
             }
 
@@ -1522,7 +1522,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!arg.Inner.Type.LogicalTypeNameEquals(Primitives.Tuple))
             {
-                LogicalErrorHandler.ReportError(start, $"spread expression is not a tuple type");
+                ParserErrorOps.AppendError(start, stop, $"spread expression is not a tuple type");
                 return ParserResultOps.CreateExpr(start, stop);
             }
             else if (TypeOps.IsFunc(type))
@@ -1538,7 +1538,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"arguments of func is not compatible");
+                    ParserErrorOps.AppendError(start, stop, $"arguments of func is not compatible");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
             }
@@ -1549,7 +1549,7 @@ namespace akanevrc.TeuchiUdon
                 var ms           = TypeOps.GetMostCompatibleMethods(type, inTypes).ToArray();
                 if (ms.Length == 0)
                 {
-                    LogicalErrorHandler.ReportError(start, $"method is not defined");
+                    ParserErrorOps.AppendError(start, stop, $"method is not defined");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else if (ms.Length == 1)
@@ -1569,13 +1569,13 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"ref mark of method is not compatible");
+                        ParserErrorOps.AppendError(start, stop, $"ref mark of method is not compatible");
                         return ParserResultOps.CreateExpr(start, stop);
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"method has multiple overloads");
+                    ParserErrorOps.AppendError(start, stop, $"method has multiple overloads");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
             }
@@ -1586,7 +1586,7 @@ namespace akanevrc.TeuchiUdon
                 var ms      = TableOps.GetMostCompatibleMethods(qm).ToArray();
                 if (ms.Length == 0)
                 {
-                    LogicalErrorHandler.ReportError(start, $"ctor is not defined");
+                    ParserErrorOps.AppendError(start, stop, $"ctor is not defined");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
                 else if (ms.Length == 1)
@@ -1599,19 +1599,19 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"ref mark of ctor is not compatible");
+                        ParserErrorOps.AppendError(start, stop, $"ref mark of ctor is not compatible");
                         return ParserResultOps.CreateExpr(start, stop);
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"ctor has multiple overloads");
+                    ParserErrorOps.AppendError(start, stop, $"ctor has multiple overloads");
                     return ParserResultOps.CreateExpr(start, stop);
                 }
             }
             else
             {
-                LogicalErrorHandler.ReportError(start, $"expression is not a function or method");
+                ParserErrorOps.AppendError(start, stop, $"expression is not a function or method");
                 return ParserResultOps.CreateExpr(start, stop);
             }
 
@@ -1654,7 +1654,7 @@ namespace akanevrc.TeuchiUdon
                 var exprType = expr.Inner.Type.GetArgAsType();
                 if (!StaticTables.GenericRootTypes.ContainsKey(exprType))
                 {
-                    LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                    ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                     return ParserResultOps.CreateInvalid(start, stop);
                 }
 
@@ -1668,7 +1668,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                        ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
@@ -1683,7 +1683,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                        ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
@@ -1698,7 +1698,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                        ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
@@ -1713,7 +1713,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                        ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
@@ -1727,7 +1727,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                        ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
@@ -1741,13 +1741,13 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                    ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                     return ParserResultOps.CreateInvalid(start, stop);
                 }
             }
             else
             {
-                LogicalErrorHandler.ReportError(start, $"specified key is invalid");
+                ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
                 return ParserResultOps.CreateInvalid(start, stop);
             }
         }
@@ -1971,7 +1971,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!expr1.Inner.Type.LogicalTypeEquals(Primitives.Bool) || !expr2.Inner.Type.LogicalTypeEquals(Primitives.Bool))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"invalid operand type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid operand type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2001,7 +2001,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!expr1.Inner.Type.LogicalTypeEquals(Primitives.Bool) || !expr2.Inner.Type.LogicalTypeEquals(Primitives.Bool))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"invalid operand type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid operand type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2031,7 +2031,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!TypeOps.IsAssignableFrom(expr1.Inner.Type, expr2.Inner.Type) && !TypeOps.IsAssignableFrom(expr2.Inner.Type, expr1.Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"invalid operand type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid operand type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2102,7 +2102,7 @@ namespace akanevrc.TeuchiUdon
 
             if (expr1.Inner.LeftValues.Length != 1 || !TypeOps.IsAssignableFrom(expr1.Inner.Type, expr2.Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"cannot be assigned");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"cannot be assigned");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2157,14 +2157,14 @@ namespace akanevrc.TeuchiUdon
 
             if (!isoExpr.Expr.Inner.Type.LogicalTypeEquals(Primitives.Bool))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"condition expression must be bool type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"condition expression must be bool type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
 
             if (statement is LetBindResult)
             {
-                LogicalErrorHandler.ReportError(context.Start, $"if expression cannot contain let bind");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"if expression cannot contain let bind");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2200,14 +2200,14 @@ namespace akanevrc.TeuchiUdon
 
             if (!isoExprs.All(x => x.Expr.Inner.Type.LogicalTypeEquals(Primitives.Bool)))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"condition expression must be bool type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"condition expression must be bool type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
 
             if (statements.Any(x => x is LetBindResult))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"if expression cannot contain let bind");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"if expression cannot contain let bind");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2244,7 +2244,7 @@ namespace akanevrc.TeuchiUdon
             var exprs = isoExprs.Select(x => x.Expr).ToArray();
             if (!exprs[0].Inner.Type.LogicalTypeEquals(Primitives.Bool))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"condition expression must be bool type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"condition expression must be bool type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2252,7 +2252,7 @@ namespace akanevrc.TeuchiUdon
             var type = SyntaxOps.GetUpperType(new TeuchiUdonType[] { exprs[1].Inner.Type, exprs[2].Inner.Type });
             if (TypeOps.ContainsUnknown(type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"if expression types are not compatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"if expression types are not compatible");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2297,7 +2297,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!conditions.All(x => x.Inner.Type.LogicalTypeEquals(Primitives.Bool)))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"condition expression must be bool type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"condition expression must be bool type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2305,7 +2305,7 @@ namespace akanevrc.TeuchiUdon
             var type = SyntaxOps.GetUpperType(thenParts.Concat(new ExprResult[] { elsePart }).Select(x => x.Inner.Type));
             if (TypeOps.ContainsUnknown(type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"if expression types are not compatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"if expression types are not compatible");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2344,7 +2344,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!isoExpr.Expr.Inner.Type.LogicalTypeEquals(Primitives.Bool))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"condition expression must be bool type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"condition expression must be bool type");
                 context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                 return;
             }
@@ -2454,7 +2454,7 @@ namespace akanevrc.TeuchiUdon
                 var ev = StaticTables.Events[varBind.VarNames[0]];
                 if (ev.OutTypes.Length != args.Length)
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
                     context.result = ParserResultOps.CreateExpr(context.Start, context.Stop); 
                     return;
                 }
@@ -2473,14 +2473,14 @@ namespace akanevrc.TeuchiUdon
                                     var name = TeuchiUdonTableOps.GetEventParamName(ev.Name, x.n);
                                     if (!TeuchiUdonTableOps.IsValidVarName(name))
                                     {
-                                        LogicalErrorHandler.ReportError(context.Start, $"'{name}' is invalid variable name");
+                                        ParserErrorOps.AppendError(context.Start, context.Stop, $"'{name}' is invalid variable name");
                                         return x.a;
                                     }
                                     
                                     var v = new TeuchiUdonVar(Tables.GetVarIndex(), TeuchiUdonQualifier.Top, name, x.t, false, true);
                                     if (Tables.Vars.ContainsKey(v))
                                     {
-                                        LogicalErrorHandler.ReportError(context.Start, $"'{v.Name}' conflicts with another variable");
+                                        ParserErrorOps.AppendError(context.Start, context.Stop, $"'{v.Name}' conflicts with another variable");
                                         return x.a;
                                     }
                                     else
@@ -2493,7 +2493,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(context.Start, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"arguments of '{varBind.VarNames[0]}' event is not compatible");
                         context.result = ParserResultOps.CreateExpr(context.Start, context.Stop);
                         return;
                     }
@@ -2518,7 +2518,7 @@ namespace akanevrc.TeuchiUdon
             var type  = SyntaxOps.GetUpperType(exprs.Select(x => x.Inner.Type));
             if (type.LogicalTypeEquals(Primitives.Unknown))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"array element types are incompatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"array element types are incompatible");
                 context.result = ParserResultOps.CreateElementsIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2538,13 +2538,13 @@ namespace akanevrc.TeuchiUdon
 
             if (!TypeOps.IsSignedIntegerType(exprs[0].Inner.Type) || !TypeOps.IsSignedIntegerType(exprs[1].Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression is not signed integer type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression is not signed integer type");
                 context.result = ParserResultOps.CreateRangeIterExpr(context.Start, context.Stop);
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression type is incompatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression type is incompatible");
                 context.result = ParserResultOps.CreateRangeIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2569,13 +2569,13 @@ namespace akanevrc.TeuchiUdon
                 !TypeOps.IsSignedIntegerType(exprs[2].Inner.Type)
             )
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression is not signed integer type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression is not signed integer type");
                 context.result = ParserResultOps.CreateSteppedRangeIterExpr(context.Start, context.Stop);
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type) || !exprs[0].Inner.Type.LogicalTypeEquals(exprs[2].Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression type is incompatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression type is incompatible");
                 context.result = ParserResultOps.CreateSteppedRangeIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2595,7 +2595,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!expr.Inner.Type.LogicalTypeNameEquals(Primitives.Array))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"spread expression is not a array type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"spread expression is not a array type");
                 context.result = ParserResultOps.CreateSpreadIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2694,7 +2694,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"expression cannot be assigned to variable");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"expression cannot be assigned to variable");
                     vars = Array.Empty<TeuchiUdonVar>();
                 }
             }
@@ -2728,20 +2728,20 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(context.Start, $"expression cannot be assigned to variables");
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"expression cannot be assigned to variables");
                         vars = Array.Empty<TeuchiUdonVar>();
                     }
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(context.Start, $"expression cannot be assigned to variables");
+                    ParserErrorOps.AppendError(context.Start, context.Stop, $"expression cannot be assigned to variables");
                     vars = Array.Empty<TeuchiUdonVar>();
                 }
             }
 
             if (TypeOps.IsFunc(forIterExpr.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"function variable cannot be mutable");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"function variable cannot be mutable");
             }
 
             var letKeyword = ParserResultOps.CreateKeyword(letToken.Symbol, letToken.Symbol, letToken.GetText());
@@ -2760,7 +2760,7 @@ namespace akanevrc.TeuchiUdon
 
             if (expr.Inner.LeftValues.Length != 1 || !TypeOps.IsAssignableFrom(expr.Inner.Type, forIterExpr.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"cannot be assigned");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"cannot be assigned");
                 context.result = ParserResultOps.CreateAssignForBind(context.Start, context.Stop);
                 return;
             }
@@ -2779,13 +2779,13 @@ namespace akanevrc.TeuchiUdon
 
             if (!TypeOps.IsSignedIntegerType(exprs[0].Inner.Type) || !TypeOps.IsSignedIntegerType(exprs[1].Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression is not signed integer type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression is not signed integer type");
                 context.result = ParserResultOps.CreateRangeIterExpr(context.Start, context.Stop);
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression type is incompatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression type is incompatible");
                 context.result = ParserResultOps.CreateRangeIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2810,13 +2810,13 @@ namespace akanevrc.TeuchiUdon
                 !TypeOps.IsSignedIntegerType(exprs[2].Inner.Type)
             )
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression is not signed integer type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression is not signed integer type");
                 context.result = ParserResultOps.CreateSteppedRangeIterExpr(context.Start, context.Stop);
                 return;
             }
             else if (!exprs[0].Inner.Type.LogicalTypeEquals(exprs[1].Inner.Type) || !exprs[0].Inner.Type.LogicalTypeEquals(exprs[2].Inner.Type))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"range expression type is incompatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"range expression type is incompatible");
                 context.result = ParserResultOps.CreateSteppedRangeIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2836,7 +2836,7 @@ namespace akanevrc.TeuchiUdon
 
             if (!expr.Inner.Type.LogicalTypeNameEquals(Primitives.Array))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"spread expression is not a array type");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"spread expression is not a array type");
                 context.result = ParserResultOps.CreateSpreadIterExpr(context.Start, context.Stop);
                 return;
             }
@@ -2895,7 +2895,7 @@ namespace akanevrc.TeuchiUdon
             }
             catch
             {
-                LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to int");
+                ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to int");
                 return null;
             }
         }
@@ -3025,7 +3025,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to int");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to int");
                     return null;
                 }
             }
@@ -3037,7 +3037,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to uint");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to uint");
                     return null;
                 }
             }
@@ -3049,7 +3049,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to long");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to long");
                     return null;
                 }
             }
@@ -3061,13 +3061,13 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to ulong");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to ulong");
                     return null;
                 }
             }
             else
             {
-                LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to unknown");
+                ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to unknown");
                 return null;
             }
         }
@@ -3115,7 +3115,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to float");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to float");
                     return null;
                 }
             }
@@ -3127,7 +3127,7 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to double");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to double");
                     return null;
                 }
             }
@@ -3139,13 +3139,13 @@ namespace akanevrc.TeuchiUdon
                 }
                 catch
                 {
-                    LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to decimal");
+                    ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to decimal");
                     return null;
                 }
             }
             else
             {
-                LogicalErrorHandler.ReportError(token, $"failed to convert '{token.Text}' to unknown");
+                ParserErrorOps.AppendError(token, token, $"failed to convert '{token.Text}' to unknown");
                 return null;
             }
         }
@@ -3201,7 +3201,7 @@ namespace akanevrc.TeuchiUdon
 
             if (ch.Length != 1)
             {
-                LogicalErrorHandler.ReportError(token, $"invalid length of character literal");
+                ParserErrorOps.AppendError(token, token, $"invalid length of character literal");
                 return null;
             }
 
@@ -3256,7 +3256,7 @@ namespace akanevrc.TeuchiUdon
                             var d0 = CharNumberToInt(reader.Peek());
                             if (d0 == -1)
                             {
-                                LogicalErrorHandler.ReportError(token, $"invalid char detected");
+                                ParserErrorOps.AppendError(token, token, $"invalid char detected");
                                 return "";
                             }
                             reader.Read();
@@ -3283,7 +3283,7 @@ namespace akanevrc.TeuchiUdon
                                 var d = CharNumberToInt(reader.Read());
                                 if (d == -1)
                                 {
-                                    LogicalErrorHandler.ReportError(token, $"invalid char detected");
+                                    ParserErrorOps.AppendError(token, token, $"invalid char detected");
                                     return "";
                                 }
                                 u = u * 16 + d;
@@ -3298,7 +3298,7 @@ namespace akanevrc.TeuchiUdon
                                 var d = CharNumberToInt(reader.Read());
                                 if (d == -1)
                                 {
-                                    LogicalErrorHandler.ReportError(token, $"invalid char detected");
+                                    ParserErrorOps.AppendError(token, token, $"invalid char detected");
                                     return "";
                                 }
                                 u0 = u0 * 16 + d;
@@ -3309,7 +3309,7 @@ namespace akanevrc.TeuchiUdon
                                 var d = CharNumberToInt(reader.Read());
                                 if (d == -1)
                                 {
-                                    LogicalErrorHandler.ReportError(token, $"invalid char detected");
+                                    ParserErrorOps.AppendError(token, token, $"invalid char detected");
                                     return "";
                                 }
                                 u1 = u1 * 16 + d;
@@ -3317,7 +3317,7 @@ namespace akanevrc.TeuchiUdon
                             return ((char)u0).ToString() + ((char)u1).ToString();
                         }
                         default:
-                            LogicalErrorHandler.ReportError(token, $"invalid char detected");
+                            ParserErrorOps.AppendError(token, token, $"invalid char detected");
                             return "";
                     }
                 }
@@ -3348,7 +3348,7 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(token, $"invalid char detected");
+                        ParserErrorOps.AppendError(token, token, $"invalid char detected");
                         return "";
                     }
                 }
@@ -3395,7 +3395,7 @@ namespace akanevrc.TeuchiUdon
             var exprs = parts.Where(x => x is ExprInterpolatedStringPartResult).Select(x => ((ExprInterpolatedStringPartResult)x).Expr);
             if (exprs.Any(x => !TypeOps.IsDotNetType(x.Inner.Type)))
             {
-                LogicalErrorHandler.ReportError(context.Start, $"expression type is incompatible");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"expression type is incompatible");
                 context.result = ParserResultOps.CreateInterpolatedString(context.Start, context.Stop);
                 return;
             }
@@ -3426,7 +3426,7 @@ namespace akanevrc.TeuchiUdon
             var invalid = Regex.Match(rawString, @"\{\d+\}");
             if (invalid.Success)
             {
-                LogicalErrorHandler.ReportError(context.Start, $"invalid word '{invalid.Value}' detected");
+                ParserErrorOps.AppendError(context.Start, context.Stop, $"invalid word '{invalid.Value}' detected");
                 context.result = ParserResultOps.CreateRegularStringInterpolatedStringPart(context.Start, context.Stop);
                 return;
             }

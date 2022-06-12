@@ -10,6 +10,7 @@ namespace akanevrc.TeuchiUdon
         public override string GrammarFileName => throw new System.NotImplementedException();
 
         public new TextWriter Output => base.Output;
+        public TeuchiUdonParserErrorOps ParserErrorOps { get; set; }
 
         public TeuchiUdonBaseParser(ITokenStream input)
             : base(input)
@@ -19,6 +20,11 @@ namespace akanevrc.TeuchiUdon
         public TeuchiUdonBaseParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
             : base(input, output, errorOutput)
         {
+        }
+
+        public override void NotifyErrorListeners(IToken offendingToken, string message, RecognitionException ex)
+        {
+            ParserErrorOps.AppendError(offendingToken, null, message);
         }
     }
 }

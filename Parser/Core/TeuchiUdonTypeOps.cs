@@ -8,27 +8,27 @@ namespace akanevrc.TeuchiUdon
         private TeuchiUdonPrimitives Primitives { get; }
         private TeuchiUdonStaticTables StaticTables { get; }
         private TeuchiUdonInvalids Invalids { get; }
-        private TeuchiUdonLogicalErrorHandler LogicalErrorHandler { get; }
+        private TeuchiUdonParserErrorOps ParserErrorOps { get; }
 
         public TeuchiUdonTypeOps
         (
             TeuchiUdonPrimitives primitives,
             TeuchiUdonStaticTables staticTables,
             TeuchiUdonInvalids invalids,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler
+            TeuchiUdonParserErrorOps parserErrorOps
         )
         {
-            Primitives          = primitives;
-            StaticTables        = staticTables;
-            Invalids            = invalids;
-            LogicalErrorHandler = logicalErrorHandler;
+            Primitives     = primitives;
+            StaticTables   = staticTables;
+            Invalids       = invalids;
+            ParserErrorOps = parserErrorOps;
         }
 
         public string GetRealName(TeuchiUdonType type)
         {
             if (type.RealName == null)
             {
-                LogicalErrorHandler.ReportError(null, $"no real type name");
+                ParserErrorOps.AppendError(null, null, $"no real type name");
                 return "";
             }
             return type.RealName;
@@ -395,13 +395,13 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    LogicalErrorHandler.ReportError(null, $"cannot bind type");
+                    ParserErrorOps.AppendError(null, null, $"cannot bind type");
                     return Invalids.InvalidType;
                 }
             }
             else
             {
-                LogicalErrorHandler.ReportError(null, $"cannot bind type");
+                ParserErrorOps.AppendError(null, null, $"cannot bind type");
                 return Invalids.InvalidType;
             }
         }

@@ -10,7 +10,7 @@ namespace akanevrc.TeuchiUdon
         private TeuchiUdonPrimitives Primitives { get; }
         private TeuchiUdonStaticTables StaticTables { get; }
         private TeuchiUdonInvalids Invalids { get; }
-        private TeuchiUdonLogicalErrorHandler LogicalErrorHandler { get; }
+        private TeuchiUdonParserErrorOps ParserErrorOps { get; }
         private TeuchiUdonTables Tables { get; }
         private TeuchiUdonTypeOps TypeOps { get; }
         private TeuchiUdonTableOps TableOps { get; }
@@ -22,7 +22,7 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonPrimitives primitives,
             TeuchiUdonStaticTables staticTables,
             TeuchiUdonInvalids invalids,
-            TeuchiUdonLogicalErrorHandler logicalErrorHandler,
+            TeuchiUdonParserErrorOps parserErrorOps,
             TeuchiUdonTables tables,
             TeuchiUdonTypeOps typeOps,
             TeuchiUdonTableOps tableOps,
@@ -30,15 +30,15 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonSyntaxOps syntaxOps
         )
         {
-            Primitives          = primitives;
-            StaticTables        = staticTables;
-            Invalids            = invalids;
-            LogicalErrorHandler = logicalErrorHandler;
-            Tables              = tables;
-            TypeOps             = typeOps;
-            TableOps            = tableOps;
-            OutValuePool        = outValuePool;
-            SyntaxOps           = syntaxOps;
+            Primitives     = primitives;
+            StaticTables   = staticTables;
+            Invalids       = invalids;
+            ParserErrorOps = parserErrorOps;
+            Tables         = tables;
+            TypeOps        = typeOps;
+            TableOps       = tableOps;
+            OutValuePool   = outValuePool;
+            SyntaxOps      = syntaxOps;
         }
 
         public TargetResult CreateTarget(IToken start, IToken stop)
@@ -162,11 +162,11 @@ namespace akanevrc.TeuchiUdon
             {
                 if (!TeuchiUdonTableOps.IsValidVarName(v.Name))
                 {
-                    LogicalErrorHandler.ReportError(start, $"'{v.Name}' is invalid variable name");
+                    ParserErrorOps.AppendError(start, stop, $"'{v.Name}' is invalid variable name");
                 }
                 else if (Tables.Vars.ContainsKey(v))
                 {
-                    LogicalErrorHandler.ReportError(start, $"'{v.Name}' conflicts with another variable");
+                    ParserErrorOps.AppendError(start, stop, $"'{v.Name}' conflicts with another variable");
                 }
                 else
                 {
@@ -999,7 +999,7 @@ namespace akanevrc.TeuchiUdon
 
             if (Tables.Funcs.ContainsKey(func))
             {
-                LogicalErrorHandler.ReportError(start, $"{func} conflicts with another function");
+                ParserErrorOps.AppendError(start, stop, $"{func} conflicts with another function");
             }
             else
             {
@@ -2445,13 +2445,13 @@ namespace akanevrc.TeuchiUdon
                     }
                     else
                     {
-                        LogicalErrorHandler.ReportError(result.Start, $"method '{name}' has multiple overloads");
+                        ParserErrorOps.AppendError(result.Start, result.Stop, $"method '{name}' has multiple overloads");
                         return null;
                     }
                 }
             }
 
-            LogicalErrorHandler.ReportError(result.Start, $"method is not defined");
+            ParserErrorOps.AppendError(result.Start, result.Stop, $"method is not defined");
             return null;
         }
 
