@@ -39,7 +39,7 @@ varAttr
 
 varBind
     returns [VarBindResult result, int tableIndex]
-    : 'mut'? varDecl[true] '=' expr
+    : varDecl[true] '=' expr
     ;
 
 varDecl[bool isActual]
@@ -51,7 +51,7 @@ varDecl[bool isActual]
 
 qualifiedVar
     returns [QualifiedVarResult result]
-    : identifier (':' expr)?
+    : 'mut'? identifier (':' expr)?
     ;
 
 identifier

@@ -1,0 +1,5 @@
+// ok
+{
+  let (x, y) = ("ok", "ng");
+  UnityEngine.Debug.Log(x);
+};

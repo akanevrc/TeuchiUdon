@@ -1,0 +1,6 @@
+// ok
+{
+  let (mut x, y) = ("ng", "ng");
+  x <- "ok";
+  UnityEngine.Debug.Log(x);
+};

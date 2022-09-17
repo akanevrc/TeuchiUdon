@@ -165,7 +165,6 @@ namespace akanevrc.TeuchiUdon
 
     public class VarBindResult : TeuchiUdonParserResult
     {
-        public KeywordResult MutKeyword { get; }
         public TeuchiUdonVarBind VarBind { get; }
         public TeuchiUdonVar[] Vars { get; }
         public VarDeclResult VarDecl { get; }
@@ -181,14 +180,12 @@ namespace akanevrc.TeuchiUdon
             TeuchiUdonTables tables,
             IToken start,
             IToken stop,
-            KeywordResult mutKeyword,
             TeuchiUdonVarBind varBind,
             IEnumerable<TeuchiUdonVar> vars,
             VarDeclResult varDecl,
             ExprResult expr
         ) : base(tables, start, stop, true)
         {
-            MutKeyword = mutKeyword;
             VarBind    = varBind;
             Vars       = vars.ToArray();
             VarDecl    = varDecl;
@@ -225,6 +222,7 @@ namespace akanevrc.TeuchiUdon
 
     public class QualifiedVarResult : TeuchiUdonParserResult
     {
+        public KeywordResult MutKeyword { get; }
         public IdentifierResult Identifier { get; }
         public ExprResult Qualified { get; }
 
@@ -233,9 +231,17 @@ namespace akanevrc.TeuchiUdon
         {
         }
 
-        public QualifiedVarResult(TeuchiUdonTables tables, IToken start, IToken stop, IdentifierResult identifier, ExprResult qualified)
-            : base(tables, start, stop, true)
+        public QualifiedVarResult
+        (
+            TeuchiUdonTables tables,
+            IToken start,
+            IToken stop,
+            KeywordResult mutKeyword,
+            IdentifierResult identifier,
+            ExprResult qualified
+        ) : base(tables, start, stop, true)
         {
+            MutKeyword = mutKeyword;
             Identifier = identifier;
             Qualified  = qualified;
         }

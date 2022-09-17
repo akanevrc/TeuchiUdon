@@ -155,20 +155,20 @@ namespace akanevrc.TeuchiUdon.Server
                 case KeywordResult:
                     yield break;
                 case VarBindResult varBind:
-                    if (varBind.MutKeyword != null)
-                    {
-                        yield return SemanticTokenAttribute.Create
-                        (
-                            varBind.MutKeyword.Start,
-                            varBind.MutKeyword.Stop,
-                            SemanticTokenType.Keyword,
-                            SemanticTokenModifier.Definition
-                        );
-                    }
                     yield break;
                 case VarDeclResult:
                     yield break;
                 case QualifiedVarResult qualifiedVar:
+                    if (qualifiedVar.MutKeyword != null)
+                    {
+                        yield return SemanticTokenAttribute.Create
+                        (
+                            qualifiedVar.MutKeyword.Start,
+                            qualifiedVar.MutKeyword.Stop,
+                            SemanticTokenType.Keyword,
+                            SemanticTokenModifier.Definition
+                        );
+                    }
                     if (qualifiedVar.Identifier != null)
                     {
                         yield return SemanticTokenAttribute.Create

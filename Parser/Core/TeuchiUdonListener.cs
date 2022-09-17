@@ -385,9 +385,6 @@ namespace akanevrc.TeuchiUdon
 
             QualifierStack.Pop();
 
-            var mutToken = context.MUT();
-            var mut      = mutToken != null;
-
             var index = context.tableIndex;
             var qual  = QualifierStack.Peek();
 
@@ -411,7 +408,7 @@ namespace akanevrc.TeuchiUdon
                             v.Qualifier,
                             v.Name,
                             v.Type.LogicalTypeEquals(Primitives.Unknown) ? t : v.Type,
-                            mut,
+                            v.Mut,
                             false
                         )
                     };
@@ -445,7 +442,7 @@ namespace akanevrc.TeuchiUdon
                                     x.v.Qualifier,
                                     x.v.Name,
                                     x.v.Type.LogicalTypeEquals(Primitives.Unknown) ? x.t : x.v.Type,
-                                    mut,
+                                    x.v.Mut,
                                     false
                                 )
                             )
@@ -466,15 +463,14 @@ namespace akanevrc.TeuchiUdon
                 }
             }
 
-            if (mut && TypeOps.IsFunc(expr.Inner.Type))
+            if (varDecl.Vars[0].Mut && TypeOps.IsFunc(expr.Inner.Type))
             {
                 ParserErrorOps.AppendError(context.Start, context.Stop, $"function variable cannot be mutable");
                 context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop);
                 return;
             }
 
-            var mutKeyword = ParserResultOps.CreateKeyword(mutToken?.Symbol, mutToken?.Symbol, mutToken?.GetText());
-            context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop, index, mutKeyword, qual, vars, varDecl, expr);
+            context.result = ParserResultOps.CreateVarBind(context.Start, context.Stop, index, qual, vars, varDecl, expr);
         }
 
         public override void ExitUnitVarDecl([NotNull] UnitVarDeclContext context)
@@ -528,6 +524,7 @@ namespace akanevrc.TeuchiUdon
 
         public override void ExitQualifiedVar([NotNull] QualifiedVarContext context)
         {
+            var mut        = context.MUT();
             var identifier = context.identifier()?.result;
             var qualified  = context.expr      ()?.result;
             if (IsInvalid(identifier))
@@ -551,7 +548,8 @@ namespace akanevrc.TeuchiUdon
                 qualified.ReturnsValue = false;
             }
 
-            context.result = ParserResultOps.CreateQualifiedVar(context.Start, context.Stop, identifier, qualified);
+            var mutKeyword = ParserResultOps.CreateKeyword(mut?.Symbol, mut?.Symbol, mut?.GetText());
+            context.result = ParserResultOps.CreateQualifiedVar(context.Start, context.Stop, mutKeyword, identifier, qualified);
         }
 
         public override void ExitIdentifier([NotNull] IdentifierContext context)

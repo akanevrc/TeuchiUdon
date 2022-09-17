@@ -121,7 +121,6 @@ namespace akanevrc.TeuchiUdon
             IToken start,
             IToken stop,
             int index,
-            KeywordResult mutKeyword,
             TeuchiUdonQualifier qualifier,
             IEnumerable<TeuchiUdonVar> vars,
             VarDeclResult varDecl,
@@ -135,7 +134,7 @@ namespace akanevrc.TeuchiUdon
                 Tables.Vars[v] = v;
             }
 
-            return new VarBindResult(Tables, start, stop, mutKeyword, varBind, vars, varDecl, expr);
+            return new VarBindResult(Tables, start, stop, varBind, vars, varDecl, expr);
         }
 
         public VarDeclResult CreateVarDecl(IToken start, IToken stop)
@@ -156,7 +155,7 @@ namespace akanevrc.TeuchiUdon
                 qualifiedVars
                 .Zip(types  , (q, t) => (q, t))
                 .Zip(indices, (x, n) => (x.q, x.t, n))
-                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.t, false, false)).ToArray();
+                .Select(x => new TeuchiUdonVar(x.n, qualifier, x.q.Identifier.Name, x.t, x.q.MutKeyword.Name != null, false)).ToArray();
 
             foreach (var v in vars)
             {
@@ -182,9 +181,16 @@ namespace akanevrc.TeuchiUdon
             return new QualifiedVarResult(Tables, start, stop);
         }
 
-        public QualifiedVarResult CreateQualifiedVar(IToken start, IToken stop, IdentifierResult identifier, ExprResult qualified)
+        public QualifiedVarResult CreateQualifiedVar
+        (
+            IToken start,
+            IToken stop,
+            KeywordResult mutKeyword,
+            IdentifierResult identifier,
+            ExprResult qualified
+        )
         {
-            return new QualifiedVarResult(Tables, start, stop, identifier, qualified);
+            return new QualifiedVarResult(Tables, start, stop, mutKeyword, identifier, qualified);
         }
 
         public IdentifierResult CreateIdentifier(IToken start, IToken stop)
