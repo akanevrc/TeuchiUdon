@@ -16,7 +16,7 @@ Thanks a lot!
 ANTLR Compilation Usage:
 
 ```console
-$ cd ./Parser
-$ antlr4 -package akanevrc.TeuchiUdon ./Grammars/TeuchiUdonLexer.g4
-$ antlr4 -package akanevrc.TeuchiUdon ./Grammars/TeuchiUdonParser.g4
+$ cd ./Parser/Grammars
+$ antlr4 -package akanevrc.TeuchiUdon TeuchiUdonLexer.g4
+$ antlr4 -package akanevrc.TeuchiUdon TeuchiUdonParser.g4
 ```
