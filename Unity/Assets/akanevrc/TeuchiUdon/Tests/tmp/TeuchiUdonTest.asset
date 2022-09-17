@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: TeuchiUdonTest
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 294333a352640c04780de002df95f389,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 714a6839b1a88914b94c2ec6a4bcbbf1,
     type: 2}
   udonAssembly: ".data_start\r\n    .export var[velocity]\r\n    var[velocity]: %SystemSingle,
     null\r\n    var[angle]: %SystemSingle, null\r\n    var[deltaAngle]: %SystemUInt32,

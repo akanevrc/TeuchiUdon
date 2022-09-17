@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: Paren
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 09b6319a78d561148b7c6a8c01c5319a,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: e92bc3adc5b7a674bbccfcb49ef7e404,
     type: 2}
   udonAssembly: ".data_start\r\n    literal[0]: %SystemString, null\r\n.data_end\r\n\r\n.code_start\r\n   
     .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: CallStart
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: d59288f43bcc08d49913febb629e9b0b,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: da3a8f21a97d55941997ce9be62258eb,
     type: 2}
   udonAssembly: ".data_start\r\n    _start: %SystemUInt32, null\r\n    literal[0]:
     %SystemString, null\r\n    return[func[_start>0]]: %SystemUInt32, null\r\n   

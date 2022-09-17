@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: Tuple2
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 82c602679819405468aa13210020fef3,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: d8e0d3fb35066e34e94621addfe4c1a5,
     type: 2}
   udonAssembly: ".data_start\r\n    var[x]: %SystemInt32, null\r\n    var[y]: %SystemInt32,
     null\r\n    literal[0]: %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n   

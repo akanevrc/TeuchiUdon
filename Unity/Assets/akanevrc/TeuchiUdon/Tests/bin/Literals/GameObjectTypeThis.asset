@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: GameObjectTypeThis
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: c75c822d0f4548a4ca18d19fa204d0ed,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: f0170d5025b74bb40a0fba3cdc3087d5,
     type: 2}
   udonAssembly: ".data_start\r\n    literal[this]: %UnityEngineGameObject, this\r\n.data_end\r\n\r\n.code_start\r\n   
     .export _start\r\n    _start:\r\n        PUSH, literal[this]\r\n        EXTERN,

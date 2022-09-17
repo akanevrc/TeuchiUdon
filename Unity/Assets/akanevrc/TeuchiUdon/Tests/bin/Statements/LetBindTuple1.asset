@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: LetBindTuple1
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 5c403ceb559188d43bcf1d9ac65c94b7,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 79ea9b26526aa2a45a3085d7e849baec,
     type: 2}
   udonAssembly: ".data_start\r\n    var[block[0]>x]: %SystemString, null\r\n    var[block[0]>y]:
     %SystemString, null\r\n    literal[0]: %SystemString, null\r\n    literal[1]:

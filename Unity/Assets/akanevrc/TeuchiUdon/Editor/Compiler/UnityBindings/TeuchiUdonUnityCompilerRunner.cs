@@ -32,9 +32,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var dllPaths = new string[]
             {
                 Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Data/Managed/UnityEngine.dll"),
-                "./Assets/VRCSDK/Plugins/VRCSDKBase.dll",
-                "./Assets/Udon/External/VRC.Udon.Common.dll",
-                "./Assets/Udon/Editor/External/VRC.Udon.Graph.dll",
+                "./Packages/com.vrchat.base/Runtime/VRCSDK/Plugins/VRCSDKBase.dll",
+                "./Packages/com.vrchat.worlds/Runtime/Udon/External/VRC.Udon.Common.dll",
+                "./Packages/com.vrchat.worlds/Editor/Udon/External/VRC.Udon.Graph.dll",
                 "./Library/ScriptAssemblies/VRC.Udon.dll",
                 "./Library/ScriptAssemblies/VRC.Udon.Editor.dll"
             };

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: PreBang
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: ab72c89fe168c6c4fbfb1828e132f8fc,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 7de22bdf307292e4f9b9ca5e3a7aec0d,
     type: 2}
   udonAssembly: ".data_start\r\n    literal[0]: %SystemBoolean, null\r\n    out[SystemBoolean>0]:
     %SystemBoolean, null\r\n.data_end\r\n\r\n.code_start\r\n    .export _start\r\n   

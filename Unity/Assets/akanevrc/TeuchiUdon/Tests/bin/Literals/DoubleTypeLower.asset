@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b395809abe973ff4da67eb677d952047, type: 3}
   m_Name: DoubleTypeLower
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 2bdd6c935cb72ff42b8f56f93a8f42fe,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 3f4b8195a8cc6e94eba93ccb0e4ca6ad,
     type: 2}
   udonAssembly: ".data_start\r\n    literal[0]: %SystemDouble, null\r\n.data_end\r\n\r\n.code_start\r\n   
     .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,
