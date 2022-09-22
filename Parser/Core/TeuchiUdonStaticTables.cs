@@ -94,8 +94,8 @@ namespace akanevrc.TeuchiUdon
                 Primitives.Tuple,
                 Primitives.Array,
                 Primitives.List,
-                Primitives.Func,
-                Primitives.DetFunc
+                Primitives.NdFunc,
+                Primitives.Func
             };
 
             foreach (var t in genericRoots)

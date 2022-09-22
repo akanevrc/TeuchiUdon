@@ -2466,9 +2466,9 @@ namespace akanevrc.TeuchiUdon
             switch (result)
             {
                 case EvalFuncResult evalFunc:
-                    return !TypeOps.ContainsNonDetFunc(evalFunc.Expr.Inner.Type) && evalFunc.Children.All(x => Deterministic(x));
+                    return !TypeOps.ContainsNdFunc(evalFunc.Expr.Inner.Type) && evalFunc.Children.All(x => Deterministic(x));
                 case EvalSpreadFuncResult evalSpreadFunc:
-                    return !TypeOps.ContainsNonDetFunc(evalSpreadFunc.Expr.Inner.Type) && evalSpreadFunc.Children.All(x => Deterministic(x));
+                    return !TypeOps.ContainsNdFunc(evalSpreadFunc.Expr.Inner.Type) && evalSpreadFunc.Children.All(x => Deterministic(x));
                 case FuncResult func:
                     return func.IsDet;
                 default:

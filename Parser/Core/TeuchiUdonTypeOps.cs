@@ -88,8 +88,8 @@ namespace akanevrc.TeuchiUdon
                     IsAssignableFromTuple   (obj1, obj2) ||
                     IsAssignableFromArray   (obj1, obj2) ||
                     IsAssignableFromList    (obj1, obj2) ||
+                    IsAssignableFromNdFunc  (obj1, obj2) ||
                     IsAssignableFromFunc    (obj1, obj2) ||
-                    IsAssignableFromDetFunc (obj1, obj2) ||
                     IsAssignableFromSetter  (obj1, obj2) ||
                     IsAssignableFromNullType(obj1, obj2) ||
                     IsAssignableFromDotNet  (obj1, obj2)
@@ -176,13 +176,13 @@ namespace akanevrc.TeuchiUdon
                 IsAssignableFrom(obj1.GetArgAsListElementType(), obj2.GetArgAsListElementType());
         }
 
-        private bool IsAssignableFromFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
+        private bool IsAssignableFromNdFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
         {
             if (obj1 == null || obj2 == null) return false;
             if
             (
-                !obj1.LogicalTypeNameEquals(Primitives.Func) ||
-                !obj2.LogicalTypeNameEquals(Primitives.Func) && !obj2.LogicalTypeNameEquals(Primitives.DetFunc)
+                !obj1.LogicalTypeNameEquals(Primitives.NdFunc) ||
+                !obj2.LogicalTypeNameEquals(Primitives.NdFunc) && !obj2.LogicalTypeNameEquals(Primitives.Func)
             ) return false;
 
             return
@@ -190,10 +190,10 @@ namespace akanevrc.TeuchiUdon
                 IsAssignableFrom(obj2.GetArgAsFuncOutType(), obj1.GetArgAsFuncOutType());
         }
 
-        private bool IsAssignableFromDetFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
+        private bool IsAssignableFromFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
         {
             if (obj1 == null || obj2 == null) return false;
-            if (!obj1.LogicalTypeNameEquals(Primitives.DetFunc) || !obj2.LogicalTypeNameEquals(Primitives.DetFunc)) return false;
+            if (!obj1.LogicalTypeNameEquals(Primitives.Func) || !obj2.LogicalTypeNameEquals(Primitives.Func)) return false;
 
             return
                 IsAssignableFrom(obj1.GetArgAsFuncInType (), obj2.GetArgAsFuncInType ()) &&
@@ -237,8 +237,8 @@ namespace akanevrc.TeuchiUdon
                 Primitives.Type,
                 Primitives.Tuple,
                 Primitives.List,
+                Primitives.NdFunc,
                 Primitives.Func,
-                Primitives.DetFunc,
                 Primitives.Method,
                 Primitives.Setter,
                 Primitives.Cast,
@@ -356,7 +356,7 @@ namespace akanevrc.TeuchiUdon
 
         public bool IsFunc(TeuchiUdonType type)
         {
-            return type.LogicalTypeNameEquals(Primitives.Func) || type.LogicalTypeNameEquals(Primitives.DetFunc);
+            return type.LogicalTypeNameEquals(Primitives.NdFunc) || type.LogicalTypeNameEquals(Primitives.Func);
         }
 
         public bool ContainsUnknown(TeuchiUdonType type)
@@ -369,9 +369,9 @@ namespace akanevrc.TeuchiUdon
             return IsFunc(type) || type.Args.Any(x => x is TeuchiUdonType t && ContainsFunc(t));
         }
 
-        public bool ContainsNonDetFunc(TeuchiUdonType type)
+        public bool ContainsNdFunc(TeuchiUdonType type)
         {
-            return type.LogicalTypeNameEquals(Primitives.Func) || type.Args.Any(x => x is TeuchiUdonType t && ContainsNonDetFunc(t));
+            return type.LogicalTypeNameEquals(Primitives.NdFunc) || type.Args.Any(x => x is TeuchiUdonType t && ContainsNdFunc(t));
         }
 
         public TeuchiUdonType Fix(TeuchiUdonType type, TeuchiUdonType fix)

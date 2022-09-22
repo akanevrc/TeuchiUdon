@@ -506,7 +506,7 @@ namespace akanevrc.TeuchiUdon
 
         private VarDeclResult ExitVarDecl(IToken start, IToken stop, IEnumerable<QualifiedVarResult> qualifiedVars, bool isActual)
         {
-            if (!isActual && qualifiedVars.Any(x => TypeOps.ContainsNonDetFunc(x.Qualified.Inner.Type)))
+            if (!isActual && qualifiedVars.Any(x => TypeOps.ContainsNdFunc(x.Qualified.Inner.Type)))
             {
                 ParserErrorOps.AppendError(start, stop, $"function arguments cannot contain nondeterministic function");
                 return ParserResultOps.CreateVarDecl(start, stop);
@@ -1353,7 +1353,7 @@ namespace akanevrc.TeuchiUdon
                     var argTypes = argExprs.Select(x => x.Expr.Inner.Type).ToArray();
                     var iType    = SyntaxOps.ToOneType(argTypes);
                     var oType    = Primitives.Unknown;
-                    if (TypeOps.IsAssignableFrom(type, Primitives.DetFunc.ApplyArgsAsFunc(iType, oType)))
+                    if (TypeOps.IsAssignableFrom(type, Primitives.Func.ApplyArgsAsFunc(iType, oType)))
                     {
                         var outType = type.GetArgAsFuncOutType();
                         var index   = Tables.GetEvalFuncIndex();
@@ -1528,7 +1528,7 @@ namespace akanevrc.TeuchiUdon
                 var argTypes = arg.Inner.Type.GetArgsAsTuple().ToArray();
                 var iType    = SyntaxOps.ToOneType(argTypes);
                 var oType    = Primitives.Unknown;
-                if (TypeOps.IsAssignableFrom(type, Primitives.DetFunc.ApplyArgsAsFunc(iType, oType)))
+                if (TypeOps.IsAssignableFrom(type, Primitives.Func.ApplyArgsAsFunc(iType, oType)))
                 {
                     var outType = type.GetArgAsFuncOutType();
                     var index   = Tables.GetEvalFuncIndex();
@@ -1685,11 +1685,11 @@ namespace akanevrc.TeuchiUdon
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
-                else if (exprType.LogicalTypeEquals(Primitives.Func))
+                else if (exprType.LogicalTypeEquals(Primitives.NdFunc))
                 {
                     if (argTypes.Length == 2)
                     {
-                        var type = Primitives.Func
+                        var type = Primitives.NdFunc
                             .ApplyArgsAsFunc(argTypes[0], argTypes[1])
                             .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType);
                         return ParserResultOps.CreateEvalType(start, stop, Primitives.Type.ApplyArgAsType(type), type);
@@ -1700,11 +1700,11 @@ namespace akanevrc.TeuchiUdon
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
-                else if (exprType.LogicalTypeEquals(Primitives.DetFunc))
+                else if (exprType.LogicalTypeEquals(Primitives.Func))
                 {
                     if (argTypes.Length == 2)
                     {
-                        var type = Primitives.DetFunc
+                        var type = Primitives.Func
                             .ApplyArgsAsFunc(argTypes[0], argTypes[1])
                             .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType);
                         return ParserResultOps.CreateEvalType(start, stop, Primitives.Type.ApplyArgAsType(type), type);
@@ -2429,18 +2429,18 @@ namespace akanevrc.TeuchiUdon
                     new TeuchiUdonType
                     (
                         TeuchiUdonQualifier.Top,
-                        Primitives.DetFunc.Name,
+                        Primitives.Func.Name,
                         new TeuchiUdonType[] { inType, outType },
-                        Primitives.DetFunc.LogicalName,
+                        Primitives.Func.LogicalName,
                         TypeOps.GetRealName(Primitives.UInt),
                         Primitives.UInt.RealType
                     ) :
                     new TeuchiUdonType
                     (
                         TeuchiUdonQualifier.Top,
-                        Primitives.Func.Name,
+                        Primitives.NdFunc.Name,
                         new TeuchiUdonType[] { inType, outType },
-                        Primitives.Func.LogicalName,
+                        Primitives.NdFunc.LogicalName,
                         TypeOps.GetRealName(Primitives.UInt),
                         Primitives.UInt.RealType
                     );

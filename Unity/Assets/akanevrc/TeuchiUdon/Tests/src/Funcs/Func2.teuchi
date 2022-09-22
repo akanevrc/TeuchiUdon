@@ -1,4 +1,4 @@
 // 100
-f = (g : detfunc[unit, int]) -> g();
+f = (g : func[unit, int]) -> g();
 g = () -> 100;
 UnityEngine.Debug.Log(f(g));
