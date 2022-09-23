@@ -13,8 +13,9 @@ namespace akanevrc.TeuchiUdon
         public TeuchiUdonType Tuple { get; private set; }
         public TeuchiUdonType Array { get; private set; }
         public TeuchiUdonType List { get; private set; }
-        public TeuchiUdonType NdFunc { get; private set; }
         public TeuchiUdonType Func { get; private set; }
+        public TeuchiUdonType NdFunc { get; private set; }
+        public TeuchiUdonType Lambda { get; private set; }
         public TeuchiUdonType Method { get; private set; }
         public TeuchiUdonType Setter { get; private set; }
         public TeuchiUdonType Cast { get; private set; }
@@ -71,8 +72,9 @@ namespace akanevrc.TeuchiUdon
                 Tuple         = new TeuchiUdonType(TeuchiUdonQualifier.Top, "tuple"        , "tuple"                , null, null);
                 Array         = new TeuchiUdonType(TeuchiUdonQualifier.Top, "array"        , "array"                , null, null);
                 List          = new TeuchiUdonType(TeuchiUdonQualifier.Top, "list"         , "list"                 , null, null);
-                NdFunc        = new TeuchiUdonType(TeuchiUdonQualifier.Top, "ndfunc"       , "ndfunc"               , null, null);
                 Func          = new TeuchiUdonType(TeuchiUdonQualifier.Top, "func"         , "func"                 , null, null);
+                NdFunc        = new TeuchiUdonType(TeuchiUdonQualifier.Top, "ndfunc"       , "ndfunc"               , null, null);
+                Lambda        = new TeuchiUdonType(TeuchiUdonQualifier.Top, "lambda"       , "lambda"               , null, null);
                 Method        = new TeuchiUdonType(TeuchiUdonQualifier.Top, "method"       , "method"               , null, null);
                 Setter        = new TeuchiUdonType(TeuchiUdonQualifier.Top, "setter"       , "setter"               , null, null);
                 Cast          = new TeuchiUdonType(TeuchiUdonQualifier.Top, "cast"         , "cast"                 , null, null);

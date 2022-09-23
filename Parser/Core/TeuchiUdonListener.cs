@@ -193,9 +193,23 @@ namespace akanevrc.TeuchiUdon
                 }
                 else
                 {
-                    ParserErrorOps.AppendError(context.Start, context.Stop, $"toplevel variable cannot be assigned from function indirectly");
-                    context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
-                    return;
+                    if ((pub || StaticTables.Events.ContainsKey(v.Name)) && !Tables.EventFuncs.ContainsKey(v))
+                    {
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"event cannot be assigned from function indirectly");
+                        context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
+                        return;
+                    }
+
+                    if (sync != TeuchiUdonSyncMode.Disable)
+                    {
+                        ParserErrorOps.AppendError(context.Start, context.Stop, $"function cannot be specified with @sync, @linear, or @smooth");
+                        context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
+                        return;
+                    }
+
+                    // ParserErrorOps.AppendError(context.Start, context.Stop, $"toplevel variable cannot be assigned from function indirectly");
+                    // context.result = ParserResultOps.CreateTopBind(context.Start, context.Stop);
+                    // return;
                 }
             }
             else
@@ -1685,6 +1699,21 @@ namespace akanevrc.TeuchiUdon
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
+                else if (exprType.LogicalTypeEquals(Primitives.Func))
+                {
+                    if (argTypes.Length == 2)
+                    {
+                        var type = Primitives.Func
+                            .ApplyArgsAsFunc(argTypes[0], argTypes[1])
+                            .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType);
+                        return ParserResultOps.CreateEvalType(start, stop, Primitives.Type.ApplyArgAsType(type), type);
+                    }
+                    else
+                    {
+                        ParserErrorOps.AppendError(start, stop, $"specified key is invalid");
+                        return ParserResultOps.CreateInvalid(start, stop);
+                    }
+                }
                 else if (exprType.LogicalTypeEquals(Primitives.NdFunc))
                 {
                     if (argTypes.Length == 2)
@@ -1700,13 +1729,12 @@ namespace akanevrc.TeuchiUdon
                         return ParserResultOps.CreateInvalid(start, stop);
                     }
                 }
-                else if (exprType.LogicalTypeEquals(Primitives.Func))
+                else if (exprType.LogicalTypeEquals(Primitives.Lambda))
                 {
                     if (argTypes.Length == 2)
                     {
-                        var type = Primitives.Func
-                            .ApplyArgsAsFunc(argTypes[0], argTypes[1])
-                            .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType);
+                        var type = Primitives.Lambda
+                            .ApplyArgsAsFunc(argTypes[0], argTypes[1]);
                         return ParserResultOps.CreateEvalType(start, stop, Primitives.Type.ApplyArgAsType(type), type);
                     }
                     else
@@ -2425,25 +2453,16 @@ namespace akanevrc.TeuchiUdon
             var deterministic = ParserResultOps.Deterministic(expr.Inner) && varDecl.Vars.All(x => !TypeOps.ContainsFunc(x.Type));
 
             var type =
+                context.Parent is ExprContext ?
+                    Primitives.Lambda
+                        .ApplyArgsAsFunc(inType, outType) :
                 deterministic ?
-                    new TeuchiUdonType
-                    (
-                        TeuchiUdonQualifier.Top,
-                        Primitives.Func.Name,
-                        new TeuchiUdonType[] { inType, outType },
-                        Primitives.Func.LogicalName,
-                        TypeOps.GetRealName(Primitives.UInt),
-                        Primitives.UInt.RealType
-                    ) :
-                    new TeuchiUdonType
-                    (
-                        TeuchiUdonQualifier.Top,
-                        Primitives.NdFunc.Name,
-                        new TeuchiUdonType[] { inType, outType },
-                        Primitives.NdFunc.LogicalName,
-                        TypeOps.GetRealName(Primitives.UInt),
-                        Primitives.UInt.RealType
-                    );
+                    Primitives.Func
+                        .ApplyArgsAsFunc(inType, outType)
+                        .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType) :
+                    Primitives.NdFunc
+                        .ApplyArgsAsFunc(inType, outType)
+                        .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType);
 
             var varBind = qual.GetLast<TeuchiUdonVarBind>();
             var args    = varDecl.Vars;

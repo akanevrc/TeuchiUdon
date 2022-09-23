@@ -48,6 +48,10 @@ namespace akanevrc.TeuchiUdon
             {
                 return new (string, TeuchiUdonType)[] { ("", type) };
             }
+            else if (type.LogicalTypeNameEquals(Primitives.Lambda))
+            {
+                return new (string, TeuchiUdonType)[] { ("", Primitives.UInt) };
+            }
             else
             {
                 return new (string, TeuchiUdonType)[] { ("", type) };
@@ -88,8 +92,9 @@ namespace akanevrc.TeuchiUdon
                     IsAssignableFromTuple   (obj1, obj2) ||
                     IsAssignableFromArray   (obj1, obj2) ||
                     IsAssignableFromList    (obj1, obj2) ||
-                    IsAssignableFromNdFunc  (obj1, obj2) ||
                     IsAssignableFromFunc    (obj1, obj2) ||
+                    IsAssignableFromNdFunc  (obj1, obj2) ||
+                    IsAssignableFromLambda  (obj1, obj2) ||
                     IsAssignableFromSetter  (obj1, obj2) ||
                     IsAssignableFromNullType(obj1, obj2) ||
                     IsAssignableFromDotNet  (obj1, obj2)
@@ -176,6 +181,16 @@ namespace akanevrc.TeuchiUdon
                 IsAssignableFrom(obj1.GetArgAsListElementType(), obj2.GetArgAsListElementType());
         }
 
+        private bool IsAssignableFromFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
+        {
+            if (obj1 == null || obj2 == null) return false;
+            if (!obj1.LogicalTypeNameEquals(Primitives.Func) || !obj2.LogicalTypeNameEquals(Primitives.Func)) return false;
+
+            return
+                IsAssignableFrom(obj1.GetArgAsFuncInType (), obj2.GetArgAsFuncInType ()) &&
+                IsAssignableFrom(obj2.GetArgAsFuncOutType(), obj1.GetArgAsFuncOutType());
+        }
+
         private bool IsAssignableFromNdFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
         {
             if (obj1 == null || obj2 == null) return false;
@@ -190,10 +205,14 @@ namespace akanevrc.TeuchiUdon
                 IsAssignableFrom(obj2.GetArgAsFuncOutType(), obj1.GetArgAsFuncOutType());
         }
 
-        private bool IsAssignableFromFunc(TeuchiUdonType obj1, TeuchiUdonType obj2)
+        private bool IsAssignableFromLambda(TeuchiUdonType obj1, TeuchiUdonType obj2)
         {
             if (obj1 == null || obj2 == null) return false;
-            if (!obj1.LogicalTypeNameEquals(Primitives.Func) || !obj2.LogicalTypeNameEquals(Primitives.Func)) return false;
+            if
+            (
+                !obj1.LogicalTypeNameEquals(Primitives.Lambda) ||
+                !obj2.LogicalTypeNameEquals(Primitives.Lambda) && !obj2.LogicalTypeNameEquals(Primitives.NdFunc) && !obj2.LogicalTypeNameEquals(Primitives.Func)
+            ) return false;
 
             return
                 IsAssignableFrom(obj1.GetArgAsFuncInType (), obj2.GetArgAsFuncInType ()) &&
@@ -237,8 +256,9 @@ namespace akanevrc.TeuchiUdon
                 Primitives.Type,
                 Primitives.Tuple,
                 Primitives.List,
-                Primitives.NdFunc,
                 Primitives.Func,
+                Primitives.NdFunc,
+                Primitives.Lambda,
                 Primitives.Method,
                 Primitives.Setter,
                 Primitives.Cast,
@@ -356,7 +376,7 @@ namespace akanevrc.TeuchiUdon
 
         public bool IsFunc(TeuchiUdonType type)
         {
-            return type.LogicalTypeNameEquals(Primitives.NdFunc) || type.LogicalTypeNameEquals(Primitives.Func);
+            return type.LogicalTypeNameEquals(Primitives.Func) || type.LogicalTypeNameEquals(Primitives.NdFunc) || type.LogicalTypeNameEquals(Primitives.Lambda);
         }
 
         public bool ContainsUnknown(TeuchiUdonType type)
@@ -371,7 +391,10 @@ namespace akanevrc.TeuchiUdon
 
         public bool ContainsNdFunc(TeuchiUdonType type)
         {
-            return type.LogicalTypeNameEquals(Primitives.NdFunc) || type.Args.Any(x => x is TeuchiUdonType t && ContainsNdFunc(t));
+            return
+                type.LogicalTypeNameEquals(Primitives.NdFunc) ||
+                type.LogicalTypeNameEquals(Primitives.Lambda) ||
+                type.Args.Any(x => x is TeuchiUdonType t && ContainsNdFunc(t));
         }
 
         public TeuchiUdonType Fix(TeuchiUdonType type, TeuchiUdonType fix)
