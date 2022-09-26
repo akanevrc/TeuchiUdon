@@ -10,6 +10,7 @@ namespace akanevrc.TeuchiUdon
         LoopBlock,
         For,
         Func,
+        Lambda,
         LetIn,
         Type,
         VarBind

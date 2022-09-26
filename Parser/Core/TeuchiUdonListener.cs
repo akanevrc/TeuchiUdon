@@ -2431,7 +2431,8 @@ namespace akanevrc.TeuchiUdon
             var index          = Tables.GetFuncIndex();
             context.tableIndex = index;
             var qual           = QualifierStack.Peek();
-            var scope          = new TeuchiUdonScope(new TeuchiUdonFunc(index, qual), TeuchiUdonScopeMode.Func);
+            var mode           = context.Parent is ExprContext ? TeuchiUdonScopeMode.Lambda : TeuchiUdonScopeMode.Func;
+            var scope          = new TeuchiUdonScope(new TeuchiUdonFunc(index, qual), mode);
             QualifierStack.PushScope(scope);
         }
 
@@ -2455,7 +2456,8 @@ namespace akanevrc.TeuchiUdon
             var type =
                 context.Parent is ExprContext ?
                     Primitives.Lambda
-                        .ApplyArgsAsFunc(inType, outType) :
+                        .ApplyArgsAsFunc(inType, outType)
+                        .ApplyRealType(TypeOps.GetRealName(Primitives.UInt), Primitives.UInt.RealType) :
                 deterministic ?
                     Primitives.Func
                         .ApplyArgsAsFunc(inType, outType)

@@ -67,19 +67,25 @@ namespace akanevrc.TeuchiUdon
 
         public TeuchiUdonQualifier GetFuncQualifier()
         {
-            var func = (TeuchiUdonFunc)LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func })?.Label;
+            var func = (TeuchiUdonFunc)LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.Lambda })?.Label;
             return func == null ? TeuchiUdonQualifier.Top : func.Qualifier;
+        }
+
+        public TeuchiUdonQualifier GetLambdaQualifier()
+        {
+            var lambda = (TeuchiUdonFunc)LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Lambda })?.Label;
+            return lambda == null ? TeuchiUdonQualifier.Top : lambda.Qualifier;
         }
 
         public TeuchiUdonBlock GetFuncBlock()
         {
-            var scope = LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.FuncBlock })?.Label;
+            var scope = LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.Lambda, TeuchiUdonScopeMode.FuncBlock })?.Label;
             return scope != null && scope is TeuchiUdonBlock block ? block : null;
         }
 
         public TeuchiUdonBlock GetLoopBlock()
         {
-            var scope = LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.LoopBlock })?.Label;
+            var scope = LastScope(new TeuchiUdonScopeMode[] { TeuchiUdonScopeMode.Func, TeuchiUdonScopeMode.Lambda, TeuchiUdonScopeMode.LoopBlock })?.Label;
             return scope != null && scope is TeuchiUdonBlock block ? block : null;
         }
 
