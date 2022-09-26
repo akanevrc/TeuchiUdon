@@ -36,11 +36,7 @@ namespace akanevrc.TeuchiUdon
 
         public IEnumerable<(string name, TeuchiUdonType type)> GetMembers(TeuchiUdonType type)
         {
-            if (type.RealType == null)
-            {
-                return Enumerable.Empty<(string, TeuchiUdonType)>();
-            }
-            else if (type.LogicalTypeNameEquals(Primitives.Tuple))
+            if (type.LogicalTypeNameEquals(Primitives.Tuple))
             {
                 return type.GetArgsAsTuple().Select((x, i) => (i.ToString(), x));
             }
@@ -48,9 +44,9 @@ namespace akanevrc.TeuchiUdon
             {
                 return new (string, TeuchiUdonType)[] { ("", type) };
             }
-            else if (type.LogicalTypeNameEquals(Primitives.Lambda))
+            else if (type.RealType == null)
             {
-                return new (string, TeuchiUdonType)[] { ("", Primitives.UInt) };
+                return Enumerable.Empty<(string, TeuchiUdonType)>();
             }
             else
             {

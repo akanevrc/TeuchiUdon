@@ -42,20 +42,14 @@ namespace akanevrc.TeuchiUdon.Compiler
                 .SelectMany
                 (
                     x => x.name == "" ?
-                    new (string, IDataLabel)[] { (x.name, label) } :
+                    new (string, IDataLabel)[] { (LabelOps.GetFullLabel(label), label) } :
                     CreateAssemblyLabels(wrapper, CreateOneAssemblyLabel(wrapper, label, x.name, x.type))
                 );
         }
 
         private IDataLabel CreateOneAssemblyLabel(TeuchiUdonDataLabelWrapper wrapper, IDataLabel label, string name, TeuchiUdonType type)
         {
-            return new TeuchiUdonDataLabelWrapper
-            (
-                new TextDataLabel($"{LabelOps.GetFullLabel(label)}>{label.Type.LogicalName}[{name}]", type),
-                wrapper.Reverse,
-                wrapper.LabelFunc,
-                wrapper.ListFunc
-            );
+            return new TextDataLabel($"{LabelOps.GetFullLabel(label)}>{label.Type.LogicalName}[{name}]", type);
         }
 
         public IEnumerable<TeuchiUdonAssembly> Compile(TeuchiUdonDataLabelWrapper wrapper)
