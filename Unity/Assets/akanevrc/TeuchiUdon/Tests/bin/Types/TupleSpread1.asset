@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: a9566aa574e25f44ebed01ef5d99b73f,
     type: 2}
-  udonAssembly: ".data_start\r\n    var[f]: %SystemUInt32, null\r\n    var[f>func[0]>x]:
+  udonAssembly: ".data_start\r\n    var[t]>tuple[0]: %SystemInt32, null\r\n    var[t]>tuple[1]:
+    %SystemInt32, null\r\n    var[f]: %SystemUInt32, null\r\n    var[f>func[0]>x]:
     %SystemInt32, null\r\n    var[f>func[0]>y]: %SystemInt32, null\r\n    literal[0]:
     %SystemInt32, null\r\n    literal[1]: %SystemInt32, null\r\n    return[func[f>0]]:
     %SystemUInt32, null\r\n    out[f>SystemInt32>0]: %SystemInt32, null\r\n    out[SystemUInt32>0]:
@@ -26,8 +27,10 @@ MonoBehaviour:
     \"SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32\"\r\n       
     PUSH, out[f>SystemInt32>0]\r\n        JUMP_INDIRECT, return[func[f>0]]\r\n\r\n   
     .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        PUSH, literal[1]\r\n       
-    PUSH, indirect[func[f>0]]\r\n        PUSH, var[f]\r\n        COPY\r\n       
-    PUSH, var[f]\r\n        PUSH, out[SystemUInt32>0]\r\n        COPY\r\n       
+    PUSH, var[t]>tuple[1]\r\n        COPY\r\n        PUSH, var[t]>tuple[0]\r\n       
+    COPY\r\n        PUSH, indirect[func[f>0]]\r\n        PUSH, var[f]\r\n       
+    COPY\r\n        PUSH, var[f]\r\n        PUSH, out[SystemUInt32>0]\r\n       
+    COPY\r\n        PUSH, var[t]>tuple[0]\r\n        PUSH, var[t]>tuple[1]\r\n       
     PUSH, indirect[evalfunc[0]]\r\n        JUMP_INDIRECT, out[SystemUInt32>0]\r\n       
     evalfunc[0]:\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
     JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
@@ -166,7 +169,7 @@ MonoBehaviour:
       Data: 7|System.UInt32, mscorlib
     - Name: 
       Entry: 3
-      Data: 156
+      Data: 196
     - Name: 
       Entry: 8
       Data: 

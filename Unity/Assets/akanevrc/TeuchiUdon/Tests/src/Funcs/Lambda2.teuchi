@@ -1,0 +1,5 @@
+// 4
+f = x : int -> y : int -> x + y;
+f1 : lambda[int, int] = f(1);
+f2 : lambda[int, int] = f(2);
+UnityEngine.Debug.Log(f1(3));
