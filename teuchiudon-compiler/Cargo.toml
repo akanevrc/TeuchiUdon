@@ -1,0 +1,8 @@
+[package]
+name = "teuchiudon-compiler"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lalrpop-util = "0.19.8"
+teuchiudon-parser = { version = "0.1.0", path = "../teuchiudon-parser" }

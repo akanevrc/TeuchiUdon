@@ -1,0 +1,4 @@
+grammar;
+
+pub Target: &'input str = <stat:Statement> => stat;
+Statement: &'input str = "Hello, " <s:r"\w+"> "!" => s;

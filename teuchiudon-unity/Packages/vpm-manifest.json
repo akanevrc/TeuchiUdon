@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "com.vrchat.base": {
+      "version": "3.1.7"
+    },
+    "com.vrchat.worlds": {
+      "version": "3.1.7"
+    }
+  },
+  "locked": {
+    "com.vrchat.base": {
+      "version": "3.1.7"
+    },
+    "com.vrchat.worlds": {
+      "version": "3.1.7",
+      "dependencies": {
+        "com.vrchat.base": "3.1.x"
+      }
+    }
+  }
+}

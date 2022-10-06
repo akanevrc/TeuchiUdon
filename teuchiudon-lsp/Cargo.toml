@@ -1,0 +1,11 @@
+[package]
+name = "teuchiudon-lsp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_json = "1.0.85"
+tokio = { version = "1.21.2", features = ["full"] }
+tower-lsp = "0.17.0"
+tracing = "0.1.36"
+tracing-subscriber = "0.3.15"
