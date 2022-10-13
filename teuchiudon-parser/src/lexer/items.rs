@@ -22,7 +22,7 @@ pub type LexerItem<'source, Token> = <SpannedIter<'source, Token> as Iterator>::
 #[derive(Debug)]
 pub struct LexerItemsSource<'source, Token>
 where
-    Token: Logos<'source> + Copy + 'source
+    Token: Logos<'source> + Copy + PartialEq + 'source
 {
     pub items: Vec<LexerItem<'source, Token>>,
 }
