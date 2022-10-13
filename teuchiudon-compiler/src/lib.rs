@@ -1,8 +1,15 @@
-use lalrpop_util::{ParseError, lexer::Token};
-use teuchiudon_parser::grammar::TargetParser;
+use teuchiudon_parser::{
+    lexer::lex,
+    parser::parse,
+};
 
-pub fn compile(input: &str) -> Result<&str, ParseError<usize, Token<'_>, &'static str>> {
-    TargetParser::new().parse(input)
+pub fn compile(input: &str) -> Result<String, String> {
+    let src = lex(input);
+    let result = parse(&src);
+    match result {
+        Ok(x) => Ok(input[x.1.1.items[0].1.clone()].to_owned()),
+        Err(_) => Err("Error!".to_owned()),
+    }
 }
 
 #[test]
