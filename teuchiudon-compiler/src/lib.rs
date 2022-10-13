@@ -14,5 +14,5 @@ pub fn compile(input: &str) -> Result<String, String> {
 
 #[test]
 fn test_compile() {
-    assert_eq!(compile("Hello, TeuchiUdon!").unwrap(), "TeuchiUdon");
+    assert_eq!(compile("Hello, TeuchiUdon!"), Ok("TeuchiUdon".to_owned()));
 }
