@@ -1,4 +1,5 @@
 pub mod lexer;
+pub mod parser;
 
 #[test]
 fn test_lexer() {
@@ -20,32 +21,15 @@ fn test_lexer() {
 
 #[test]
 fn test_parser() {
-    use logos::Logos;
-    use nom::{
-        bytes::complete::tag,
-        error::Error,
-        sequence::tuple,
-    };
     use lexer::{
-        items::{
-            LexerItems,
-            LexerItemsSource,
-        },
         token::Token,
-        tokens::Tokens,
+        lex,
     };
+    use parser::parse;
 
     let input = "Hello, world!";
-    let lex = Token::lexer(input);
-    let src = LexerItemsSource::new(lex);
-    let items = LexerItems::new(&src);
-    let tokens_hello = Tokens::new(&[Token::Hello, Token::Comma]);
-    let tokens_name = Tokens::new(&[Token::Name]);
-    let tokens_bang = Tokens::new(&[Token::Bang]);
-    let tag_hello = tag::<Tokens<Token>, LexerItems<Token>, Error<LexerItems<Token>>>(tokens_hello);
-    let tag_name = tag::<Tokens<Token>, LexerItems<Token>, Error<LexerItems<Token>>>(tokens_name);
-    let tag_bang = tag::<Tokens<Token>, LexerItems<Token>, Error<LexerItems<Token>>>(tokens_bang);
-    let result = tuple((tag_hello, tag_name, tag_bang))(items);
+    let src = lex(input);
+    let result = parse(&src);
     match result {
         Ok(res) => {
             assert_eq!(res.1.0.items, &[(Token::Hello, 0..5), (Token::Comma, 5..6)]);
