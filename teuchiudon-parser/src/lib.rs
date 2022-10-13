@@ -1,3 +1,4 @@
+pub mod locator;
 pub mod lexer;
 pub mod parser;
 
