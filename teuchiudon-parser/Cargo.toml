@@ -3,11 +3,6 @@ name = "teuchiudon-parser"
 version = "0.1.0"
 edition = "2021"
 
-build = "build.rs"
-
 [dependencies]
-lalrpop-util = { version = "0.19.8", features = ["lexer"] }
-regex = "1.6.0"
-
-[build-dependencies]
-lalrpop = "0.19.8"
+logos = "0.12.1"
+nom = "7.1.1"
