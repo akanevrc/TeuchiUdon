@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-lalrpop-util = "0.19.8"
+nom = "7.1.1"
 teuchiudon-parser = { version = "0.1.0", path = "../teuchiudon-parser" }
