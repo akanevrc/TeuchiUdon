@@ -1,17 +1,44 @@
-use logos::Logos;
-use crate::lexer::token::Token;
+use crate::lexer::{
+    byte_order_mark,
+    delimited_comment,
+    line_comment,
+    newline,
+    whitespace0,
+};
 
 #[test]
-fn test() {
-    let mut lex = Token::lexer("Hello, world!");
+fn test_byte_order_mark() {
+    assert_eq!(byte_order_mark("\u{EF}\u{BB}\u{BF}xxx"), Ok(("xxx", "")));
+}
 
-    assert_eq!(lex.next(), Some(Token::Hello));
-    assert_eq!(lex.slice(), "Hello");
-    assert_eq!(lex.next(), Some(Token::Comma));
-    assert_eq!(lex.slice(), ",");
-    assert_eq!(lex.next(), Some(Token::Name));
-    assert_eq!(lex.slice(), "world");
-    assert_eq!(lex.next(), Some(Token::Bang));
-    assert_eq!(lex.slice(), "!");
-    assert_eq!(lex.next(), None);
+#[test]
+fn test_whitespace0() {
+    assert_eq!(whitespace0(" \t\r\nxxx"), Ok(("xxx", "")));
+}
+
+#[test]
+fn test_newline() {
+    assert_eq!(newline("\r\nxxx"), Ok(("xxx", "\r\n")));
+    assert_eq!(newline("\rxxx"), Ok(("xxx", "\r")));
+    assert_eq!(newline("\nxxx"), Ok(("xxx", "\n")));
+}
+
+#[test]
+fn test_line_comment() {
+    assert_eq!(line_comment("// this is a comment.\r\nxxx"), Ok(("xxx", "")));
+}
+
+#[test]
+fn test_delimited_comment() {
+    assert_eq!(delimited_comment("{/ this is a comment.\r\n this is also a comment. /}xxx"), Ok(("xxx", "")));
+}
+
+#[test]
+fn test_delimited_comment_nested() {
+    assert_eq!(delimited_comment("{/ this is a comment. {/ xxx /} this is also a comment. /}xxx"), Ok(("xxx", "")));
+}
+
+#[test]
+fn test_delimited_comment_error() {
+    assert_eq!(delimited_comment("{/ this is a comment. {/ xxx this is also a comment. /}xxx").map_err(|_| "error"), Err("error"));
 }
