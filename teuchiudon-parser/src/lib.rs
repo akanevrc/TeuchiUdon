@@ -9,4 +9,4 @@ use nom::{
     error::VerboseError,
 };
 
-pub type ParsedResult<'input> = Result<(&'input str, &'input str), Err<VerboseError<&'input str>>>;
+pub type ParsedResult<'input, O> = Result<(&'input str, O), Err<VerboseError<&'input str>>>;
