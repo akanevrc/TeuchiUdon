@@ -54,3 +54,14 @@ fn test_err_excessive_tokens() {
         Err(_) => (),
     }
 }
+
+#[test]
+fn test_err_newlines() {
+    let input = "Hello\n,\nworld\n!\n!";
+    let src = lex(input);
+    let result = parse(&src);
+    match result {
+        Ok(_) => unreachable!(),
+        Err(_) => (),
+    }
+}
