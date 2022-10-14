@@ -1,5 +1,6 @@
 use std::{
     iter::Enumerate,
+    ops::Deref,
     slice::Iter,
 };
 use logos::{
@@ -24,6 +25,7 @@ pub struct LexerItemsSource<'source, Token>
 where
     Token: Logos<'source> + Copy + PartialEq + 'source
 {
+    pub input: &'source str,
     pub items: Vec<LexerItem<'source, Token>>,
 }
 
@@ -32,6 +34,7 @@ pub struct LexerItems<'source, Token>
 where
     Token: Logos<'source> + Copy + PartialEq + 'source
 {
+    pub input: &'source str,
     pub items: &'source [LexerItem<'source, Token>],
 }
 
@@ -41,8 +44,8 @@ impl<'source, Token> LexerItemsSource<'source, Token>
 where
     Token: Logos<'source> + Copy + PartialEq + 'source
 {
-    pub fn new(lexer: Lexer<'source, Token>) -> Self {
-        Self { items: lexer.spanned().collect() }
+    pub fn new(input: &'source str, lexer: Lexer<'source, Token>) -> Self {
+        Self { input, items: lexer.spanned().collect() }
     }
 }
 
@@ -51,11 +54,22 @@ where
     Token: Logos<'source> + Copy + PartialEq + 'source
 {
     pub fn new(src: &'source LexerItemsSource<'source, Token>) -> Self {
-        Self { items: &src.items }
+        Self { input: src.input, items: &src.items }
     }
 
     pub fn iter(&self) -> LexerIter<'source, Token> {
         self.items.iter()
+    }
+}
+
+impl<'source, Token> Deref for LexerItems<'source, Token>
+where
+    Token: Logos<'source> + Copy + PartialEq + 'source
+{
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.input
     }
 }
 
@@ -107,11 +121,16 @@ where
     Token: Logos<'source> + Copy + PartialEq + 'source
 {
     fn take(&self, count: usize) -> Self {
-        Self { items: &self.items[0..count] }
+        let input_count = if count < self.items.len() { self.items[count].1.start } else { self.items[count - 1].1.end } - self.items[0].1.start;
+        Self { input: &self.input[..input_count], items: &self.items[..count] }
     }
 
     fn take_split(&self, count: usize) -> (Self, Self) {
-        (Self { items: &self.items[count..self.items.len()] }, Self { items: &self.items[0..count] })
+        let input_count = if count < self.items.len() { self.items[count].1.start } else { self.items[count - 1].1.end } - self.items[0].1.start;
+        (
+            Self { input: &self.input[input_count..], items: &self.items[count..] },
+            Self { input: &self.input[..input_count], items: &self.items[..count] },
+        )
     }
 }
 
