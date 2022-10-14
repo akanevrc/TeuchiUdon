@@ -3,18 +3,18 @@ use logos::Logos;
 use nom::InputLength;
 
 #[derive(Clone)]
-pub struct Tokens<'source, Token>
+pub struct Tokens<'input, Token>
 where
-    Token: Logos<'source> + Copy + 'source
+    Token: Logos<'input> + Copy + 'input
 {
-    pub tokens: &'source [Token],
+    pub tokens: &'input [Token],
 }
 
-impl<'source, Token> Tokens<'source, Token>
+impl<'input, Token> Tokens<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    pub fn new(tokens: &'source [Token]) -> Self {
+    pub fn new(tokens: &'input [Token]) -> Self {
         Self { tokens }
     }
 
@@ -23,9 +23,9 @@ where
     }
 }
 
-impl<'source, Token> InputLength for Tokens<'source, Token>
+impl<'input, Token> InputLength for Tokens<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
     fn input_len(&self) -> usize {
         self.tokens.len()

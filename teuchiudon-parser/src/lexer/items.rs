@@ -18,53 +18,53 @@ use nom::{
 };
 use super::tokens::Tokens;
 
-pub type LexerItem<'source, Token> = <SpannedIter<'source, Token> as Iterator>::Item;
+pub type LexerItem<'input, Token> = <SpannedIter<'input, Token> as Iterator>::Item;
 
 #[derive(Debug)]
-pub struct LexerItemsSource<'source, Token>
+pub struct LexerItemsSource<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    pub input: &'source str,
-    pub items: Vec<LexerItem<'source, Token>>,
+    pub input: &'input str,
+    pub items: Vec<LexerItem<'input, Token>>,
 }
 
 #[derive(Clone, Debug)]
-pub struct LexerItems<'source, Token>
+pub struct LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    pub input: &'source str,
-    pub items: &'source [LexerItem<'source, Token>],
+    pub input: &'input str,
+    pub items: &'input [LexerItem<'input, Token>],
 }
 
-pub type LexerIter<'source, Token> = Iter<'source, LexerItem<'source, Token>>;
+pub type LexerIter<'input, Token> = Iter<'input, LexerItem<'input, Token>>;
 
-impl<'source, Token> LexerItemsSource<'source, Token>
+impl<'input, Token> LexerItemsSource<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    pub fn new(input: &'source str, lexer: Lexer<'source, Token>) -> Self {
+    pub fn new(input: &'input str, lexer: Lexer<'input, Token>) -> Self {
         Self { input, items: lexer.spanned().collect() }
     }
 }
 
-impl<'source, Token> LexerItems<'source, Token>
+impl<'input, Token> LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    pub fn new(src: &'source LexerItemsSource<'source, Token>) -> Self {
+    pub fn new(src: &'input LexerItemsSource<'input, Token>) -> Self {
         Self { input: src.input, items: &src.items }
     }
 
-    pub fn iter(&self) -> LexerIter<'source, Token> {
+    pub fn iter(&self) -> LexerIter<'input, Token> {
         self.items.iter()
     }
 }
 
-impl<'source, Token> Deref for LexerItems<'source, Token>
+impl<'input, Token> Deref for LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
     type Target = str;
 
@@ -73,13 +73,13 @@ where
     }
 }
 
-impl<'source, Token> InputIter for LexerItems<'source, Token>
+impl<'input, Token> InputIter for LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    type Item = &'source LexerItem<'source, Token>;
+    type Item = &'input LexerItem<'input, Token>;
     type Iter = Enumerate<Self::IterElem>;
-    type IterElem = LexerIter<'source, Token>;
+    type IterElem = LexerIter<'input, Token>;
 
     fn iter_indices(&self) -> Self::Iter {
         self.iter_elements().enumerate()
@@ -107,18 +107,18 @@ where
     }
 }
 
-impl<'source, Token> InputLength for LexerItems<'source, Token>
+impl<'input, Token> InputLength for LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
     fn input_len(&self) -> usize {
         self.items.len()
     }
 }
 
-impl<'source, Token> InputTake for LexerItems<'source, Token>
+impl<'input, Token> InputTake for LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
     fn take(&self, count: usize) -> Self {
         let input_count = if count < self.items.len() { self.items[count].1.start } else { self.items[count - 1].1.end } - self.items[0].1.start;
@@ -134,11 +134,11 @@ where
     }
 }
 
-impl<'source, Token> Compare<Tokens<'source, Token>> for LexerItems<'source, Token>
+impl<'input, Token> Compare<Tokens<'input, Token>> for LexerItems<'input, Token>
 where
-    Token: Logos<'source> + Copy + PartialEq + 'source
+    Token: Logos<'input> + Copy + PartialEq + 'input
 {
-    fn compare(&self, t: Tokens<'source, Token>) -> CompareResult {
+    fn compare(&self, t: Tokens<'input, Token>) -> CompareResult {
         if
             t.input_len() <= self.input_len() &&
             self.iter()
@@ -152,7 +152,7 @@ where
         }
     }
 
-    fn compare_no_case(&self, t: Tokens<'source, Token>) -> CompareResult {
+    fn compare_no_case(&self, t: Tokens<'input, Token>) -> CompareResult {
         self.compare(t)
     }
 }

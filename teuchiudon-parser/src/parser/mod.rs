@@ -17,11 +17,11 @@ use super::lexer::{
 };
 use self::error_emitter::map_err;
 
-pub type Parsed<'source> = (LexerItems<'source, Token>, LexerItems<'source, Token>, LexerItems<'source, Token>, LexerItems<'source, Token>);
+pub type Parsed<'input> = (LexerItems<'input, Token>, LexerItems<'input, Token>, LexerItems<'input, Token>, LexerItems<'input, Token>);
 pub type ParsedError = Vec<String>;
-pub type ParsedResult<'source> = Result<(LexerItems<'source, Token>, Parsed<'source>), ParsedError>;
+pub type ParsedResult<'input> = Result<(LexerItems<'input, Token>, Parsed<'input>), ParsedError>;
 
-type ParsingResult<'source> = Result<(LexerItems<'source, Token>, Parsed<'source>), Err<VerboseError<LexerItems<'source, Token>>>>;
+type ParsingResult<'input> = Result<(LexerItems<'input, Token>, Parsed<'input>), Err<VerboseError<LexerItems<'input, Token>>>>;
 
 pub fn parse<'src>(src: &'src LexerItemsSource<'src, Token>) -> ParsedResult<'src> {
     let items = LexerItems::new(&src);
