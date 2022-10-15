@@ -203,3 +203,18 @@ impl From<&str> for OpCode {
 pub struct Ident {
     pub name: String,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Literal {
+    Unit,
+    Null,
+    Bool(String),
+    Integer(String),
+    HexInteger(String),
+    BinInteger(String),
+    RealNumber(String),
+    Character(String),
+    RegularString(String),
+    VerbatiumString(String),
+    This,
+}
