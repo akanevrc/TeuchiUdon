@@ -58,7 +58,7 @@ pub fn line_comment(input: &str) -> ParsedResult<()> {
 }
 
 #[inline]
-pub fn line_comment_char0(input: &str) -> ParsedResult<()> {
+fn line_comment_char0(input: &str) -> ParsedResult<()> {
     value((), alt((is_not("\r\n"), success(""))))(input)
 }
 
@@ -66,7 +66,7 @@ pub fn delimited_comment(input: &str) -> ParsedResult<()> {
     value((), tuple((tag("{/"), delimited_comment_char0, tag("/}"))))(input)
 }
 
-pub fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
+fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
     value(
         (),
         many0(
@@ -103,7 +103,7 @@ pub fn op_code<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input st
 }
 
 #[inline]
-pub fn peek_code_delimit(input: &str) -> ParsedResult<()> {
+fn peek_code_delimit(input: &str) -> ParsedResult<()> {
     value((), not(ident_part_char))(input)
 }
 
@@ -123,12 +123,12 @@ pub fn ident(input: &str) -> ParsedResult<ast::Ident> {
 }
 
 #[inline]
-pub fn ident_start_char(input: &str) -> ParsedResult<char> {
+fn ident_start_char(input: &str) -> ParsedResult<char> {
     one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")(input)
 }
 
 #[inline]
-pub fn ident_part_char(input: &str) -> ParsedResult<char> {
+fn ident_part_char(input: &str) -> ParsedResult<char> {
     alt((ident_start_char, one_of("_0123456789")))(input)
 }
 
@@ -254,22 +254,22 @@ pub fn real_number_literal(input: &str) -> ParsedResult<ast::Literal> {
 }
 
 #[inline]
-pub fn digit_char(input: &str) -> ParsedResult<char> {
+fn digit_char(input: &str) -> ParsedResult<char> {
     one_of("0123456789")(input)
 }
 
 #[inline]
-pub fn hex_digit_char(input: &str) -> ParsedResult<char> {
+fn hex_digit_char(input: &str) -> ParsedResult<char> {
     one_of("0123456789ABCDEFabcdef")(input)
 }
 
 #[inline]
-pub fn bin_digit_char(input: &str) -> ParsedResult<char> {
+fn bin_digit_char(input: &str) -> ParsedResult<char> {
     one_of("01")(input)
 }
 
 #[inline]
-pub fn integer_suffix(input: &str) -> ParsedResult<String> {
+fn integer_suffix(input: &str) -> ParsedResult<String> {
     map(
         alt((tuple((one_of("Ll"), opt(one_of("Uu")))), tuple((one_of("Uu"), opt(one_of("Ll")))))),
         |x| format!("{}{}", x.0, x.1.map_or(String::new(), |y| y.to_string()))
@@ -277,12 +277,12 @@ pub fn integer_suffix(input: &str) -> ParsedResult<String> {
 }
 
 #[inline]
-pub fn real_number_suffix(input: &str) -> ParsedResult<char> {
+fn real_number_suffix(input: &str) -> ParsedResult<char> {
     one_of("FfDdMm")(input)
 }
 
 #[inline]
-pub fn exponent_part(input: &str) -> ParsedResult<String> {
+fn exponent_part(input: &str) -> ParsedResult<String> {
     map(
         tuple((
             one_of("Ee"),
