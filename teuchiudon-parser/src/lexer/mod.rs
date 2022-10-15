@@ -11,6 +11,7 @@ use nom::{
         char,
         multispace0,
         multispace1,
+        none_of,
         one_of,
     },
     combinator::{
@@ -23,11 +24,13 @@ use nom::{
     multi::{
         fold_many0,
         fold_many1,
+        fold_many_m_n,
         many0,
     },
     sequence::{
-        tuple,
+        delimited,
         preceded,
+        tuple,
     },
 };
 use crate::ParsedResult;
@@ -296,5 +299,98 @@ fn exponent_part(input: &str) -> ParsedResult<String> {
         )),
         |x| format!("{}{}{}{}", x.0, x.1.map_or(String::new(), |y| y.to_string()), x.2, x.3)
     )
+    (input)
+}
+
+#[inline]
+pub fn character_literal(input: &str) -> ParsedResult<ast::Literal> {
+    delimited(
+        char('\''),
+        map(
+            alt((escape_sequence, map(character_char, |x| x.to_string()))),
+            |x| ast::Literal::Character(x),
+        ),
+        char('\''),
+    )(input)
+}
+
+#[inline]
+fn character_char(input: &str) -> ParsedResult<char> {
+    none_of("'\\\r\n")(input)
+}
+
+#[inline]
+pub fn regular_string_literal(input: &str) -> ParsedResult<ast::Literal> {
+    delimited(
+        char('"'),
+        map(
+            many0(
+                alt((escape_sequence, map(regular_string_char, |x| x.to_string()))),
+            ),
+            |x| ast::Literal::RegularString(x.concat()),
+        ),
+        char('"'),
+    )(input)
+}
+
+#[inline]
+fn regular_string_char(input: &str) -> ParsedResult<char> {
+    none_of("\"\\\r\n")(input)
+}
+
+#[inline]
+pub fn verbatium_string_literal(input: &str) -> ParsedResult<ast::Literal> {
+    delimited(
+        tag("@\""),
+        map(
+            many0(
+                alt((escape_sequence, verbatium_string_char)),
+            ),
+            |x| ast::Literal::VerbatiumString(x.concat()),
+        ),
+        char('"'),
+    )(input)
+}
+
+#[inline]
+fn verbatium_string_char(input: &str) -> ParsedResult<String> {
+    alt((
+        map(none_of("\""), |x| x.to_string()),
+        map(tag("\"\""), |x: &str| x.to_owned()),
+    ))(input)
+}
+
+#[inline]
+fn escape_sequence(input: &str) -> ParsedResult<String> {
+    alt((
+        map(
+            tuple((
+                char('\\'),
+                one_of("'\"\\0abfnrtv"),
+            )),
+            |x| format!("{}{}", x.0, x.1),
+        ),
+        map(
+            tuple((
+                tag("\\x"),
+                fold_many_m_n(1, 4, hex_digit_char, || String::new(), |mut acc, x| { acc.push(x); acc }),
+            )),
+            |x| format!("{}{}", x.0, x.1),
+        ),
+        map(
+            tuple((
+                tag("\\u"),
+                fold_many_m_n(4, 4, hex_digit_char, || String::new(), |mut acc, x| { acc.push(x); acc }),
+            )),
+            |x| format!("{}{}", x.0, x.1),
+        ),
+        map(
+            tuple((
+                tag("\\U"),
+                fold_many_m_n(8, 8, hex_digit_char, || String::new(), |mut acc, x| { acc.push(x); acc }),
+            )),
+            |x| format!("{}{}", x.0, x.1),
+        ),
+    ))
     (input)
 }

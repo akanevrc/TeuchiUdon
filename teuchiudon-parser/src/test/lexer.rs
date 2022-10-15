@@ -1,5 +1,5 @@
 use crate::lexer::{
-    ast as ast,
+    ast::{self as ast, Literal},
     byte_order_mark,
     delimited_comment,
     line_comment,
@@ -18,6 +18,9 @@ use crate::lexer::{
     hex_integer_literal,
     bin_integer_literal,
     real_number_literal,
+    character_literal,
+    regular_string_literal,
+    verbatium_string_literal,
 };
 
 #[test]
@@ -179,4 +182,40 @@ fn test_real_number_literal() {
     assert_eq!(real_number_literal("12.345xxx").map_err(|_| ()), Err(()));
     assert_eq!(real_number_literal("123Fxxx").map_err(|_| ()), Err(()));
     assert_eq!(real_number_literal("123 xxx").map_err(|_| ()), Err(()));
+}
+
+#[test]
+fn test_character_literal() {
+    assert_eq!(character_literal("'a'xxx"), Ok(("xxx", Literal::Character("a".to_owned()))));
+    assert_eq!(character_literal("' 'xxx"), Ok(("xxx", Literal::Character(" ".to_owned()))));
+    assert_eq!(character_literal("'\"'xxx"), Ok(("xxx", Literal::Character("\"".to_owned()))));
+    assert_eq!(character_literal("'\\''xxx"), Ok(("xxx", Literal::Character("\\'".to_owned()))));
+    assert_eq!(character_literal("'\\\\'xxx"), Ok(("xxx", Literal::Character("\\\\".to_owned()))));
+    assert_eq!(character_literal("'\\n'xxx"), Ok(("xxx", Literal::Character("\\n".to_owned()))));
+    assert_eq!(character_literal("'\\xF'xxx"), Ok(("xxx", Literal::Character("\\xF".to_owned()))));
+    assert_eq!(character_literal("'\\xFFFF'xxx"), Ok(("xxx", Literal::Character("\\xFFFF".to_owned()))));
+    assert_eq!(character_literal("'\\uFFFF'xxx"), Ok(("xxx", Literal::Character("\\uFFFF".to_owned()))));
+    assert_eq!(character_literal("'\\UFFFFFFFF'xxx"), Ok(("xxx", Literal::Character("\\UFFFFFFFF".to_owned()))));
+    assert_eq!(character_literal("'ab'xxx").map_err(|_| ()), Err(()));
+    assert_eq!(character_literal("' a'xxx").map_err(|_| ()), Err(()));
+    assert_eq!(character_literal("'\\1'xxx").map_err(|_| ()), Err(()));
+    assert_eq!(character_literal("'\\xFFFFF'xxx").map_err(|_| ()), Err(()));
+    assert_eq!(character_literal("'\\uFFFFFFFF'xxx").map_err(|_| ()), Err(()));
+    assert_eq!(character_literal("'\\UFFFF'xxx").map_err(|_| ()), Err(()));
+}
+
+#[test]
+fn test_regular_string_literal() {
+    assert_eq!(regular_string_literal("\"\"xxx"), Ok(("xxx", Literal::RegularString("".to_owned()))));
+    assert_eq!(regular_string_literal("\"abc\"xxx"), Ok(("xxx", Literal::RegularString("abc".to_owned()))));
+    assert_eq!(regular_string_literal("\"'\"xxx"), Ok(("xxx", Literal::RegularString("'".to_owned()))));
+    assert_eq!(regular_string_literal("\"\\\"\"xxx"), Ok(("xxx", Literal::RegularString("\\\"".to_owned()))));
+}
+
+#[test]
+fn test_verbatium_string_literal() {
+    assert_eq!(verbatium_string_literal("@\"\"xxx"), Ok(("xxx", Literal::VerbatiumString("".to_owned()))));
+    assert_eq!(verbatium_string_literal("@\"abc\"xxx"), Ok(("xxx", Literal::VerbatiumString("abc".to_owned()))));
+    assert_eq!(verbatium_string_literal("@\"\"\"\"xxx"), Ok(("xxx", Literal::VerbatiumString("\"\"".to_owned()))));
+    assert_eq!(verbatium_string_literal("@\"\"\"xxx").map_err(|_| ()), Err(()));
 }
