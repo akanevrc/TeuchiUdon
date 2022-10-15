@@ -218,3 +218,9 @@ pub enum Literal {
     VerbatiumString(String),
     This,
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InterpolatedString
+{
+    pub string_parts: Vec<String>,
+}

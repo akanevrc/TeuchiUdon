@@ -394,3 +394,45 @@ fn escape_sequence(input: &str) -> ParsedResult<String> {
     ))
     (input)
 }
+
+pub fn interpolated_string(input: &str) -> ParsedResult<ast::InterpolatedString> {
+    delimited(
+        tag("$\""),
+        map(
+            tuple((
+                interpolated_string_part,
+                many0(
+                    tuple((
+                        interpolated_string_inside_expr,
+                        interpolated_string_part,
+                    )),
+                ),
+            )),
+            |x| ast::InterpolatedString {
+                string_parts: [x.0].into_iter().chain(x.1.into_iter().map(|y| y.1)).collect()
+            },
+        ),
+        char('"'),
+    )(input)
+}
+
+fn interpolated_string_char(input: &str) -> ParsedResult<char> {
+    none_of("{\"\\")(input)
+}
+
+fn interpolated_string_part(input: &str) -> ParsedResult<String> {
+    map(
+        many0(
+            alt((escape_sequence, map(interpolated_string_char, |x| x.to_string()))),
+        ),
+        |x| x.concat(),
+    )(input)
+}
+
+fn interpolated_string_inside_expr(input: &str) -> ParsedResult<()> {
+    delimited(
+        char('{'),
+        value((), tag("expr")),
+        char('}'),
+    )(input)
+}

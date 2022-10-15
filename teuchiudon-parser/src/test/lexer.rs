@@ -1,5 +1,5 @@
 use crate::lexer::{
-    ast::{self as ast, Literal},
+    ast::{self as ast, Literal, InterpolatedString},
     byte_order_mark,
     delimited_comment,
     line_comment,
@@ -21,6 +21,7 @@ use crate::lexer::{
     character_literal,
     regular_string_literal,
     verbatium_string_literal,
+    interpolated_string,
 };
 
 #[test]
@@ -218,4 +219,13 @@ fn test_verbatium_string_literal() {
     assert_eq!(verbatium_string_literal("@\"abc\"xxx"), Ok(("xxx", Literal::VerbatiumString("abc".to_owned()))));
     assert_eq!(verbatium_string_literal("@\"\"\"\"xxx"), Ok(("xxx", Literal::VerbatiumString("\"\"".to_owned()))));
     assert_eq!(verbatium_string_literal("@\"\"\"xxx").map_err(|_| ()), Err(()));
+}
+
+#[test]
+fn test_interpolated_string() {
+    assert_eq!(
+        interpolated_string("$\"abc{expr}def{expr}ghi\"xxx"),
+        Ok(("xxx", InterpolatedString { string_parts: vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()] }))
+    );
+    assert_eq!(interpolated_string("$\"abc{expr\"xxx").map_err(|_| ()), Err(()));
 }
