@@ -1,5 +1,6 @@
 use crate::lexer::{
     ast as ast,
+    lex,
     byte_order_mark,
     delimited_comment,
     line_comment,
@@ -24,6 +25,13 @@ use crate::lexer::{
     verbatium_string_literal,
     interpolated_string,
 };
+
+#[test]
+fn test_lex() {
+    assert_eq!(lex(control("as"))("as xxx"), Ok((" xxx", ast::Control::As)));
+    assert_eq!(lex(control("as"))("  as xxx"), Ok((" xxx", ast::Control::As)));
+    assert_eq!(lex(control("as"))(" {/ comment /} // comment\nas xxx"), Ok((" xxx", ast::Control::As)));
+}
 
 #[test]
 fn test_byte_order_mark() {
