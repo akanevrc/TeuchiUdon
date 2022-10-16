@@ -5,6 +5,7 @@ use crate::lexer::{
     line_comment,
     newline,
     whitespace0,
+    whitespace1,
     control,
     encloser,
     delimiter,
@@ -31,7 +32,14 @@ fn test_byte_order_mark() {
 
 #[test]
 fn test_whitespace0() {
+    assert_eq!(whitespace0("xxx"), Ok(("xxx", ())));
     assert_eq!(whitespace0(" \t\r\nxxx"), Ok(("xxx", ())));
+}
+
+#[test]
+fn test_whitespace1() {
+    assert_eq!(whitespace1(" \t\r\nxxx"), Ok(("xxx", ())));
+    assert_eq!(whitespace1("xxx").map_err(|_| ()), Err(()));
 }
 
 #[test]
