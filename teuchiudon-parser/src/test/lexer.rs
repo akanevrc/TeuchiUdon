@@ -24,6 +24,7 @@ use crate::lexer::{
     regular_string_literal,
     verbatium_string_literal,
     interpolated_string,
+    eof,
 };
 
 #[test]
@@ -244,4 +245,10 @@ fn test_interpolated_string() {
         Ok(("xxx", ast::InterpolatedString { string_parts: vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()] }))
     );
     assert_eq!(interpolated_string("$\"abc{expr\"xxx").0.map_err(|_| ()), Err(()));
+}
+
+#[test]
+fn test_eof() {
+    assert_eq!(eof("").0, Ok(("", ())));
+    assert_eq!(eof("xxx").0.map_err(|_| ()), Err(()));
 }
