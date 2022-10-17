@@ -23,6 +23,7 @@ use crate::lexer::{
     character_literal,
     regular_string_literal,
     verbatium_string_literal,
+    this_literal,
     interpolated_string,
     eof,
 };
@@ -128,14 +129,14 @@ fn test_unit_literal() {
 
 #[test]
 fn test_null_literal() {
-    assert_eq!(null_literal("null xxx").0, Ok((" xxx", ast::Literal::Null)));
+    assert_eq!(null_literal("null xxx").0, Ok((" xxx", ast::Literal::Null(ast::Control::Null))));
     assert_eq!(null_literal("nullxxx").0.map_err(|_| ()), Err(()));
 }
 
 #[test]
 fn test_bool_literal() {
-    assert_eq!(bool_literal("true xxx").0, Ok((" xxx", ast::Literal::Bool("true".to_owned()))));
-    assert_eq!(bool_literal("false xxx").0, Ok((" xxx", ast::Literal::Bool("false".to_owned()))));
+    assert_eq!(bool_literal("true xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Control::True))));
+    assert_eq!(bool_literal("false xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Control::False))));
     assert_eq!(bool_literal("truexxx").0.map_err(|_| ()), Err(()));
 }
 
@@ -236,6 +237,12 @@ fn test_verbatium_string_literal() {
     assert_eq!(verbatium_string_literal("@\"abc\"xxx").0, Ok(("xxx", ast::Literal::VerbatiumString("abc".to_owned()))));
     assert_eq!(verbatium_string_literal("@\"\"\"\"xxx").0, Ok(("xxx", ast::Literal::VerbatiumString("\"\"".to_owned()))));
     assert_eq!(verbatium_string_literal("@\"\"\"xxx").0.map_err(|_| ()), Err(()));
+}
+
+#[test]
+fn test_this_literal() {
+    assert_eq!(this_literal("this xxx").0, Ok((" xxx", ast::Literal::This(ast::Control::This))));
+    assert_eq!(this_literal("thisxxx").0.map_err(|_| ()), Err(()));
 }
 
 #[test]

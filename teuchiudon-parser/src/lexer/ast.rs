@@ -6,6 +6,7 @@ pub enum Control {
     Continue,
     Else,
     Enum,
+    False,
     Fn,
     For,
     If,
@@ -17,6 +18,7 @@ pub enum Control {
     Match,
     Mod,
     Mut,
+    Null,
     Newtype,
     Pub,
     Ref,
@@ -24,6 +26,8 @@ pub enum Control {
     Smooth,
     Struct,
     Sync,
+    This,
+    True,
     Type,
     Typeof,
     Use,
@@ -38,6 +42,7 @@ impl From<&str> for Control {
             "continue" => Self::Continue,
             "else" => Self::Else,
             "enum" => Self::Enum,
+            "false" => Self::False,
             "fn" => Self::Fn,
             "for" => Self::For,
             "if" => Self::If,
@@ -50,12 +55,15 @@ impl From<&str> for Control {
             "mod" => Self::Mod,
             "mut" => Self::Mut,
             "newtype" => Self::Newtype,
+            "null" => Self::Null,
             "pub" => Self::Pub,
             "ref" => Self::Ref,
             "return" => Self::Return,
             "smooth" => Self::Smooth,
             "struct" => Self::Struct,
             "sync" => Self::Sync,
+            "this" => Self::This,
+            "true" => Self::True,
             "type" => Self::Type,
             "typeof" => Self::Typeof,
             "use" => Self::Use,
@@ -102,6 +110,7 @@ pub enum Delimiter {
     Bind,
     Assign,
     Arrow,
+    Spread,
 }
 
 impl From<&str> for Delimiter {
@@ -110,8 +119,9 @@ impl From<&str> for Delimiter {
             "," => Self::Comma,
             ":" => Self::Colon,
             "=" => Self::Bind,
-            "<-" => Self::Arrow,
+            "<-" => Self::Assign,
             "->" => Self::Arrow,
+            "..." => Self::Spread,
             _ => panic!(),
         }
     }
@@ -161,7 +171,6 @@ pub enum OpCode {
     LeftPipeline,
     RightPipeline,
     Range,
-    Spread,
 }
 
 impl From<&str> for OpCode {
@@ -195,7 +204,6 @@ impl From<&str> for OpCode {
             "<|" => Self::LeftPipeline,
             "|>" => Self::RightPipeline,
             ".." => Self::Range,
-            "..." => Self::Spread,
             _ => panic!(),
         }
     }
@@ -209,8 +217,8 @@ pub struct Ident {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Literal {
     Unit,
-    Null,
-    Bool(String),
+    Null(Control),
+    Bool(Control),
     Integer(String),
     HexInteger(String),
     BinInteger(String),
@@ -218,7 +226,7 @@ pub enum Literal {
     Character(String),
     RegularString(String),
     VerbatiumString(String),
-    This,
+    This(Control),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

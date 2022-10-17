@@ -187,14 +187,20 @@ pub fn unit_literal(input: &str) -> LexedResult<ast::Literal> {
 #[inline]
 pub fn null_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        value(ast::Literal::Null, tuple((tag("null"), peek_code_delimit)))(input)
+        map(
+            unwrap_fn(control("null")),
+            |x| ast::Literal::Null(x),
+        )(input)
     )
 }
 
 #[inline]
 pub fn bool_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        map(tuple((alt((tag("true"), tag("false"))), peek_code_delimit)), |x| ast::Literal::Bool(x.0.to_owned()))(input)
+        map(
+            alt((unwrap_fn(control("true")), unwrap_fn(control("false")))),
+            |x| ast::Literal::Bool(x),
+        )(input)
     )
 }
 
@@ -420,6 +426,16 @@ fn verbatium_string_char(input: &str) -> ParsedResult<String> {
         map(none_of("\""), |x| x.to_string()),
         map(tag("\"\""), |x: &str| x.to_owned()),
     ))(input)
+}
+
+#[inline]
+pub fn this_literal(input: &str) -> LexedResult<ast::Literal> {
+    LexedResult(
+        map(
+            unwrap_fn(control("this")),
+            |x| ast::Literal::This(x),
+        )(input)
+    )
 }
 
 #[inline]
