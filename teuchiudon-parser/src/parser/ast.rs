@@ -21,24 +21,24 @@ pub enum TopStat {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AccessAttr {
     None,
-    Attr(lexer::ast::Control),
+    Attr(lexer::ast::Keyword),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SyncAttr {
     None,
-    Attr(lexer::ast::Control),
+    Attr(lexer::ast::Keyword),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VarBind {
-    Bind(lexer::ast::Control, MutAttr, VarDecl, Expr),
+    Bind(lexer::ast::Keyword, MutAttr, VarDecl, Expr),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MutAttr {
     None,
-    Attr(lexer::ast::Control),
+    Attr(lexer::ast::Keyword),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -54,7 +54,7 @@ pub enum VarDeclPart {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FnBind {
-    Bind(lexer::ast::Control, FnDecl, Vec<Stat>),
+    Bind(lexer::ast::Keyword, FnDecl, Vec<Stat>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -70,9 +70,9 @@ pub enum Ident {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Stat {
     ImplicitReturn(Expr),
-    Return(lexer::ast::Control, Expr),
-    Continue(lexer::ast::Control),
-    Break(lexer::ast::Control),
+    Return(lexer::ast::Keyword, Expr),
+    Continue(lexer::ast::Keyword),
+    Break(lexer::ast::Keyword),
     VarBind(VarBind),
     Expr(Expr),
 }
@@ -87,21 +87,21 @@ pub enum Expr {
     ThisLiteral(lexer::ast::Literal),
     InterpolatedString(lexer::ast::InterpolatedString),
     EvalVar(Ident),
-    EvalTypeOf(lexer::ast::Control),
+    EvalTypeOf(lexer::ast::Keyword),
     TypeAccess(TypeExpr, lexer::ast::OpCode, Box<Expr>),
     Access(Box<Expr>, lexer::ast::OpCode, Box<Expr>),
-    Cast(Box<Expr>, lexer::ast::Control, TypeExpr),
+    Cast(Box<Expr>, lexer::ast::Keyword, TypeExpr),
     EvalFunc(Box<Expr>, Vec<ArgExpr>),
     EvalSpreadFunc(Box<Expr>, Box<Expr>),
     EvalKey(Box<Expr>, Box<Expr>),
     PrefixOp(lexer::ast::OpCode, Box<Expr>),
     InfixOp(Box<Expr>, lexer::ast::OpCode, Box<Expr>),
     Assign(Box<Expr>, Box<Expr>),
-    LetInBind(Box<VarBind>, lexer::ast::Control, Box<Expr>),
-    If(lexer::ast::Control, Box<Expr>, Vec<Stat>, Option<(lexer::ast::Control, Vec<Stat>)>),
-    While(lexer::ast::Control, Box<Expr>, Vec<Stat>),
-    Loop(lexer::ast::Control, Vec<Stat>),
-    For(Vec<lexer::ast::Control>, Vec<ForBind>, Vec<Stat>),
+    LetInBind(Box<VarBind>, lexer::ast::Keyword, Box<Expr>),
+    If(lexer::ast::Keyword, Box<Expr>, Vec<Stat>, Option<(lexer::ast::Keyword, Vec<Stat>)>),
+    While(lexer::ast::Keyword, Box<Expr>, Vec<Stat>),
+    Loop(lexer::ast::Keyword, Vec<Stat>),
+    For(Vec<lexer::ast::Keyword>, Vec<ForBind>, Vec<Stat>),
     Closure(VarDecl, Box<Expr>),
 }
 
@@ -128,7 +128,7 @@ pub enum ArgExpr {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ForBind {
-    Let(lexer::ast::Control, VarDecl, ForIterExpr),
+    Let(lexer::ast::Keyword, VarDecl, ForIterExpr),
     Assign(Box<Expr>, ForIterExpr),
 }
 

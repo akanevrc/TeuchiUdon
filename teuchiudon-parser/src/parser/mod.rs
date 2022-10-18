@@ -48,11 +48,11 @@ pub fn top_stat(input: &str) -> ParsedResult<ast::TopStat> {
 fn var_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
     map(
         tuple((
-            opt(lex(lexer::control("pub"))),
+            opt(lex(lexer::keyword("pub"))),
             opt(alt((
-                lex(lexer::control("sync")),
-                lex(lexer::control("linear")),
-                lex(lexer::control("smooth")),
+                lex(lexer::keyword("sync")),
+                lex(lexer::keyword("linear")),
+                lex(lexer::keyword("smooth")),
             ))),
             var_bind,
             lex(lexer::end(";")),
@@ -68,7 +68,7 @@ fn var_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
 fn fn_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
     map(
         tuple((
-            opt(lex(lexer::control("pub"))),
+            opt(lex(lexer::keyword("pub"))),
             fn_bind,
         )),
         |x| ast::TopStat::FnBind(
@@ -85,8 +85,8 @@ fn stat_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
 pub fn var_bind(input: &str) -> ParsedResult<ast::VarBind> {
     map(
         tuple((
-            lex(lexer::control("let")),
-            opt(lex(lexer::control("mut"))),
+            lex(lexer::keyword("let")),
+            opt(lex(lexer::keyword("mut"))),
             var_decl,
             lex(lexer::delimiter("=")),
             expr,
@@ -148,7 +148,7 @@ pub fn var_decl_part(input: &str) -> ParsedResult<ast::VarDeclPart> {
 pub fn fn_bind(input: &str) -> ParsedResult<ast::FnBind> {
     map(
         tuple((
-            lex(lexer::control("fn")),
+            lex(lexer::keyword("fn")),
             fn_decl,
             stats_block,
         )),
@@ -221,7 +221,7 @@ pub fn stat(input: &str) -> ParsedResult<ast::Stat> {
 fn return_stat(input: &str) -> ParsedResult<ast::Stat> {
     map(
         tuple((
-            lex(lexer::control("return")),
+            lex(lexer::keyword("return")),
             opt(expr),
         )),
         |x| ast::Stat::Return(
@@ -233,14 +233,14 @@ fn return_stat(input: &str) -> ParsedResult<ast::Stat> {
 
 fn continue_stat(input: &str) -> ParsedResult<ast::Stat> {
     map(
-        lex(lexer::control("continue")),
+        lex(lexer::keyword("continue")),
         |x| ast::Stat::Continue(x),
     )(input)
 }
 
 fn break_stat(input: &str) -> ParsedResult<ast::Stat> {
     map(
-        lex(lexer::control("break")),
+        lex(lexer::keyword("break")),
         |x| ast::Stat::Break(x),
     )(input)
 }
@@ -383,7 +383,7 @@ fn eval_var_expr(input: &str) -> ParsedResult<ast::Expr> {
 
 fn eval_type_of_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
-        lex(lexer::control("typeof")),
+        lex(lexer::keyword("typeof")),
         |x| ast::Expr::EvalTypeOf(x),
     )(input)
 }
@@ -571,7 +571,7 @@ fn cast_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
         tuple((
             upper_expr,
-            lex(lexer::control("as")),
+            lex(lexer::keyword("as")),
             type_expr,
         )),
         |x| ast::Expr::Cast(Box::new(x.0), x.1, x.2),
@@ -669,7 +669,7 @@ fn let_in_bind_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
         tuple((
             var_bind,
-            lex(lexer::control("in")),
+            lex(lexer::keyword("in")),
             expr,
         )),
         |x| ast::Expr::LetInBind(Box::new(x.0), x.1, Box::new(x.2)),
@@ -679,12 +679,12 @@ fn let_in_bind_expr(input: &str) -> ParsedResult<ast::Expr> {
 fn if_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
         tuple((
-            lex(lexer::control("if")),
+            lex(lexer::keyword("if")),
             expr,
             stats_block,
             opt(
                 tuple((
-                    lex(lexer::control("else")),
+                    lex(lexer::keyword("else")),
                     alt((
                         map(if_expr, |x| vec![ast::Stat::Expr(x)]),
                         stats_block,
@@ -699,7 +699,7 @@ fn if_expr(input: &str) -> ParsedResult<ast::Expr> {
 fn while_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
         tuple((
-            lex(lexer::control("while")),
+            lex(lexer::keyword("while")),
             expr,
             stats_block,
         )),
@@ -710,7 +710,7 @@ fn while_expr(input: &str) -> ParsedResult<ast::Expr> {
 fn loop_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
         tuple((
-            lex(lexer::control("loop")),
+            lex(lexer::keyword("loop")),
             stats_block,
         )),
         |x| ast::Expr::Loop(x.0, x.1),
@@ -722,7 +722,7 @@ fn for_expr(input: &str) -> ParsedResult<ast::Expr> {
         tuple((
             many1(
                 tuple((
-                    lex(lexer::control("for")),
+                    lex(lexer::keyword("for")),
                     for_bind,
                 )),
             ),
@@ -828,7 +828,7 @@ fn spread_iter_expr(input: &str) -> ParsedResult<ast::IterExpr> {
 pub fn arg_expr(input: &str) -> ParsedResult<ast::ArgExpr> {
     map(
         tuple((
-            opt(lex(lexer::control("mut"))),
+            opt(lex(lexer::keyword("mut"))),
             expr,
         )),
         |x| ast::ArgExpr::Expr(
@@ -848,7 +848,7 @@ pub fn for_bind(input: &str) -> ParsedResult<ast::ForBind> {
 fn let_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
     map(
         tuple((
-            lex(lexer::control("let")),
+            lex(lexer::keyword("let")),
             var_decl,
             lex(lexer::delimiter("<-")),
             for_iter_expr,

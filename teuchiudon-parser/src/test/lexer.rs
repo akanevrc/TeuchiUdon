@@ -7,7 +7,7 @@ use crate::lexer::{
     newline,
     whitespace0,
     whitespace1,
-    control,
+    keyword,
     encloser,
     delimiter,
     end,
@@ -30,9 +30,9 @@ use crate::lexer::{
 
 #[test]
 fn test_lex() {
-    assert_eq!(lex(control("as"))("as xxx"), Ok((" xxx", ast::Control::As)));
-    assert_eq!(lex(control("as"))("  as xxx"), Ok((" xxx", ast::Control::As)));
-    assert_eq!(lex(control("as"))(" {/ comment /} // comment\nas xxx"), Ok((" xxx", ast::Control::As)));
+    assert_eq!(lex(keyword("as"))("as xxx"), Ok((" xxx", ast::Keyword::As)));
+    assert_eq!(lex(keyword("as"))("  as xxx"), Ok((" xxx", ast::Keyword::As)));
+    assert_eq!(lex(keyword("as"))(" {/ comment /} // comment\nas xxx"), Ok((" xxx", ast::Keyword::As)));
 }
 
 #[test]
@@ -80,13 +80,13 @@ fn test_delimited_comment_error() {
 }
 
 #[test]
-fn test_control_as() {
-    assert_eq!(control("as")("as xxx").0, Ok((" xxx", ast::Control::As)));
+fn test_keyword_as() {
+    assert_eq!(keyword("as")("as xxx").0, Ok((" xxx", ast::Keyword::As)));
 }
 
 #[test]
-fn test_control_as_error() {
-    assert_eq!(control("as")("asxxx").0.map_err(|_| ()), Err(()));
+fn test_keyword_as_error() {
+    assert_eq!(keyword("as")("asxxx").0.map_err(|_| ()), Err(()));
 }
 
 #[test]
@@ -129,14 +129,14 @@ fn test_unit_literal() {
 
 #[test]
 fn test_null_literal() {
-    assert_eq!(null_literal("null xxx").0, Ok((" xxx", ast::Literal::Null(ast::Control::Null))));
+    assert_eq!(null_literal("null xxx").0, Ok((" xxx", ast::Literal::Null(ast::Keyword::Null))));
     assert_eq!(null_literal("nullxxx").0.map_err(|_| ()), Err(()));
 }
 
 #[test]
 fn test_bool_literal() {
-    assert_eq!(bool_literal("true xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Control::True))));
-    assert_eq!(bool_literal("false xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Control::False))));
+    assert_eq!(bool_literal("true xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::True))));
+    assert_eq!(bool_literal("false xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::False))));
     assert_eq!(bool_literal("truexxx").0.map_err(|_| ()), Err(()));
 }
 
@@ -241,7 +241,7 @@ fn test_verbatium_string_literal() {
 
 #[test]
 fn test_this_literal() {
-    assert_eq!(this_literal("this xxx").0, Ok((" xxx", ast::Literal::This(ast::Control::This))));
+    assert_eq!(this_literal("this xxx").0, Ok((" xxx", ast::Literal::This(ast::Keyword::This))));
     assert_eq!(this_literal("thisxxx").0.map_err(|_| ()), Err(()));
 }
 

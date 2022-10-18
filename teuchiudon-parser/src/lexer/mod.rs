@@ -105,9 +105,9 @@ fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
 }
 
 #[inline]
-pub fn control<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Control> {
+pub fn keyword<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
     move |input: &'input str| LexedResult(
-        value(ast::Control::from(name), tuple((tag(name), peek_code_delimit)))(input)
+        value(ast::Keyword::from(name), tuple((tag(name), peek_code_delimit)))(input)
     )
 }
 
@@ -188,7 +188,7 @@ pub fn unit_literal(input: &str) -> LexedResult<ast::Literal> {
 pub fn null_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
         map(
-            unwrap_fn(control("null")),
+            unwrap_fn(keyword("null")),
             |x| ast::Literal::Null(x),
         )(input)
     )
@@ -198,7 +198,7 @@ pub fn null_literal(input: &str) -> LexedResult<ast::Literal> {
 pub fn bool_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
         map(
-            alt((unwrap_fn(control("true")), unwrap_fn(control("false")))),
+            alt((unwrap_fn(keyword("true")), unwrap_fn(keyword("false")))),
             |x| ast::Literal::Bool(x),
         )(input)
     )
@@ -432,7 +432,7 @@ fn verbatium_string_char(input: &str) -> ParsedResult<String> {
 pub fn this_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
         map(
-            unwrap_fn(control("this")),
+            unwrap_fn(keyword("this")),
             |x| ast::Literal::This(x),
         )(input)
     )

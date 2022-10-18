@@ -1,6 +1,6 @@
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Control {
+pub enum Keyword {
     As,
     Break,
     Continue,
@@ -34,7 +34,7 @@ pub enum Control {
     While,
 }
 
-impl From<&str> for Control {
+impl From<&str> for Keyword {
     fn from(x: &str) -> Self {
         match x {
             "as" => Self::As,
@@ -217,8 +217,8 @@ pub struct Ident {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Literal {
     Unit,
-    Null(Control),
-    Bool(Control),
+    Null(Keyword),
+    Bool(Keyword),
     Integer(String),
     HexInteger(String),
     BinInteger(String),
@@ -226,7 +226,7 @@ pub enum Literal {
     Character(String),
     RegularString(String),
     VerbatiumString(String),
-    This(Control),
+    This(Keyword),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
