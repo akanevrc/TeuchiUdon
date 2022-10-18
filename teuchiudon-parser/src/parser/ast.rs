@@ -86,7 +86,6 @@ pub enum Expr {
     Literal(lexer::ast::Literal),
     ThisLiteral(lexer::ast::Literal),
     InterpolatedString(lexer::ast::InterpolatedString),
-    EvalTypeOf(lexer::ast::Keyword),
     TypeAccess(TypeExpr, lexer::ast::OpCode, Box<Expr>),
     Access(Box<Expr>, lexer::ast::OpCode, Box<Expr>),
     Cast(Box<Expr>, lexer::ast::Keyword, TypeExpr),

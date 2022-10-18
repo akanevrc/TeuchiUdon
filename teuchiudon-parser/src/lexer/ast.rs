@@ -29,7 +29,6 @@ pub enum Keyword {
     This,
     True,
     Type,
-    Typeof,
     Use,
     While,
 }
@@ -65,7 +64,6 @@ impl From<&str> for Keyword {
             "this" => Self::This,
             "true" => Self::True,
             "type" => Self::Type,
-            "typeof" => Self::Typeof,
             "use" => Self::Use,
             "while" => Self::While,
             _ => panic!(),
