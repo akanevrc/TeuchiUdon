@@ -46,7 +46,7 @@ fn test_whitespace0() {
 #[test]
 fn test_whitespace1() {
     assert_eq!(whitespace1(" \t\r\nxxx"), Ok(("xxx", ())));
-    assert_eq!(whitespace1("xxx").map_err(|_| ()), Err(()));
+    assert!(whitespace1("xxx").is_err());
 }
 
 #[test]
@@ -73,7 +73,7 @@ fn test_delimited_comment_nested() {
 
 #[test]
 fn test_delimited_comment_error() {
-    assert_eq!(delimited_comment("{/ this is a comment. {/ xxx this is also a comment. /}xxx").map_err(|_| ()), Err(()));
+    assert!(delimited_comment("{/ this is a comment. {/ xxx this is also a comment. /}xxx").is_err());
 }
 
 #[test]
@@ -83,7 +83,7 @@ fn test_keyword_as() {
 
 #[test]
 fn test_keyword_as_error() {
-    assert_eq!(keyword("as")("asxxx").0.map_err(|_| ()), Err(()));
+    assert!(keyword("as")("asxxx").0.is_err());
 }
 
 #[test]
@@ -113,9 +113,9 @@ fn test_ident() {
     assert_eq!(ident("AbC xxx").0, Ok((" xxx", ast::Ident { name: "AbC".to_owned() })));
     assert_eq!(ident("abc xxx").0, Ok((" xxx", ast::Ident { name: "abc".to_owned() })));
     assert_eq!(ident("ab1 xxx").0, Ok((" xxx", ast::Ident { name: "ab1".to_owned() })));
-    assert_eq!(ident("1ab xxx").0.map_err(|_| ()), Err(()));
+    assert!(ident("1ab xxx").0.is_err());
     assert_eq!(ident("a_b xxx").0, Ok((" xxx", ast::Ident { name: "a_b".to_owned() })));
-    assert_eq!(ident("_ab xxx").0.map_err(|_| ()), Err(()));
+    assert!(ident("_ab xxx").0.is_err());
 }
 
 #[test]
@@ -127,14 +127,14 @@ fn test_unit_literal() {
 #[test]
 fn test_null_literal() {
     assert_eq!(null_literal("null xxx").0, Ok((" xxx", ast::Literal::Null(ast::Keyword::Null))));
-    assert_eq!(null_literal("nullxxx").0.map_err(|_| ()), Err(()));
+    assert!(null_literal("nullxxx").0.is_err());
 }
 
 #[test]
 fn test_bool_literal() {
     assert_eq!(bool_literal("true xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::True))));
     assert_eq!(bool_literal("false xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::False))));
-    assert_eq!(bool_literal("truexxx").0.map_err(|_| ()), Err(()));
+    assert!(bool_literal("truexxx").0.is_err());
 }
 
 #[test]
@@ -145,8 +145,8 @@ fn test_integer_literal() {
     assert_eq!(integer_literal("123U xxx").0, Ok((" xxx", ast::Literal::Integer("123U".to_owned()))));
     assert_eq!(integer_literal("123LU xxx").0, Ok((" xxx", ast::Literal::Integer("123LU".to_owned()))));
     assert_eq!(integer_literal("123UL xxx").0, Ok((" xxx", ast::Literal::Integer("123UL".to_owned()))));
-    assert_eq!(integer_literal("123xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(integer_literal("_123 xxx").0.map_err(|_| ()), Err(()));
+    assert!(integer_literal("123xxx").0.is_err());
+    assert!(integer_literal("_123 xxx").0.is_err());
 }
 
 #[test]
@@ -159,7 +159,7 @@ fn test_hex_integer_literal() {
     assert_eq!(hex_integer_literal("0xFA3U xxx").0, Ok((" xxx", ast::Literal::HexInteger("FA3U".to_owned()))));
     assert_eq!(hex_integer_literal("0xFA3LU xxx").0, Ok((" xxx", ast::Literal::HexInteger("FA3LU".to_owned()))));
     assert_eq!(hex_integer_literal("0xFA3UL xxx").0, Ok((" xxx", ast::Literal::HexInteger("FA3UL".to_owned()))));
-    assert_eq!(hex_integer_literal("0xFA3xxx").0.map_err(|_| ()), Err(()));
+    assert!(hex_integer_literal("0xFA3xxx").0.is_err());
 }
 
 #[test]
@@ -171,8 +171,8 @@ fn test_bin_integer_literal() {
     assert_eq!(bin_integer_literal("0b101U xxx").0, Ok((" xxx", ast::Literal::BinInteger("101U".to_owned()))));
     assert_eq!(bin_integer_literal("0b101LU xxx").0, Ok((" xxx", ast::Literal::BinInteger("101LU".to_owned()))));
     assert_eq!(bin_integer_literal("0b101UL xxx").0, Ok((" xxx", ast::Literal::BinInteger("101UL".to_owned()))));
-    assert_eq!(bin_integer_literal("0b101xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(bin_integer_literal("0b123 xxx").0.map_err(|_| ()), Err(()));
+    assert!(bin_integer_literal("0b101xxx").0.is_err());
+    assert!(bin_integer_literal("0b123 xxx").0.is_err());
 }
 
 #[test]
@@ -195,9 +195,9 @@ fn test_real_number_literal() {
     assert_eq!(real_number_literal("123D xxx").0, Ok((" xxx", ast::Literal::RealNumber("123D".to_owned()))));
     assert_eq!(real_number_literal("123M xxx").0, Ok((" xxx", ast::Literal::RealNumber("123M".to_owned()))));
     assert_eq!(real_number_literal("123E-45D xxx").0, Ok((" xxx", ast::Literal::RealNumber("123E-45D".to_owned()))));
-    assert_eq!(real_number_literal("12.345xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(real_number_literal("123Fxxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(real_number_literal("123 xxx").0.map_err(|_| ()), Err(()));
+    assert!(real_number_literal("12.345xxx").0.is_err());
+    assert!(real_number_literal("123Fxxx").0.is_err());
+    assert!(real_number_literal("123 xxx").0.is_err());
 }
 
 #[test]
@@ -212,12 +212,12 @@ fn test_character_literal() {
     assert_eq!(character_literal("'\\xFFFF'xxx").0, Ok(("xxx", ast::Literal::Character("\\xFFFF".to_owned()))));
     assert_eq!(character_literal("'\\uFFFF'xxx").0, Ok(("xxx", ast::Literal::Character("\\uFFFF".to_owned()))));
     assert_eq!(character_literal("'\\UFFFFFFFF'xxx").0, Ok(("xxx", ast::Literal::Character("\\UFFFFFFFF".to_owned()))));
-    assert_eq!(character_literal("'ab'xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(character_literal("' a'xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(character_literal("'\\1'xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(character_literal("'\\xFFFFF'xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(character_literal("'\\uFFFFFFFF'xxx").0.map_err(|_| ()), Err(()));
-    assert_eq!(character_literal("'\\UFFFF'xxx").0.map_err(|_| ()), Err(()));
+    assert!(character_literal("'ab'xxx").0.is_err());
+    assert!(character_literal("' a'xxx").0.is_err());
+    assert!(character_literal("'\\1'xxx").0.is_err());
+    assert!(character_literal("'\\xFFFFF'xxx").0.is_err());
+    assert!(character_literal("'\\uFFFFFFFF'xxx").0.is_err());
+    assert!(character_literal("'\\UFFFF'xxx").0.is_err());
 }
 
 #[test]
@@ -233,13 +233,13 @@ fn test_verbatium_string_literal() {
     assert_eq!(verbatium_string_literal("@\"\"xxx").0, Ok(("xxx", ast::Literal::VerbatiumString("".to_owned()))));
     assert_eq!(verbatium_string_literal("@\"abc\"xxx").0, Ok(("xxx", ast::Literal::VerbatiumString("abc".to_owned()))));
     assert_eq!(verbatium_string_literal("@\"\"\"\"xxx").0, Ok(("xxx", ast::Literal::VerbatiumString("\"\"".to_owned()))));
-    assert_eq!(verbatium_string_literal("@\"\"\"xxx").0.map_err(|_| ()), Err(()));
+    assert!(verbatium_string_literal("@\"\"\"xxx").0.is_err());
 }
 
 #[test]
 fn test_this_literal() {
     assert_eq!(this_literal("this xxx").0, Ok((" xxx", ast::Literal::This(ast::Keyword::This))));
-    assert_eq!(this_literal("thisxxx").0.map_err(|_| ()), Err(()));
+    assert!(this_literal("thisxxx").0.is_err());
 }
 
 #[test]
@@ -248,11 +248,11 @@ fn test_interpolated_string() {
         interpolated_string("$\"abc{expr}def{expr}ghi\"xxx").0,
         Ok(("xxx", ast::InterpolatedString { string_parts: vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()] }))
     );
-    assert_eq!(interpolated_string("$\"abc{expr\"xxx").0.map_err(|_| ()), Err(()));
+    assert!(interpolated_string("$\"abc{expr\"xxx").0.is_err());
 }
 
 #[test]
 fn test_eof() {
     assert_eq!(eof("").0, Ok(("", ())));
-    assert_eq!(eof("xxx").0.map_err(|_| ()), Err(()));
+    assert!(eof("xxx").0.is_err());
 }
