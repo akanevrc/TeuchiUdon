@@ -255,7 +255,6 @@ pub fn expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
         )),
         alt((
@@ -268,6 +267,7 @@ pub fn expr(input: &str) -> ParsedResult<ast::Expr> {
             cast_expr,
             infix_op_expr,
             assign_expr,
+            eval_var_expr,
         )),
         alt((
             let_in_bind_expr,
@@ -374,13 +374,6 @@ fn interpolated_string_expr(input: &str) -> ParsedResult<ast::Expr> {
     )(input)
 }
 
-fn eval_var_expr(input: &str) -> ParsedResult<ast::Expr> {
-    map(
-        ident,
-        |x| ast::Expr::EvalVar(x),
-    )(input)
-}
-
 fn eval_type_of_expr(input: &str) -> ParsedResult<ast::Expr> {
     map(
         lex(lexer::keyword("typeof")),
@@ -409,7 +402,6 @@ fn access_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
         ))(input)
@@ -435,7 +427,6 @@ fn eval_func_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -463,7 +454,6 @@ fn eval_spread_func_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -493,7 +483,6 @@ fn eval_key_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -523,7 +512,6 @@ fn prefix_op_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -557,7 +545,6 @@ fn cast_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -588,7 +575,6 @@ fn infix_op_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -642,7 +628,6 @@ fn assign_expr(input: &str) -> ParsedResult<ast::Expr> {
             literal_expr,
             this_literal_expr,
             interpolated_string_expr,
-            eval_var_expr,
             eval_type_of_expr,
             type_access_expr,
             access_expr,
@@ -662,6 +647,13 @@ fn assign_expr(input: &str) -> ParsedResult<ast::Expr> {
             expr,
         ),
         |x| ast::Expr::Assign(Box::new(x.0), Box::new(x.1)),
+    )(input)
+}
+
+fn eval_var_expr(input: &str) -> ParsedResult<ast::Expr> {
+    map(
+        ident,
+        |x| ast::Expr::EvalVar(x),
     )(input)
 }
 
