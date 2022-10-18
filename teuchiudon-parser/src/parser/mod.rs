@@ -55,7 +55,7 @@ fn var_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
                 lex(lexer::keyword("smooth")),
             ))),
             var_bind,
-            lex(lexer::end(";")),
+            lex(lexer::op_code(";")),
         )),
         |x| ast::TopStat::VarBind(
             x.0.map(|x| ast::AccessAttr(x)),
@@ -88,7 +88,7 @@ pub fn var_bind(input: &str) -> ParsedResult<ast::VarBind> {
             lex(lexer::keyword("let")),
             opt(lex(lexer::keyword("mut"))),
             var_decl,
-            lex(lexer::delimiter("=")),
+            lex(lexer::op_code("=")),
             expr,
         )),
         |x| ast::VarBind(
@@ -117,14 +117,14 @@ fn single_var_decl(input: &str) -> ParsedResult<ast::VarDecl> {
 fn tuple_var_decl(input: &str) -> ParsedResult<ast::VarDecl> {
     map(
         delimited(
-            lex(lexer::encloser("(")),
+            lex(lexer::op_code("(")),
             opt(
                 terminated(
-                    separated_list1(lex(lexer::delimiter(",")), var_decl),
-                    opt(lex(lexer::delimiter(","))),
+                    separated_list1(lex(lexer::op_code(",")), var_decl),
+                    opt(lex(lexer::op_code(","))),
                 ),
             ),
-            lex(lexer::encloser(")")),
+            lex(lexer::op_code(")")),
         ),
         |x| ast::VarDecl::TupleDecl(x.unwrap_or(Vec::new())),
     )(input)
@@ -136,7 +136,7 @@ pub fn var_decl_part(input: &str) -> ParsedResult<ast::VarDeclPart> {
             lex(lexer::ident),
             opt(
                 preceded(
-                    lex(lexer::delimiter(":")),
+                    lex(lexer::op_code(":")),
                     type_expr,
                 ),
             ),
@@ -162,7 +162,7 @@ pub fn fn_decl(input: &str) -> ParsedResult<ast::FnDecl> {
             lex(lexer::ident),
             tuple_var_decl,
             opt(preceded(
-                lex(lexer::delimiter("->")),
+                lex(lexer::op_code("->")),
                 type_expr,
             )),
         )),
@@ -209,7 +209,7 @@ fn eval_type_type_term(input: &str) -> ParsedResult<ast::TypeTerm> {
 pub fn stats_block(input: &str) -> ParsedResult<ast::StatsBlock> {
     map(
         delimited(
-            lex(lexer::encloser("{")),
+            lex(lexer::op_code("{")),
             tuple((
                 many0(
                     terminated(
@@ -220,12 +220,12 @@ pub fn stats_block(input: &str) -> ParsedResult<ast::StatsBlock> {
                             map(var_bind, |x| ast::Stat::VarBind(x)),
                             map(expr, |x| ast::Stat::Expr(x)),
                         )),
-                        lex(lexer::end(";")),
+                        lex(lexer::op_code(";")),
                     ),
                 ),
                 opt(expr),
             )),
-            lex(lexer::encloser("}")),
+            lex(lexer::op_code("}")),
         ),
         |x| ast::StatsBlock(x.0, x.1.map(|y| Box::new(y))),
     )(input)
@@ -240,7 +240,7 @@ pub fn stat(input: &str) -> ParsedResult<ast::Stat> {
             map(var_bind, |x| ast::Stat::VarBind(x)),
             map(expr, |x| ast::Stat::Expr(x)),
         )),
-        lex(lexer::end(";")),
+        lex(lexer::op_code(";")),
     )(input)
 }
 
@@ -311,14 +311,14 @@ fn access_op(input: &str) -> ParsedResult<ast::Op> {
 fn eval_fn_op(input: &str) -> ParsedResult<ast::Op> {
     map(
         delimited(
-            lex(lexer::encloser("(")),
+            lex(lexer::op_code("(")),
             opt(
                 terminated(
-                    separated_list1(lex(lexer::delimiter(",")), arg_expr),
-                    lex(lexer::delimiter(",")),
+                    separated_list1(lex(lexer::op_code(",")), arg_expr),
+                    lex(lexer::op_code(",")),
                 ),
             ),
-            lex(lexer::encloser(")")),
+            lex(lexer::op_code(")")),
         ),
         |x| ast::Op::EvalFn(x.unwrap_or(Vec::new())),
     )(input)
@@ -327,10 +327,10 @@ fn eval_fn_op(input: &str) -> ParsedResult<ast::Op> {
 fn eval_spread_fn_op(input: &str) -> ParsedResult<ast::Op> {
     map(
         tuple((
-            lex(lexer::encloser("(")),
-            lex(lexer::delimiter("...")),
+            lex(lexer::op_code("(")),
+            lex(lexer::op_code("...")),
             expr,
-            lex(lexer::encloser(")")),
+            lex(lexer::op_code(")")),
         )),
         |x| ast::Op::EvalSpreadFn(Box::new(x.2)),
     )(input)
@@ -339,9 +339,9 @@ fn eval_spread_fn_op(input: &str) -> ParsedResult<ast::Op> {
 fn eval_key_op(input: &str) -> ParsedResult<ast::Op> {
     map(
         delimited(
-            lex(lexer::encloser("[")),
+            lex(lexer::op_code("[")),
             expr,
-            lex(lexer::encloser("]")),
+            lex(lexer::op_code("]")),
         ),
         |x| ast::Op::EvalKey(Box::new(x)),
     )(input)
@@ -396,7 +396,7 @@ fn infix_op(input: &str) -> ParsedResult<ast::Op> {
 fn assign_op(input: &str) -> ParsedResult<ast::Op> {
     map(
         tuple((
-            lex(lexer::delimiter("=")),
+            lex(lexer::op_code("=")),
             expr,
         )),
         |x| ast::Op::Assign(Box::new(x.1)),
@@ -448,9 +448,9 @@ fn block_term(input: &str) -> ParsedResult<ast::Term> {
 fn paren_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         delimited(
-            lex(lexer::encloser("(")),
+            lex(lexer::op_code("(")),
             expr,
-            lex(lexer::encloser(")")),
+            lex(lexer::op_code(")")),
         ),
         |x| ast::Term::Paren(Box::new(x)),
     )(input)
@@ -459,12 +459,12 @@ fn paren_term(input: &str) -> ParsedResult<ast::Term> {
 fn tuple_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         delimited(
-            lex(lexer::encloser("(")),
+            lex(lexer::op_code("(")),
             alt((
                 map(
                     terminated(
                         expr,
-                        lex(lexer::delimiter(",")),
+                        lex(lexer::op_code(",")),
                     ),
                     |x| vec![x],
                 ),
@@ -473,17 +473,17 @@ fn tuple_term(input: &str) -> ParsedResult<ast::Term> {
                         expr,
                         many1(
                             preceded(
-                                lex(lexer::delimiter(",")),
+                                lex(lexer::op_code(",")),
                                 expr,
                             ),
                         ),
-                        opt(lex(lexer::delimiter(","))),
+                        opt(lex(lexer::op_code(","))),
                     )),
                     |x|
                         [x.0].into_iter().chain(x.1.into_iter()).collect(),
                 ),
             )),
-            lex(lexer::encloser(")")),
+            lex(lexer::op_code(")")),
         ),
         |x| ast::Term::Tuple(x),
     )(input)
@@ -492,9 +492,9 @@ fn tuple_term(input: &str) -> ParsedResult<ast::Term> {
 fn array_ctor_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         delimited(
-            lex(lexer::encloser("[")),
+            lex(lexer::op_code("[")),
             opt(iter_expr),
-            lex(lexer::encloser("]")),
+            lex(lexer::op_code("]")),
         ),
         |x| ast::Term::ArrayCtor(x),
     )(input)
@@ -612,9 +612,9 @@ fn for_term(input: &str) -> ParsedResult<ast::Term> {
 fn closure_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
-            lex(lexer::encloser("|")),
+            lex(lexer::op_code("|")),
             tuple_var_decl,
-            lex(lexer::encloser("|")),
+            lex(lexer::op_code("|")),
             expr,
         )),
         |x| ast::Term::Closure(x.1, Box::new(x.3)),
@@ -632,8 +632,8 @@ pub fn iter_expr(input: &str) -> ParsedResult<ast::IterExpr> {
 fn elements_iter_expr(input: &str) -> ParsedResult<ast::IterExpr> {
     map(
         terminated(
-            separated_list1(lex(lexer::delimiter(",")), expr),
-            opt(lex(lexer::delimiter(","))),
+            separated_list1(lex(lexer::op_code(",")), expr),
+            opt(lex(lexer::op_code(","))),
         ),
         |x| ast::IterExpr::Elements(x),
     )(input)
@@ -663,7 +663,7 @@ fn range_iter_expr(input: &str) -> ParsedResult<ast::IterExpr> {
 fn spread_iter_expr(input: &str) -> ParsedResult<ast::IterExpr> {
     map(
         preceded(
-            lex(lexer::delimiter("...")),
+            lex(lexer::op_code("...")),
             expr,
         ),
         |x| ast::IterExpr::Spread(Box::new(x)),
@@ -695,7 +695,7 @@ fn let_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
         tuple((
             lex(lexer::keyword("let")),
             var_decl,
-            lex(lexer::delimiter("<-")),
+            lex(lexer::op_code("<-")),
             for_iter_expr,
         )),
         |x| ast::ForBind::Let(x.0, x.1, x.3)
@@ -706,7 +706,7 @@ fn assign_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
     map(
         separated_pair(
             expr,
-            lex(lexer::delimiter("<-")),
+            lex(lexer::op_code("<-")),
             for_iter_expr,
         ),
         |x| ast::ForBind::Assign(Box::new(x.0), x.1)

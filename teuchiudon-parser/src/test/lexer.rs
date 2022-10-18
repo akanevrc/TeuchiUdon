@@ -8,9 +8,6 @@ use crate::lexer::{
     whitespace0,
     whitespace1,
     keyword,
-    encloser,
-    delimiter,
-    end,
     op_code,
     ident,
     unit_literal,
@@ -90,18 +87,18 @@ fn test_keyword_as_error() {
 }
 
 #[test]
-fn test_encloser_open_brace() {
-    assert_eq!(encloser("{")("{xxx").0, Ok(("xxx", ast::Encloser::OpenBrace)));
+fn test_op_code_open_brace() {
+    assert_eq!(op_code("{")("{xxx").0, Ok(("xxx", ast::OpCode::OpenBrace)));
 }
 
 #[test]
-fn test_delimiter_comma() {
-    assert_eq!(delimiter(",")(",xxx").0, Ok(("xxx", ast::Delimiter::Comma)));
+fn test_op_code_comma() {
+    assert_eq!(op_code(",")(",xxx").0, Ok(("xxx", ast::OpCode::Comma)));
 }
 
 #[test]
-fn test_end_semicolon() {
-    assert_eq!(end(";")(";xxx").0, Ok(("xxx", ast::End::Semicolon)));
+fn test_op_code_semicolon() {
+    assert_eq!(op_code(";")(";xxx").0, Ok(("xxx", ast::OpCode::Semicolon)));
 }
 
 #[test]

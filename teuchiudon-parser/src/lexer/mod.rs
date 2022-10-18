@@ -112,57 +112,6 @@ pub fn keyword<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input st
 }
 
 #[inline]
-pub fn encloser<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Encloser> {
-    move |input: &'input str| LexedResult(
-        value(ast::Encloser::from(name), tag(name))(input)
-    )
-}
-
-#[inline]
-pub fn delimiter<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Delimiter> {
-    move |input: &'input str| LexedResult(
-        value(ast::Delimiter::from(name), tag(name))(input)
-    )
-}
-
-#[inline]
-pub fn end<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::End> {
-    move |input: &'input str| LexedResult(
-        value(ast::End::from(name), tag(name))(input)
-    )
-}
-
-#[inline]
-pub fn op_code<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
-    move |input: &'input str| LexedResult(
-        value(ast::OpCode::from(name), tag(name))(input)
-    )
-}
-
-#[inline]
-fn peek_code_delimit(input: &str) -> ParsedResult<()> {
-    value((), not(ident_part_char))(input)
-}
-
-#[inline]
-pub fn ident(input: &str) -> LexedResult<ast::Ident> {
-    LexedResult(
-        map(
-            tuple((
-                not(is_keyword),
-                ident_start_char,
-                fold_many0(
-                    ident_part_char,
-                    || String::new(),
-                    |mut acc, x| { acc.push(x); acc }
-                ),
-            )),
-            |x| ast::Ident { name: format!("{}{}", x.1, x.2) },
-        )(input)
-    )
-}
-
-#[inline]
 fn is_keyword(input: &str) -> ParsedResult<()> {
     value((),
         alt((
@@ -208,6 +157,75 @@ fn is_keyword(input: &str) -> ParsedResult<()> {
 }
 
 #[inline]
+pub fn op_code<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
+    move |input: &'input str| LexedResult(
+        preceded(
+            |i: &'input str| match name.len() {
+                1 => value((), tuple((not(is_two_char_op_code), not(is_three_char_op_code))))(i),
+                2 => not(is_three_char_op_code)(i),
+                3 => success(())(i),
+                _ => panic!(),
+            },
+            value(ast::OpCode::from(name), tag(name)),
+        )(input),
+    )
+}
+
+fn is_three_char_op_code(input: &str) -> ParsedResult<()> {
+    value((),
+        alt((
+            tag("..."),
+        )),
+    )(input)
+}
+
+fn is_two_char_op_code(input: &str) -> ParsedResult<()> {
+    value((),
+        alt((
+            tag("<-"),
+            tag("->"),
+            tag("::"),
+            tag("??"),
+            tag("?."),
+            tag("&&"),
+            tag("||"),
+            tag("=="),
+            tag("!="),
+            tag("<="),
+            tag(">="),
+            tag("<<"),
+            tag(">>"),
+            tag("<|"),
+            tag("|>"),
+            tag(".."),
+        )),
+    )(input)
+}
+
+#[inline]
+fn peek_code_delimit(input: &str) -> ParsedResult<()> {
+    value((), not(ident_part_char))(input)
+}
+
+#[inline]
+pub fn ident(input: &str) -> LexedResult<ast::Ident> {
+    LexedResult(
+        map(
+            tuple((
+                not(is_keyword),
+                ident_start_char,
+                fold_many0(
+                    ident_part_char,
+                    || String::new(),
+                    |mut acc, x| { acc.push(x); acc }
+                ),
+            )),
+            |x| ast::Ident { name: format!("{}{}", x.1, x.2) },
+        )(input)
+    )
+}
+
+#[inline]
 fn ident_start_char(input: &str) -> ParsedResult<char> {
     one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")(input)
 }
@@ -223,8 +241,8 @@ pub fn unit_literal(input: &str) -> LexedResult<ast::Literal> {
         value(
             ast::Literal::Unit,
             tuple((
-                unwrap_fn(encloser("(")),
-                lex(encloser(")")),
+                unwrap_fn(op_code("(")),
+                lex(op_code(")")),
             )),
         )(input)
     )

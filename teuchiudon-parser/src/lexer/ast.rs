@@ -72,7 +72,7 @@ impl From<&str> for Keyword {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Encloser {
+pub enum OpCode {
     OpenBrace,
     CloseBrace,
     OpenParen,
@@ -81,66 +81,10 @@ pub enum Encloser {
     CloseBracket,
     OpenChevron,
     CloseChevron,
-    Pipe,
-}
-
-impl From<&str> for Encloser {
-    fn from(x: &str) -> Self {
-        match x {
-            "{" => Self::OpenBrace,
-            "}" => Self::CloseBrace,
-            "(" => Self::OpenParen,
-            ")" => Self::CloseParen,
-            "[" => Self::OpenBracket,
-            "]" => Self::CloseBracket,
-            "<" => Self::OpenChevron,
-            ">" => Self::CloseChevron,
-            "|" => Self::Pipe,
-            _ => panic!(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Delimiter {
     Comma,
     Colon,
     Bind,
-    Iter,
-    Arrow,
-    Spread,
-}
-
-impl From<&str> for Delimiter {
-    fn from(x: &str) -> Self {
-        match x {
-            "," => Self::Comma,
-            ":" => Self::Colon,
-            "=" => Self::Bind,
-            "<-" => Self::Iter,
-            "->" => Self::Arrow,
-            "..." => Self::Spread,
-            _ => panic!(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum End {
     Semicolon,
-}
-
-impl From<&str> for End {
-    fn from(x: &str) -> Self {
-        match x {
-            ";" => Self::Semicolon,
-            _ => panic!(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum OpCode {
     Dot,
     Plus,
     Minus,
@@ -155,6 +99,8 @@ pub enum OpCode {
     Lt,
     Gt,
     Wildcard,
+    Iter,
+    Arrow,
     DoubleColon,
     Coalescing,
     CoalescingAccess,
@@ -169,11 +115,22 @@ pub enum OpCode {
     LeftPipeline,
     RightPipeline,
     Range,
+    Spread,
 }
 
 impl From<&str> for OpCode {
     fn from(x: &str) -> Self {
         match x {
+            "{" => Self::OpenBrace,
+            "}" => Self::CloseBrace,
+            "(" => Self::OpenParen,
+            ")" => Self::CloseParen,
+            "[" => Self::OpenBracket,
+            "]" => Self::CloseBracket,
+            "," => Self::Comma,
+            ":" => Self::Colon,
+            "=" => Self::Bind,
+            ";" => Self::Semicolon,
             "." => Self::Dot,
             "+" => Self::Plus,
             "-" => Self::Minus,
@@ -188,6 +145,8 @@ impl From<&str> for OpCode {
             "<" => Self::Lt,
             ">" => Self::Gt,
             "_" => Self::Wildcard,
+            "<-" => Self::Iter,
+            "->" => Self::Arrow,
             "::" => Self::DoubleColon,
             "??" => Self::Coalescing,
             "?." => Self::CoalescingAccess,
@@ -202,6 +161,7 @@ impl From<&str> for OpCode {
             "<|" => Self::LeftPipeline,
             "|>" => Self::RightPipeline,
             ".." => Self::Range,
+            "..." => Self::Spread,
             _ => panic!(),
         }
     }
