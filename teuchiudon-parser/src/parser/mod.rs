@@ -28,8 +28,8 @@ use crate::lexer::{
 
 pub fn target(input: &str) -> ParsedResult<ast::Target> {
     alt((
-        value(ast::Target::Empty, lex(lexer::eof)),
-        map(terminated(body, lex(lexer::eof)), |x| ast::Target::Body(x))
+        value(ast::Target::Body(None), lex(lexer::eof)),
+        map(terminated(body, lex(lexer::eof)), |x| ast::Target::Body(Some(x)))
     ))(input)
 }
 

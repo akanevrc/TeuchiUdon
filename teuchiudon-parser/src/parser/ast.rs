@@ -2,8 +2,7 @@ use crate::lexer as lexer;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Target {
-    Empty,
-    Body(Body),
+    Body(Option<Body>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
