@@ -28,13 +28,13 @@ use crate::lexer::{
 
 pub fn target(input: &str) -> ParsedResult<ast::Target> {
     alt((
-        value(ast::Target::Body(None), lex(lexer::eof)),
-        map(terminated(body, lex(lexer::eof)), |x| ast::Target::Body(Some(x)))
+        value(ast::Target(None), lex(lexer::eof)),
+        map(terminated(body, lex(lexer::eof)), |x| ast::Target(Some(x)))
     ))(input)
 }
 
 pub fn body(input: &str) -> ParsedResult<ast::Body> {
-    map(many1(top_stat), |x| ast::Body::Stats(x))(input)
+    map(many1(top_stat), |x| ast::Body(x))(input)
 }
 
 pub fn top_stat(input: &str) -> ParsedResult<ast::TopStat> {
@@ -58,8 +58,8 @@ fn var_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
             lex(lexer::end(";")),
         )),
         |x| ast::TopStat::VarBind(
-            x.0.map(|x| ast::AccessAttr::Attr(x)),
-            x.1.map(|x| ast::SyncAttr::Attr(x)),
+            x.0.map(|x| ast::AccessAttr(x)),
+            x.1.map(|x| ast::SyncAttr(x)),
             x.2,
         ),
     )(input)
@@ -72,7 +72,7 @@ fn fn_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
             fn_bind,
         )),
         |x| ast::TopStat::FnBind(
-            x.0.map(|x| ast::AccessAttr::Attr(x)),
+            x.0.map(|x| ast::AccessAttr(x)),
             x.1,
         ),
     )(input)
@@ -91,9 +91,9 @@ pub fn var_bind(input: &str) -> ParsedResult<ast::VarBind> {
             lex(lexer::delimiter("=")),
             expr,
         )),
-        |x| ast::VarBind::Bind(
+        |x| ast::VarBind(
             x.0,
-            x.1.map(|x| ast::MutAttr::Attr(x)),
+            x.1.map(|x| ast::MutAttr(x)),
             x.2,
             x.4,
         ),
@@ -141,7 +141,7 @@ pub fn var_decl_part(input: &str) -> ParsedResult<ast::VarDeclPart> {
                 ),
             ),
         )),
-        |x| ast::VarDeclPart::Part(x.0, x.1),
+        |x| ast::VarDeclPart(x.0, x.1),
     )(input)
 }
 
@@ -152,7 +152,7 @@ pub fn fn_bind(input: &str) -> ParsedResult<ast::FnBind> {
             fn_decl,
             stats_block,
         )),
-        |x| ast::FnBind::Bind(x.0, x.1, x.2),
+        |x| ast::FnBind(x.0, x.1, x.2),
     )(input)
 }
 
@@ -166,14 +166,14 @@ pub fn fn_decl(input: &str) -> ParsedResult<ast::FnDecl> {
                 type_expr,
             )),
         )),
-        |x| ast::FnDecl::Decl(x.0, x.1, x.2),
+        |x| ast::FnDecl(x.0, x.1, x.2),
     )(input)
 }
 
 pub fn ident(input: &str) -> ParsedResult<ast::Ident> {
     map(
         lex(lexer::ident),
-        |x| ast::Ident::Ident(x),
+        |x| ast::Ident(x),
     )(input)
 }
 
@@ -181,11 +181,11 @@ pub fn type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
     alt((
         map(
             tuple((type_term, type_op)),
-            |x| ast::TypeExpr::Expr(x.0, Some(x.1))
+            |x| ast::TypeExpr(x.0, Some(x.1))
         ),
         map(
             type_term,
-            |x| ast::TypeExpr::Expr(x, None)
+            |x| ast::TypeExpr(x, None)
         ),
     ))(input)
 }
@@ -240,7 +240,7 @@ pub fn stats_block(input: &str) -> ParsedResult<ast::StatsBlock> {
             )),
             lex(lexer::encloser("}")),
         ),
-        |x| ast::StatsBlock::Block(x.0, x.1.map(|y| Box::new(y))),
+        |x| ast::StatsBlock(x.0, x.1.map(|y| Box::new(y))),
     )(input)
 }
 
@@ -285,11 +285,11 @@ pub fn expr(input: &str) -> ParsedResult<ast::Expr> {
     alt((
         map(
             tuple((term, op)),
-            |x| ast::Expr::Expr(x.0, Some(x.1))
+            |x| ast::Expr(x.0, Some(x.1)),
         ),
         map(
             term,
-            |x| ast::Expr::Expr(x, None)
+            |x| ast::Expr(x, None),
         ),
     ))(input)
 }
@@ -581,7 +581,7 @@ fn if_term(input: &str) -> ParsedResult<ast::Term> {
                     alt((
                         map(
                             if_term,
-                            |x| ast::StatsBlock::Block(Vec::new(), Some(Box::new(ast::Expr::Expr(x, None)))),
+                            |x| ast::StatsBlock(Vec::new(), Some(Box::new(ast::Expr(x, None)))),
                         ),
                         stats_block,
                     )),
@@ -695,10 +695,10 @@ pub fn arg_expr(input: &str) -> ParsedResult<ast::ArgExpr> {
             opt(lex(lexer::keyword("mut"))),
             expr,
         )),
-        |x| ast::ArgExpr::Expr(
-            x.0.map(|y| ast::MutAttr::Attr(y)),
-            x.1
-        )
+        |x| ast::ArgExpr(
+            x.0.map(|y| ast::MutAttr(y)),
+            x.1,
+        ),
     )(input)
 }
 
@@ -726,11 +726,11 @@ fn assign_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
         alt((
             map(
                 tuple((term, left_op)),
-                |x| ast::Expr::Expr(x.0, Some(x.1))
+                |x| ast::Expr(x.0, Some(x.1)),
             ),
             map(
                 term,
-                |x| ast::Expr::Expr(x, None)
+                |x| ast::Expr(x, None),
             ),
         ))(input)
     }

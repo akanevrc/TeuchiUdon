@@ -1,14 +1,10 @@
 use crate::lexer as lexer;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Target {
-    Body(Option<Body>),
-}
+pub struct Target(pub Option<Body>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Body {
-    Stats(Vec<TopStat>),
-}
+pub struct Body(pub Vec<TopStat>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TopStat {
@@ -18,24 +14,16 @@ pub enum TopStat {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum AccessAttr {
-    Attr(lexer::ast::Keyword),
-}
+pub struct AccessAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum SyncAttr {
-    Attr(lexer::ast::Keyword),
-}
+pub struct SyncAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum VarBind {
-    Bind(lexer::ast::Keyword, Option<MutAttr>, VarDecl, Expr),
-}
+pub struct VarBind(pub lexer::ast::Keyword, pub Option<MutAttr>, pub VarDecl, pub Expr);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum MutAttr {
-    Attr(lexer::ast::Keyword),
-}
+pub struct MutAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VarDecl {
@@ -44,29 +32,19 @@ pub enum VarDecl {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum VarDeclPart {
-    Part(Ident, Option<TypeExpr>),
-}
+pub struct VarDeclPart(pub Ident, pub Option<TypeExpr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum FnBind {
-    Bind(lexer::ast::Keyword, FnDecl, StatsBlock),
-}
+pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum FnDecl {
-    Decl(Ident, VarDecl, Option<TypeExpr>),
-}
+pub struct FnDecl(pub Ident, pub VarDecl, pub Option<TypeExpr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Ident {
-    Ident(lexer::ast::Ident),
-}
+pub struct Ident(pub lexer::ast::Ident);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TypeExpr {
-    Expr(TypeTerm, Option<TypeOp>),
-}
+pub struct TypeExpr(pub TypeTerm, pub Option<TypeOp>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TypeOp {
@@ -89,14 +67,10 @@ pub enum Stat {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum StatsBlock {
-    Block(Vec<Stat>, Option<Box<Expr>>),
-}
+pub struct StatsBlock(pub Vec<Stat>, pub Option<Box<Expr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Expr {
-    Expr(Term, Option<Op>),
-}
+pub struct Expr(pub Term, pub Option<Op>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Op {
@@ -138,9 +112,7 @@ pub enum IterExpr {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ArgExpr {
-    Expr(Option<MutAttr>, Expr),
-}
+pub struct ArgExpr(pub Option<MutAttr>, pub Expr);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ForBind {
