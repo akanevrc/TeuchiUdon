@@ -32,16 +32,13 @@ pub enum VarDecl {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarDeclPart(pub Ident, pub Option<TypeExpr>);
+pub struct VarDeclPart(pub lexer::ast::Ident, pub Option<TypeExpr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FnDecl(pub Ident, pub VarDecl, pub Option<TypeExpr>);
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Ident(pub lexer::ast::Ident);
+pub struct FnDecl(pub lexer::ast::Ident, pub VarDecl, pub Option<TypeExpr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TypeExpr(pub TypeTerm, pub Option<TypeOp>);
@@ -53,7 +50,7 @@ pub enum TypeOp {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TypeTerm {
-    EvalType(Ident),
+    EvalType(lexer::ast::Ident),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -94,7 +91,7 @@ pub enum Term {
     Literal(lexer::ast::Literal),
     ThisLiteral(lexer::ast::Literal),
     InterpolatedString(lexer::ast::InterpolatedString),
-    EvalVar(Ident),
+    EvalVar(lexer::ast::Ident),
     LetInBind(Box<VarBind>, lexer::ast::Keyword, Box<Expr>),
     If(lexer::ast::Keyword, Box<Expr>, StatsBlock, Option<(lexer::ast::Keyword, StatsBlock)>),
     While(lexer::ast::Keyword, Box<Expr>, StatsBlock),

@@ -133,7 +133,7 @@ fn tuple_var_decl(input: &str) -> ParsedResult<ast::VarDecl> {
 pub fn var_decl_part(input: &str) -> ParsedResult<ast::VarDeclPart> {
     map(
         tuple((
-            ident,
+            lex(lexer::ident),
             opt(
                 preceded(
                     lex(lexer::delimiter(":")),
@@ -159,7 +159,7 @@ pub fn fn_bind(input: &str) -> ParsedResult<ast::FnBind> {
 pub fn fn_decl(input: &str) -> ParsedResult<ast::FnDecl> {
     map(
         tuple((
-            ident,
+            lex(lexer::ident),
             tuple_var_decl,
             opt(preceded(
                 lex(lexer::delimiter("->")),
@@ -167,13 +167,6 @@ pub fn fn_decl(input: &str) -> ParsedResult<ast::FnDecl> {
             )),
         )),
         |x| ast::FnDecl(x.0, x.1, x.2),
-    )(input)
-}
-
-pub fn ident(input: &str) -> ParsedResult<ast::Ident> {
-    map(
-        lex(lexer::ident),
-        |x| ast::Ident(x),
     )(input)
 }
 
@@ -214,7 +207,7 @@ pub fn type_term(input: &str) -> ParsedResult<ast::TypeTerm> {
 
 fn eval_type_type_term(input: &str) -> ParsedResult<ast::TypeTerm> {
     map(
-        ident,
+        lex(lexer::ident),
         |x| ast::TypeTerm::EvalType(x),
     )(input)
 }
@@ -553,7 +546,7 @@ fn interpolated_string_term(input: &str) -> ParsedResult<ast::Term> {
 
 fn eval_var_term(input: &str) -> ParsedResult<ast::Term> {
     map(
-        ident,
+        lex(lexer::ident),
         |x| ast::Term::EvalVar(x),
     )(input)
 }
