@@ -149,6 +149,7 @@ pub fn ident(input: &str) -> LexedResult<ast::Ident> {
     LexedResult(
         map(
             tuple((
+                not(is_keyword),
                 ident_start_char,
                 fold_many0(
                     ident_part_char,
@@ -156,9 +157,54 @@ pub fn ident(input: &str) -> LexedResult<ast::Ident> {
                     |mut acc, x| { acc.push(x); acc }
                 ),
             )),
-            |x| ast::Ident { name: format!("{}{}", x.0, x.1) },
+            |x| ast::Ident { name: format!("{}{}", x.1, x.2) },
         )(input)
     )
+}
+
+#[inline]
+fn is_keyword(input: &str) -> ParsedResult<()> {
+    value((),
+        alt((
+            alt((
+                tag("as"),
+                tag("break"),
+                tag("continue"),
+                tag("else"),
+                tag("enum"),
+                tag("false"),
+                tag("fn"),
+                tag("for"),
+                tag("if"),
+                tag("in"),
+                tag("is"),
+            )),
+            alt((
+                tag("let"),
+                tag("linear"),
+                tag("loop"),
+                tag("match"),
+                tag("mod"),
+                tag("mut"),
+                tag("newtype"),
+                tag("null"),
+                tag("pub"),
+            )),
+            alt((
+                tag("ref"),
+                tag("return"),
+                tag("smooth"),
+                tag("struct"),
+                tag("sync"),
+                tag("this"),
+                tag("true"),
+                tag("type"),
+                tag("typeof"),
+                tag("use"),
+                tag("while"),
+            )),
+        )),
+    )(input)
 }
 
 #[inline]
