@@ -106,7 +106,7 @@ pub enum Delimiter {
     Comma,
     Colon,
     Bind,
-    Assign,
+    Iter,
     Arrow,
     Spread,
 }
@@ -117,7 +117,7 @@ impl From<&str> for Delimiter {
             "," => Self::Comma,
             ":" => Self::Colon,
             "=" => Self::Bind,
-            "<-" => Self::Assign,
+            "<-" => Self::Iter,
             "->" => Self::Arrow,
             "..." => Self::Spread,
             _ => panic!(),

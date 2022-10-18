@@ -171,16 +171,10 @@ pub fn fn_decl(input: &str) -> ParsedResult<ast::FnDecl> {
 }
 
 pub fn type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
-    alt((
-        map(
-            tuple((type_term, type_op)),
-            |x| ast::TypeExpr(x.0, Some(x.1))
-        ),
-        map(
-            type_term,
-            |x| ast::TypeExpr(x, None)
-        ),
-    ))(input)
+    map(
+        tuple((type_term, opt(type_op))),
+        |x| ast::TypeExpr(x.0, x.1)
+    )(input)
 }
 
 pub fn type_op(input: &str) -> ParsedResult<ast::TypeOp> {
@@ -275,16 +269,10 @@ fn break_stat(input: &str) -> ParsedResult<ast::Stat> {
 }
 
 pub fn expr(input: &str) -> ParsedResult<ast::Expr> {
-    alt((
-        map(
-            tuple((term, op)),
-            |x| ast::Expr(x.0, Some(x.1)),
-        ),
-        map(
-            term,
-            |x| ast::Expr(x, None),
-        ),
-    ))(input)
+    map(
+        tuple((term, opt(op))),
+        |x| ast::Expr(x.0, x.1),
+    )(input)
 }
 
 pub fn op(input: &str) -> ParsedResult<ast::Op> {
@@ -408,7 +396,7 @@ fn infix_op(input: &str) -> ParsedResult<ast::Op> {
 fn assign_op(input: &str) -> ParsedResult<ast::Op> {
     map(
         tuple((
-            lex(lexer::delimiter("<-")),
+            lex(lexer::delimiter("=")),
             expr,
         )),
         |x| ast::Op::Assign(Box::new(x.1)),
@@ -715,33 +703,9 @@ fn let_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
 }
 
 fn assign_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
-    fn left_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            map(
-                tuple((term, left_op)),
-                |x| ast::Expr(x.0, Some(x.1)),
-            ),
-            map(
-                term,
-                |x| ast::Expr(x, None),
-            ),
-        ))(input)
-    }
-
-    fn left_op(input: &str) -> ParsedResult<ast::Op> {
-        alt((
-            access_op,
-            eval_fn_op,
-            eval_spread_fn_op,
-            eval_key_op,
-            cast_op,
-            infix_op,
-        ))(input)
-    }
-
     map(
         separated_pair(
-            left_expr,
+            expr,
             lex(lexer::delimiter("<-")),
             for_iter_expr,
         ),
