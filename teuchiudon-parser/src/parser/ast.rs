@@ -13,31 +13,28 @@ pub enum Body {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TopStat {
-    VarBind(AccessAttr, SyncAttr, VarBind),
-    FnBind(AccessAttr, FnBind),
+    VarBind(Option<AccessAttr>, Option<SyncAttr>, VarBind),
+    FnBind(Option<AccessAttr>, FnBind),
     Stat(Stat),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AccessAttr {
-    None,
     Attr(lexer::ast::Keyword),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SyncAttr {
-    None,
     Attr(lexer::ast::Keyword),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VarBind {
-    Bind(lexer::ast::Keyword, MutAttr, VarDecl, Expr),
+    Bind(lexer::ast::Keyword, Option<MutAttr>, VarDecl, Expr),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum MutAttr {
-    None,
     Attr(lexer::ast::Keyword),
 }
 
@@ -49,7 +46,7 @@ pub enum VarDecl {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VarDeclPart {
-    Part(Ident, TypeExpr),
+    Part(Ident, Option<TypeExpr>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -59,7 +56,7 @@ pub enum FnBind {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FnDecl {
-    Decl(Ident, VarDecl, TypeExpr),
+    Decl(Ident, VarDecl, Option<TypeExpr>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -68,9 +65,24 @@ pub enum Ident {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TypeExpr {
+    Expr(TypeTerm, Option<TypeOp>),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TypeOp {
+    Access(lexer::ast::OpCode, Box<TypeExpr>),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TypeTerm {
+    EvalType(Ident),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Stat {
     ImplicitReturn(Expr),
-    Return(lexer::ast::Keyword, Expr),
+    Return(lexer::ast::Keyword, Option<Expr>),
     Continue(lexer::ast::Keyword),
     Break(lexer::ast::Keyword),
     VarBind(VarBind),
@@ -84,41 +96,42 @@ pub enum StatsBlock {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Expr {
+    Expr(Term, Option<Op>),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Op {
+    TypeAccess(lexer::ast::OpCode, Box<Expr>),
+    Access(lexer::ast::OpCode, Box<Expr>),
+    EvalFn(Vec<ArgExpr>),
+    EvalSpreadFn(Box<Expr>),
+    EvalKey(Box<Expr>),
+    CastOp(lexer::ast::Keyword, TypeExpr),
+    InfixOp(lexer::ast::OpCode, Box<Expr>),
+    Assign(Box<Expr>),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Term {
+    PrefixOp(lexer::ast::OpCode, Box<Term>),
     Block(StatsBlock),
     Paren(Box<Expr>),
     Tuple(Vec<Expr>),
-    ArrayCtor(IterExpr),
+    ArrayCtor(Option<IterExpr>),
     Literal(lexer::ast::Literal),
     ThisLiteral(lexer::ast::Literal),
     InterpolatedString(lexer::ast::InterpolatedString),
-    TypeAccess(TypeExpr, lexer::ast::OpCode, Box<Expr>),
-    Access(Box<Expr>, lexer::ast::OpCode, Box<Expr>),
-    Cast(Box<Expr>, lexer::ast::Keyword, TypeExpr),
-    EvalFunc(Box<Expr>, Vec<ArgExpr>),
-    EvalSpreadFunc(Box<Expr>, Box<Expr>),
-    EvalKey(Box<Expr>, Box<Expr>),
-    PrefixOp(lexer::ast::OpCode, Box<Expr>),
-    InfixOp(Box<Expr>, lexer::ast::OpCode, Box<Expr>),
-    Assign(Box<Expr>, Box<Expr>),
     EvalVar(Ident),
     LetInBind(Box<VarBind>, lexer::ast::Keyword, Box<Expr>),
     If(lexer::ast::Keyword, Box<Expr>, StatsBlock, Option<(lexer::ast::Keyword, StatsBlock)>),
     While(lexer::ast::Keyword, Box<Expr>, StatsBlock),
     Loop(lexer::ast::Keyword, StatsBlock),
-    For(Vec<lexer::ast::Keyword>, Vec<ForBind>, StatsBlock),
+    For(Vec<(lexer::ast::Keyword, ForBind)>, StatsBlock),
     Closure(VarDecl, Box<Expr>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TypeExpr {
-    None,
-    EvalType(Ident),
-    TypeAccess(Box<TypeExpr>, lexer::ast::OpCode, Box<TypeExpr>),
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum IterExpr {
-    None,
     Elements(Vec<Expr>),
     Range(Box<Expr>, Box<Expr>),
     SteppedRange(Box<Expr>, Box<Expr>, Box<Expr>),
@@ -127,7 +140,7 @@ pub enum IterExpr {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ArgExpr {
-    Expr(MutAttr, Expr),
+    Expr(Option<MutAttr>, Expr),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

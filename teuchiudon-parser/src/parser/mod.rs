@@ -58,8 +58,8 @@ fn var_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
             lex(lexer::end(";")),
         )),
         |x| ast::TopStat::VarBind(
-            x.0.map_or(ast::AccessAttr::None, |x| ast::AccessAttr::Attr(x)),
-            x.1.map_or(ast::SyncAttr::None, |x| ast::SyncAttr::Attr(x)),
+            x.0.map(|x| ast::AccessAttr::Attr(x)),
+            x.1.map(|x| ast::SyncAttr::Attr(x)),
             x.2,
         ),
     )(input)
@@ -72,7 +72,7 @@ fn fn_bind_top_stat(input: &str) -> ParsedResult<ast::TopStat> {
             fn_bind,
         )),
         |x| ast::TopStat::FnBind(
-            x.0.map_or(ast::AccessAttr::None, |x| ast::AccessAttr::Attr(x)),
+            x.0.map(|x| ast::AccessAttr::Attr(x)),
             x.1,
         ),
     )(input)
@@ -93,7 +93,7 @@ pub fn var_bind(input: &str) -> ParsedResult<ast::VarBind> {
         )),
         |x| ast::VarBind::Bind(
             x.0,
-            x.1.map_or(ast::MutAttr::None, |x| ast::MutAttr::Attr(x)),
+            x.1.map(|x| ast::MutAttr::Attr(x)),
             x.2,
             x.4,
         ),
@@ -141,7 +141,7 @@ pub fn var_decl_part(input: &str) -> ParsedResult<ast::VarDeclPart> {
                 ),
             ),
         )),
-        |x| ast::VarDeclPart::Part(x.0, x.1.unwrap_or(ast::TypeExpr::None)),
+        |x| ast::VarDeclPart::Part(x.0, x.1),
     )(input)
 }
 
@@ -166,7 +166,7 @@ pub fn fn_decl(input: &str) -> ParsedResult<ast::FnDecl> {
                 type_expr,
             )),
         )),
-        |x| ast::FnDecl::Decl(x.0, x.1, x.2.unwrap_or(ast::TypeExpr::None)),
+        |x| ast::FnDecl::Decl(x.0, x.1, x.2),
     )(input)
 }
 
@@ -174,6 +174,48 @@ pub fn ident(input: &str) -> ParsedResult<ast::Ident> {
     map(
         lex(lexer::ident),
         |x| ast::Ident::Ident(x),
+    )(input)
+}
+
+pub fn type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
+    alt((
+        map(
+            tuple((type_term, type_op)),
+            |x| ast::TypeExpr::Expr(x.0, Some(x.1))
+        ),
+        map(
+            type_term,
+            |x| ast::TypeExpr::Expr(x, None)
+        ),
+    ))(input)
+}
+
+pub fn type_op(input: &str) -> ParsedResult<ast::TypeOp> {
+    alt((
+        access_type_expr,
+    ))(input)
+}
+
+fn access_type_expr(input: &str) -> ParsedResult<ast::TypeOp> {
+    map(
+        tuple((
+            lex(lexer::op_code("::")),
+            type_expr,
+        )),
+        |x| ast::TypeOp::Access(x.0, Box::new(x.1)),
+    )(input)
+}
+
+pub fn type_term(input: &str) -> ParsedResult<ast::TypeTerm> {
+    alt((
+        eval_type_type_term,
+    ))(input)
+}
+
+fn eval_type_type_term(input: &str) -> ParsedResult<ast::TypeTerm> {
+    map(
+        ident,
+        |x| ast::TypeTerm::EvalType(x),
     )(input)
 }
 
@@ -221,10 +263,7 @@ fn return_stat(input: &str) -> ParsedResult<ast::Stat> {
             lex(lexer::keyword("return")),
             opt(expr),
         )),
-        |x| ast::Stat::Return(
-            x.0,
-            x.1.unwrap_or(ast::Expr::Literal(lexer::ast::Literal::Unit)),
-        ),
+        |x| ast::Stat::Return(x.0, x.1),
     )(input)
 }
 
@@ -244,57 +283,199 @@ fn break_stat(input: &str) -> ParsedResult<ast::Stat> {
 
 pub fn expr(input: &str) -> ParsedResult<ast::Expr> {
     alt((
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-        )),
-        alt((
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-            eval_spread_func_expr,
-            eval_key_expr,
-            prefix_op_expr,
-            cast_expr,
-            infix_op_expr,
-            assign_expr,
-            eval_var_expr,
-        )),
-        alt((
-            let_in_bind_expr,
-            if_expr,
-            while_expr,
-            loop_expr,
-            for_expr,
-            closure_expr,
-        )),
+        map(
+            tuple((term, op)),
+            |x| ast::Expr::Expr(x.0, Some(x.1))
+        ),
+        map(
+            term,
+            |x| ast::Expr::Expr(x, None)
+        ),
     ))(input)
 }
 
-fn block_expr(input: &str) -> ParsedResult<ast::Expr> {
+pub fn op(input: &str) -> ParsedResult<ast::Op> {
+    alt((
+        type_access_op,
+        access_op,
+        eval_fn_op,
+        eval_spread_fn_op,
+        eval_key_op,
+        cast_op,
+        infix_op,
+        assign_op,
+    ))(input)
+}
+
+fn type_access_op(input: &str) -> ParsedResult<ast::Op> {
     map(
-        stats_block,
-        |x| ast::Expr::Block(x),
+        tuple((
+            lex(lexer::op_code("::")),
+            expr,
+        )),
+        |x| ast::Op::TypeAccess(x.0, Box::new(x.1)),
     )(input)
 }
 
-fn paren_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn access_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        tuple((
+            alt((lex(lexer::op_code(".")), lex(lexer::op_code("?.")))),
+            expr,
+        )),
+        |x| ast::Op::Access(x.0, Box::new(x.1)),
+    )(input)
+}
+
+fn eval_fn_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        delimited(
+            lex(lexer::encloser("(")),
+            opt(
+                terminated(
+                    separated_list1(lex(lexer::delimiter(",")), arg_expr),
+                    lex(lexer::delimiter(",")),
+                ),
+            ),
+            lex(lexer::encloser(")")),
+        ),
+        |x| ast::Op::EvalFn(x.unwrap_or(Vec::new())),
+    )(input)
+}
+
+fn eval_spread_fn_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        tuple((
+            lex(lexer::encloser("(")),
+            lex(lexer::delimiter("...")),
+            expr,
+            lex(lexer::encloser(")")),
+        )),
+        |x| ast::Op::EvalSpreadFn(Box::new(x.2)),
+    )(input)
+}
+
+fn eval_key_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        delimited(
+            lex(lexer::encloser("[")),
+            expr,
+            lex(lexer::encloser("]")),
+        ),
+        |x| ast::Op::EvalKey(Box::new(x)),
+    )(input)
+}
+
+fn cast_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        tuple((
+            lex(lexer::keyword("as")),
+            type_expr,
+        )),
+        |x| ast::Op::CastOp(x.0, x.1),
+    )(input)
+}
+
+fn infix_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        tuple((
+            alt((
+                alt((
+                    lex(lexer::op_code("*")),
+                    lex(lexer::op_code("/")),
+                    lex(lexer::op_code("%")),
+                    lex(lexer::op_code("+")),
+                    lex(lexer::op_code("-")),
+                    lex(lexer::op_code("<<")),
+                    lex(lexer::op_code(">>")),
+                )),
+                alt((
+                    lex(lexer::op_code("<")),
+                    lex(lexer::op_code(">")),
+                    lex(lexer::op_code("<=")),
+                    lex(lexer::op_code(">=")),
+                    lex(lexer::op_code("==")),
+                    lex(lexer::op_code("!=")),
+                    lex(lexer::op_code("&")),
+                    lex(lexer::op_code("^")),
+                    lex(lexer::op_code("|")),
+                    lex(lexer::op_code("&&")),
+                    lex(lexer::op_code("||")),
+                    lex(lexer::op_code("??")),
+                    lex(lexer::op_code("|>")),
+                    lex(lexer::op_code("<|")),
+                )),
+            )),
+            expr,
+        )),
+        |x| ast::Op::InfixOp(x.0, Box::new(x.1)),
+    )(input)
+}
+
+fn assign_op(input: &str) -> ParsedResult<ast::Op> {
+    map(
+        tuple((
+            lex(lexer::delimiter("<-")),
+            expr,
+        )),
+        |x| ast::Op::Assign(Box::new(x.1)),
+    )(input)
+}
+
+pub fn term(input: &str) -> ParsedResult<ast::Term> {
+    alt((
+        prefix_op_term,
+        block_term,
+        paren_term,
+        tuple_term,
+        array_ctor_term,
+        literal_term,
+        this_literal_term,
+        interpolated_string_term,
+        eval_var_term,
+        let_in_bind_term,
+        if_term,
+        while_term,
+        loop_term,
+        for_term,
+        closure_term,
+    ))(input)
+}
+
+fn prefix_op_term(input: &str) -> ParsedResult<ast::Term> {
+    map(
+        tuple((
+            alt((
+                lex(lexer::op_code("+")),
+                lex(lexer::op_code("-")),
+                lex(lexer::op_code("!")),
+                lex(lexer::op_code("~")),
+            )),
+            term,
+        )),
+        |x| ast::Term::PrefixOp(x.0, Box::new(x.1)),
+    )(input)
+}
+
+fn block_term(input: &str) -> ParsedResult<ast::Term> {
+    map(
+        stats_block,
+        |x| ast::Term::Block(x),
+    )(input)
+}
+
+fn paren_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         delimited(
             lex(lexer::encloser("(")),
             expr,
             lex(lexer::encloser(")")),
         ),
-        |x| ast::Expr::Paren(Box::new(x)),
+        |x| ast::Term::Paren(Box::new(x)),
     )(input)
 }
 
-fn tuple_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn tuple_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         delimited(
             lex(lexer::encloser("(")),
@@ -323,22 +504,22 @@ fn tuple_expr(input: &str) -> ParsedResult<ast::Expr> {
             )),
             lex(lexer::encloser(")")),
         ),
-        |x| ast::Expr::Tuple(x),
+        |x| ast::Term::Tuple(x),
     )(input)
 }
 
-fn array_ctor_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn array_ctor_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         delimited(
             lex(lexer::encloser("[")),
             opt(iter_expr),
             lex(lexer::encloser("]")),
         ),
-        |x| ast::Expr::ArrayCtor(x.unwrap_or(ast::IterExpr::None)),
+        |x| ast::Term::ArrayCtor(x),
     )(input)
 }
 
-fn literal_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn literal_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         alt((
             lex(lexer::unit_literal),
@@ -352,304 +533,43 @@ fn literal_expr(input: &str) -> ParsedResult<ast::Expr> {
             lex(lexer::regular_string_literal),
             lex(lexer::verbatium_string_literal),
         )),
-        |x| ast::Expr::Literal(x),
+        |x| ast::Term::Literal(x),
     )(input)
 }
 
-fn this_literal_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn this_literal_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         lex(lexer::this_literal),
-        |x| ast::Expr::Literal(x),
+        |x| ast::Term::Literal(x),
     )(input)
 }
 
-fn interpolated_string_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn interpolated_string_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         lex(lexer::interpolated_string),
-        |x| ast::Expr::InterpolatedString(x),
+        |x| ast::Term::InterpolatedString(x),
     )(input)
 }
 
-fn type_access_expr(input: &str) -> ParsedResult<ast::Expr> {
-    map(
-        tuple((
-            type_expr,
-            lex(lexer::op_code("::")),
-            expr,
-        )),
-        |x| ast::Expr::TypeAccess(x.0, x.1, Box::new(x.2)),
-    )(input)
-}
-
-fn access_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            upper_expr,
-            alt((lex(lexer::op_code(".")), lex(lexer::op_code("?.")))),
-            expr,
-        )),
-        |x| ast::Expr::Access(Box::new(x.0), x.1, Box::new(x.2)),
-    )(input)
-}
-
-fn eval_func_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            upper_expr,
-            lex(lexer::encloser("(")),
-            many0(arg_expr),
-            lex(lexer::encloser(")")),
-        )),
-        |x| ast::Expr::EvalFunc(Box::new(x.0), x.2),
-    )(input)
-}
-
-fn eval_spread_func_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            upper_expr,
-            lex(lexer::encloser("(")),
-            lex(lexer::delimiter("...")),
-            expr,
-            lex(lexer::encloser(")")),
-        )),
-        |x| ast::Expr::EvalSpreadFunc(Box::new(x.0), Box::new(x.3)),
-    )(input)
-}
-
-fn eval_key_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-            eval_spread_func_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            upper_expr,
-            lex(lexer::encloser("[")),
-            expr,
-            lex(lexer::encloser("]")),
-        )),
-        |x| ast::Expr::EvalKey(Box::new(x.0), Box::new(x.2)),
-    )(input)
-}
-
-fn prefix_op_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-            eval_spread_func_expr,
-            eval_key_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            alt((
-                lex(lexer::op_code("+")),
-                lex(lexer::op_code("-")),
-                lex(lexer::op_code("!")),
-                lex(lexer::op_code("~")),
-            )),
-            upper_expr,
-        )),
-        |x| ast::Expr::PrefixOp(x.0, Box::new(x.1)),
-    )(input)
-}
-
-fn cast_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-            eval_spread_func_expr,
-            eval_key_expr,
-            prefix_op_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            upper_expr,
-            lex(lexer::keyword("as")),
-            type_expr,
-        )),
-        |x| ast::Expr::Cast(Box::new(x.0), x.1, x.2),
-    )(input)
-}
-
-fn infix_op_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-            eval_spread_func_expr,
-            eval_key_expr,
-            prefix_op_expr,
-            cast_expr,
-        ))(input)
-    }
-
-    map(
-        tuple((
-            upper_expr,
-            alt((
-                lex(lexer::op_code("*")),
-                lex(lexer::op_code("/")),
-                lex(lexer::op_code("%")),
-                lex(lexer::op_code("+")),
-                lex(lexer::op_code("-")),
-                lex(lexer::op_code("<<")),
-                lex(lexer::op_code(">>")),
-                lex(lexer::op_code("<")),
-                lex(lexer::op_code(">")),
-                lex(lexer::op_code("<=")),
-                lex(lexer::op_code(">=")),
-                lex(lexer::op_code("==")),
-                lex(lexer::op_code("!=")),
-                lex(lexer::op_code("&")),
-                lex(lexer::op_code("^")),
-                lex(lexer::op_code("|")),
-                lex(lexer::op_code("&&")),
-                lex(lexer::op_code("||")),
-                lex(lexer::op_code("??")),
-                lex(lexer::op_code("|>")),
-                lex(lexer::op_code("<|")),
-            )),
-            expr,
-        )),
-        |x| ast::Expr::InfixOp(Box::new(x.0), x.1, Box::new(x.2)),
-    )(input)
-}
-
-fn assign_expr(input: &str) -> ParsedResult<ast::Expr> {
-    fn upper_expr(input: &str) -> ParsedResult<ast::Expr> {
-        alt((
-            block_expr,
-            paren_expr,
-            tuple_expr,
-            array_ctor_expr,
-            literal_expr,
-            this_literal_expr,
-            interpolated_string_expr,
-            type_access_expr,
-            access_expr,
-            eval_func_expr,
-            eval_spread_func_expr,
-            eval_key_expr,
-            prefix_op_expr,
-            cast_expr,
-            infix_op_expr,
-        ))(input)
-    }
-
-    map(
-        separated_pair(
-            upper_expr,
-            lex(lexer::delimiter("<-")),
-            expr,
-        ),
-        |x| ast::Expr::Assign(Box::new(x.0), Box::new(x.1)),
-    )(input)
-}
-
-fn eval_var_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn eval_var_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         ident,
-        |x| ast::Expr::EvalVar(x),
+        |x| ast::Term::EvalVar(x),
     )(input)
 }
 
-fn let_in_bind_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn let_in_bind_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
             var_bind,
             lex(lexer::keyword("in")),
             expr,
         )),
-        |x| ast::Expr::LetInBind(Box::new(x.0), x.1, Box::new(x.2)),
+        |x| ast::Term::LetInBind(Box::new(x.0), x.1, Box::new(x.2)),
     )(input)
 }
 
-fn if_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn if_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
             lex(lexer::keyword("if")),
@@ -660,40 +580,40 @@ fn if_expr(input: &str) -> ParsedResult<ast::Expr> {
                     lex(lexer::keyword("else")),
                     alt((
                         map(
-                            if_expr,
-                            |x| ast::StatsBlock::Block(Vec::new(), Some(Box::new(x))),
+                            if_term,
+                            |x| ast::StatsBlock::Block(Vec::new(), Some(Box::new(ast::Expr::Expr(x, None)))),
                         ),
                         stats_block,
                     )),
                 )),
             ),
         )),
-        |x| ast::Expr::If(x.0, Box::new(x.1), x.2, x.3),
+        |x| ast::Term::If(x.0, Box::new(x.1), x.2, x.3),
     )(input)
 }
 
-fn while_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn while_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
             lex(lexer::keyword("while")),
             expr,
             stats_block,
         )),
-        |x| ast::Expr::While(x.0, Box::new(x.1), x.2),
+        |x| ast::Term::While(x.0, Box::new(x.1), x.2),
     )(input)
 }
 
-fn loop_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn loop_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
             lex(lexer::keyword("loop")),
             stats_block,
         )),
-        |x| ast::Expr::Loop(x.0, x.1),
+        |x| ast::Term::Loop(x.0, x.1),
     )(input)
 }
 
-fn for_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn for_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
             many1(
@@ -704,14 +624,11 @@ fn for_expr(input: &str) -> ParsedResult<ast::Expr> {
             ),
             stats_block,
         )),
-        |x| {
-            let (f, fb) = x.0.into_iter().unzip();
-            ast::Expr::For(f, fb, x.1)
-        },
+        |x| ast::Term::For(x.0, x.1),
     )(input)
 }
 
-fn closure_expr(input: &str) -> ParsedResult<ast::Expr> {
+fn closure_term(input: &str) -> ParsedResult<ast::Term> {
     map(
         tuple((
             lex(lexer::encloser("|")),
@@ -719,36 +636,7 @@ fn closure_expr(input: &str) -> ParsedResult<ast::Expr> {
             lex(lexer::encloser("|")),
             expr,
         )),
-        |x| ast::Expr::Closure(x.1, Box::new(x.3)),
-    )(input)
-}
-
-pub fn type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
-    alt((
-        eval_type_type_expr,
-        type_access_type_expr,
-    ))(input)
-}
-
-fn eval_type_type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
-    map(
-        ident,
-        |x| ast::TypeExpr::EvalType(x),
-    )(input)
-}
-
-fn type_access_type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
-    fn upper_type_expr(input: &str) -> ParsedResult<ast::TypeExpr> {
-        eval_type_type_expr(input)
-    }
-
-    map(
-        tuple((
-            upper_type_expr,
-            lex(lexer::op_code("::")),
-            type_expr,
-        )),
-        |x| ast::TypeExpr::TypeAccess(Box::new(x.0), x.1, Box::new(x.2)),
+        |x| ast::Term::Closure(x.1, Box::new(x.3)),
     )(input)
 }
 
@@ -808,7 +696,7 @@ pub fn arg_expr(input: &str) -> ParsedResult<ast::ArgExpr> {
             expr,
         )),
         |x| ast::ArgExpr::Expr(
-            x.0.map_or(ast::MutAttr::None, |y| ast::MutAttr::Attr(y)),
+            x.0.map(|y| ast::MutAttr::Attr(y)),
             x.1
         )
     )(input)
@@ -834,9 +722,33 @@ fn let_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
 }
 
 fn assign_for_bind(input: &str) -> ParsedResult<ast::ForBind> {
+    fn left_expr(input: &str) -> ParsedResult<ast::Expr> {
+        alt((
+            map(
+                tuple((term, left_op)),
+                |x| ast::Expr::Expr(x.0, Some(x.1))
+            ),
+            map(
+                term,
+                |x| ast::Expr::Expr(x, None)
+            ),
+        ))(input)
+    }
+
+    fn left_op(input: &str) -> ParsedResult<ast::Op> {
+        alt((
+            access_op,
+            eval_fn_op,
+            eval_spread_fn_op,
+            eval_key_op,
+            cast_op,
+            infix_op,
+        ))(input)
+    }
+
     map(
         separated_pair(
-            expr,
+            left_expr,
             lex(lexer::delimiter("<-")),
             for_iter_expr,
         ),
