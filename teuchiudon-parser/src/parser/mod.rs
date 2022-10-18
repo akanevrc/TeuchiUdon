@@ -177,7 +177,7 @@ pub fn ident(input: &str) -> ParsedResult<ast::Ident> {
     )(input)
 }
 
-pub fn stats_block(input: &str) -> ParsedResult<Vec<ast::Stat>> {
+pub fn stats_block(input: &str) -> ParsedResult<ast::StatsBlock> {
     map(
         delimited(
             lex(lexer::encloser("{")),
@@ -198,10 +198,7 @@ pub fn stats_block(input: &str) -> ParsedResult<Vec<ast::Stat>> {
             )),
             lex(lexer::encloser("}")),
         ),
-        |mut x| x.1.map_or(
-            x.0.clone(),
-            |y| { x.0.push(ast::Stat::ImplicitReturn(y)); x.0 }
-        )
+        |x| ast::StatsBlock::Block(x.0, x.1.map(|y| Box::new(y))),
     )(input)
 }
 
@@ -662,7 +659,10 @@ fn if_expr(input: &str) -> ParsedResult<ast::Expr> {
                 tuple((
                     lex(lexer::keyword("else")),
                     alt((
-                        map(if_expr, |x| vec![ast::Stat::Expr(x)]),
+                        map(
+                            if_expr,
+                            |x| ast::StatsBlock::Block(Vec::new(), Some(Box::new(x))),
+                        ),
                         stats_block,
                     )),
                 )),

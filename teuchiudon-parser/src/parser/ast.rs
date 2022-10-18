@@ -54,7 +54,7 @@ pub enum VarDeclPart {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FnBind {
-    Bind(lexer::ast::Keyword, FnDecl, Vec<Stat>),
+    Bind(lexer::ast::Keyword, FnDecl, StatsBlock),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -78,8 +78,13 @@ pub enum Stat {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub enum StatsBlock {
+    Block(Vec<Stat>, Option<Box<Expr>>),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Expr {
-    Block(Vec<Stat>),
+    Block(StatsBlock),
     Paren(Box<Expr>),
     Tuple(Vec<Expr>),
     ArrayCtor(IterExpr),
@@ -97,10 +102,10 @@ pub enum Expr {
     Assign(Box<Expr>, Box<Expr>),
     EvalVar(Ident),
     LetInBind(Box<VarBind>, lexer::ast::Keyword, Box<Expr>),
-    If(lexer::ast::Keyword, Box<Expr>, Vec<Stat>, Option<(lexer::ast::Keyword, Vec<Stat>)>),
-    While(lexer::ast::Keyword, Box<Expr>, Vec<Stat>),
-    Loop(lexer::ast::Keyword, Vec<Stat>),
-    For(Vec<lexer::ast::Keyword>, Vec<ForBind>, Vec<Stat>),
+    If(lexer::ast::Keyword, Box<Expr>, StatsBlock, Option<(lexer::ast::Keyword, StatsBlock)>),
+    While(lexer::ast::Keyword, Box<Expr>, StatsBlock),
+    Loop(lexer::ast::Keyword, StatsBlock),
+    For(Vec<lexer::ast::Keyword>, Vec<ForBind>, StatsBlock),
     Closure(VarDecl, Box<Expr>),
 }
 
