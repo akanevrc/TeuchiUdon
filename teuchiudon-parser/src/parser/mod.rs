@@ -616,7 +616,7 @@ fn this_literal_term<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
     |input: &'input str| map(
         lex(lexer::this_literal(context)),
-        |x| ast::Term::Literal(x),
+        |x| ast::Term::ThisLiteral(x),
     )(input)
 }
 
