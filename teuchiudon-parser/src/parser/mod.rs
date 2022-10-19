@@ -547,34 +547,30 @@ fn tuple_term<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
     |input: &'input str| map(
-        delimited(
+        tuple((
             lex(lexer::op_code(context, "(")),
-            alt((
-                map(
-                    terminated(
-                        expr(context),
-                        lex(lexer::op_code(context, ",")),
-                    ),
-                    |x| vec![x],
-                ),
-                map(
-                    tuple((
-                        expr(context),
-                        many1(
-                            preceded(
-                                lex(lexer::op_code(context, ",")),
-                                expr(context),
-                            ),
+            expr(context),
+            lex(lexer::op_code(context, ",")),
+            opt(
+                tuple((
+                    expr(context),
+                    many0(
+                        preceded(
+                            lex(lexer::op_code(context, ",")),
+                            expr(context),
                         ),
-                        opt(lex(lexer::op_code(context, ","))),
-                    )),
-                    |x|
-                        [x.0].into_iter().chain(x.1.into_iter()).collect(),
-                ),
-            )),
+                    ),
+                    opt(lex(lexer::op_code(context, ","))),
+                )),
+            ),
             lex(lexer::op_code(context, ")")),
+        )),
+        |x| ast::Term::Tuple(
+            x.3.map_or(
+                vec![x.1.clone()],
+                |y| [x.1].into_iter().chain([y.0].into_iter()).chain(y.1.into_iter()).collect(),
+            ),
         ),
-        |x| ast::Term::Tuple(x),
     )(input)
 }
 
