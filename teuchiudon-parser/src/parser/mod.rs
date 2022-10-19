@@ -116,7 +116,7 @@ pub fn var_bind<'context: 'input, 'input>(
             x.0,
             x.1.map(|x| ast::MutAttr(x)),
             x.2,
-            x.4,
+            Box::new(x.4),
         ),
     )(input)
 }
@@ -176,7 +176,7 @@ pub fn var_decl_part<'context: 'input, 'input>(
                 ),
             ),
         )),
-        |x| ast::VarDeclPart(x.0, x.1),
+        |x| ast::VarDeclPart(x.0, x.1.map(|x| Box::new(x))),
     )(input)
 }
 
@@ -205,7 +205,7 @@ pub fn fn_decl<'context: 'input, 'input>(
                 type_expr(context),
             )),
         )),
-        |x| ast::FnDecl(x.0, x.1, x.2),
+        |x| ast::FnDecl(x.0, x.1, x.2.map(|x| Box::new(x))),
     )(input)
 }
 
@@ -269,7 +269,7 @@ pub fn stats_block<'context: 'input, 'input>(
                             continue_stat(context),
                             break_stat(context),
                             map(var_bind(context), |x| ast::Stat::VarBind(x)),
-                            map(expr(context), |x| ast::Stat::Expr(x)),
+                            map(expr(context), |x| ast::Stat::Expr(Box::new(x))),
                         )),
                         lex(lexer::op_code(context, ";")),
                     ),
@@ -291,7 +291,7 @@ pub fn stat<'context: 'input, 'input>(
             continue_stat(context),
             break_stat(context),
             map(var_bind(context), |x| ast::Stat::VarBind(x)),
-            map(expr(context), |x| ast::Stat::Expr(x)),
+            map(expr(context), |x| ast::Stat::Expr(Box::new(x))),
         )),
         lex(lexer::op_code(context, ";")),
     )(input)
@@ -305,7 +305,7 @@ fn return_stat<'context: 'input, 'input>(
             lex(lexer::keyword(context, "return")),
             opt(expr(context)),
         )),
-        |x| ast::Stat::Return(x.0, x.1),
+        |x| ast::Stat::Return(x.0, x.1.map(|x| Box::new(x))),
     )(input)
 }
 
@@ -428,7 +428,7 @@ fn cast_op<'context: 'input, 'input>(
             lex(lexer::keyword(context, "as")),
             type_expr(context),
         )),
-        |x| ast::Op::CastOp(x.0, x.1),
+        |x| ast::Op::CastOp(x.0, Box::new(x.1)),
     )(input)
 }
 
@@ -647,7 +647,7 @@ fn let_in_bind_term<'context: 'input, 'input>(
             lex(lexer::keyword(context, "in")),
             expr(context),
         )),
-        |x| ast::Term::LetInBind(Box::new(x.0), x.1, Box::new(x.2)),
+        |x| ast::Term::LetInBind(x.0, x.1, Box::new(x.2)),
     )(input)
 }
 

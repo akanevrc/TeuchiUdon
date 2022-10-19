@@ -20,7 +20,7 @@ pub struct AccessAttr(pub lexer::ast::Keyword);
 pub struct SyncAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarBind(pub lexer::ast::Keyword, pub Option<MutAttr>, pub VarDecl, pub Expr);
+pub struct VarBind(pub lexer::ast::Keyword, pub Option<MutAttr>, pub VarDecl, pub Box<Expr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct MutAttr(pub lexer::ast::Keyword);
@@ -32,13 +32,13 @@ pub enum VarDecl {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarDeclPart(pub lexer::ast::Ident, pub Option<TypeExpr>);
+pub struct VarDeclPart(pub lexer::ast::Ident, pub Option<Box<TypeExpr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FnDecl(pub lexer::ast::Ident, pub VarDecl, pub Option<TypeExpr>);
+pub struct FnDecl(pub lexer::ast::Ident, pub VarDecl, pub Option<Box<TypeExpr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TypeExpr(pub TypeTerm, pub Option<TypeOp>);
@@ -55,12 +55,12 @@ pub enum TypeTerm {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Stat {
-    ImplicitReturn(Expr),
-    Return(lexer::ast::Keyword, Option<Expr>),
+    ImplicitReturn(Box<Expr>),
+    Return(lexer::ast::Keyword, Option<Box<Expr>>),
     Continue(lexer::ast::Keyword),
     Break(lexer::ast::Keyword),
     VarBind(VarBind),
-    Expr(Expr),
+    Expr(Box<Expr>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -76,7 +76,7 @@ pub enum Op {
     EvalFn(Vec<ArgExpr>),
     EvalSpreadFn(Box<Expr>),
     EvalKey(Box<Expr>),
-    CastOp(lexer::ast::Keyword, TypeExpr),
+    CastOp(lexer::ast::Keyword, Box<TypeExpr>),
     InfixOp(lexer::ast::OpCode, Box<Expr>),
     Assign(Box<Expr>),
 }
@@ -92,7 +92,7 @@ pub enum Term {
     ThisLiteral(lexer::ast::Literal),
     InterpolatedString(lexer::ast::InterpolatedString),
     EvalVar(lexer::ast::Ident),
-    LetInBind(Box<VarBind>, lexer::ast::Keyword, Box<Expr>),
+    LetInBind(VarBind, lexer::ast::Keyword, Box<Expr>),
     If(lexer::ast::Keyword, Box<Expr>, StatsBlock, Option<(lexer::ast::Keyword, StatsBlock)>),
     While(lexer::ast::Keyword, Box<Expr>, StatsBlock),
     Loop(lexer::ast::Keyword, StatsBlock),
