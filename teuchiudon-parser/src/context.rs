@@ -59,8 +59,8 @@ impl KeywordContext {
         }
     }
 
-    pub fn from_str(&self, s: &str) -> Keyword {
-        self.keywords.iter().find(|x| x.0 == s).unwrap().1
+    pub fn from_str(&self, s: &str) -> Option<Keyword> {
+        self.keywords.iter().find(|x| x.0 == s).map(|x| x.1)
     }
 
     pub fn iter_keyword_str(&self) -> impl Iterator<Item = &str> {
@@ -121,8 +121,8 @@ impl OpCodeContext {
         }
     }
 
-    pub fn from_str(&self, s: &str) -> OpCode {
-        self.op_codes.iter().find(|x| x.0 == s).unwrap().1
+    pub fn from_str(&self, s: &str) -> Option<OpCode> {
+        self.op_codes.iter().find(|x| x.0 == s).map(|x| x.1)
     }
 
     pub fn iter_op_code_str(&self) -> impl Iterator<Item = &str> {

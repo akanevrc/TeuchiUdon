@@ -126,7 +126,7 @@ pub fn var_decl<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
     |input: &'input str| alt((
         single_var_decl(context),
-        tuple_var_decl(context),
+        tuple_var_decl(context, "(", ")", "()"),
     ))(input)
 }
 
@@ -139,20 +139,26 @@ fn single_var_decl<'context: 'input, 'input>(
     )(input)
 }
 
-fn tuple_var_decl<'context: 'input, 'input>(
+fn tuple_var_decl<'context: 'input, 'encloser: 'input, 'input>(
     context: &'context Context,
+    open: &'encloser str,
+    close: &'encloser str,
+    both: &'encloser str,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
-    |input: &'input str| map(
-        delimited(
-            lex(lexer::op_code(context, "(")),
-            opt(
-                terminated(
-                    separated_list1(lex(lexer::op_code(context, ",")), var_decl(context)),
-                    opt(lex(lexer::op_code(context, ","))),
+    move |input: &'input str| map(
+        alt((
+            delimited(
+                lex(lexer::op_code(context, open)),
+                opt(
+                    terminated(
+                        separated_list1(lex(lexer::op_code(context, ",")), var_decl(context)),
+                        opt(lex(lexer::op_code(context, ","))),
+                    ),
                 ),
+                lex(lexer::op_code(context, close)),
             ),
-            lex(lexer::op_code(context, ")")),
-        ),
+            value(None, lex(lexer::op_code(context, both))),
+        )),
         |x| ast::VarDecl::TupleDecl(x.unwrap_or(Vec::new())),
     )(input)
 }
@@ -193,7 +199,7 @@ pub fn fn_decl<'context: 'input, 'input>(
     |input: &'input str| map(
         tuple((
             lex(lexer::ident(context)),
-            tuple_var_decl(context),
+            tuple_var_decl(context, "(", ")", "()"),
             opt(preceded(
                 lex(lexer::op_code(context, "->")),
                 type_expr(context),
@@ -717,12 +723,10 @@ fn closure_term<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
     |input: &'input str| map(
         tuple((
-            lex(lexer::op_code(context, "|")),
-            tuple_var_decl(context),
-            lex(lexer::op_code(context, "|")),
+            tuple_var_decl(context, "|", "|", "||"),
             expr(context),
         )),
-        |x| ast::Term::Closure(x.1, Box::new(x.3)),
+        |x| ast::Term::Closure(x.0, Box::new(x.1)),
     )(input)
 }
 

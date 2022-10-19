@@ -18,6 +18,7 @@ use nom::{
     combinator::{
         fail,
         map,
+        map_opt,
         not,
         opt,
         success,
@@ -114,7 +115,7 @@ pub fn keyword<'context: 'input, 'name: 'input, 'input>(
     name: &'name str,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
     move |input: &'input str| LexedResult(
-        value(context.keyword.from_str(name), tuple((tag(name), peek_code_delimit)))(input)
+        map_opt(tuple((tag(name), peek_code_delimit)), |_| context.keyword.from_str(name))(input)
     )
 }
 
@@ -141,7 +142,7 @@ pub fn op_code<'context: 'input, 'name: 'input, 'input>(
     move |input: &'input str| LexedResult(
         preceded(
             is_not_op_code_substr(context, name),
-            value(context.op_code.from_str(name), tag(name)),
+            map_opt(tag(name), |_| context.op_code.from_str(name)),
         )(input),
     )
 }
