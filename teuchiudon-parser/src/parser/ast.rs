@@ -109,7 +109,7 @@ pub enum IterExpr {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ArgExpr(pub Option<MutAttr>, pub Expr);
+pub struct ArgExpr(pub Option<MutAttr>, pub Box<Expr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ForBind {

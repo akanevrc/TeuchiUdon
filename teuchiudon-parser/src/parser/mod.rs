@@ -793,7 +793,7 @@ pub fn arg_expr<'context: 'input, 'input>(
         )),
         |x| ast::ArgExpr(
             x.0.map(|y| ast::MutAttr(y)),
-            x.1,
+            Box::new(x.1),
         ),
     )(input)
 }
