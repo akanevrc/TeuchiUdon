@@ -123,7 +123,9 @@ fn is_not_keyword<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<()> {
     move |input: &'input str|
-        if context.keyword.iter_keyword_str().all(|x| not(tag::<&str, &str, VerboseError<&str>>(x))(input).is_ok()) {
+        if context.keyword.iter_keyword_str()
+            .all(|x| not(tuple((tag::<&str, &str, VerboseError<&str>>(x), peek_code_delimit)))(input).is_ok())
+        {
             success(())(input)
         }
         else {
@@ -138,24 +140,19 @@ pub fn op_code<'context: 'input, 'name: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
     move |input: &'input str| LexedResult(
         preceded(
-            |i: &'input str| match name.len() {
-                1 => value((), tuple((is_not_op_code(context, 3), is_not_op_code(context, 2))))(i),
-                2 => is_not_op_code(context, 3)(i),
-                3 => success(())(i),
-                _ => panic!(),
-            },
+            is_not_op_code_substr(context, name),
             value(context.op_code.from_str(name), tag(name)),
         )(input),
     )
 }
 
-fn is_not_op_code<'context: 'input, 'input>(
+fn is_not_op_code_substr<'context: 'input, 'name: 'input, 'input>(
     context: &'context Context,
-    char_len: usize,
+    name: &'name str,
 ) -> impl FnMut(&'input str) -> ParsedResult<()> {
     move |input: &'input str|
         if context.op_code.iter_op_code_str()
-            .filter(|&x| x.len() == char_len)
+            .filter(|&x| x.len() > name.len())
             .all(|x| not(tag::<&str, &str, VerboseError<&str>>(x))(input).is_ok())
         {
             success(())(input)
