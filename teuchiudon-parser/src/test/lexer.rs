@@ -1,6 +1,6 @@
 use crate::context::Context;
 use crate::lexer::{
-    ast as ast,
+    ast,
     lex,
     byte_order_mark,
     delimited_comment,
@@ -25,7 +25,7 @@ use crate::lexer::{
     interpolated_string,
     eof,
 };
-use crate::parser as parser;
+use crate::parser;
 
 #[test]
 fn test_lex() {

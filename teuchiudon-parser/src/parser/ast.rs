@@ -1,4 +1,4 @@
-use crate::lexer as lexer;
+use crate::lexer;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Target(pub Option<Body>);

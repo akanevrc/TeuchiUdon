@@ -37,7 +37,7 @@ use nom::{
 };
 use crate::ParsedResult;
 use crate::context::Context;
-use crate::parser as parser;
+use crate::parser;
 
 #[derive(Debug, PartialEq)]
 pub struct LexedResult<'input, O>(pub ParsedResult<'input, O>)

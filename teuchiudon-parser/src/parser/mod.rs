@@ -23,7 +23,7 @@ use nom::{
 use super::ParsedResult;
 use crate::context::Context;
 use crate::lexer::{
-    self as lexer,
+    self,
     lex,
 };
 

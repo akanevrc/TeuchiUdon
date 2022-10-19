@@ -1,4 +1,4 @@
-use crate::parser as parser;
+use crate::parser;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Keyword {
