@@ -1,6 +1,7 @@
 pub mod ast;
 
 use nom::{
+    error::VerboseError,
     branch::alt,
     bytes::complete::{
         is_not,
@@ -15,6 +16,7 @@ use nom::{
         one_of,
     },
     combinator::{
+        fail,
         map,
         not,
         opt,
@@ -34,6 +36,8 @@ use nom::{
     },
 };
 use crate::ParsedResult;
+use crate::context::Context;
+use crate::parser as parser;
 
 #[derive(Debug, PartialEq)]
 pub struct LexedResult<'input, O>(pub ParsedResult<'input, O>)
@@ -105,101 +109,60 @@ fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
 }
 
 #[inline]
-pub fn keyword<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
+pub fn keyword<'context: 'input, 'name: 'input, 'input>(
+    context: &'context Context,
+    name: &'name str,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
     move |input: &'input str| LexedResult(
-        value(ast::Keyword::from(name), tuple((tag(name), peek_code_delimit)))(input)
+        value(context.keyword.from_str(name), tuple((tag(name), peek_code_delimit)))(input)
     )
 }
 
 #[inline]
-fn is_keyword(input: &str) -> ParsedResult<()> {
-    value((),
-        alt((
-            alt((
-                tag("as"),
-                tag("break"),
-                tag("continue"),
-                tag("else"),
-                tag("enum"),
-                tag("false"),
-                tag("fn"),
-                tag("for"),
-                tag("if"),
-                tag("in"),
-                tag("is"),
-            )),
-            alt((
-                tag("let"),
-                tag("linear"),
-                tag("loop"),
-                tag("match"),
-                tag("mod"),
-                tag("mut"),
-                tag("newtype"),
-                tag("null"),
-                tag("pub"),
-            )),
-            alt((
-                tag("ref"),
-                tag("return"),
-                tag("smooth"),
-                tag("struct"),
-                tag("sync"),
-                tag("this"),
-                tag("true"),
-                tag("type"),
-                tag("typeof"),
-                tag("use"),
-                tag("while"),
-            )),
-        )),
-    )(input)
+fn is_not_keyword<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> ParsedResult<()> {
+    move |input: &'input str|
+        if context.keyword.iter_keyword_str().all(|x| not(tag::<&str, &str, VerboseError<&str>>(x))(input).is_ok()) {
+            success(())(input)
+        }
+        else {
+            fail(input)
+        }
 }
 
 #[inline]
-pub fn op_code<'name: 'input, 'input>(name: &'name str) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
+pub fn op_code<'context: 'input, 'name: 'input, 'input>(
+    context: &'context Context,
+    name: &'name str,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
     move |input: &'input str| LexedResult(
         preceded(
             |i: &'input str| match name.len() {
-                1 => value((), tuple((not(is_two_char_op_code), not(is_three_char_op_code))))(i),
-                2 => not(is_three_char_op_code)(i),
+                1 => value((), tuple((is_not_op_code(context, 3), is_not_op_code(context, 2))))(i),
+                2 => is_not_op_code(context, 3)(i),
                 3 => success(())(i),
                 _ => panic!(),
             },
-            value(ast::OpCode::from(name), tag(name)),
+            value(context.op_code.from_str(name), tag(name)),
         )(input),
     )
 }
 
-fn is_three_char_op_code(input: &str) -> ParsedResult<()> {
-    value((),
-        alt((
-            tag("..."),
-        )),
-    )(input)
-}
-
-fn is_two_char_op_code(input: &str) -> ParsedResult<()> {
-    value((),
-        alt((
-            tag("<-"),
-            tag("->"),
-            tag("::"),
-            tag("??"),
-            tag("?."),
-            tag("&&"),
-            tag("||"),
-            tag("=="),
-            tag("!="),
-            tag("<="),
-            tag(">="),
-            tag("<<"),
-            tag(">>"),
-            tag("<|"),
-            tag("|>"),
-            tag(".."),
-        )),
-    )(input)
+fn is_not_op_code<'context: 'input, 'input>(
+    context: &'context Context,
+    char_len: usize,
+) -> impl FnMut(&'input str) -> ParsedResult<()> {
+    move |input: &'input str|
+        if context.op_code.iter_op_code_str()
+            .filter(|&x| x.len() == char_len)
+            .all(|x| not(tag::<&str, &str, VerboseError<&str>>(x))(input).is_ok())
+        {
+            success(())(input)
+        }
+        else {
+            fail(input)
+        }
 }
 
 #[inline]
@@ -208,11 +171,13 @@ fn peek_code_delimit(input: &str) -> ParsedResult<()> {
 }
 
 #[inline]
-pub fn ident(input: &str) -> LexedResult<ast::Ident> {
-    LexedResult(
+pub fn ident<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Ident> {
+    move |input: &'input str| LexedResult(
         map(
             tuple((
-                not(is_keyword),
+                is_not_keyword(context),
                 ident_start_char,
                 fold_many0(
                     ident_part_char,
@@ -220,7 +185,7 @@ pub fn ident(input: &str) -> LexedResult<ast::Ident> {
                     |mut acc, x| { acc.push(x); acc }
                 ),
             )),
-            |x| ast::Ident { name: format!("{}{}", x.1, x.2) },
+            |x| ast::Ident(format!("{}{}", x.1, x.2)),
         )(input)
     )
 }
@@ -236,33 +201,39 @@ fn ident_part_char(input: &str) -> ParsedResult<char> {
 }
 
 #[inline]
-pub fn unit_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
+pub fn unit_literal<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+    move |input: &'input str| LexedResult(
         value(
             ast::Literal::Unit,
             tuple((
-                unwrap_fn(op_code("(")),
-                lex(op_code(")")),
+                unwrap_fn(op_code(context, "(")),
+                lex(op_code(context, ")")),
             )),
         )(input)
     )
 }
 
 #[inline]
-pub fn null_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
+pub fn null_literal<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+    move |input: &'input str| LexedResult(
         map(
-            unwrap_fn(keyword("null")),
+            unwrap_fn(keyword(context, "null")),
             |x| ast::Literal::Null(x),
         )(input)
     )
 }
 
 #[inline]
-pub fn bool_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
+pub fn bool_literal<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+    move |input: &'input str| LexedResult(
         map(
-            alt((unwrap_fn(keyword("true")), unwrap_fn(keyword("false")))),
+            alt((unwrap_fn(keyword(context, "true")), unwrap_fn(keyword(context, "false")))),
             |x| ast::Literal::Bool(x),
         )(input)
     )
@@ -493,10 +464,12 @@ fn verbatium_string_char(input: &str) -> ParsedResult<String> {
 }
 
 #[inline]
-pub fn this_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
+pub fn this_literal<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+    move |input: &'input str| LexedResult(
         map(
-            unwrap_fn(keyword("this")),
+            unwrap_fn(keyword(context, "this")),
             |x| ast::Literal::This(x),
         )(input)
     )
@@ -537,8 +510,10 @@ fn escape_sequence(input: &str) -> ParsedResult<String> {
     (input)
 }
 
-pub fn interpolated_string(input: &str) -> LexedResult<ast::InterpolatedString> {
-    LexedResult(
+pub fn interpolated_string<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::InterpolatedString> {
+    |input: &'input str| LexedResult(
         delimited(
             tag("$\""),
             map(
@@ -546,13 +521,17 @@ pub fn interpolated_string(input: &str) -> LexedResult<ast::InterpolatedString> 
                     interpolated_string_part,
                     many0(
                         tuple((
-                            interpolated_string_inside_expr,
+                            interpolated_string_inside_expr(context),
                             interpolated_string_part,
                         )),
                     ),
                 )),
-                |x| ast::InterpolatedString {
-                    string_parts: [x.0].into_iter().chain(x.1.into_iter().map(|y| y.1)).collect()
+                |x| {
+                    let (e, s): (Vec<parser::ast::Expr>, Vec<String>) = x.1.into_iter().unzip();
+                    ast::InterpolatedString {
+                        string_parts: [x.0].into_iter().chain(s.into_iter()).collect(),
+                        exprs: e,
+                    }
                 },
             ),
             char('"'),
@@ -573,10 +552,12 @@ fn interpolated_string_part(input: &str) -> ParsedResult<String> {
     )(input)
 }
 
-fn interpolated_string_inside_expr(input: &str) -> ParsedResult<()> {
-    delimited(
+fn interpolated_string_inside_expr<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, parser::ast::Expr> {
+    |input: &'input str| delimited(
         char('{'),
-        value((), tag("expr")),
+        parser::expr(context),
         char('}'),
     )(input)
 }

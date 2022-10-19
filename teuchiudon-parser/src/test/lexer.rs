@@ -1,3 +1,4 @@
+use crate::context::Context;
 use crate::lexer::{
     ast as ast,
     lex,
@@ -24,12 +25,14 @@ use crate::lexer::{
     interpolated_string,
     eof,
 };
+use crate::parser as parser;
 
 #[test]
 fn test_lex() {
-    assert_eq!(lex(keyword("as"))("as xxx"), Ok((" xxx", ast::Keyword::As)));
-    assert_eq!(lex(keyword("as"))("  as xxx"), Ok((" xxx", ast::Keyword::As)));
-    assert_eq!(lex(keyword("as"))(" {/ comment /} // comment\nas xxx"), Ok((" xxx", ast::Keyword::As)));
+    let context = Context::new();
+    assert_eq!(lex(keyword(&context, "as"))("as xxx"), Ok((" xxx", ast::Keyword::As)));
+    assert_eq!(lex(keyword(&context, "as"))("  as xxx"), Ok((" xxx", ast::Keyword::As)));
+    assert_eq!(lex(keyword(&context, "as"))(" {/ comment /} // comment\nas xxx"), Ok((" xxx", ast::Keyword::As)));
 }
 
 #[test]
@@ -78,63 +81,73 @@ fn test_delimited_comment_error() {
 
 #[test]
 fn test_keyword_as() {
-    assert_eq!(keyword("as")("as xxx").0, Ok((" xxx", ast::Keyword::As)));
+    let context = Context::new();
+    assert_eq!(keyword(&context, "as")("as xxx").0, Ok((" xxx", ast::Keyword::As)));
 }
 
 #[test]
 fn test_keyword_as_error() {
-    assert!(keyword("as")("asxxx").0.is_err());
+    let context = Context::new();
+    assert!(keyword(&context, "as")("asxxx").0.is_err());
 }
 
 #[test]
 fn test_op_code_open_brace() {
-    assert_eq!(op_code("{")("{xxx").0, Ok(("xxx", ast::OpCode::OpenBrace)));
+    let context = Context::new();
+    assert_eq!(op_code(&context, "{")("{xxx").0, Ok(("xxx", ast::OpCode::OpenBrace)));
 }
 
 #[test]
 fn test_op_code_comma() {
-    assert_eq!(op_code(",")(",xxx").0, Ok(("xxx", ast::OpCode::Comma)));
+    let context = Context::new();
+    assert_eq!(op_code(&context, ",")(",xxx").0, Ok(("xxx", ast::OpCode::Comma)));
 }
 
 #[test]
 fn test_op_code_semicolon() {
-    assert_eq!(op_code(";")(";xxx").0, Ok(("xxx", ast::OpCode::Semicolon)));
+    let context = Context::new();
+    assert_eq!(op_code(&context, ";")(";xxx").0, Ok(("xxx", ast::OpCode::Semicolon)));
 }
 
 #[test]
 fn test_op_code_dot() {
-    assert_eq!(op_code(".")(".xxx").0, Ok(("xxx", ast::OpCode::Dot)));
+    let context = Context::new();
+    assert_eq!(op_code(&context, ".")(".xxx").0, Ok(("xxx", ast::OpCode::Dot)));
 }
 
 #[test]
 fn test_ident() {
-    assert_eq!(ident("A xxx").0, Ok((" xxx", ast::Ident { name: "A".to_owned() })));
-    assert_eq!(ident("a xxx").0, Ok((" xxx", ast::Ident { name: "a".to_owned() })));
-    assert_eq!(ident("AbC xxx").0, Ok((" xxx", ast::Ident { name: "AbC".to_owned() })));
-    assert_eq!(ident("abc xxx").0, Ok((" xxx", ast::Ident { name: "abc".to_owned() })));
-    assert_eq!(ident("ab1 xxx").0, Ok((" xxx", ast::Ident { name: "ab1".to_owned() })));
-    assert!(ident("1ab xxx").0.is_err());
-    assert_eq!(ident("a_b xxx").0, Ok((" xxx", ast::Ident { name: "a_b".to_owned() })));
-    assert!(ident("_ab xxx").0.is_err());
+    let context = Context::new();
+    assert_eq!(ident(&context)("A xxx").0, Ok((" xxx", ast::Ident("A".to_owned()))));
+    assert_eq!(ident(&context)("a xxx").0, Ok((" xxx", ast::Ident("a".to_owned()))));
+    assert_eq!(ident(&context)("AbC xxx").0, Ok((" xxx", ast::Ident("AbC".to_owned()))));
+    assert_eq!(ident(&context)("abc xxx").0, Ok((" xxx", ast::Ident("abc".to_owned()))));
+    assert_eq!(ident(&context)("ab1 xxx").0, Ok((" xxx", ast::Ident("ab1".to_owned()))));
+    assert!(ident(&context)("1ab xxx").0.is_err());
+    assert_eq!(ident(&context)("a_b xxx").0, Ok((" xxx", ast::Ident("a_b".to_owned()))));
+    assert!(ident(&context)("_ab xxx").0.is_err());
 }
 
 #[test]
 fn test_unit_literal() {
-    assert_eq!(unit_literal("()xxx").0, Ok(("xxx", ast::Literal::Unit)));
-    assert_eq!(unit_literal("( )xxx").0, Ok(("xxx", ast::Literal::Unit)));
+    let context = Context::new();
+    assert_eq!(unit_literal(&context)("()xxx").0, Ok(("xxx", ast::Literal::Unit)));
+    assert_eq!(unit_literal(&context)("( )xxx").0, Ok(("xxx", ast::Literal::Unit)));
 }
 
 #[test]
 fn test_null_literal() {
-    assert_eq!(null_literal("null xxx").0, Ok((" xxx", ast::Literal::Null(ast::Keyword::Null))));
-    assert!(null_literal("nullxxx").0.is_err());
+    let context = Context::new();
+    assert_eq!(null_literal(&context)("null xxx").0, Ok((" xxx", ast::Literal::Null(ast::Keyword::Null))));
+    assert!(null_literal(&context)("nullxxx").0.is_err());
 }
 
 #[test]
 fn test_bool_literal() {
-    assert_eq!(bool_literal("true xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::True))));
-    assert_eq!(bool_literal("false xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::False))));
-    assert!(bool_literal("truexxx").0.is_err());
+    let context = Context::new();
+    assert_eq!(bool_literal(&context)("true xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::True))));
+    assert_eq!(bool_literal(&context)("false xxx").0, Ok((" xxx", ast::Literal::Bool(ast::Keyword::False))));
+    assert!(bool_literal(&context)("truexxx").0.is_err());
 }
 
 #[test]
@@ -238,17 +251,25 @@ fn test_verbatium_string_literal() {
 
 #[test]
 fn test_this_literal() {
-    assert_eq!(this_literal("this xxx").0, Ok((" xxx", ast::Literal::This(ast::Keyword::This))));
-    assert!(this_literal("thisxxx").0.is_err());
+    let context = Context::new();
+    assert_eq!(this_literal(&context)("this xxx").0, Ok((" xxx", ast::Literal::This(ast::Keyword::This))));
+    assert!(this_literal(&context)("thisxxx").0.is_err());
 }
 
 #[test]
 fn test_interpolated_string() {
+    let context = Context::new();
     assert_eq!(
-        interpolated_string("$\"abc{expr}def{expr}ghi\"xxx").0,
-        Ok(("xxx", ast::InterpolatedString { string_parts: vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()] }))
+        interpolated_string(&context)("$\"abc{123}def{val}ghi\"xxx").0,
+        Ok(("xxx", ast::InterpolatedString {
+            string_parts: vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()],
+            exprs: vec![
+                parser::ast::Expr(parser::ast::Term::Literal(ast::Literal::Integer("123".to_owned())), None),
+                parser::ast::Expr(parser::ast::Term::EvalVar(ast::Ident("val".to_owned())), None),
+            ]
+        }))
     );
-    assert!(interpolated_string("$\"abc{expr\"xxx").0.is_err());
+    assert!(interpolated_string(&context)("$\"abc{123\"xxx").0.is_err());
 }
 
 #[test]

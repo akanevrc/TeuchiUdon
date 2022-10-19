@@ -1,5 +1,6 @@
+use crate::parser as parser;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Keyword {
     As,
     Break,
@@ -33,45 +34,7 @@ pub enum Keyword {
     While,
 }
 
-impl From<&str> for Keyword {
-    fn from(x: &str) -> Self {
-        match x {
-            "as" => Self::As,
-            "break" => Self::Break,
-            "continue" => Self::Continue,
-            "else" => Self::Else,
-            "enum" => Self::Enum,
-            "false" => Self::False,
-            "fn" => Self::Fn,
-            "for" => Self::For,
-            "if" => Self::If,
-            "in" => Self::In,
-            "is" => Self::Is,
-            "let" => Self::Let,
-            "linear" => Self::Linear,
-            "loop" => Self::Loop,
-            "match" => Self::Match,
-            "mod" => Self::Mod,
-            "mut" => Self::Mut,
-            "newtype" => Self::Newtype,
-            "null" => Self::Null,
-            "pub" => Self::Pub,
-            "ref" => Self::Ref,
-            "return" => Self::Return,
-            "smooth" => Self::Smooth,
-            "struct" => Self::Struct,
-            "sync" => Self::Sync,
-            "this" => Self::This,
-            "true" => Self::True,
-            "type" => Self::Type,
-            "use" => Self::Use,
-            "while" => Self::While,
-            _ => panic!(),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum OpCode {
     OpenBrace,
     CloseBrace,
@@ -118,59 +81,8 @@ pub enum OpCode {
     Spread,
 }
 
-impl From<&str> for OpCode {
-    fn from(x: &str) -> Self {
-        match x {
-            "{" => Self::OpenBrace,
-            "}" => Self::CloseBrace,
-            "(" => Self::OpenParen,
-            ")" => Self::CloseParen,
-            "[" => Self::OpenBracket,
-            "]" => Self::CloseBracket,
-            "," => Self::Comma,
-            ":" => Self::Colon,
-            "=" => Self::Bind,
-            ";" => Self::Semicolon,
-            "." => Self::Dot,
-            "+" => Self::Plus,
-            "-" => Self::Minus,
-            "*" => Self::Star,
-            "/" => Self::Div,
-            "%" => Self::Percent,
-            "&" => Self::Amp,
-            "|" => Self::Pipe,
-            "^" => Self::Caret,
-            "!" => Self::Bang,
-            "~" => Self::Tilde,
-            "<" => Self::Lt,
-            ">" => Self::Gt,
-            "_" => Self::Wildcard,
-            "<-" => Self::Iter,
-            "->" => Self::Arrow,
-            "::" => Self::DoubleColon,
-            "??" => Self::Coalescing,
-            "?." => Self::CoalescingAccess,
-            "&&" => Self::And,
-            "||" => Self::Or,
-            "==" => Self::Eq,
-            "!=" => Self::Ne,
-            "<=" => Self::Le,
-            ">=" => Self::Ge,
-            "<<" => Self::LeftShift,
-            ">>" => Self::RightShift,
-            "<|" => Self::LeftPipeline,
-            "|>" => Self::RightPipeline,
-            ".." => Self::Range,
-            "..." => Self::Spread,
-            _ => panic!(),
-        }
-    }
-}
-
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Ident {
-    pub name: String,
-}
+pub struct Ident(pub String);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Literal {
@@ -191,4 +103,5 @@ pub enum Literal {
 pub struct InterpolatedString
 {
     pub string_parts: Vec<String>,
+    pub exprs: Vec<parser::ast::Expr>,
 }
