@@ -261,13 +261,13 @@ fn test_interpolated_string() {
     let context = Context::new();
     assert_eq!(
         interpolated_string(&context)("$\"abc{123}def{val}ghi\"xxx").0,
-        Ok(("xxx", ast::InterpolatedString {
-            string_parts: vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()],
-            exprs: vec![
+        Ok(("xxx", ast::InterpolatedString(
+            vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()],
+            vec![
                 parser::ast::Expr(parser::ast::Term::Literal(ast::Literal::Integer("123".to_owned())), None),
                 parser::ast::Expr(parser::ast::Term::EvalVar(ast::Ident("val".to_owned())), None),
-            ]
-        }))
+            ],
+        ))),
     );
     assert!(interpolated_string(&context)("$\"abc{123\"xxx").0.is_err());
 }

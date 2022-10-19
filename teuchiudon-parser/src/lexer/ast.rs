@@ -100,8 +100,4 @@ pub enum Literal {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct InterpolatedString
-{
-    pub string_parts: Vec<String>,
-    pub exprs: Vec<parser::ast::Expr>,
-}
+pub struct InterpolatedString(pub Vec<String>, pub Vec<parser::ast::Expr>);

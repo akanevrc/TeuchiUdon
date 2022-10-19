@@ -526,10 +526,10 @@ pub fn interpolated_string<'context: 'input, 'input>(
                 )),
                 |x| {
                     let (e, s): (Vec<parser::ast::Expr>, Vec<String>) = x.1.into_iter().unzip();
-                    ast::InterpolatedString {
-                        string_parts: [x.0].into_iter().chain(s.into_iter()).collect(),
-                        exprs: e,
-                    }
+                    ast::InterpolatedString(
+                        [x.0].into_iter().chain(s.into_iter()).collect(),
+                        e,
+                    )
                 },
             ),
             char('"'),
