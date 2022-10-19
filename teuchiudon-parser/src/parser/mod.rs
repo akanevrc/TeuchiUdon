@@ -730,22 +730,10 @@ pub fn iter_expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
     |input: &'input str| alt((
-        elements_iter_expr(context),
         range_iter_expr(context),
         spread_iter_expr(context),
+        elements_iter_expr(context),
     ))(input)
-}
-
-fn elements_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
-    |input: &'input str| map(
-        terminated(
-            separated_list1(lex(lexer::op_code(context, ",")), expr(context)),
-            opt(lex(lexer::op_code(context, ","))),
-        ),
-        |x| ast::IterExpr::Elements(x),
-    )(input)
 }
 
 fn range_iter_expr<'context: 'input, 'input>(
@@ -780,6 +768,18 @@ fn spread_iter_expr<'context: 'input, 'input>(
             expr(context),
         ),
         |x| ast::IterExpr::Spread(Box::new(x)),
+    )(input)
+}
+
+fn elements_iter_expr<'context: 'input, 'input>(
+    context: &'context Context,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
+    |input: &'input str| map(
+        terminated(
+            separated_list1(lex(lexer::op_code(context, ",")), expr(context)),
+            opt(lex(lexer::op_code(context, ","))),
+        ),
+        |x| ast::IterExpr::Elements(x),
     )(input)
 }
 

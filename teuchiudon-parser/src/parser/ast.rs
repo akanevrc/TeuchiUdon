@@ -102,10 +102,10 @@ pub enum Term {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum IterExpr {
-    Elements(Vec<Expr>),
     Range(Box<Expr>, Box<Expr>),
     SteppedRange(Box<Expr>, Box<Expr>, Box<Expr>),
     Spread(Box<Expr>),
+    Elements(Vec<Expr>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
