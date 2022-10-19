@@ -216,11 +216,11 @@ pub fn type_op<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeOp> {
     |input: &'input str| alt((
-        access_type_expr(context),
+        access_type_op(context),
     ))(input)
 }
 
-fn access_type_expr<'context: 'input, 'input>(
+fn access_type_op<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeOp> {
     |input: &'input str| map(
