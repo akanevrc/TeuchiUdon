@@ -107,17 +107,11 @@ pub fn var_bind<'context: 'input, 'input>(
     |input: &'input str| map(
         tuple((
             lex(lexer::keyword(context, "let")),
-            opt(lex(lexer::keyword(context, "mut"))),
             var_decl(context),
             lex(lexer::op_code(context, "=")),
             expr(context),
         )),
-        |x| ast::VarBind(
-            x.0,
-            x.1.map(|x| ast::MutAttr(x)),
-            x.2,
-            Box::new(x.4),
-        ),
+        |x| ast::VarBind(x.0, x.1, Box::new(x.3)),
     )(input)
 }
 
@@ -135,6 +129,7 @@ fn single_var_decl<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
     |input: &'input str| map(
         tuple((
+            opt(lex(lexer::keyword(context, "mut"))),
             lex(lexer::ident(context)),
             opt(
                 preceded(
@@ -143,7 +138,11 @@ fn single_var_decl<'context: 'input, 'input>(
                 ),
             ),
         )),
-        |x| ast::VarDecl::SingleDecl(x.0, x.1.map(|y| Box::new(y))),
+        |x| ast::VarDecl::SingleDecl(
+            x.0.map(|x| ast::MutAttr(x)),
+            x.1,
+            x.2.map(|y| Box::new(y)),
+        ),
     )(input)
 }
 

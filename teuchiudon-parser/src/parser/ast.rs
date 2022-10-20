@@ -20,16 +20,16 @@ pub struct AccessAttr(pub lexer::ast::Keyword);
 pub struct SyncAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarBind(pub lexer::ast::Keyword, pub Option<MutAttr>, pub VarDecl, pub Box<Expr>);
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct MutAttr(pub lexer::ast::Keyword);
+pub struct VarBind(pub lexer::ast::Keyword, pub VarDecl, pub Box<Expr>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VarDecl {
-    SingleDecl(lexer::ast::Ident, Option<Box<TypeExpr>>),
+    SingleDecl(Option<MutAttr>, lexer::ast::Ident, Option<Box<TypeExpr>>),
     TupleDecl(Vec<VarDecl>),
 }
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct MutAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);
