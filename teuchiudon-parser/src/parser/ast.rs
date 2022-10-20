@@ -27,12 +27,9 @@ pub struct MutAttr(pub lexer::ast::Keyword);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VarDecl {
-    SingleDecl(VarDeclPart),
+    SingleDecl(lexer::ast::Ident, Option<Box<TypeExpr>>),
     TupleDecl(Vec<VarDecl>),
 }
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarDeclPart(pub lexer::ast::Ident, pub Option<Box<TypeExpr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);

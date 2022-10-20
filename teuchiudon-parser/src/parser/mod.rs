@@ -134,8 +134,16 @@ fn single_var_decl<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
     |input: &'input str| map(
-        var_decl_part(context),
-        |x| ast::VarDecl::SingleDecl(x),
+        tuple((
+            lex(lexer::ident(context)),
+            opt(
+                preceded(
+                    lex(lexer::op_code(context, ":")),
+                    type_expr(context),
+                ),
+            ),
+        )),
+        |x| ast::VarDecl::SingleDecl(x.0, x.1.map(|y| Box::new(y))),
     )(input)
 }
 
@@ -160,23 +168,6 @@ fn tuple_var_decl<'context: 'input, 'encloser: 'input, 'input>(
             value(None, lex(lexer::op_code(context, both))),
         )),
         |x| ast::VarDecl::TupleDecl(x.unwrap_or(Vec::new())),
-    )(input)
-}
-
-pub fn var_decl_part<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDeclPart> {
-    |input: &'input str| map(
-        tuple((
-            lex(lexer::ident(context)),
-            opt(
-                preceded(
-                    lex(lexer::op_code(context, ":")),
-                    type_expr(context),
-                ),
-            ),
-        )),
-        |x| ast::VarDeclPart(x.0, x.1.map(|x| Box::new(x))),
     )(input)
 }
 
