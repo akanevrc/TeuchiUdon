@@ -251,7 +251,10 @@ pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
                 opt(integer_suffix),
                 peek_code_delimit,
             )),
-            |x| ast::Literal::Integer(format!("{}{}{}", x.0, x.1, x.2.unwrap_or(String::new())))
+            |x| x.2.map_or(
+                ast::Literal::PureInteger(format!("{}{}", x.0, x.1)),
+                |y| ast::Literal::DecInteger(format!("{}{}{}", x.0, x.1, y)),
+            )
         )(input)
     )
 }

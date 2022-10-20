@@ -152,12 +152,12 @@ fn test_bool_literal() {
 
 #[test]
 fn test_integer_literal() {
-    assert_eq!(integer_literal("123 xxx").0, Ok((" xxx", ast::Literal::Integer("123".to_owned()))));
-    assert_eq!(integer_literal("1_2__3 xxx").0, Ok((" xxx", ast::Literal::Integer("123".to_owned()))));
-    assert_eq!(integer_literal("123L xxx").0, Ok((" xxx", ast::Literal::Integer("123L".to_owned()))));
-    assert_eq!(integer_literal("123U xxx").0, Ok((" xxx", ast::Literal::Integer("123U".to_owned()))));
-    assert_eq!(integer_literal("123LU xxx").0, Ok((" xxx", ast::Literal::Integer("123LU".to_owned()))));
-    assert_eq!(integer_literal("123UL xxx").0, Ok((" xxx", ast::Literal::Integer("123UL".to_owned()))));
+    assert_eq!(integer_literal("123 xxx").0, Ok((" xxx", ast::Literal::PureInteger("123".to_owned()))));
+    assert_eq!(integer_literal("1_2__3 xxx").0, Ok((" xxx", ast::Literal::PureInteger("123".to_owned()))));
+    assert_eq!(integer_literal("123L xxx").0, Ok((" xxx", ast::Literal::DecInteger("123L".to_owned()))));
+    assert_eq!(integer_literal("123U xxx").0, Ok((" xxx", ast::Literal::DecInteger("123U".to_owned()))));
+    assert_eq!(integer_literal("123LU xxx").0, Ok((" xxx", ast::Literal::DecInteger("123LU".to_owned()))));
+    assert_eq!(integer_literal("123UL xxx").0, Ok((" xxx", ast::Literal::DecInteger("123UL".to_owned()))));
     assert!(integer_literal("123xxx").0.is_err());
     assert!(integer_literal("_123 xxx").0.is_err());
 }
@@ -264,7 +264,7 @@ fn test_interpolated_string() {
         Ok(("xxx", ast::InterpolatedString(
             vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()],
             vec![
-                parser::ast::Expr(parser::ast::Term::Literal(ast::Literal::Integer("123".to_owned())), None),
+                parser::ast::Expr(parser::ast::Term::Literal(ast::Literal::PureInteger("123".to_owned())), None),
                 parser::ast::Expr(parser::ast::Term::EvalVar(ast::Ident("val".to_owned())), None),
             ],
         ))),
