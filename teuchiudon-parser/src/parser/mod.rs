@@ -271,6 +271,7 @@ pub fn stat<'context: 'input, 'input>(
             continue_stat(context),
             break_stat(context),
             map(var_bind(context), |x| ast::Stat::VarBind(x)),
+            map(fn_bind(context), |x| ast::Stat::FnBind(x)),
             map(expr(context), |x| ast::Stat::Expr(Box::new(x))),
         )),
         lex(lexer::op_code(context, ";")),

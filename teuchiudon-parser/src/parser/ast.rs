@@ -59,6 +59,7 @@ pub enum Stat {
     Continue(lexer::ast::Keyword),
     Break(lexer::ast::Keyword),
     VarBind(VarBind),
+    FnBind(FnBind),
     Expr(Box<Expr>),
 }
 
