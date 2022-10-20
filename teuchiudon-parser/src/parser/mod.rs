@@ -384,7 +384,7 @@ fn eval_fn_op<'context: 'input, 'input>(
             opt(
                 terminated(
                     separated_list1(lex(lexer::op_code(context, ",")), arg_expr(context)),
-                    lex(lexer::op_code(context, ",")),
+                    opt(lex(lexer::op_code(context, ","))),
                 ),
             ),
             lex(lexer::op_code(context, ")")),
