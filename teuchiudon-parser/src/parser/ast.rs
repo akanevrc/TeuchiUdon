@@ -41,11 +41,11 @@ pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);
 pub struct FnDecl(pub lexer::ast::Ident, pub VarDecl, pub Option<Box<TypeExpr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct TypeExpr(pub TypeTerm, pub Option<TypeOp>);
+pub struct TypeExpr(pub TypeTerm, pub Vec<TypeOp>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum TypeOp {
-    Access(lexer::ast::OpCode, Box<TypeExpr>),
+    Access(lexer::ast::OpCode, TypeTerm),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -67,18 +67,18 @@ pub enum Stat {
 pub struct StatsBlock(pub Vec<Stat>, pub Option<Box<Expr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Expr(pub Term, pub Option<Op>);
+pub struct Expr(pub Term, pub Vec<Op>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Op {
-    TypeAccess(lexer::ast::OpCode, Box<Expr>),
-    Access(lexer::ast::OpCode, Box<Expr>),
+    TypeAccess(lexer::ast::OpCode, Term),
+    Access(lexer::ast::OpCode, Term),
     EvalFn(Vec<ArgExpr>),
     EvalSpreadFn(Box<Expr>),
     EvalKey(Box<Expr>),
     CastOp(lexer::ast::Keyword, Box<TypeExpr>),
-    InfixOp(lexer::ast::OpCode, Box<Expr>),
-    Assign(Box<Expr>),
+    InfixOp(lexer::ast::OpCode, Term),
+    Assign(Term),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]

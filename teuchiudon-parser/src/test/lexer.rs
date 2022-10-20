@@ -264,8 +264,8 @@ fn test_interpolated_string() {
         Ok(("xxx", ast::InterpolatedString(
             vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()],
             vec![
-                parser::ast::Expr(parser::ast::Term::Literal(ast::Literal::PureInteger("123".to_owned())), None),
-                parser::ast::Expr(parser::ast::Term::EvalVar(ast::Ident("val".to_owned())), None),
+                parser::ast::Expr(parser::ast::Term::Literal(ast::Literal::PureInteger("123".to_owned())), Vec::new()),
+                parser::ast::Expr(parser::ast::Term::EvalVar(ast::Ident("val".to_owned())), Vec::new()),
             ],
         ))),
     );
