@@ -84,6 +84,7 @@ fn fn_bind_top_stat<'context: 'input, 'input>(
         tuple((
             opt(lex(lexer::keyword(context, "pub"))),
             fn_bind(context),
+            lex(lexer::op_code(context, ";")),
         )),
         |x| ast::TopStat::FnBind(
             x.0.map(|x| ast::AccessAttr(x)),
