@@ -55,7 +55,6 @@ pub enum TypeTerm {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Stat {
-    ImplicitReturn(Box<Expr>),
     Return(lexer::ast::Keyword, Option<Box<Expr>>),
     Continue(lexer::ast::Keyword),
     Break(lexer::ast::Keyword),
