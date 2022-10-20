@@ -54,6 +54,9 @@ pub enum TypeTerm {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct StatsBlock(pub Vec<Stat>, pub Option<Box<Expr>>);
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Stat {
     Return(lexer::ast::Keyword, Option<Box<Expr>>),
     Continue(lexer::ast::Keyword),
@@ -61,9 +64,6 @@ pub enum Stat {
     VarBind(VarBind),
     Expr(Box<Expr>),
 }
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct StatsBlock(pub Vec<Stat>, pub Option<Box<Expr>>);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Expr(pub Term, pub Vec<Op>);
