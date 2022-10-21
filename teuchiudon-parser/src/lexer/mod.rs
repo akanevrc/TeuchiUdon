@@ -16,25 +16,28 @@ use nom::{
         one_of,
     },
     combinator::{
+        consumed,
         fail,
         map,
         map_opt,
         not,
         opt,
+        recognize,
         success,
         value,
     },
     multi::{
-        fold_many0,
-        fold_many1,
-        fold_many_m_n,
         many0,
+        many1,
+        many_m_n,
     },
     sequence::{
         delimited,
         preceded,
+        separated_pair,
+        terminated,
         tuple,
-    },
+    }
 };
 use crate::ParsedResult;
 use crate::context::Context;
@@ -50,10 +53,7 @@ pub fn lex<'input, O>(lexer: impl FnMut(&'input str) -> LexedResult<'input, O>) 
 where
     O: PartialEq,
 {
-    preceded(
-        many0(alt((line_comment, delimited_comment, whitespace1))),
-        unwrap_fn(lexer),
-    )
+    preceded(ignore, unwrap_fn(lexer))
 }
 
 #[inline]
@@ -62,6 +62,10 @@ where
     O: PartialEq,
 {
     move |input: &'input str| lexer(input).0
+}
+
+fn ignore(input: &str) -> ParsedResult<()> {
+    value((), many0(alt((line_comment, delimited_comment, whitespace1))))(input)
 }
 
 #[inline]
@@ -104,7 +108,7 @@ fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
         many0(
             alt((
                 delimited_comment,
-                value((), preceded(not(alt((tag("{/"), tag("/}")))), anychar)),
+                value((), tuple((not(alt((tag("{/"), tag("/}")))), anychar))),
             )),
     ))(input)
 }
@@ -115,7 +119,7 @@ pub fn keyword<'context: 'input, 'name: 'input, 'input>(
     name: &'name str,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
     move |input: &'input str| LexedResult(
-        map_opt(tuple((tag(name), peek_code_delimit)), |_| context.keyword.from_str(name))(input)
+        map_opt(terminated(tag(name), peek_code_delimit), |x| context.keyword.from_str(name, x))(input)
     )
 }
 
@@ -142,7 +146,7 @@ pub fn op_code<'context: 'input, 'name: 'input, 'input>(
     move |input: &'input str| LexedResult(
         preceded(
             is_not_op_code_substr(context, name),
-            map_opt(tag(name), |_| context.op_code.from_str(name)),
+            map_opt(tag(name), |x| context.op_code.from_str(name, x)),
         )(input),
     )
 }
@@ -174,28 +178,28 @@ pub fn ident<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Ident> {
     move |input: &'input str| LexedResult(
         map(
-            tuple((
-                is_not_keyword(context),
-                ident_start_char,
-                fold_many0(
-                    ident_part_char,
-                    || String::new(),
-                    |mut acc, x| { acc.push(x); acc }
-                ),
-            )),
-            |x| ast::Ident(format!("{}{}", x.1, x.2)),
+            recognize(
+                tuple((
+                    is_not_keyword(context),
+                    ident_start_char,
+                    many0(ident_part_char),
+                )),
+            ),
+            |x| ast::Ident(x),
         )(input)
     )
 }
 
 #[inline]
-fn ident_start_char(input: &str) -> ParsedResult<char> {
-    one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")(input)
+fn ident_start_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+    )(input)
 }
 
 #[inline]
-fn ident_part_char(input: &str) -> ParsedResult<char> {
-    alt((ident_start_char, one_of("_0123456789")))(input)
+fn ident_part_char(input: &str) -> ParsedResult<&str> {
+    alt((ident_start_char, recognize(one_of("_0123456789"))))(input)
 }
 
 #[inline]
@@ -203,12 +207,13 @@ pub fn unit_literal<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
     move |input: &'input str| LexedResult(
-        value(
-            ast::Literal::Unit,
-            tuple((
+        map(
+            separated_pair(
                 unwrap_fn(op_code(context, "(")),
-                lex(op_code(context, ")")),
-            )),
+                ignore,
+                unwrap_fn(op_code(context, ")")),
+            ),
+            |x| ast::Literal::Unit(x.0, x.1),
         )(input)
     )
 }
@@ -241,19 +246,17 @@ pub fn bool_literal<'context: 'input, 'input>(
 pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
         map(
-            tuple((
-                digit_char,
-                fold_many0(
-                    tuple((many0(char('_')), digit_char)),
-                    || String::new(),
-                    |mut acc, x| { acc.push(x.1); acc },
-                ),
-                opt(integer_suffix),
-                peek_code_delimit,
-            )),
-            |x| x.2.map_or(
-                ast::Literal::PureInteger(format!("{}{}", x.0, x.1)),
-                |y| ast::Literal::DecInteger(format!("{}{}{}", x.0, x.1, y)),
+            consumed(
+                tuple((
+                    digit_char,
+                    many0(tuple((many0(char('_')), digit_char))),
+                    opt(integer_suffix),
+                    peek_code_delimit,
+                )),
+            ),
+            |x| x.1.2.map_or(
+                ast::Literal::PureInteger(x.0),
+                |_| ast::Literal::DecInteger(x.0),
             )
         )(input)
     )
@@ -263,18 +266,16 @@ pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
 pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
         map(
-            tuple((
-                char('0'),
-                one_of("Xx"),
-                fold_many1(
-                    tuple((many0(char('_')), hex_digit_char)),
-                    || String::new(),
-                    |mut acc, x| { acc.push(x.1); acc },
-                ),
-                opt(integer_suffix),
-                peek_code_delimit,
-            )),
-            |x| ast::Literal::HexInteger(format!("{}{}", x.2, x.3.unwrap_or(String::new())))
+            recognize(
+                tuple((
+                    char('0'),
+                    one_of("Xx"),
+                    many1(tuple((many0(char('_')), hex_digit_char))),
+                    opt(integer_suffix),
+                    peek_code_delimit,
+                )),
+            ),
+            |x| ast::Literal::HexInteger(x)
         )(input)
     )
 }
@@ -283,18 +284,16 @@ pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
 pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
         map(
-            tuple((
-                char('0'),
-                one_of("Bb"),
-                fold_many1(
-                    tuple((many0(char('_')), bin_digit_char)),
-                    || String::new(),
-                    |mut acc, x| { acc.push(x.1); acc },
-                ),
-                opt(integer_suffix),
-                peek_code_delimit,
-            )),
-            |x| ast::Literal::BinInteger(format!("{}{}", x.2, x.3.unwrap_or(String::new())))
+            recognize(
+                tuple((
+                    char('0'),
+                    one_of("Bb"),
+                    many1(tuple((many0(char('_')), bin_digit_char))),
+                    opt(integer_suffix),
+                    peek_code_delimit,
+                )),
+            ),
+            |x| ast::Literal::BinInteger(x)
         )(input)
     )
 }
@@ -302,165 +301,160 @@ pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
 #[inline]
 pub fn real_number_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        alt((
-            map(
-                tuple((
-                    digit_char,
-                    fold_many0(
-                        tuple((many0(char('_')), digit_char)),
-                        || String::new(),
-                        |mut acc, x| { acc.push(x.1); acc }
-                    ),
-                    char('.'),
-                    digit_char,
-                    fold_many0(
-                        tuple((many0(char('_')), digit_char)),
-                        || String::new(),
-                        |mut acc, x| { acc.push(x.1); acc }
-                    ),
-                    opt(exponent_part),
-                    opt(real_number_suffix),
-                    peek_code_delimit,
-                )),
-                |x| ast::Literal::RealNumber(
-                    format!("{}{}{}{}{}{}{}", x.0, x.1, x.2, x.3, x.4, x.5.unwrap_or(String::new()), x.6.map_or(String::new(), |y| y.to_string())),
-                ),
-            ),
-            map(
-                tuple((
-                    digit_char,
-                    fold_many0(
-                        tuple((many0(char('_')), digit_char)),
-                        || String::new(),
-                        |mut acc, x| { acc.push(x.1); acc }
-                    ),
-                    alt((
-                        map(real_number_suffix, |x| x.to_string()),
-                        map(
-                            tuple((
-                                exponent_part,
-                                opt(real_number_suffix),
-                            )),
-                            |x| format!("{}{}", x.0, x.1.map_or(String::new(), |y| y.to_string()))
-                        ),
+        map(
+            alt((
+                recognize(
+                    tuple((
+                        digit_char,
+                        many0(tuple((many0(char('_')), digit_char))),
+                        char('.'),
+                        digit_char,
+                        many0(tuple((many0(char('_')), digit_char))),
+                        opt(exponent_part),
+                        opt(real_number_suffix),
+                        peek_code_delimit,
                     )),
-                    peek_code_delimit,
-                )),
-                |x| ast::Literal::RealNumber(
-                    format!("{}{}{}", x.0, x.1, x.2),
                 ),
-            ),
-        ))(input)
+                recognize(
+                    tuple((
+                        digit_char,
+                        many0(tuple((many0(char('_')), digit_char))),
+                        alt((
+                            real_number_suffix,
+                            recognize(
+                                tuple((
+                                    exponent_part,
+                                    opt(real_number_suffix),
+                                )),
+                            ),
+                        )),
+                        peek_code_delimit,
+                    )),
+                )
+            )),
+            |x| ast::Literal::RealNumber(x),
+        )(input)
     )
 }
 
 #[inline]
-fn digit_char(input: &str) -> ParsedResult<char> {
-    one_of("0123456789")(input)
-}
-
-#[inline]
-fn hex_digit_char(input: &str) -> ParsedResult<char> {
-    one_of("0123456789ABCDEFabcdef")(input)
-}
-
-#[inline]
-fn bin_digit_char(input: &str) -> ParsedResult<char> {
-    one_of("01")(input)
-}
-
-#[inline]
-fn integer_suffix(input: &str) -> ParsedResult<String> {
-    map(
-        alt((tuple((one_of("Ll"), opt(one_of("Uu")))), tuple((one_of("Uu"), opt(one_of("Ll")))))),
-        |x| format!("{}{}", x.0, x.1.map_or(String::new(), |y| y.to_string()))
+fn digit_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        one_of("0123456789"),
     )(input)
 }
 
 #[inline]
-fn real_number_suffix(input: &str) -> ParsedResult<char> {
-    one_of("FfDdMm")(input)
+fn hex_digit_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        one_of("0123456789ABCDEFabcdef"),
+    )(input)
 }
 
 #[inline]
-fn exponent_part(input: &str) -> ParsedResult<String> {
-    map(
+fn bin_digit_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        one_of("01")
+    )(input)
+}
+
+#[inline]
+fn integer_suffix(input: &str) -> ParsedResult<&str> {
+    recognize(
+        alt((tuple((one_of("Ll"), opt(one_of("Uu")))), tuple((one_of("Uu"), opt(one_of("Ll")))))),
+    )(input)
+}
+
+#[inline]
+fn real_number_suffix(input: &str) -> ParsedResult<&str> {
+    recognize(
+        one_of("FfDdMm")
+    )(input)
+}
+
+#[inline]
+fn exponent_part(input: &str) -> ParsedResult<&str> {
+    recognize(
         tuple((
             one_of("Ee"),
             opt(one_of("+-")),
             digit_char,
-            fold_many0(
-                tuple((many0(char('_')), digit_char)),
-                || String::new(),
-                |mut acc, x| { acc.push(x.1); acc }
-            ),
+            many0(tuple((many0(char('_')), digit_char))),
         )),
-        |x| format!("{}{}{}{}", x.0, x.1.map_or(String::new(), |y| y.to_string()), x.2, x.3)
-    )
-    (input)
+    )(input)
 }
 
 #[inline]
 pub fn character_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        delimited(
-            char('\''),
-            map(
-                alt((escape_sequence, map(character_char, |x| x.to_string()))),
-                |x| ast::Literal::Character(x),
+        map(
+            delimited(
+                char('\''),
+                recognize(
+                    alt((escape_sequence, character_char)),
+                ),
+                char('\''),
             ),
-            char('\''),
+            |x| ast::Literal::Character(x),
         )(input)
     )
 }
 
 #[inline]
-fn character_char(input: &str) -> ParsedResult<char> {
-    none_of("'\\\r\n")(input)
+fn character_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        none_of("'\\\r\n")
+    )(input)
 }
 
 #[inline]
 pub fn regular_string_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        delimited(
-            char('"'),
-            map(
-                many0(
-                    alt((escape_sequence, map(regular_string_char, |x| x.to_string()))),
+        map(
+            delimited(
+                char('"'),
+                recognize(
+                    many0(
+                        alt((escape_sequence, regular_string_char)),
+                    ),
                 ),
-                |x| ast::Literal::RegularString(x.concat()),
+                char('"'),
             ),
-            char('"'),
+            |x| ast::Literal::RegularString(x),
         )(input)
     )
 }
 
 #[inline]
-fn regular_string_char(input: &str) -> ParsedResult<char> {
-    none_of("\"\\\r\n")(input)
+fn regular_string_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        none_of("\"\\\r\n")
+    )(input)
 }
 
 #[inline]
 pub fn verbatium_string_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        delimited(
-            tag("@\""),
-            map(
-                many0(
-                    alt((escape_sequence, verbatium_string_char)),
+        map(
+            delimited(
+                tag("@\""),
+                recognize(
+                    many0(
+                        alt((escape_sequence, verbatium_string_char)),
+                    ),
                 ),
-                |x| ast::Literal::VerbatiumString(x.concat()),
+                char('"'),
             ),
-            char('"'),
+            |x| ast::Literal::VerbatiumString(x),
         )(input)
     )
 }
 
 #[inline]
-fn verbatium_string_char(input: &str) -> ParsedResult<String> {
+fn verbatium_string_char(input: &str) -> ParsedResult<&str> {
     alt((
-        map(none_of("\""), |x| x.to_string()),
-        map(tag("\"\""), |x: &str| x.to_owned()),
+        recognize(none_of("\"")),
+        recognize(tag("\"\"")),
     ))(input)
 }
 
@@ -477,35 +471,31 @@ pub fn this_literal<'context: 'input, 'input>(
 }
 
 #[inline]
-fn escape_sequence(input: &str) -> ParsedResult<String> {
+fn escape_sequence(input: &str) -> ParsedResult<&str> {
     alt((
-        map(
+        recognize(
             tuple((
                 char('\\'),
                 one_of("'\"\\0abfnrtv"),
             )),
-            |x| format!("{}{}", x.0, x.1),
         ),
-        map(
+        recognize(
             tuple((
                 tag("\\x"),
-                fold_many_m_n(1, 4, hex_digit_char, || String::new(), |mut acc, x| { acc.push(x); acc }),
+                many_m_n(1, 4, hex_digit_char),
             )),
-            |x| format!("{}{}", x.0, x.1),
         ),
-        map(
+        recognize(
             tuple((
                 tag("\\u"),
-                fold_many_m_n(4, 4, hex_digit_char, || String::new(), |mut acc, x| { acc.push(x); acc }),
+                many_m_n(4, 4, hex_digit_char),
             )),
-            |x| format!("{}{}", x.0, x.1),
         ),
-        map(
+        recognize(
             tuple((
                 tag("\\U"),
-                fold_many_m_n(8, 8, hex_digit_char, || String::new(), |mut acc, x| { acc.push(x); acc }),
+                many_m_n(8, 8, hex_digit_char),
             )),
-            |x| format!("{}{}", x.0, x.1),
         ),
     ))
     (input)
@@ -515,9 +505,9 @@ pub fn interpolated_string<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::InterpolatedString> {
     |input: &'input str| LexedResult(
-        delimited(
-            tag("$\""),
-            map(
+        map(
+            delimited(
+                tag("$\""),
                 tuple((
                     interpolated_string_part,
                     many0(
@@ -527,29 +517,30 @@ pub fn interpolated_string<'context: 'input, 'input>(
                         )),
                     ),
                 )),
-                |x| {
-                    let (e, s): (Vec<parser::ast::Expr>, Vec<String>) = x.1.into_iter().unzip();
-                    ast::InterpolatedString(
-                        [x.0].into_iter().chain(s.into_iter()).collect(),
-                        e,
-                    )
-                },
+                char('"'),
             ),
-            char('"'),
+            |x| {
+                let (e, s): (Vec<parser::ast::Expr>, Vec<&str>) = x.1.into_iter().unzip();
+                ast::InterpolatedString(
+                    [x.0].into_iter().chain(s.into_iter()).collect(),
+                    e,
+                )
+            },
         )(input)
     )
 }
 
-fn interpolated_string_char(input: &str) -> ParsedResult<char> {
-    none_of("{\"\\")(input)
+fn interpolated_string_char(input: &str) -> ParsedResult<&str> {
+    recognize(
+        none_of("{\"\\"),
+    )(input)
 }
 
-fn interpolated_string_part(input: &str) -> ParsedResult<String> {
-    map(
+fn interpolated_string_part(input: &str) -> ParsedResult<&str> {
+    recognize(
         many0(
-            alt((escape_sequence, map(interpolated_string_char, |x| x.to_string()))),
+            alt((escape_sequence, interpolated_string_char)),
         ),
-        |x| x.concat(),
     )(input)
 }
 

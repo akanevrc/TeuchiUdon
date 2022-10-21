@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 nom = { version = "7.1.1", features = ["alloc"] }
+
+[dev-dependencies]
+assert_matches = "1.5.0"

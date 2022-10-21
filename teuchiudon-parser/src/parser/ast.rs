@@ -1,122 +1,122 @@
 use crate::lexer;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Target(pub Option<Body>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct Target<'input>(pub Option<Body<'input>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Body(pub Vec<TopStat>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct Body<'input>(pub Vec<TopStat<'input>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TopStat {
-    VarBind(Option<AccessAttr>, Option<SyncAttr>, VarBind),
-    FnBind(Option<AccessAttr>, FnBind),
-    Stat(Stat),
+#[derive(Clone, Debug, PartialEq)]
+pub enum TopStat<'input> {
+    VarBind(Option<AccessAttr<'input>>, Option<SyncAttr<'input>>, VarBind<'input>),
+    FnBind(Option<AccessAttr<'input>>, FnBind<'input>),
+    Stat(Stat<'input>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct AccessAttr(pub lexer::ast::Keyword);
+#[derive(Clone, Debug, PartialEq)]
+pub struct AccessAttr<'input>(pub lexer::ast::Keyword<'input>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SyncAttr(pub lexer::ast::Keyword);
+#[derive(Clone, Debug, PartialEq)]
+pub struct SyncAttr<'input>(pub lexer::ast::Keyword<'input>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct VarBind(pub lexer::ast::Keyword, pub VarDecl, pub Box<Expr>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct VarBind<'input>(pub lexer::ast::Keyword<'input>, pub VarDecl<'input>, pub Box<Expr<'input>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum VarDecl {
-    SingleDecl(Option<MutAttr>, lexer::ast::Ident, Option<Box<TypeExpr>>),
-    TupleDecl(Vec<VarDecl>),
+#[derive(Clone, Debug, PartialEq)]
+pub enum VarDecl<'input> {
+    SingleDecl(Option<MutAttr<'input>>, lexer::ast::Ident<'input>, Option<Box<TypeExpr<'input>>>),
+    TupleDecl(Vec<VarDecl<'input>>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct MutAttr(pub lexer::ast::Keyword);
+#[derive(Clone, Debug, PartialEq)]
+pub struct MutAttr<'input>(pub lexer::ast::Keyword<'input>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FnBind(pub lexer::ast::Keyword, pub FnDecl, pub StatsBlock);
+#[derive(Clone, Debug, PartialEq)]
+pub struct FnBind<'input>(pub lexer::ast::Keyword<'input>, pub FnDecl<'input>, pub StatsBlock<'input>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FnDecl(pub lexer::ast::Ident, pub VarDecl, pub Option<Box<TypeExpr>>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct FnDecl<'input>(pub lexer::ast::Ident<'input>, pub VarDecl<'input>, pub Option<Box<TypeExpr<'input>>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct TypeExpr(pub TypeTerm, pub Vec<TypeOp>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct TypeExpr<'input>(pub TypeTerm<'input>, pub Vec<TypeOp<'input>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TypeOp {
-    Access(lexer::ast::OpCode, TypeTerm),
+#[derive(Clone, Debug, PartialEq)]
+pub enum TypeOp<'input> {
+    Access(lexer::ast::OpCode<'input>, TypeTerm<'input>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TypeTerm {
-    EvalType(lexer::ast::Ident),
+#[derive(Clone, Debug, PartialEq)]
+pub enum TypeTerm<'input> {
+    EvalType(lexer::ast::Ident<'input>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct StatsBlock(pub Vec<Stat>, pub Option<Box<Expr>>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct StatsBlock<'input>(pub Vec<Stat<'input>>, pub Option<Box<Expr<'input>>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Stat {
-    Return(lexer::ast::Keyword, Option<Box<Expr>>),
-    Continue(lexer::ast::Keyword),
-    Break(lexer::ast::Keyword),
-    VarBind(VarBind),
-    FnBind(FnBind),
-    Expr(Box<Expr>),
+#[derive(Clone, Debug, PartialEq)]
+pub enum Stat<'input> {
+    Return(lexer::ast::Keyword<'input>, Option<Box<Expr<'input>>>),
+    Continue(lexer::ast::Keyword<'input>),
+    Break(lexer::ast::Keyword<'input>),
+    VarBind(VarBind<'input>),
+    FnBind(FnBind<'input>),
+    Expr(Box<Expr<'input>>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Expr(pub Term, pub Vec<Op>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct Expr<'input>(pub Term<'input>, pub Vec<Op<'input>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Op {
-    TypeAccess(lexer::ast::OpCode, Term),
-    Access(lexer::ast::OpCode, Term),
-    EvalFn(Vec<ArgExpr>),
-    EvalSpreadFn(Box<Expr>),
-    EvalKey(Box<Expr>),
-    CastOp(lexer::ast::Keyword, Box<TypeExpr>),
-    InfixOp(lexer::ast::OpCode, Term),
-    Assign(Term),
+#[derive(Clone, Debug, PartialEq)]
+pub enum Op<'input> {
+    TypeAccess(lexer::ast::OpCode<'input>, Term<'input>),
+    Access(lexer::ast::OpCode<'input>, Term<'input>),
+    EvalFn(Vec<ArgExpr<'input>>),
+    EvalSpreadFn(Box<Expr<'input>>),
+    EvalKey(Box<Expr<'input>>),
+    CastOp(lexer::ast::Keyword<'input>, Box<TypeExpr<'input>>),
+    InfixOp(lexer::ast::OpCode<'input>, Term<'input>),
+    Assign(Term<'input>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Term {
-    PrefixOp(lexer::ast::OpCode, Box<Term>),
-    Block(StatsBlock),
-    Paren(Box<Expr>),
-    Tuple(Vec<Expr>),
-    ArrayCtor(Option<IterExpr>),
-    Literal(lexer::ast::Literal),
-    ThisLiteral(lexer::ast::Literal),
-    InterpolatedString(lexer::ast::InterpolatedString),
-    EvalVar(lexer::ast::Ident),
-    LetInBind(VarBind, lexer::ast::Keyword, Box<Expr>),
-    If(lexer::ast::Keyword, Box<Expr>, StatsBlock, Option<(lexer::ast::Keyword, StatsBlock)>),
-    While(lexer::ast::Keyword, Box<Expr>, StatsBlock),
-    Loop(lexer::ast::Keyword, StatsBlock),
-    For(Vec<(lexer::ast::Keyword, ForBind)>, StatsBlock),
-    Closure(VarDecl, Box<Expr>),
+#[derive(Clone, Debug, PartialEq)]
+pub enum Term<'input> {
+    PrefixOp(lexer::ast::OpCode<'input>, Box<Term<'input>>),
+    Block(StatsBlock<'input>),
+    Paren(Box<Expr<'input>>),
+    Tuple(Vec<Expr<'input>>),
+    ArrayCtor(Option<IterExpr<'input>>),
+    Literal(lexer::ast::Literal<'input>),
+    ThisLiteral(lexer::ast::Literal<'input>),
+    InterpolatedString(lexer::ast::InterpolatedString<'input>),
+    EvalVar(lexer::ast::Ident<'input>),
+    LetInBind(VarBind<'input>, lexer::ast::Keyword<'input>, Box<Expr<'input>>),
+    If(lexer::ast::Keyword<'input>, Box<Expr<'input>>, StatsBlock<'input>, Option<(lexer::ast::Keyword<'input>, StatsBlock<'input>)>),
+    While(lexer::ast::Keyword<'input>, Box<Expr<'input>>, StatsBlock<'input>),
+    Loop(lexer::ast::Keyword<'input>, StatsBlock<'input>),
+    For(Vec<(lexer::ast::Keyword<'input>, ForBind<'input>)>, StatsBlock<'input>),
+    Closure(VarDecl<'input>, Box<Expr<'input>>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum IterExpr {
-    Range(Box<Expr>, Box<Expr>),
-    SteppedRange(Box<Expr>, Box<Expr>, Box<Expr>),
-    Spread(Box<Expr>),
-    Elements(Vec<Expr>),
+#[derive(Clone, Debug, PartialEq)]
+pub enum IterExpr<'input> {
+    Range(Box<Expr<'input>>, Box<Expr<'input>>),
+    SteppedRange(Box<Expr<'input>>, Box<Expr<'input>>, Box<Expr<'input>>),
+    Spread(Box<Expr<'input>>),
+    Elements(Vec<Expr<'input>>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ArgExpr(pub Option<MutAttr>, pub Box<Expr>);
+#[derive(Clone, Debug, PartialEq)]
+pub struct ArgExpr<'input>(pub Option<MutAttr<'input>>, pub Box<Expr<'input>>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ForBind {
-    Let(lexer::ast::Keyword, VarDecl, ForIterExpr),
-    Assign(Box<Expr>, ForIterExpr),
+#[derive(Clone, Debug, PartialEq)]
+pub enum ForBind<'input> {
+    Let(lexer::ast::Keyword<'input>, VarDecl<'input>, ForIterExpr<'input>),
+    Assign(Box<Expr<'input>>, ForIterExpr<'input>),
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ForIterExpr {
-    Range(Box<Expr>, Box<Expr>),
-    SteppedRange(Box<Expr>, Box<Expr>, Box<Expr>),
-    Spread(Box<Expr>),
+#[derive(Clone, Debug, PartialEq)]
+pub enum ForIterExpr<'input> {
+    Range(Box<Expr<'input>>, Box<Expr<'input>>),
+    SteppedRange(Box<Expr<'input>>, Box<Expr<'input>>, Box<Expr<'input>>),
+    Spread(Box<Expr<'input>>),
 }

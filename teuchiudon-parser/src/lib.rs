@@ -5,6 +5,10 @@ pub mod parser;
 #[cfg(test)]
 mod test;
 
+#[cfg(test)]
+#[macro_use]
+extern crate assert_matches;
+
 use nom::{
     Err,
     error::VerboseError,
