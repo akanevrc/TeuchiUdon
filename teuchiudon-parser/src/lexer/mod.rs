@@ -1,5 +1,6 @@
 pub mod ast;
 
+use function_name::named;
 use nom::{
     error::VerboseError,
     branch::alt,
@@ -64,33 +65,54 @@ where
     move |input: &'input str| lexer(input).0
 }
 
+#[inline]
 fn ignore(input: &str) -> ParsedResult<()> {
     value((), many0(alt((line_comment, delimited_comment, whitespace1))))(input)
 }
 
+#[named]
 #[inline]
 pub fn byte_order_mark(input: &str) -> ParsedResult<()> {
-    value((), tag("\u{EF}\u{BB}\u{BF}"))(input)
+    nom::error::context(
+        function_name!(),
+        value((), tag("\u{EF}\u{BB}\u{BF}")),
+    )(input)
 }
 
+#[named]
 #[inline]
 pub fn whitespace0(input: &str) -> ParsedResult<()> {
-    value((), multispace0)(input)
+    nom::error::context(
+        function_name!(),
+        value((), multispace0),
+    )(input)
 }
 
+#[named]
 #[inline]
 pub fn whitespace1(input: &str) -> ParsedResult<()> {
-    value((), multispace1)(input)
+    nom::error::context(
+        function_name!(),
+        value((), multispace1),
+    )(input)
 }
 
+#[named]
 #[inline]
 pub fn newline(input: &str) -> ParsedResult<()> {
-    value((), alt((tag("\r\n"), tag("\r"), tag("\n"))))(input)
+    nom::error::context(
+        function_name!(),
+        value((), alt((tag("\r\n"), tag("\r"), tag("\n")))),
+    )(input)
 }
 
+#[named]
 #[inline]
 pub fn line_comment(input: &str) -> ParsedResult<()> {
-    value((), tuple((tag("//"), line_comment_char0, opt(newline))))(input)
+    nom::error::context(
+        function_name!(),
+        value((), tuple((tag("//"), line_comment_char0, opt(newline)))),
+    )(input)
 }
 
 #[inline]
@@ -98,8 +120,13 @@ fn line_comment_char0(input: &str) -> ParsedResult<()> {
     value((), alt((is_not("\r\n"), success(""))))(input)
 }
 
+#[named]
+#[inline]
 pub fn delimited_comment(input: &str) -> ParsedResult<()> {
-    value((), tuple((tag("{/"), delimited_comment_char0, tag("/}"))))(input)
+    nom::error::context(
+        function_name!(),
+        value((), tuple((tag("{/"), delimited_comment_char0, tag("/}")))),
+    )(input)
 }
 
 fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
@@ -113,13 +140,17 @@ fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
     ))(input)
 }
 
+#[named]
 #[inline]
 pub fn keyword<'context: 'input, 'name: 'input, 'input>(
     context: &'context Context,
     name: &'name str,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
     move |input: &'input str| LexedResult(
-        map_opt(terminated(tag(name), peek_code_delimit), |x| context.keyword.from_str(name, x))(input)
+        nom::error::context(
+            function_name!(),
+            map_opt(terminated(tag(name), peek_code_delimit), |x| context.keyword.from_str(name, x)),
+        )(input)
     )
 }
 
@@ -138,15 +169,19 @@ fn is_not_keyword<'context: 'input, 'input>(
         }
 }
 
+#[named]
 #[inline]
 pub fn op_code<'context: 'input, 'name: 'input, 'input>(
     context: &'context Context,
     name: &'name str,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
     move |input: &'input str| LexedResult(
-        preceded(
-            is_not_op_code_substr(context, name),
-            map_opt(tag(name), |x| context.op_code.from_str(name, x)),
+        nom::error::context(
+            function_name!(),
+            preceded(
+                is_not_op_code_substr(context, name),
+                map_opt(tag(name), |x| context.op_code.from_str(name, x)),
+            ),
         )(input),
     )
 }
@@ -172,20 +207,24 @@ fn peek_code_delimit(input: &str) -> ParsedResult<()> {
     value((), not(ident_part_char))(input)
 }
 
+#[named]
 #[inline]
 pub fn ident<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Ident> {
     move |input: &'input str| LexedResult(
-        map(
-            recognize(
-                tuple((
-                    is_not_keyword(context),
-                    ident_start_char,
-                    many0(ident_part_char),
-                )),
+        nom::error::context(
+            function_name!(),
+            map(
+                recognize(
+                    tuple((
+                        is_not_keyword(context),
+                        ident_start_char,
+                        many0(ident_part_char),
+                    )),
+                ),
+                |x| ast::Ident(x),
             ),
-            |x| ast::Ident(x),
         )(input)
     )
 }
@@ -202,137 +241,165 @@ fn ident_part_char(input: &str) -> ParsedResult<&str> {
     alt((ident_start_char, recognize(one_of("_0123456789"))))(input)
 }
 
+#[named]
 #[inline]
 pub fn unit_literal<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
     move |input: &'input str| LexedResult(
-        map(
-            separated_pair(
-                unwrap_fn(op_code(context, "(")),
-                ignore,
-                unwrap_fn(op_code(context, ")")),
+        nom::error::context(
+            function_name!(),
+            map(
+                separated_pair(
+                    unwrap_fn(op_code(context, "(")),
+                    ignore,
+                    unwrap_fn(op_code(context, ")")),
+                ),
+                |x| ast::Literal::Unit(x.0, x.1),
             ),
-            |x| ast::Literal::Unit(x.0, x.1),
         )(input)
     )
 }
 
+#[named]
 #[inline]
 pub fn null_literal<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
     move |input: &'input str| LexedResult(
-        map(
-            unwrap_fn(keyword(context, "null")),
-            |x| ast::Literal::Null(x),
+        nom::error::context(
+            function_name!(),
+            map(
+                unwrap_fn(keyword(context, "null")),
+                |x| ast::Literal::Null(x),
+            ),
         )(input)
     )
 }
 
+#[named]
 #[inline]
 pub fn bool_literal<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
     move |input: &'input str| LexedResult(
-        map(
-            alt((unwrap_fn(keyword(context, "true")), unwrap_fn(keyword(context, "false")))),
-            |x| ast::Literal::Bool(x),
+        nom::error::context(
+            function_name!(),
+            map(
+                alt((unwrap_fn(keyword(context, "true")), unwrap_fn(keyword(context, "false")))),
+                |x| ast::Literal::Bool(x),
+            ),
         )(input)
     )
 }
 
+#[named]
 #[inline]
 pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        map(
-            consumed(
-                tuple((
-                    digit_char,
-                    many0(tuple((many0(char('_')), digit_char))),
-                    opt(integer_suffix),
-                    peek_code_delimit,
-                )),
-            ),
-            |x| x.1.2.map_or(
-                ast::Literal::PureInteger(x.0),
-                |_| ast::Literal::DecInteger(x.0),
-            )
-        )(input)
-    )
-}
-
-#[inline]
-pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
-        map(
-            recognize(
-                tuple((
-                    char('0'),
-                    one_of("Xx"),
-                    many1(tuple((many0(char('_')), hex_digit_char))),
-                    opt(integer_suffix),
-                    peek_code_delimit,
-                )),
-            ),
-            |x| ast::Literal::HexInteger(x)
-        )(input)
-    )
-}
-
-#[inline]
-pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
-        map(
-            recognize(
-                tuple((
-                    char('0'),
-                    one_of("Bb"),
-                    many1(tuple((many0(char('_')), bin_digit_char))),
-                    opt(integer_suffix),
-                    peek_code_delimit,
-                )),
-            ),
-            |x| ast::Literal::BinInteger(x)
-        )(input)
-    )
-}
-
-#[inline]
-pub fn real_number_literal(input: &str) -> LexedResult<ast::Literal> {
-    LexedResult(
-        map(
-            alt((
-                recognize(
+        nom::error::context(
+            function_name!(),
+            map(
+                consumed(
                     tuple((
                         digit_char,
                         many0(tuple((many0(char('_')), digit_char))),
-                        char('.'),
-                        digit_char,
-                        many0(tuple((many0(char('_')), digit_char))),
-                        opt(exponent_part),
-                        opt(real_number_suffix),
+                        opt(integer_suffix),
                         peek_code_delimit,
                     )),
                 ),
+                |x| x.1.2.map_or(
+                    ast::Literal::PureInteger(x.0),
+                    |_| ast::Literal::DecInteger(x.0),
+                )
+            ),
+        )(input)
+    )
+}
+
+#[named]
+#[inline]
+pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
+    LexedResult(
+        nom::error::context(
+            function_name!(),
+            map(
                 recognize(
                     tuple((
-                        digit_char,
-                        many0(tuple((many0(char('_')), digit_char))),
-                        alt((
-                            real_number_suffix,
-                            recognize(
-                                tuple((
-                                    exponent_part,
-                                    opt(real_number_suffix),
-                                )),
-                            ),
-                        )),
+                        char('0'),
+                        one_of("Xx"),
+                        many1(tuple((many0(char('_')), hex_digit_char))),
+                        opt(integer_suffix),
                         peek_code_delimit,
                     )),
-                )
-            )),
-            |x| ast::Literal::RealNumber(x),
+                ),
+                |x| ast::Literal::HexInteger(x)
+            ),
+        )(input)
+    )
+}
+
+#[named]
+#[inline]
+pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
+    LexedResult(
+        nom::error::context(
+            function_name!(),
+            map(
+                recognize(
+                    tuple((
+                        char('0'),
+                        one_of("Bb"),
+                        many1(tuple((many0(char('_')), bin_digit_char))),
+                        opt(integer_suffix),
+                        peek_code_delimit,
+                    )),
+                ),
+                |x| ast::Literal::BinInteger(x)
+            ),
+        )(input)
+    )
+}
+
+#[named]
+#[inline]
+pub fn real_number_literal(input: &str) -> LexedResult<ast::Literal> {
+    LexedResult(
+        nom::error::context(
+            function_name!(),
+            map(
+                alt((
+                    recognize(
+                        tuple((
+                            digit_char,
+                            many0(tuple((many0(char('_')), digit_char))),
+                            char('.'),
+                            digit_char,
+                            many0(tuple((many0(char('_')), digit_char))),
+                            opt(exponent_part),
+                            opt(real_number_suffix),
+                            peek_code_delimit,
+                        )),
+                    ),
+                    recognize(
+                        tuple((
+                            digit_char,
+                            many0(tuple((many0(char('_')), digit_char))),
+                            alt((
+                                real_number_suffix,
+                                recognize(
+                                    tuple((
+                                        exponent_part,
+                                        opt(real_number_suffix),
+                                    )),
+                                ),
+                            )),
+                            peek_code_delimit,
+                        )),
+                    )
+                )),
+                |x| ast::Literal::RealNumber(x),
+            ),
         )(input)
     )
 }
@@ -384,18 +451,22 @@ fn exponent_part(input: &str) -> ParsedResult<&str> {
     )(input)
 }
 
+#[named]
 #[inline]
 pub fn character_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        map(
-            delimited(
-                char('\''),
-                recognize(
-                    alt((escape_sequence, character_char)),
+        nom::error::context(
+            function_name!(),
+            map(
+                delimited(
+                    char('\''),
+                    recognize(
+                        alt((escape_sequence, character_char)),
+                    ),
+                    char('\''),
                 ),
-                char('\''),
+                |x| ast::Literal::Character(x),
             ),
-            |x| ast::Literal::Character(x),
         )(input)
     )
 }
@@ -407,20 +478,24 @@ fn character_char(input: &str) -> ParsedResult<&str> {
     )(input)
 }
 
+#[named]
 #[inline]
 pub fn regular_string_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        map(
-            delimited(
-                char('"'),
-                recognize(
-                    many0(
-                        alt((escape_sequence, regular_string_char)),
+        nom::error::context(
+            function_name!(),
+            map(
+                delimited(
+                    char('"'),
+                    recognize(
+                        many0(
+                            alt((escape_sequence, regular_string_char)),
+                        ),
                     ),
+                    char('"'),
                 ),
-                char('"'),
+                |x| ast::Literal::RegularString(x),
             ),
-            |x| ast::Literal::RegularString(x),
         )(input)
     )
 }
@@ -432,20 +507,24 @@ fn regular_string_char(input: &str) -> ParsedResult<&str> {
     )(input)
 }
 
+#[named]
 #[inline]
 pub fn verbatium_string_literal(input: &str) -> LexedResult<ast::Literal> {
     LexedResult(
-        map(
-            delimited(
-                tag("@\""),
-                recognize(
-                    many0(
-                        alt((escape_sequence, verbatium_string_char)),
+        nom::error::context(
+            function_name!(),
+            map(
+                delimited(
+                    tag("@\""),
+                    recognize(
+                        many0(
+                            alt((escape_sequence, verbatium_string_char)),
+                        ),
                     ),
+                    char('"'),
                 ),
-                char('"'),
+                |x| ast::Literal::VerbatiumString(x),
             ),
-            |x| ast::Literal::VerbatiumString(x),
         )(input)
     )
 }
@@ -458,14 +537,18 @@ fn verbatium_string_char(input: &str) -> ParsedResult<&str> {
     ))(input)
 }
 
+#[named]
 #[inline]
 pub fn this_literal<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
     move |input: &'input str| LexedResult(
-        map(
-            unwrap_fn(keyword(context, "this")),
-            |x| ast::Literal::This(x),
+        nom::error::context(
+            function_name!(),
+            map(
+                unwrap_fn(keyword(context, "this")),
+                |x| ast::Literal::This(x),
+            ),
         )(input)
     )
 }
@@ -501,41 +584,48 @@ fn escape_sequence(input: &str) -> ParsedResult<&str> {
     (input)
 }
 
+#[named]
+#[inline]
 pub fn interpolated_string<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::InterpolatedString> {
     |input: &'input str| LexedResult(
-        map(
-            delimited(
-                tag("$\""),
-                tuple((
-                    interpolated_string_part,
-                    many0(
-                        tuple((
-                            interpolated_string_inside_expr(context),
-                            interpolated_string_part,
-                        )),
-                    ),
-                )),
-                char('"'),
+        nom::error::context(
+            function_name!(),
+            map(
+                delimited(
+                    tag("$\""),
+                    tuple((
+                        interpolated_string_part,
+                        many0(
+                            tuple((
+                                interpolated_string_inside_expr(context),
+                                interpolated_string_part,
+                            )),
+                        ),
+                    )),
+                    char('"'),
+                ),
+                |x| {
+                    let (e, s): (Vec<parser::ast::Expr>, Vec<&str>) = x.1.into_iter().unzip();
+                    ast::InterpolatedString(
+                        [x.0].into_iter().chain(s.into_iter()).collect(),
+                        e,
+                    )
+                },
             ),
-            |x| {
-                let (e, s): (Vec<parser::ast::Expr>, Vec<&str>) = x.1.into_iter().unzip();
-                ast::InterpolatedString(
-                    [x.0].into_iter().chain(s.into_iter()).collect(),
-                    e,
-                )
-            },
         )(input)
     )
 }
 
+#[inline]
 fn interpolated_string_char(input: &str) -> ParsedResult<&str> {
     recognize(
         none_of("{\"\\"),
     )(input)
 }
 
+#[inline]
 fn interpolated_string_part(input: &str) -> ParsedResult<&str> {
     recognize(
         many0(
@@ -544,6 +634,7 @@ fn interpolated_string_part(input: &str) -> ParsedResult<&str> {
     )(input)
 }
 
+#[inline]
 fn interpolated_string_inside_expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, parser::ast::Expr> {
@@ -554,8 +645,13 @@ fn interpolated_string_inside_expr<'context: 'input, 'input>(
     )(input)
 }
 
+#[named]
+#[inline]
 pub fn eof(input: &str) -> LexedResult<()> {
     LexedResult(
-        value((), nom::combinator::eof)(input)
+        nom::error::context(
+            function_name!(),
+            value((), nom::combinator::eof),
+        )(input)
     )
 }
