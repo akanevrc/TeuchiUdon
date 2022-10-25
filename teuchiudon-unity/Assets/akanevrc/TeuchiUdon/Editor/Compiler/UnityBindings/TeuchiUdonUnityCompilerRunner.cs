@@ -53,7 +53,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private static (string output, string error) CompileFromText(string text)
         {
-            var output = TeuchiUdonUnityCompiler.compile("Hello, TeuchiUdon!");
+            var output = TeuchiUdonUnityCompiler.compile("let x = 123; fn f(x: int) { x }; f(x);");
             Debug.Log(output);
             TeuchiUdonUnityCompiler.free_str(output);
             return ("", "");
