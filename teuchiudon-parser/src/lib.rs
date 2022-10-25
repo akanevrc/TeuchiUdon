@@ -2,6 +2,7 @@ pub mod context;
 pub mod error;
 pub mod lexer;
 pub mod parser;
+pub mod semantics;
 
 #[cfg(test)]
 mod test;
@@ -20,7 +21,7 @@ use self::parser::{
 
 pub type ParsedResult<'input, O> = Result<(&'input str, O), Err<ErrorTree<'input>>>;
 
-pub fn parse<'context: 'input, 'input>(context: &'context Context, input: &'input str) -> Result<Target<'input>, String> {
+pub fn parse<'context: 'input, 'input>(context: &'context Context, input: &'input str) -> Result<Target<'input>, Vec<String>> {
     final_parser(target(context))(input)
     .map_err(|e| convert_error(input, e))
 }

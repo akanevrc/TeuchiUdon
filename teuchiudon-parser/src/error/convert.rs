@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    fmt::Write,
     cmp::min,
     iter::repeat,
 };
@@ -19,12 +18,11 @@ const NEWLINE: &'static str = "\r\n";
 #[cfg(not(windows))]
 const NEWLINE: &'static str = "\n";
 
-pub fn convert_error(input: &str, e: ErrorTree) -> String {
+pub fn convert_error(input: &str, e: ErrorTree) -> Vec<String> {
     let infoes = line_infoes(input, &e);
-    let mut message = String::new();
+    let mut messages = Vec::new();
     for (line, ch, line_slice, slice, context) in infoes {
-        writeln!(
-            &mut message,
+        let mes = format!(
             "({}, {}): Parse error, expected {}{}{}{}{}",
             line,
             ch,
@@ -33,9 +31,10 @@ pub fn convert_error(input: &str, e: ErrorTree) -> String {
             line_slice,
             NEWLINE,
             char_caret(ch, line_slice, slice)
-        ).unwrap();
+        );
+        messages.push(mes);
     }
-    message
+    messages
 }
 
 pub fn line_infoes<'input: 'error, 'error>(
