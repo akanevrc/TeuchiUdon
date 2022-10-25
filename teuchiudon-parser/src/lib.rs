@@ -6,26 +6,21 @@ pub mod parser;
 #[cfg(test)]
 mod test;
 
-#[cfg(test)]
-#[macro_use]
-extern crate assert_matches;
-
-use nom::{
-    Err,
-    Finish,
-    error::VerboseError,
+use nom::Err;
+use nom_supreme::final_parser::final_parser;
+use self::context::Context;
+use self::error::{
+    ErrorTree,
+    convert::convert_error,
 };
-use context::Context;
-use error::convert_error;
-use parser::{
+use self::parser::{
     ast::Target,
     target,
 };
 
-pub type ParsedResult<'input, O> = Result<(&'input str, O), Err<VerboseError<&'input str>>>;
+pub type ParsedResult<'input, O> = Result<(&'input str, O), Err<ErrorTree<'input>>>;
 
 pub fn parse<'context: 'input, 'input>(context: &'context Context, input: &'input str) -> Result<Target<'input>, String> {
-    target(context)(input).finish()
-    .map(|x| x.1)
+    final_parser(target(context))(input)
     .map_err(|e| convert_error(input, e))
 }

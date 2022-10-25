@@ -6,7 +6,5 @@ edition = "2021"
 [dependencies]
 function_name = "0.3.0"
 itertools = "0.10.5"
-nom = { version = "7.1.1", features = ["alloc"] }
-
-[dev-dependencies]
-assert_matches = "1.5.0"
+nom = "7.1.1"
+nom-supreme = "0.8.0"

@@ -2,6 +2,7 @@ pub mod ast;
 
 use function_name::named;
 use nom::{
+    Parser,
     branch::alt,
     combinator::{
         map,
@@ -21,6 +22,7 @@ use nom::{
         tuple,
     }
 };
+use nom_supreme::ParserExt;
 use super::ParsedResult;
 use crate::context::Context;
 use crate::lexer::{
@@ -32,40 +34,40 @@ use crate::lexer::{
 pub fn target<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Target> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            value(ast::Target(None), lex(lexer::eof)),
-            map(terminated(body(context), lex(lexer::eof)), |x| ast::Target(Some(x)))
-        )),
-    )(input)
+    |input: &'input str| alt((
+        value(ast::Target(None), tuple((opt(lex(lexer::byte_order_mark)), lex(lexer::eof)))),
+        map(
+            delimited(opt(lex(lexer::byte_order_mark)), body(context), lex(lexer::eof)),
+            |x| ast::Target(Some(x)),
+        ),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn body<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Body> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            many1(top_stat(context)),
-            |x| ast::Body(x)
-        ),
-    )(input)
+    |input: &'input str| map(
+        many1(top_stat(context)),
+        |x| ast::Body(x)
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn top_stat<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TopStat> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            var_bind_top_stat(context),
-            fn_bind_top_stat(context),
-            stat_top_stat(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        var_bind_top_stat(context),
+        fn_bind_top_stat(context),
+        stat_top_stat(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn var_bind_top_stat<'context: 'input, 'input>(
@@ -119,31 +121,29 @@ fn stat_top_stat<'context: 'input, 'input>(
 pub fn var_bind<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarBind> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            tuple((
-                lex(lexer::keyword(context, "let")),
-                var_decl(context),
-                lex(lexer::op_code(context, "=")),
-                expr(context),
-            )),
-            |x| ast::VarBind(x.0, x.1, Box::new(x.3)),
-        ),
-    )(input)
+    |input: &'input str| map(
+        tuple((
+            lex(lexer::keyword(context, "let")),
+            var_decl(context),
+            lex(lexer::op_code(context, "=")),
+            expr(context),
+        )),
+        |x| ast::VarBind(x.0, x.1, Box::new(x.3)),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn var_decl<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            single_var_decl(context),
-            tuple_var_decl(context, "(", ")", "()"),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        single_var_decl(context),
+        tuple_var_decl(context, "(", ")", "()"),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn single_var_decl<'context: 'input, 'input>(
@@ -196,62 +196,58 @@ fn tuple_var_decl<'context: 'input, 'encloser: 'input, 'input>(
 pub fn fn_bind<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::FnBind> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            tuple((
-                lex(lexer::keyword(context, "fn")),
-                fn_decl(context),
-                stats_block(context),
-            )),
-            |x| ast::FnBind(x.0, x.1, x.2),
-        ),
-    )(input)
+    |input: &'input str| map(
+        tuple((
+            lex(lexer::keyword(context, "fn")),
+            fn_decl(context),
+            stats_block(context),
+        )),
+        |x| ast::FnBind(x.0, x.1, x.2),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn fn_decl<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::FnDecl> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            tuple((
-                lex(lexer::ident(context)),
-                tuple_var_decl(context, "(", ")", "()"),
-                opt(preceded(
-                    lex(lexer::op_code(context, "->")),
-                    type_expr(context),
-                )),
+    |input: &'input str| map(
+        tuple((
+            lex(lexer::ident(context)),
+            tuple_var_decl(context, "(", ")", "()"),
+            opt(preceded(
+                lex(lexer::op_code(context, "->")),
+                type_expr(context),
             )),
-            |x| ast::FnDecl(x.0, x.1, x.2.map(|x| Box::new(x))),
-        ),
-    )(input)
+        )),
+        |x| ast::FnDecl(x.0, x.1, x.2.map(|x| Box::new(x))),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn type_expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeExpr> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            tuple((type_term(context), many0(type_op(context)))),
-            |x| ast::TypeExpr(x.0, x.1)
-        ),
-    )(input)
+    |input: &'input str| map(
+        tuple((type_term(context), many0(type_op(context)))),
+        |x| ast::TypeExpr(x.0, x.1)
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn type_op<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeOp> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            access_type_op(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        access_type_op(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn access_type_op<'context: 'input, 'input>(
@@ -270,12 +266,11 @@ fn access_type_op<'context: 'input, 'input>(
 pub fn type_term<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeTerm> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            eval_type_type_term(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        eval_type_type_term(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn eval_type_type_term<'context: 'input, 'input>(
@@ -291,40 +286,38 @@ fn eval_type_type_term<'context: 'input, 'input>(
 pub fn stats_block<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::StatsBlock> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            delimited(
-                lex(lexer::op_code(context, "{")),
-                tuple((
-                    many0(stat(context)),
-                    opt(expr(context)),
-                )),
-                lex(lexer::op_code(context, "}")),
-            ),
-            |x| ast::StatsBlock(x.0, x.1.map(|y| Box::new(y))),
+    |input: &'input str| map(
+        delimited(
+            lex(lexer::op_code(context, "{")),
+            tuple((
+                many0(stat(context)),
+                opt(expr(context)),
+            )),
+            lex(lexer::op_code(context, "}")),
         ),
-    )(input)
+        |x| ast::StatsBlock(x.0, x.1.map(|y| Box::new(y))),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn stat<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Stat> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        terminated(
-            alt((
-                return_stat(context),
-                continue_stat(context),
-                break_stat(context),
-                map(var_bind(context), |x| ast::Stat::VarBind(x)),
-                map(fn_bind(context), |x| ast::Stat::FnBind(x)),
-                map(expr(context), |x| ast::Stat::Expr(Box::new(x))),
-            )),
-            lex(lexer::op_code(context, ";")),
-        ),
-    )(input)
+    |input: &'input str| terminated(
+        alt((
+            return_stat(context),
+            continue_stat(context),
+            break_stat(context),
+            map(var_bind(context), |x| ast::Stat::VarBind(x)),
+            map(fn_bind(context), |x| ast::Stat::FnBind(x)),
+            map(expr(context), |x| ast::Stat::Expr(Box::new(x))),
+        )),
+        lex(lexer::op_code(context, ";")),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn return_stat<'context: 'input, 'input>(
@@ -361,32 +354,30 @@ fn break_stat<'context: 'input, 'input>(
 pub fn expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Expr> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            tuple((term(context), many0(op(context)))),
-            |x| ast::Expr(x.0, x.1),
-        ),
-    )(input)
+    |input: &'input str| map(
+        tuple((term(context), many0(op(context)))),
+        |x| ast::Expr(x.0, x.1),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn op<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            type_access_op(context),
-            access_op(context),
-            eval_fn_op(context),
-            eval_spread_fn_op(context),
-            eval_key_op(context),
-            cast_op(context),
-            infix_op(context),
-            assign_op(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        type_access_op(context),
+        access_op(context),
+        eval_fn_op(context),
+        eval_spread_fn_op(context),
+        eval_key_op(context),
+        cast_op(context),
+        infix_op(context),
+        assign_op(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn type_access_op<'context: 'input, 'input>(
@@ -524,26 +515,25 @@ fn assign_op<'context: 'input, 'input>(
 pub fn term<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            prefix_op_term(context),
-            block_term(context),
-            paren_term(context),
-            tuple_term(context),
-            array_ctor_term(context),
-            literal_term(context),
-            this_literal_term(context),
-            interpolated_string_term(context),
-            eval_var_term(context),
-            let_in_bind_term(context),
-            if_term(context),
-            while_term(context),
-            loop_term(context),
-            for_term(context),
-            closure_term(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        prefix_op_term(context),
+        block_term(context),
+        paren_term(context),
+        tuple_term(context),
+        array_ctor_term(context),
+        literal_term(context),
+        this_literal_term(context),
+        interpolated_string_term(context),
+        eval_var_term(context),
+        let_in_bind_term(context),
+        if_term(context),
+        while_term(context),
+        loop_term(context),
+        for_term(context),
+        closure_term(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn prefix_op_term<'context: 'input, 'input>(
@@ -772,14 +762,13 @@ fn closure_term<'context: 'input, 'input>(
 pub fn iter_expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            range_iter_expr(context),
-            spread_iter_expr(context),
-            elements_iter_expr(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        range_iter_expr(context),
+        spread_iter_expr(context),
+        elements_iter_expr(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn range_iter_expr<'context: 'input, 'input>(
@@ -833,32 +822,30 @@ fn elements_iter_expr<'context: 'input, 'input>(
 pub fn arg_expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ArgExpr> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        map(
-            tuple((
-                opt(lex(lexer::keyword(context, "mut"))),
-                expr(context),
-            )),
-            |x| ast::ArgExpr(
-                x.0.map(|y| ast::MutAttr(y)),
-                Box::new(x.1),
-            ),
+    |input: &'input str| map(
+        tuple((
+            opt(lex(lexer::keyword(context, "mut"))),
+            expr(context),
+        )),
+        |x| ast::ArgExpr(
+            x.0.map(|y| ast::MutAttr(y)),
+            Box::new(x.1),
         ),
-    )(input)
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 #[named]
 pub fn for_bind<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForBind> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            let_for_bind(context),
-            assign_for_bind(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        let_for_bind(context),
+        assign_for_bind(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn let_for_bind<'context: 'input, 'input>(
@@ -892,13 +879,12 @@ fn assign_for_bind<'context: 'input, 'input>(
 pub fn for_iter_expr<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForIterExpr> {
-    |input: &'input str| nom::error::context(
-        function_name!(),
-        alt((
-            range_for_iter_expr(context),
-            spread_for_iter_expr(context),
-        )),
-    )(input)
+    |input: &'input str| alt((
+        range_for_iter_expr(context),
+        spread_for_iter_expr(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
 }
 
 fn range_for_iter_expr<'context: 'input, 'input>(
