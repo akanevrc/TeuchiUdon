@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::context::Context;
 use crate::lexer::{
     self,
@@ -218,8 +219,8 @@ fn test_interpolated_string() {
         Some(("xxx", ast::InterpolatedString(
             vec!["abc", "def", "ghi"],
             vec![
-                parser::ast::Expr(Box::new(parser::ast::Term::Literal(ast::Literal::PureInteger("123"))), vec![]),
-                parser::ast::Expr(Box::new(parser::ast::Term::EvalVar(ast::Ident("val"))), vec![]),
+                Rc::new(parser::ast::Expr(Rc::new(parser::ast::Term::Literal(ast::Literal::PureInteger("123"))), vec![])),
+                Rc::new(parser::ast::Expr(Rc::new(parser::ast::Term::EvalVar(ast::Ident("val"))), vec![])),
             ],
         ))),
     );

@@ -1,5 +1,6 @@
 pub mod ast;
 
+use std::rc::Rc;
 use function_name::named;
 use nom::{
     Parser,
@@ -128,7 +129,7 @@ pub fn var_bind<'context: 'input, 'input>(
             lex(lexer::op_code(context, "=")),
             expr(context),
         )),
-        |x| ast::VarBind(x.0, x.1, Box::new(x.3)),
+        |x| ast::VarBind(x.0, x.1, x.3),
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -163,7 +164,7 @@ fn single_var_decl<'context: 'input, 'input>(
         |x| ast::VarDecl::SingleDecl(
             x.0.map(|x| ast::MutAttr(x)),
             x.1,
-            x.2.map(|y| Box::new(y)),
+            x.2,
         ),
     )(input)
 }
@@ -221,7 +222,7 @@ pub fn fn_decl<'context: 'input, 'input>(
                 type_expr(context),
             )),
         )),
-        |x| ast::FnDecl(x.0, x.1, x.2.map(|x| Box::new(x))),
+        |x| ast::FnDecl(x.0, x.1, x.2),
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -230,10 +231,10 @@ pub fn fn_decl<'context: 'input, 'input>(
 #[named]
 pub fn type_expr<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeExpr> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TypeExpr>> {
     |input: &'input str| map(
         tuple((type_term(context), many0(type_op(context)))),
-        |x| ast::TypeExpr(Box::new(x.0), x.1)
+        |x| Rc::new(ast::TypeExpr(x.0, x.1))
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -258,17 +259,20 @@ fn access_type_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "::")),
             type_term(context),
         )),
-        |x| ast::TypeOp::Access(x.0, Box::new(x.1)),
+        |x| ast::TypeOp::Access(x.0, x.1),
     )(input)
 }
 
 #[named]
 pub fn type_term<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeTerm> {
-    |input: &'input str| alt((
-        eval_type_type_term(context),
-    ))
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TypeTerm>> {
+    |input: &'input str| map(
+        alt((
+            eval_type_type_term(context),
+        )),
+        |x| Rc::new(x),
+    )
     .context(function_name!().to_owned())
     .parse(input)
 }
@@ -295,7 +299,7 @@ pub fn stats_block<'context: 'input, 'input>(
             )),
             lex(lexer::op_code(context, "}")),
         ),
-        |x| ast::StatsBlock(x.0, x.1.map(|y| Box::new(y))),
+        |x| ast::StatsBlock(x.0, x.1),
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -312,7 +316,7 @@ pub fn stat<'context: 'input, 'input>(
             break_stat(context),
             map(var_bind(context), |x| ast::Stat::VarBind(x)),
             map(fn_bind(context), |x| ast::Stat::FnBind(x)),
-            map(expr(context), |x| ast::Stat::Expr(Box::new(x))),
+            map(expr(context), |x| ast::Stat::Expr(x)),
         )),
         lex(lexer::op_code(context, ";")),
     )
@@ -328,7 +332,7 @@ fn return_stat<'context: 'input, 'input>(
             lex(lexer::keyword(context, "return")),
             opt(expr(context)),
         )),
-        |x| ast::Stat::Return(x.0, x.1.map(|x| Box::new(x))),
+        |x| ast::Stat::Return(x.0, x.1),
     )(input)
 }
 
@@ -353,10 +357,10 @@ fn break_stat<'context: 'input, 'input>(
 #[named]
 pub fn expr<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Expr> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Expr>> {
     |input: &'input str| map(
         tuple((term(context), many0(op(context)))),
-        |x| ast::Expr(Box::new(x.0), x.1),
+        |x| Rc::new(ast::Expr(x.0, x.1)),
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -388,7 +392,7 @@ fn type_access_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "::")),
             term(context),
         )),
-        |x| ast::Op::TypeAccess(x.0, Box::new(x.1)),
+        |x| ast::Op::TypeAccess(x.0, x.1),
     )(input)
 }
 
@@ -400,7 +404,7 @@ fn access_op<'context: 'input, 'input>(
             alt((lex(lexer::op_code(context, ".")), lex(lexer::op_code(context, "?.")))),
             term(context),
         )),
-        |x| ast::Op::Access(x.0, Box::new(x.1)),
+        |x| ast::Op::Access(x.0, x.1),
     )(input)
 }
 
@@ -432,7 +436,7 @@ fn eval_spread_fn_op<'context: 'input, 'input>(
             expr(context),
             lex(lexer::op_code(context, ")")),
         )),
-        |x| ast::Op::EvalSpreadFn(Box::new(x.2)),
+        |x| ast::Op::EvalSpreadFn(x.2),
     )(input)
 }
 
@@ -445,7 +449,7 @@ fn eval_key_op<'context: 'input, 'input>(
             expr(context),
             lex(lexer::op_code(context, "]")),
         ),
-        |x| ast::Op::EvalKey(Box::new(x)),
+        |x| ast::Op::EvalKey(x),
     )(input)
 }
 
@@ -457,7 +461,7 @@ fn cast_op<'context: 'input, 'input>(
             lex(lexer::keyword(context, "as")),
             type_expr(context),
         )),
-        |x| ast::Op::CastOp(x.0, Box::new(x.1)),
+        |x| ast::Op::CastOp(x.0, x.1),
     )(input)
 }
 
@@ -495,7 +499,7 @@ fn infix_op<'context: 'input, 'input>(
             )),
             term(context),
         )),
-        |x| ast::Op::InfixOp(x.0, Box::new(x.1)),
+        |x| ast::Op::InfixOp(x.0, x.1),
     )(input)
 }
 
@@ -507,31 +511,34 @@ fn assign_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "=")),
             term(context),
         )),
-        |x| ast::Op::Assign(Box::new(x.1)),
+        |x| ast::Op::Assign(x.1),
     )(input)
 }
 
 #[named]
 pub fn term<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
-    |input: &'input str| alt((
-        prefix_op_term(context),
-        block_term(context),
-        paren_term(context),
-        tuple_term(context),
-        array_ctor_term(context),
-        literal_term(context),
-        this_literal_term(context),
-        interpolated_string_term(context),
-        eval_var_term(context),
-        let_in_bind_term(context),
-        if_term(context),
-        while_term(context),
-        loop_term(context),
-        for_term(context),
-        closure_term(context),
-    ))
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term>> {
+    |input: &'input str| map(
+        alt((
+            prefix_op_term(context),
+            block_term(context),
+            paren_term(context),
+            tuple_term(context),
+            array_ctor_term(context),
+            literal_term(context),
+            this_literal_term(context),
+            interpolated_string_term(context),
+            eval_var_term(context),
+            let_in_bind_term(context),
+            if_term(context),
+            while_term(context),
+            loop_term(context),
+            for_term(context),
+            closure_term(context),
+        )),
+        |x| Rc::new(x),
+    )
     .context(function_name!().to_owned())
     .parse(input)
 }
@@ -549,7 +556,7 @@ fn prefix_op_term<'context: 'input, 'input>(
             )),
             term(context),
         )),
-        |x| ast::Term::PrefixOp(x.0, Box::new(x.1)),
+        |x| ast::Term::PrefixOp(x.0, x.1),
     )(input)
 }
 
@@ -571,7 +578,7 @@ fn paren_term<'context: 'input, 'input>(
             expr(context),
             lex(lexer::op_code(context, ")")),
         ),
-        |x| ast::Term::Paren(Box::new(x)),
+        |x| ast::Term::Paren(x),
     )(input)
 }
 
@@ -675,7 +682,7 @@ fn let_in_bind_term<'context: 'input, 'input>(
             lex(lexer::keyword(context, "in")),
             expr(context),
         )),
-        |x| ast::Term::LetInBind(x.0, x.1, Box::new(x.2)),
+        |x| ast::Term::LetInBind(x.0, x.1, x.2),
     )(input)
 }
 
@@ -693,14 +700,14 @@ fn if_term<'context: 'input, 'input>(
                     alt((
                         map(
                             if_term(context),
-                            |x| ast::StatsBlock(Vec::new(), Some(Box::new(ast::Expr(Box::new(x), Vec::new())))),
+                            |x| ast::StatsBlock(Vec::new(), Some(Rc::new(ast::Expr(Rc::new(x), Vec::new())))),
                         ),
                         stats_block(context),
                     )),
                 )),
             ),
         )),
-        |x| ast::Term::If(x.0, Box::new(x.1), x.2, x.3),
+        |x| ast::Term::If(x.0, x.1, x.2, x.3),
     )(input)
 }
 
@@ -713,7 +720,7 @@ fn while_term<'context: 'input, 'input>(
             expr(context),
             stats_block(context),
         )),
-        |x| ast::Term::While(x.0, Box::new(x.1), x.2),
+        |x| ast::Term::While(x.0, x.1, x.2),
     )(input)
 }
 
@@ -754,7 +761,7 @@ fn closure_term<'context: 'input, 'input>(
             tuple_var_decl(context, "|", "|", "||"),
             expr(context),
         )),
-        |x| ast::Term::Closure(x.0, Box::new(x.1)),
+        |x| ast::Term::Closure(x.0, x.1),
     )(input)
 }
 
@@ -788,8 +795,8 @@ fn range_iter_expr<'context: 'input, 'input>(
         )),
         |x|
             x.3.map_or(
-                ast::IterExpr::Range(Box::new(x.0.clone()), Box::new(x.2.clone())),
-                |y| ast::IterExpr::SteppedRange(Box::new(x.0), Box::new(x.2), Box::new(y)),
+                ast::IterExpr::Range(x.0.clone(), x.2.clone()),
+                |y| ast::IterExpr::SteppedRange(x.0, x.2, y),
             ),
     )(input)
 }
@@ -802,7 +809,7 @@ fn spread_iter_expr<'context: 'input, 'input>(
             lex(lexer::op_code(context, "...")),
             expr(context),
         ),
-        |x| ast::IterExpr::Spread(Box::new(x)),
+        |x| ast::IterExpr::Spread(x),
     )(input)
 }
 
@@ -829,7 +836,7 @@ pub fn arg_expr<'context: 'input, 'input>(
         )),
         |x| ast::ArgExpr(
             x.0.map(|y| ast::MutAttr(y)),
-            Box::new(x.1),
+            x.1,
         ),
     )
     .context(function_name!().to_owned())
@@ -871,7 +878,7 @@ fn assign_for_bind<'context: 'input, 'input>(
             lex(lexer::op_code(context, "<-")),
             for_iter_expr(context),
         ),
-        |x| ast::ForBind::Assign(Box::new(x.0), x.1)
+        |x| ast::ForBind::Assign(x.0, x.1)
     )(input)
 }
 
@@ -904,8 +911,8 @@ fn range_for_iter_expr<'context: 'input, 'input>(
         )),
         |x|
             x.3.map_or(
-                ast::ForIterExpr::Range(Box::new(x.0.clone()), Box::new(x.2.clone())),
-                |y| ast::ForIterExpr::SteppedRange(Box::new(x.0), Box::new(x.2), Box::new(y)),
+                ast::ForIterExpr::Range(x.0.clone(), x.2.clone()),
+                |y| ast::ForIterExpr::SteppedRange(x.0, x.2, y),
             ),
     )(input)
 }
@@ -915,6 +922,6 @@ fn spread_for_iter_expr<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForIterExpr> {
     |input: &'input str| map(
         expr(context),
-        |x| ast::ForIterExpr::Spread(Box::new(x)),
+        |x| ast::ForIterExpr::Spread(x),
     )(input)
 }

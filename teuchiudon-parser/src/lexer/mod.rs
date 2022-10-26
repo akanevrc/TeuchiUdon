@@ -1,6 +1,9 @@
 pub mod ast;
 
-use std::error::Error;
+use std::{
+    error::Error,
+    rc::Rc,
+};
 use function_name::named;
 use nom::{
     Parser,
@@ -592,7 +595,7 @@ pub fn interpolated_string<'context: 'input, 'input>(
                 char('"'),
             ),
             |x| {
-                let (e, s): (Vec<parser::ast::Expr>, Vec<&str>) = x.1.into_iter().unzip();
+                let (e, s): (Vec<Rc<parser::ast::Expr>>, Vec<&str>) = x.1.into_iter().unzip();
                 ast::InterpolatedString(
                     [x.0].into_iter().chain(s.into_iter()).collect(),
                     e,
@@ -623,7 +626,7 @@ fn interpolated_string_part(input: &str) -> ParsedResult<&str> {
 #[inline]
 fn interpolated_string_inside_expr<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, parser::ast::Expr> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<parser::ast::Expr>> {
     |input: &'input str| delimited(
         char('{'),
         parser::expr(context),

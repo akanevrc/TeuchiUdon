@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::parser;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -99,4 +100,4 @@ pub enum Literal<'input> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct InterpolatedString<'input>(pub Vec<&'input str>, pub Vec<parser::ast::Expr<'input>>);
+pub struct InterpolatedString<'input>(pub Vec<&'input str>, pub Vec<Rc<parser::ast::Expr<'input>>>);
