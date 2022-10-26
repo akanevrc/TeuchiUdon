@@ -233,7 +233,7 @@ pub fn type_expr<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeExpr> {
     |input: &'input str| map(
         tuple((type_term(context), many0(type_op(context)))),
-        |x| ast::TypeExpr(x.0, x.1)
+        |x| ast::TypeExpr(Box::new(x.0), x.1)
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -258,7 +258,7 @@ fn access_type_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "::")),
             type_term(context),
         )),
-        |x| ast::TypeOp::Access(x.0, x.1),
+        |x| ast::TypeOp::Access(x.0, Box::new(x.1)),
     )(input)
 }
 
@@ -356,7 +356,7 @@ pub fn expr<'context: 'input, 'input>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Expr> {
     |input: &'input str| map(
         tuple((term(context), many0(op(context)))),
-        |x| ast::Expr(x.0, x.1),
+        |x| ast::Expr(Box::new(x.0), x.1),
     )
     .context(function_name!().to_owned())
     .parse(input)
@@ -388,7 +388,7 @@ fn type_access_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "::")),
             term(context),
         )),
-        |x| ast::Op::TypeAccess(x.0, x.1),
+        |x| ast::Op::TypeAccess(x.0, Box::new(x.1)),
     )(input)
 }
 
@@ -400,7 +400,7 @@ fn access_op<'context: 'input, 'input>(
             alt((lex(lexer::op_code(context, ".")), lex(lexer::op_code(context, "?.")))),
             term(context),
         )),
-        |x| ast::Op::Access(x.0, x.1),
+        |x| ast::Op::Access(x.0, Box::new(x.1)),
     )(input)
 }
 
@@ -495,7 +495,7 @@ fn infix_op<'context: 'input, 'input>(
             )),
             term(context),
         )),
-        |x| ast::Op::InfixOp(x.0, x.1),
+        |x| ast::Op::InfixOp(x.0, Box::new(x.1)),
     )(input)
 }
 
@@ -507,7 +507,7 @@ fn assign_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "=")),
             term(context),
         )),
-        |x| ast::Op::Assign(x.1),
+        |x| ast::Op::Assign(Box::new(x.1)),
     )(input)
 }
 
@@ -693,7 +693,7 @@ fn if_term<'context: 'input, 'input>(
                     alt((
                         map(
                             if_term(context),
-                            |x| ast::StatsBlock(Vec::new(), Some(Box::new(ast::Expr(x, Vec::new())))),
+                            |x| ast::StatsBlock(Vec::new(), Some(Box::new(ast::Expr(Box::new(x), Vec::new())))),
                         ),
                         stats_block(context),
                     )),

@@ -38,11 +38,11 @@ pub struct FnBind<'input>(pub lexer::ast::Keyword<'input>, pub FnDecl<'input>, p
 pub struct FnDecl<'input>(pub lexer::ast::Ident<'input>, pub VarDecl<'input>, pub Option<Box<TypeExpr<'input>>>);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TypeExpr<'input>(pub TypeTerm<'input>, pub Vec<TypeOp<'input>>);
+pub struct TypeExpr<'input>(pub Box<TypeTerm<'input>>, pub Vec<TypeOp<'input>>);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TypeOp<'input> {
-    Access(lexer::ast::OpCode<'input>, TypeTerm<'input>),
+    Access(lexer::ast::OpCode<'input>, Box<TypeTerm<'input>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -64,18 +64,18 @@ pub enum Stat<'input> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Expr<'input>(pub Term<'input>, pub Vec<Op<'input>>);
+pub struct Expr<'input>(pub Box<Term<'input>>, pub Vec<Op<'input>>);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Op<'input> {
-    TypeAccess(lexer::ast::OpCode<'input>, Term<'input>),
-    Access(lexer::ast::OpCode<'input>, Term<'input>),
+    TypeAccess(lexer::ast::OpCode<'input>, Box<Term<'input>>),
+    Access(lexer::ast::OpCode<'input>, Box<Term<'input>>),
     EvalFn(Vec<ArgExpr<'input>>),
     EvalSpreadFn(Box<Expr<'input>>),
     EvalKey(Box<Expr<'input>>),
     CastOp(lexer::ast::Keyword<'input>, Box<TypeExpr<'input>>),
-    InfixOp(lexer::ast::OpCode<'input>, Term<'input>),
-    Assign(Term<'input>),
+    InfixOp(lexer::ast::OpCode<'input>, Box<Term<'input>>),
+    Assign(Box<Term<'input>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
