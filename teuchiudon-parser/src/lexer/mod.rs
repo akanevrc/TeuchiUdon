@@ -146,10 +146,10 @@ fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
 
 #[named]
 #[inline]
-pub fn keyword<'context: 'input, 'name: 'input, 'input>(
+pub fn keyword<'context: 'input, 'input>(
     context: &'context Context,
-    name: &'name str,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword> {
+    name: &'static str,
+) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword<'input>> {
     move |input: &'input str| LexedResult(
         map_opt(terminated(tag(name), peek_code_delimit), |x| context.keyword.from_str(name, x))
         .context(format!("{}: {}", function_name!(), name))
@@ -174,9 +174,9 @@ fn is_not_keyword<'context: 'input, 'input>(
 
 #[named]
 #[inline]
-pub fn op_code<'context: 'input, 'name: 'input, 'input>(
+pub fn op_code<'context: 'input, 'input>(
     context: &'context Context,
-    name: &'name str,
+    name: &'static str,
 ) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
     move |input: &'input str| LexedResult(
         preceded(
@@ -188,9 +188,9 @@ pub fn op_code<'context: 'input, 'name: 'input, 'input>(
     )
 }
 
-fn is_not_op_code_substr<'context: 'input, 'name: 'input, 'input>(
+fn is_not_op_code_substr<'context: 'input, 'input>(
     context: &'context Context,
-    name: &'name str,
+    name: &'static str,
 ) -> impl FnMut(&'input str) -> ParsedResult<()> {
     move |input: &'input str|
         if context.op_code.iter_op_code_str()

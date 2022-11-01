@@ -2,6 +2,7 @@ use std::rc::Rc;
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
+use super::elements;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Target<'parsed> {
@@ -70,6 +71,7 @@ pub enum VarDecl<'parsed> {
         mut_attr: MutAttr<'parsed>,
         ident: Ident<'parsed>,
         type_expr: Rc<TypeExpr<'parsed>>,
+        var: Rc<elements::var::Var>,
     },
     TupleDecl {
         parsed: Option<&'parsed parser::ast::VarDecl<'parsed>>,
@@ -101,7 +103,13 @@ pub struct FnDecl<'parsed> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TypeExpr<'parsed> {
+pub struct TypeExpr<'parsed> {
+    pub detail: TypeExprDetail<'parsed>,
+    pub ty: Rc<elements::ty::Ty>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum TypeExprDetail<'parsed> {
     Term {
         parsed: Option<&'parsed parser::ast::TypeExpr<'parsed>>,
         term: Rc<TypeTerm<'parsed>>,
@@ -120,7 +128,13 @@ pub enum TypeOp {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TypeTerm<'parsed> {
+pub struct TypeTerm<'parsed> {
+    pub detail: TypeTermDetail<'parsed>,
+    pub ty: Rc<elements::ty::Ty>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum TypeTermDetail<'parsed> {
     EvalType {
         parsed: Option<&'parsed parser::ast::TypeTerm<'parsed>>,
         ident: Ident<'parsed>,
@@ -161,7 +175,13 @@ pub enum Stat<'parsed> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Expr<'parsed> {
+pub struct Expr<'parsed> {
+    pub detail: ExprDetail<'parsed>,
+    pub ty: Rc<elements::ty::Ty>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ExprDetail<'parsed> {
     Term {
         parsed: Option<&'parsed parser::ast::Expr<'parsed>>,
         term: Rc<Term<'parsed>>,
@@ -208,7 +228,13 @@ pub enum Op {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Term<'parsed> {
+pub struct Term<'parsed> {
+    pub detail: TermDetail<'parsed>,
+    pub ty: Rc<elements::ty::Ty>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum TermDetail<'parsed> {
     TypeExpr {
         parsed: Option<&'parsed parser::ast::TypeExpr<'parsed>>,
         type_expr: Rc<TypeExpr<'parsed>>,
@@ -248,7 +274,7 @@ pub enum Term<'parsed> {
     },
     Literal {
         parsed: Option<&'parsed parser::ast::Term<'parsed>>,
-        literal: Literal<'parsed>,
+        literal: Rc<elements::literal::Literal>,
     },
     ThisLiteral {
         parsed: Option<&'parsed parser::ast::Term<'parsed>>,
@@ -373,52 +399,6 @@ pub struct Ident<'parsed> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Literal<'parsed> {
-    Unit {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-    },
-    Null {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-    },
-    Bool {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    PureInteger {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    DecInteger {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    HexInteger {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    BinInteger {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    RealNumber {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    Character {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    RegularString {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-    VerbatiumString {
-        parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
-        string: String,
-    },
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub struct ThisLiteral<'parsed> {
     pub parsed: Option<&'parsed lexer::ast::Literal<'parsed>>,
 }
@@ -458,11 +438,14 @@ impl<'parsed> ExprTree<'parsed, TypeOp, parser::ast::TypeExpr<'parsed>> for Type
         op: TypeOp,
         right: Rc<Self>,
     ) -> Rc<Self> {
-        Rc::new(Self::InfixOp {
-            parsed: Some(parsed),
-            left,
-            op,
-            right,
+        Rc::new(Self {
+            detail: TypeExprDetail::InfixOp {
+                parsed: Some(parsed),
+                left: left.clone(),
+                op,
+                right,
+            },
+            ty: left.ty.clone(),
         })
     }
 }
@@ -478,11 +461,14 @@ impl<'parsed> ExprTree<'parsed, Op, parser::ast::Expr<'parsed>> for Expr<'parsed
         op: Op,
         right: Rc<Self>,
     ) -> Rc<Self> {
-        Rc::new(Self::InfixOp {
-            parsed: Some(parsed),
-            left,
-            op,
-            right,
+        Rc::new(Self {
+            detail: ExprDetail::InfixOp {
+                parsed: Some(parsed),
+                left: left.clone(),
+                op,
+                right,
+            },
+            ty: left.ty.clone(), // TODO
         })
     }
 }

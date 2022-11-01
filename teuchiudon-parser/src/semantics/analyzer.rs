@@ -8,6 +8,10 @@ use crate::lexer;
 use crate::parser;
 use super::{
     ast,
+    elements::{
+        self,
+        element::KeyElement,
+    },
     SemanticError,
 };
 
@@ -114,8 +118,8 @@ pub fn access_attr<'parsed>(
 ) -> Result<ast::AccessAttr<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
         Some(attr) =>
-            match &attr.0 {
-                lexer::ast::Keyword::Pub(_) =>
+            match &attr.0.1 {
+                lexer::ast::KeywordKind::Pub =>
                     pub_access_attr(context, attr),
                 _ =>
                     Err(vec![
@@ -144,12 +148,12 @@ fn sync_attr<'parsed>(
 ) -> Result<ast::SyncAttr<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
         Some(attr) =>
-            match &attr.0 {
-                lexer::ast::Keyword::Sync(_) =>
+            match &attr.0.1 {
+                lexer::ast::KeywordKind::Sync =>
                     sync_sync_attr(context, attr),
-                lexer::ast::Keyword::Linear(_) =>
+                lexer::ast::KeywordKind::Linear =>
                     linear_sync_attr(context, attr),
-                lexer::ast::Keyword::Smooth(_) =>
+                lexer::ast::KeywordKind::Smooth =>
                     smooth_sync_attr(context, attr),
                 _ =>
                     Err(vec![
@@ -227,11 +231,20 @@ fn single_var_decl<'parsed>(
         Some(x) => self::type_expr(context, x)?,
         None => hidden_unknown_type_expr(context)?,
     };
+    let var = elements::var::Var::new(
+        context,
+        elements::qual::Qual::TOP,
+        ident.name.clone(),
+        type_expr.ty.clone(),
+        matches!(mut_attr, ast::MutAttr::Mut { parsed: _ }),
+        false,
+    );
     Ok(ast::VarDecl::SingleDecl {
         parsed: Some(node),
         mut_attr,
         ident,
         type_expr,
+        var: var.clone(),
     })
 }
 
@@ -257,8 +270,8 @@ pub fn mut_attr<'parsed>(
 ) -> Result<ast::MutAttr<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
         Some(attr) =>
-            match &attr.0 {
-                lexer::ast::Keyword::Mut(_) =>
+            match &attr.0.1 {
+                lexer::ast::KeywordKind::Mut =>
                     mut_mut_attr(context, attr),
                 _ =>
                     Err(vec![
@@ -324,9 +337,12 @@ fn construct_type_expr_tree<'parsed>(
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
     let term = type_term(context, &node.0)?;
-    exprs.push_back(Rc::new(ast::TypeExpr::Term {
-        parsed: Some(node),
-        term,
+    exprs.push_back(Rc::new(ast::TypeExpr {
+        detail: ast::TypeExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     }));
     for op in &node.1 {
         let (op, expr) = match op {
@@ -346,9 +362,12 @@ fn access_op_type_expr<'parsed>(
 ) -> Result<(ast::TypeOp, Rc<ast::TypeExpr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = access_type_op(context)?;
     let term = type_term(context, term)?;
-    let expr = Rc::new(ast::TypeExpr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::TypeExpr {
+        detail: ast::TypeExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -356,13 +375,13 @@ fn access_op_type_expr<'parsed>(
 fn hidden_unknown_type_expr<'parsed>(
     _context: &Context,
 ) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }])
+    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }]) // TODO
 }
 
 fn hidden_unit_type_expr<'parsed>(
     _context: &Context,
 ) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }])
+    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }]) // TODO
 }
 
 fn access_type_op<'parsed>(
@@ -387,9 +406,12 @@ fn eval_type_type_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::TypeTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    Ok(Rc::new(ast::TypeTerm::EvalType {
-        parsed: Some(node),
-        ident
+    Ok(Rc::new(ast::TypeTerm {
+        detail: ast::TypeTermDetail::EvalType {
+            parsed: Some(node),
+            ident
+        },
+        ty: elements::ty::TyKey::from_name("int").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -515,9 +537,12 @@ fn construct_expr_tree<'parsed>(
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
     let term = self::term(context, &node.0)?;
-    exprs.push_back(Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    exprs.push_back(Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     }));
     for parser_op in &node.1 {
         let (op, expr) = match parser_op {
@@ -551,9 +576,12 @@ fn type_access_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = type_access_op(context)?;
     let term = self::term(context, term)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -566,9 +594,12 @@ fn access_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = access_op(context, op_code)?;
     let term = self::term(context, term)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -580,9 +611,12 @@ fn eval_fn_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = eval_fn_op(context)?;
     let term = apply_fn_term(context, arg_exprs)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -594,9 +628,12 @@ fn eval_spread_fn_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = eval_spread_fn_op(context)?;
     let term = apply_spread_fn_term(context, expr)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -608,9 +645,12 @@ fn eval_key_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = eval_key_op(context)?;
     let term = apply_key_term(context, expr)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -622,9 +662,12 @@ fn cast_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = cast_op(context)?;
     let term = type_expr_term(context, type_expr)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -637,9 +680,12 @@ fn infix_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = infix_op(context, op_code)?;
     let term = self::term(context, term)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -651,9 +697,12 @@ fn assign_op_expr<'parsed>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = assign_op(context)?;
     let term = self::term(context, term)?;
-    let expr = Rc::new(ast::Expr::Term {
-        parsed: Some(node),
-        term,
+    let expr = Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: Some(node),
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     });
     Ok((op, expr))
 }
@@ -661,7 +710,7 @@ fn assign_op_expr<'parsed>(
 fn hidden_unit_expr<'parsed>(
     _context: &Context,
 ) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }])
+    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }]) // TODO
 }
 
 pub fn type_access_op<'parsed>(
@@ -675,10 +724,10 @@ fn access_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
 ) -> Result<ast::Op, Vec<SemanticError<'parsed>>> {
-    match node {
-        lexer::ast::OpCode::Dot(_) =>
+    match node.1 {
+        lexer::ast::OpCodeKind::Dot =>
             Ok(ast::Op::Access),
-        lexer::ast::OpCode::CoalescingAccess(_) =>
+        lexer::ast::OpCodeKind::CoalescingAccess =>
             Ok(ast::Op::CoalescingAccess),
         _ =>
             Err(vec![
@@ -716,48 +765,48 @@ fn infix_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
 ) -> Result<ast::Op, Vec<SemanticError<'parsed>>> {
-    match node {
-        lexer::ast::OpCode::Star(_) =>
+    match node.1 {
+        lexer::ast::OpCodeKind::Star =>
             Ok(ast::Op::Mul),
-        lexer::ast::OpCode::Div(_) =>
+        lexer::ast::OpCodeKind::Div =>
             Ok(ast::Op::Div),
-        lexer::ast::OpCode::Percent(_) =>
+        lexer::ast::OpCodeKind::Percent =>
             Ok(ast::Op::Mod),
-        lexer::ast::OpCode::Plus(_) =>
+        lexer::ast::OpCodeKind::Plus =>
             Ok(ast::Op::Add),
-        lexer::ast::OpCode::Minus(_) =>
+        lexer::ast::OpCodeKind::Minus =>
             Ok(ast::Op::Sub),
-        lexer::ast::OpCode::LeftShift(_) =>
+        lexer::ast::OpCodeKind::LeftShift =>
             Ok(ast::Op::LeftShift),
-        lexer::ast::OpCode::RightShift(_) =>
+        lexer::ast::OpCodeKind::RightShift =>
             Ok(ast::Op::RightShift),
-        lexer::ast::OpCode::Lt(_) =>
+        lexer::ast::OpCodeKind::Lt =>
             Ok(ast::Op::Lt),
-        lexer::ast::OpCode::Gt(_) =>
+        lexer::ast::OpCodeKind::Gt =>
             Ok(ast::Op::Gt),
-        lexer::ast::OpCode::Le(_) =>
+        lexer::ast::OpCodeKind::Le =>
             Ok(ast::Op::Le),
-        lexer::ast::OpCode::Ge(_) =>
+        lexer::ast::OpCodeKind::Ge =>
             Ok(ast::Op::Ge),
-        lexer::ast::OpCode::Eq(_) =>
+        lexer::ast::OpCodeKind::Eq =>
             Ok(ast::Op::Eq),
-        lexer::ast::OpCode::Ne(_) =>
+        lexer::ast::OpCodeKind::Ne =>
             Ok(ast::Op::Ne),
-        lexer::ast::OpCode::Amp(_) =>
+        lexer::ast::OpCodeKind::Amp =>
             Ok(ast::Op::BitAnd),
-        lexer::ast::OpCode::Caret(_) =>
+        lexer::ast::OpCodeKind::Caret =>
             Ok(ast::Op::BitXor),
-        lexer::ast::OpCode::Pipe(_) =>
+        lexer::ast::OpCodeKind::Pipe =>
             Ok(ast::Op::BitOr),
-        lexer::ast::OpCode::And(_) =>
+        lexer::ast::OpCodeKind::And =>
             Ok(ast::Op::And),
-        lexer::ast::OpCode::Or(_) =>
+        lexer::ast::OpCodeKind::Or =>
             Ok(ast::Op::Or),
-        lexer::ast::OpCode::Coalescing(_) =>
+        lexer::ast::OpCodeKind::Coalescing =>
             Ok(ast::Op::Coalescing),
-        lexer::ast::OpCode::RightPipeline(_) =>
+        lexer::ast::OpCodeKind::RightPipeline =>
             Ok(ast::Op::RightPipeline),
-        lexer::ast::OpCode::LeftPipeline(_) =>
+        lexer::ast::OpCodeKind::LeftPipeline =>
             Ok(ast::Op::LeftPipeline),
         _ =>
             Err(vec![
@@ -818,10 +867,13 @@ fn prefix_op_term<'parsed>(
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let op = prefix_op(context, op_code)?;
     let term = self::term(context, term)?;
-    Ok(Rc::new(ast::Term::PrefixOp {
-        parsed: Some(node),
-        op,
-        term,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::PrefixOp {
+            parsed: Some(node),
+            op,
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
     }))
 }
 
@@ -831,9 +883,12 @@ fn block_term<'parsed>(
     stats: &'parsed parser::ast::StatsBlock,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let stats = stats_block(context, stats)?;
-    Ok(Rc::new(ast::Term::Block {
-        parsed: Some(node),
-        stats,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::Block {
+            parsed: Some(node),
+            stats: stats.clone(),
+        },
+        ty: stats.ret.ty.clone(),
     }))
 }
 
@@ -843,9 +898,12 @@ fn paren_term<'parsed>(
     expr: &'parsed parser::ast::Expr,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let expr = self::expr(context, expr)?;
-    Ok(Rc::new(ast::Term::Paren {
-        parsed: Some(node),
-        expr,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::Paren {
+            parsed: Some(node),
+            expr: expr.clone(),
+        },
+        ty: expr.ty.clone(),
     }))
 }
 
@@ -858,9 +916,12 @@ fn tuple_term<'parsed>(
     for x in exprs {
         es.push(expr(context, x)?);
     }
-    Ok(Rc::new(ast::Term::Tuple {
-        parsed: Some(node),
-        exprs: es,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::Tuple {
+            parsed: Some(node),
+            exprs: es,
+        },
+        ty: elements::ty::TyKey::from_name("tuple").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -873,9 +934,12 @@ fn array_ctor_term<'parsed>(
         Some(x) => self::iter_expr(context, x)?,
         None => empty_iter_expr(context)?,
     };
-    Ok(Rc::new(ast::Term::ArrayCtor {
-        parsed: Some(node),
-        iter_expr,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::ArrayCtor {
+            parsed: Some(node),
+            iter_expr,
+        },
+        ty: elements::ty::TyKey::from_name("array").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -885,9 +949,12 @@ fn literal_term<'parsed>(
     literal: &'parsed lexer::ast::Literal,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let literal = self::literal(context, literal)?;
-    Ok(Rc::new(ast::Term::Literal {
-        parsed: Some(node),
-        literal,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::Literal {
+            parsed: Some(node),
+            literal: literal.clone(),
+        },
+        ty: literal.ty.clone(),
     }))
 }
 
@@ -897,9 +964,12 @@ fn this_literal_term<'parsed>(
     literal: &'parsed lexer::ast::Literal,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let literal = this_literal(context, literal)?;
-    Ok(Rc::new(ast::Term::ThisLiteral {
-        parsed: Some(node),
-        literal,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::ThisLiteral {
+            parsed: Some(node),
+            literal,
+        },
+        ty: elements::ty::TyKey::from_name("udonbehaviour").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -909,9 +979,12 @@ fn interpolated_string_term<'parsed>(
     interpolated_string: &'parsed lexer::ast::InterpolatedString,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let interpolated_string = self::interpolated_string(context, interpolated_string)?;
-    Ok(Rc::new(ast::Term::InterpolatedString {
-        parsed: Some(node),
-        interpolated_string,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::InterpolatedString {
+            parsed: Some(node),
+            interpolated_string,
+        },
+        ty: elements::ty::TyKey::from_name("string").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -921,9 +994,12 @@ fn eval_var_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    Ok(Rc::new(ast::Term::EvalVar {
-        parsed: Some(node),
-        ident,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::EvalVar {
+            parsed: Some(node),
+            ident,
+        },
+        ty: elements::ty::TyKey::from_name("int").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -935,10 +1011,13 @@ fn let_in_bind_term<'parsed>(
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let var_bind = self::var_bind(context, var_bind)?;
     let expr = self::expr(context, expr)?;
-    Ok(Rc::new(ast::Term::LetInBind {
-        parsed: Some(node),
-        var_bind,
-        expr,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::LetInBind {
+            parsed: Some(node),
+            var_bind,
+            expr: expr.clone(),
+        },
+        ty: expr.ty.clone(),
     }))
 }
 
@@ -955,11 +1034,14 @@ fn if_term<'parsed>(
         Some((_, stats)) => Some(stats_block(context, stats)?),
         None => None,
     };
-    Ok(Rc::new(ast::Term::If {
-        parsed: Some(node),
-        condition,
-        if_part,
-        else_part,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::If {
+            parsed: Some(node),
+            condition,
+            if_part: if_part.clone(),
+            else_part,
+        },
+        ty: if_part.ret.ty.clone(), // TODO
     }))
 }
 
@@ -971,10 +1053,13 @@ fn while_term<'parsed>(
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let condition = expr(context, condition)?;
     let stats = stats_block(context, stats)?;
-    Ok(Rc::new(ast::Term::While {
-        parsed: Some(node),
-        condition,
-        stats,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::While {
+            parsed: Some(node),
+            condition,
+            stats,
+        },
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -984,9 +1069,12 @@ fn loop_term<'parsed>(
     stats: &'parsed parser::ast::StatsBlock,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let stats = stats_block(context, stats)?;
-    Ok(Rc::new(ast::Term::Loop {
-        parsed: Some(node),
-        stats,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::Loop {
+            parsed: Some(node),
+            stats,
+        },
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1001,10 +1089,13 @@ fn for_term<'parsed>(
         fbs.push(for_bind(context, &x.1)?);
     }
     let stats = stats_block(context, stats)?;
-    Ok(Rc::new(ast::Term::For {
-        parsed: Some(node),
-        for_binds: fbs,
-        stats,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::For {
+            parsed: Some(node),
+            for_binds: fbs,
+            stats,
+        },
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1016,10 +1107,13 @@ fn closure_term<'parsed>(
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let var_decl = self::var_decl(context, var_decl)?;
     let expr = self::expr(context, expr)?;
-    Ok(Rc::new(ast::Term::Closure {
-        parsed: Some(node),
-        var_decl,
-        expr,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::Closure {
+            parsed: Some(node),
+            var_decl,
+            expr,
+        },
+        ty: elements::ty::TyKey::from_name("closure").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1028,9 +1122,12 @@ fn type_expr_term<'parsed>(
     type_expr: &'parsed parser::ast::TypeExpr,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let te = self::type_expr(context, type_expr)?;
-    Ok(Rc::new(ast::Term::TypeExpr {
-        parsed: Some(type_expr),
-        type_expr: te,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::TypeExpr {
+            parsed: Some(type_expr),
+            type_expr: te,
+        },
+        ty: elements::ty::TyKey::from_name("type").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1042,9 +1139,12 @@ fn apply_fn_term<'parsed>(
     for x in arg_exprs {
         args.push(arg_expr(context, x)?);
     }
-    Ok(Rc::new(ast::Term::ApplyFn {
-        parsed: Some(arg_exprs),
-        args,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::ApplyFn {
+            parsed: Some(arg_exprs),
+            args,
+        },
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1053,9 +1153,12 @@ fn apply_spread_fn_term<'parsed>(
     expr: &'parsed parser::ast::Expr,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let arg = self::expr(context, expr)?;
-    Ok(Rc::new(ast::Term::ApplySpreadFn {
-        parsed: Some(expr),
-        arg,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::ApplySpreadFn {
+            parsed: Some(expr),
+            arg,
+        },
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1064,9 +1167,12 @@ fn apply_key_term<'parsed>(
     expr: &'parsed parser::ast::Expr,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let key = self::expr(context, expr)?;
-    Ok(Rc::new(ast::Term::ApplyKey {
-        parsed: Some(expr),
-        key,
+    Ok(Rc::new(ast::Term {
+        detail: ast::TermDetail::ApplyKey {
+            parsed: Some(expr),
+            key,
+        },
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
     }))
 }
 
@@ -1075,14 +1181,14 @@ fn prefix_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
 ) -> Result<ast::PrefixOp, Vec<SemanticError<'parsed>>> {
-    match node {
-        lexer::ast::OpCode::Plus(_) =>
+    match node.1 {
+        lexer::ast::OpCodeKind::Plus =>
             Ok(ast::PrefixOp::Plus),
-        lexer::ast::OpCode::Minus(_) =>
+        lexer::ast::OpCodeKind::Minus =>
             Ok(ast::PrefixOp::Minus),
-        lexer::ast::OpCode::Bang(_) =>
+        lexer::ast::OpCodeKind::Bang =>
             Ok(ast::PrefixOp::Bang),
-        lexer::ast::OpCode::Tilde(_) =>
+        lexer::ast::OpCodeKind::Tilde =>
             Ok(ast::PrefixOp::Tilde),
         _ =>
             Err(vec![
@@ -1301,172 +1407,47 @@ pub fn ident<'parsed>(
 pub fn literal<'parsed>(
     context: &Context,
     node: &'parsed lexer::ast::Literal,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
+) -> Result<Rc<elements::literal::Literal>, Vec<SemanticError<'parsed>>> {
     match node {
-        lexer::ast::Literal::Unit(_, _) =>
-            unit_literal(context, node),
-        lexer::ast::Literal::Null(_) =>
-            null_literal(context, node),
-        lexer::ast::Literal::Bool(keyword) =>
-            bool_literal(context, node, keyword),
+        lexer::ast::Literal::Unit(op_code, _) =>
+            elements::literal::Literal::new_unit(context)
+            .map_err(|e| vec![e.convert(Some(op_code.0))]),
+        lexer::ast::Literal::Null(keyword) =>
+            elements::literal::Literal::new_null(context)
+            .map_err(|e| vec![e.convert(Some(keyword.0))]),
+        lexer::ast::Literal::Bool(lexer::ast::Keyword(s, _)) =>
+            elements::literal::Literal::new_bool(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::PureInteger(s) =>
-            pure_integer_literal(context, node, s),
+            elements::literal::Literal::new_pure_integer(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::DecInteger(s) =>
-            dec_integer_literal(context, node, s),
+            elements::literal::Literal::new_dec_integer(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::HexInteger(s) =>
-            hex_integer_literal(context, node, s),
+            elements::literal::Literal::new_hex_integer(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::BinInteger(s) =>
-            bin_integer_literal(context, node, s),
+            elements::literal::Literal::new_bin_integer(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::RealNumber(s) =>
-            real_number_literal(context, node, s),
+            elements::literal::Literal::new_real_number(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::Character(s) =>
-            character_literal(context, node, s),
+            elements::literal::Literal::new_character(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::RegularString(s) =>
-            regular_string_literal(context, node, s),
+            elements::literal::Literal::new_regular_string(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         lexer::ast::Literal::VerbatiumString(s) =>
-            verbatium_string_literal(context, node, s),
+            elements::literal::Literal::new_verbatium_string(context, (*s).to_owned())
+            .map_err(|e| vec![e.convert(Some(s))]),
         _ =>
             Err(vec![
                 SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
             ]),
         
     }
-}
-
-fn unit_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    Ok(ast::Literal::Unit {
-        parsed: Some(node),
-    })
-}
-
-fn null_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    Ok(ast::Literal::Null {
-        parsed: Some(node),
-    })
-}
-
-#[named]
-fn bool_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    keyword: &'parsed lexer::ast::Keyword,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = match keyword {
-        lexer::ast::Keyword::True(_) =>
-            Ok("true".to_owned()),
-        lexer::ast::Keyword::False(_) =>
-            Ok("false".to_owned()),
-        _ =>
-            Err(vec![
-                SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-            ]),
-    }?;
-    Ok(ast::Literal::Bool {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn pure_integer_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::PureInteger {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn dec_integer_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::DecInteger {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn hex_integer_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::HexInteger {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn bin_integer_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::BinInteger {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn real_number_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::RealNumber {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn character_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::Character {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn regular_string_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::RegularString {
-        parsed: Some(node),
-        string,
-    })
-}
-
-fn verbatium_string_literal<'parsed>(
-    _context: &Context,
-    node: &'parsed lexer::ast::Literal,
-    s: &'parsed str,
-) -> Result<ast::Literal<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string = s.to_owned();
-    Ok(ast::Literal::VerbatiumString {
-        parsed: Some(node),
-        string,
-    })
 }
 
 fn this_literal<'parsed>(

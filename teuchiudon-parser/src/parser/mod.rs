@@ -169,11 +169,11 @@ fn single_var_decl<'context: 'input, 'input>(
     )(input)
 }
 
-fn tuple_var_decl<'context: 'input, 'encloser: 'input, 'input>(
+fn tuple_var_decl<'context: 'input, 'input>(
     context: &'context Context,
-    open: &'encloser str,
-    close: &'encloser str,
-    both: &'encloser str,
+    open: &'static str,
+    close: &'static str,
+    both: &'static str,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
     move |input: &'input str| map(
         alt((

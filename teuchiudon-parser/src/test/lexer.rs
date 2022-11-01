@@ -10,9 +10,9 @@ use crate::parser;
 #[test]
 fn test_lex() {
     let context = Context::new();
-    assert_eq!(lex(lexer::keyword(&context, "as"))("as xxx").ok(), Some((" xxx", ast::Keyword::As("as"))));
-    assert_eq!(lex(lexer::keyword(&context, "as"))("  as xxx").ok(), Some((" xxx", ast::Keyword::As("as"))));
-    assert_eq!(lex(lexer::keyword(&context, "as"))(" {/ comment /} // comment\nas xxx").ok(), Some((" xxx", ast::Keyword::As("as"))));
+    assert_eq!(lex(lexer::keyword(&context, "as"))("as xxx").ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
+    assert_eq!(lex(lexer::keyword(&context, "as"))("  as xxx").ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
+    assert_eq!(lex(lexer::keyword(&context, "as"))(" {/ comment /} // comment\nas xxx").ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
 }
 
 #[test]
@@ -54,19 +54,19 @@ fn test_delimited_comment() {
 #[test]
 fn test_keyword() {
     let context = Context::new();
-    assert_eq!(lexer::keyword(&context, "as")("as xxx").0.ok(), Some((" xxx", ast::Keyword::As("as"))));
+    assert_eq!(lexer::keyword(&context, "as")("as xxx").0.ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
     assert_eq!(lexer::keyword(&context, "as")("asxxx").0.ok(), None);
 }
 
 #[test]
 fn test_op_code() {
     let context = Context::new();
-    assert_eq!(lexer::op_code(&context, "{")("{xxx").0.ok(), Some(("xxx", ast::OpCode::OpenBrace("{"))));
-    assert_eq!(lexer::op_code(&context, ",")(",xxx").0.ok(), Some(("xxx", ast::OpCode::Comma(","))));
-    assert_eq!(lexer::op_code(&context, ";")(";xxx").0.ok(), Some(("xxx", ast::OpCode::Semicolon(";"))));
-    assert_eq!(lexer::op_code(&context, ".")(".xxx").0.ok(), Some(("xxx", ast::OpCode::Dot("."))));
-    assert_eq!(lexer::op_code(&context, "<")("<xxx").0.ok(), Some(("xxx", ast::OpCode::Lt("<"))));
-    assert_eq!(lexer::op_code(&context, "<=")("<==xxx").0.ok(), Some(("=xxx", ast::OpCode::Le("<="))));
+    assert_eq!(lexer::op_code(&context, "{")("{xxx").0.ok(), Some(("xxx", ast::OpCode("{", ast::OpCodeKind::OpenBrace))));
+    assert_eq!(lexer::op_code(&context, ",")(",xxx").0.ok(), Some(("xxx", ast::OpCode(",", ast::OpCodeKind::Comma))));
+    assert_eq!(lexer::op_code(&context, ";")(";xxx").0.ok(), Some(("xxx", ast::OpCode(";", ast::OpCodeKind::Semicolon))));
+    assert_eq!(lexer::op_code(&context, ".")(".xxx").0.ok(), Some(("xxx", ast::OpCode(".", ast::OpCodeKind::Dot))));
+    assert_eq!(lexer::op_code(&context, "<")("<xxx").0.ok(), Some(("xxx", ast::OpCode("<", ast::OpCodeKind::Lt))));
+    assert_eq!(lexer::op_code(&context, "<=")("<==xxx").0.ok(), Some(("=xxx", ast::OpCode("<=", ast::OpCodeKind::Le))));
     assert_eq!(lexer::op_code(&context, "<")("<=xxx").0.ok(), None);
 }
 
@@ -86,22 +86,28 @@ fn test_ident() {
 #[test]
 fn test_unit_literal() {
     let context = Context::new();
-    assert_eq!(lexer::unit_literal(&context)("()xxx").0.ok(), Some(("xxx", ast::Literal::Unit(ast::OpCode::OpenParen("("), ast::OpCode::CloseParen(")")))));
-    assert_eq!(lexer::unit_literal(&context)("( )xxx").0.ok(), Some(("xxx", ast::Literal::Unit(ast::OpCode::OpenParen("("), ast::OpCode::CloseParen(")")))));
+    assert_eq!(
+        lexer::unit_literal(&context)("()xxx").0.ok(),
+        Some(("xxx", ast::Literal::Unit(ast::OpCode("(", ast::OpCodeKind::OpenParen), ast::OpCode(")", ast::OpCodeKind::CloseParen))))
+    );
+    assert_eq!(
+        lexer::unit_literal(&context)("( )xxx").0.ok(),
+        Some(("xxx", ast::Literal::Unit(ast::OpCode("(", ast::OpCodeKind::OpenParen), ast::OpCode(")", ast::OpCodeKind::CloseParen))))
+    );
 }
 
 #[test]
 fn test_null_literal() {
     let context = Context::new();
-    assert_eq!(lexer::null_literal(&context)("null xxx").0.ok(), Some((" xxx", ast::Literal::Null(ast::Keyword::Null("null")))));
+    assert_eq!(lexer::null_literal(&context)("null xxx").0.ok(), Some((" xxx", ast::Literal::Null(ast::Keyword("null", ast::KeywordKind::Null)))));
     assert_eq!(lexer::null_literal(&context)("nullxxx").0.ok(), None);
 }
 
 #[test]
 fn test_bool_literal() {
     let context = Context::new();
-    assert_eq!(lexer::bool_literal(&context)("true xxx").0.ok(), Some((" xxx", ast::Literal::Bool(ast::Keyword::True("true")))));
-    assert_eq!(lexer::bool_literal(&context)("false xxx").0.ok(), Some((" xxx", ast::Literal::Bool(ast::Keyword::False("false")))));
+    assert_eq!(lexer::bool_literal(&context)("true xxx").0.ok(), Some((" xxx", ast::Literal::Bool(ast::Keyword("true", ast::KeywordKind::True)))));
+    assert_eq!(lexer::bool_literal(&context)("false xxx").0.ok(), Some((" xxx", ast::Literal::Bool(ast::Keyword("false", ast::KeywordKind::False)))));
     assert_eq!(lexer::bool_literal(&context)("truexxx").0.ok(), None);
 }
 
@@ -207,7 +213,7 @@ fn test_verbatium_string_literal() {
 #[test]
 fn test_this_literal() {
     let context = Context::new();
-    assert_eq!(lexer::this_literal(&context)("this xxx").0.ok(), Some((" xxx", ast::Literal::This(ast::Keyword::This("this")))));
+    assert_eq!(lexer::this_literal(&context)("this xxx").0.ok(), Some((" xxx", ast::Literal::This(ast::Keyword("this", ast::KeywordKind::This)))));
     assert_eq!(lexer::this_literal(&context)("thisxxx").0.ok(), None);
 }
 

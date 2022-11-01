@@ -3,6 +3,7 @@ pub mod error;
 pub mod lexer;
 pub mod parser;
 pub mod semantics;
+mod macroes;
 
 #[cfg(test)]
 mod test;
