@@ -10,19 +10,31 @@ mod test;
 
 use nom::Err;
 use nom_supreme::final_parser::final_parser;
-use self::context::Context;
-use self::error::{
-    ErrorTree,
-    convert::convert_error,
+use self::{
+    context::Context,
+    error::{
+        ErrorTree,
+        parsed_error::convert_parsed_error,
+        semantic_error::convert_semantic_error,
+    },
 };
-use self::parser::{
-    ast::Target,
-    target,
-};
+
 
 pub type ParsedResult<'input, O> = Result<(&'input str, O), Err<ErrorTree<'input>>>;
 
-pub fn parse<'context: 'input, 'input>(context: &'context Context, input: &'input str) -> Result<Target<'input>, Vec<String>> {
-    final_parser(target(context))(input)
-    .map_err(|e| convert_error(input, e))
+pub fn parse<'context: 'input, 'input>(
+    context: &'context Context,
+    input: &'input str
+) -> Result<parser::ast::Target<'input>, Vec<String>> {
+    final_parser(parser::target(context))(input)
+    .map_err(|e| convert_parsed_error(input, e))
+}
+
+pub fn analize<'context: 'input, 'input>(
+    context: &'context Context,
+    input: &'input str,
+    parsed: &'input parser::ast::Target<'input>
+) -> Result<semantics::ast::Target<'input>, Vec<String>> {
+    semantics::analyzer::target(context, parsed)
+    .map_err(|e| convert_semantic_error(input, e))
 }

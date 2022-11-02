@@ -6,7 +6,7 @@ use nom_supreme::error::{
 };
 use crate::error::{
     ErrorTree,
-    convert::line_infoes,
+    line_infoes,
 };
 
 #[test]
