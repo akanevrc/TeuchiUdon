@@ -26,13 +26,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (program == null)
             {
                 program = ScriptableObject.CreateInstance<TeuchiUdonProgramAsset>();
-                //program.SetUdonAssembly(output, GetDefaultValues());
+                program.SetUdonAssembly(output/*, GetDefaultValues()*/);
                 program.RefreshProgram();
                 AssetDatabase.CreateAsset(program, assetPath);
             }
             else
             {
-                //program.SetUdonAssembly(output, GetDefaultValues());
+                program.SetUdonAssembly(output/*, GetDefaultValues()*/);
                 program.RefreshProgram();
             }
             AssetDatabase.SaveAssets();
@@ -53,10 +53,29 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private static (string output, string error) CompileFromText(string text)
         {
-            var output = TeuchiUdonUnityCompiler.compile("let x = 123; fn f(x: int) { x }; f(x);");
-            Debug.Log(output);
-            TeuchiUdonUnityCompiler.free_str(output);
-            return ("", "");
+            var output = (string)null;
+            try
+            {
+                output = TeuchiUdonUnityCompiler.compile("let x: int = 123;");
+                var parsed = ParseOutput(output);
+                return parsed;
+            }
+            finally
+            {
+                if (output != null) TeuchiUdonUnityCompiler.free_str(output);
+            }
+        }
+
+        private static (string output, string error) ParseOutput(string output)
+        {
+            if (output.Length > 0 && output[0] == '!')
+            {
+                return ("", output.Substring(1));
+            }
+            else
+            {
+                return (output.ToString(), "");
+            }
         }
     }
 }

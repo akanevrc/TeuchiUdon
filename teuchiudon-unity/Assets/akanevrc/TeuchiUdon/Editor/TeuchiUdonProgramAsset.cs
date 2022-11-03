@@ -20,10 +20,10 @@ namespace akanevrc.TeuchiUdon.Editor
         [SerializeField, HideInInspector]
         private bool showAssembly = true;
 
-        public void SetUdonAssembly(string assembly, IEnumerable<(string name, object value, Type type)> defaultValues)
+        public void SetUdonAssembly(string assembly/*, IEnumerable<(string name, object value, Type type)> defaultValues*/)
         {
             udonAssembly      = assembly;
-            heapDefaultValues = defaultValues.ToDictionary(x => x.name, x => (x.value, x.type));
+            //heapDefaultValues = defaultValues.ToDictionary(x => x.name, x => (x.value, x.type));
         }
 
         protected override void RefreshProgramImpl()

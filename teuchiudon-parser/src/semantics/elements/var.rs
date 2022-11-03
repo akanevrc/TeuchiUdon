@@ -27,7 +27,7 @@ impl_key_value_elements!(
     VarKey,
     Var,
     VarKey { qual, name },
-    format!("{}::{}", qual, name),
+    format!("{}{}", qual, name),
     var_store
 );
 

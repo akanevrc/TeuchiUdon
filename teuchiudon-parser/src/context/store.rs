@@ -45,4 +45,8 @@ where
     pub fn get_unwrap(&self, key: Key) -> Result<Rc<Value>, ElementError> {
         self.get(key.clone()).ok_or((self.not_found)(key))
     }
+
+    pub fn values(&self) -> impl Iterator<Item = Rc<Value>> {
+        self.values.borrow().iter().cloned().collect::<Vec<_>>().into_iter()
+    }
 }

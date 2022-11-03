@@ -31,7 +31,7 @@ impl_key_value_elements!(
     TyKey,
     Ty,
     TyKey { qual, name },
-    format!("{}::{}", qual, name),
+    format!("{}{}", qual, name),
     ty_store
 );
 
