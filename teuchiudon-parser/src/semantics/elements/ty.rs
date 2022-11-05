@@ -26,8 +26,8 @@ pub struct BaseTyKey {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Ty {
-    base: Rc<BaseTy>,
-    args: Vec<TyArg>,
+    pub base: Rc<BaseTy>,
+    pub args: Vec<TyArg>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
