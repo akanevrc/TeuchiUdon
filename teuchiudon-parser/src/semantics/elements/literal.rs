@@ -9,7 +9,7 @@ use super::{
     },
     ty::{
         Ty,
-        TyKey,
+        BaseTyKey,
     },
 };
 
@@ -47,61 +47,61 @@ impl Literal {
     }
 
     pub fn new_unit(context: &Context) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("unit").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("unit").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, "()".to_owned(), ty))
     }
 
     pub fn new_null(context: &Context) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("nulltype").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("nulltype").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, "null".to_owned(), ty))
     }
 
     pub fn new_bool(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("bool").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("bool").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_pure_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("int").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("int").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_dec_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = TyKey::from_name(ty_name).consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name(ty_name).consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_hex_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = TyKey::from_name(ty_name).consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name(ty_name).consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_bin_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = TyKey::from_name(ty_name).consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name(ty_name).consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_real_number(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_real_number_text(text);
-        let ty = TyKey::from_name(ty_name).consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name(ty_name).consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_character(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("char").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("char").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_regular_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("string").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("string").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_verbatium_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = TyKey::from_name("string").consume_key_or_err(context)?;
+        let ty = BaseTyKey::from_name("string").consume_key_or_err(context)?.direct();
         Ok(Self::new(context, text, ty))
     }
 

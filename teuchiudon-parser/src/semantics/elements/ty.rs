@@ -2,12 +2,15 @@ use std::rc::Rc;
 use crate::impl_key_value_elements;
 use crate::context::Context;
 use super::{
-    element::ValueElement,
+    element::{
+        SemanticElement,
+        ValueElement,
+    },
     qual::Qual,
 };
 
 #[derive(Clone, Debug)]
-pub struct Ty {
+pub struct BaseTy {
     pub id: usize,
     pub qual: Qual,
     pub name: String,
@@ -16,9 +19,15 @@ pub struct Ty {
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct TyKey {
+pub struct BaseTyKey {
     pub qual: Qual,
     pub name: String,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct Ty {
+    base: Rc<BaseTy>,
+    args: Vec<TyArg>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -27,14 +36,14 @@ pub enum TyArg {
 }
 
 impl_key_value_elements!(
-    TyKey,
-    Ty,
-    TyKey { qual, name },
+    BaseTyKey,
+    BaseTy,
+    BaseTyKey { qual, name },
     format!("{}{}", qual, name),
     ty_store
 );
 
-impl Ty {
+impl BaseTy {
     pub fn new(context: &Context, qual: Qual, name: String, logical_name: String, real_name: Option<String>) -> Rc<Self> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
@@ -47,13 +56,38 @@ impl Ty {
         context.ty_store.add(key, value.clone());
         value
     }
+
+    pub fn apply(self: &Rc<Self>, args: Vec<TyArg>) -> Rc<Ty> {
+        Rc::new(Ty {
+            base: self.clone(),
+            args,
+        })
+    }
+
+    pub fn direct(self: &Rc<Self>) -> Rc<Ty> {
+        self.apply(Vec::new())
+    }
 }
 
-impl TyKey {
+impl BaseTyKey {
     pub fn from_name(name: &str) -> Self {
         Self {
             qual: Qual::TOP,
             name: name.to_owned(),
+        }
+    }
+}
+
+impl SemanticElement for Ty {
+    fn description(&self) -> String {
+        format!("{}{}<{}>", self.base.qual.description(), self.base.name.description(), self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", "))
+    }
+}
+
+impl SemanticElement for TyArg {
+    fn description(&self) -> String {
+        match self {
+            Self::Ty(x) => x.description(),
         }
     }
 }

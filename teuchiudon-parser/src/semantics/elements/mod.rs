@@ -10,7 +10,7 @@ use super::SemanticError;
 use self::{
     element::SemanticElement,
     literal::LiteralKey,
-    ty::TyKey,
+    ty::BaseTyKey,
     var::VarKey,
 };
 
@@ -18,7 +18,7 @@ use self::{
 pub enum ElementError {
     IllegalState(&'static str),
     LiteralNotFound(LiteralKey),
-    TyNotFound(TyKey),
+    TyNotFound(BaseTyKey),
     VarNotFound(VarKey),
 }
 

@@ -11,13 +11,13 @@ use crate::semantics::{
 #[test]
 fn test_type_expr() {
     let context = Context::new();
-    let ty_int = elements::ty::Ty::new(
+    let ty_int = elements::ty::BaseTy::new(
         &context,
         elements::qual::Qual::TOP,
         "int".to_owned(),
         "SystemInt32".to_owned(),
         Some("SystemInt32".to_owned()),
-    );
+    ).direct();
     let parsed = parser::type_expr(&context)("T::U::V").unwrap().1;
     assert_eq!(
         analyzer::type_expr(&context, &parsed).ok(),

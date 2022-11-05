@@ -16,8 +16,8 @@ use self::{
 use crate::semantics::elements::{
     ElementError,
     ty::{
-        Ty,
-        TyKey,
+        BaseTy,
+        BaseTyKey,
     },
     literal::{
         Literal,
@@ -35,7 +35,7 @@ pub struct Context {
     pub semantic_op: SemanticOpContext,
     pub semantic_type_op: SemanticTypeOpContext,
     pub literal_store: Store<LiteralKey, Literal>,
-    pub ty_store: Store<TyKey, Ty>,
+    pub ty_store: Store<BaseTyKey, BaseTy>,
     pub var_store: Store<VarKey, Var>,
 }
 
