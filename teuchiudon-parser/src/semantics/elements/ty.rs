@@ -86,6 +86,10 @@ impl BaseTyKey {
             name: name.to_owned(),
         }
     }
+
+    pub fn equiv_with(&self, ty: &Rc<Ty>) -> bool {
+        *self == ty.base.to_key()
+    }
 }
 
 impl SemanticElement for Ty {
