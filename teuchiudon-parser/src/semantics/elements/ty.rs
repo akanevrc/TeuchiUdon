@@ -80,7 +80,12 @@ impl BaseTyKey {
 
 impl SemanticElement for Ty {
     fn description(&self) -> String {
-        format!("{}{}<{}>", self.base.qual.description(), self.base.name.description(), self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", "))
+        format!(
+            "{}{}<{}>",
+            self.base.qual.description(),
+            self.base.name.description(),
+            self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
+        )
     }
 }
 
