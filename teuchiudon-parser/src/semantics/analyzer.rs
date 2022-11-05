@@ -8,10 +8,7 @@ use crate::lexer;
 use crate::parser;
 use super::{
     ast,
-    elements::{
-        self,
-        element::KeyElement,
-    },
+    elements,
     SemanticError,
 };
 
@@ -377,7 +374,7 @@ fn hidden_unknown_type_expr<'parsed>(
 ) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let term = Rc::new(ast::TypeTerm {
         detail: ast::TypeTermDetail::None,
-        ty: elements::ty::BaseTyKey::from_name("unknown").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unknown").direct(),
     });
     Ok(Rc::new(ast::TypeExpr {
         detail: ast::TypeExprDetail::Term {
@@ -393,7 +390,7 @@ fn hidden_unit_type_expr<'parsed>(
 ) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let term = Rc::new(ast::TypeTerm {
         detail: ast::TypeTermDetail::None,
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     });
     Ok(Rc::new(ast::TypeExpr {
         detail: ast::TypeExprDetail::Term {
@@ -431,7 +428,7 @@ fn eval_type_type_term<'parsed>(
             parsed: Some(node),
             ident
         },
-        ty: elements::ty::BaseTyKey::from_name("int").consume_key(context).unwrap().direct(), // TODO
+        ty: elements::ty::BaseTy::get_from_name(context, "int").direct(), // TODO
     }))
 }
 
@@ -732,7 +729,7 @@ fn hidden_unit_expr<'parsed>(
 ) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let term = Rc::new(ast::Term {
         detail: ast::TermDetail::None,
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     });
     Ok(Rc::new(ast::Expr {
         detail: ast::ExprDetail::Term {
@@ -951,7 +948,7 @@ fn tuple_term<'parsed>(
             parsed: Some(node),
             exprs: es,
         },
-        ty: elements::ty::BaseTyKey::from_name("tuple").consume_key(context).unwrap().direct(), // TODO
+        ty: elements::ty::BaseTy::get_from_name(context, "tuple").direct(), // TODO
     }))
 }
 
@@ -969,7 +966,7 @@ fn array_ctor_term<'parsed>(
             parsed: Some(node),
             iter_expr,
         },
-        ty: elements::ty::BaseTyKey::from_name("array").consume_key(context).unwrap().direct(), // TODO
+        ty: elements::ty::BaseTy::get_from_name(context, "array").direct(), // TODO
     }))
 }
 
@@ -999,7 +996,7 @@ fn this_literal_term<'parsed>(
             parsed: Some(node),
             literal,
         },
-        ty: elements::ty::BaseTyKey::from_name("udon").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "udon").direct(),
     }))
 }
 
@@ -1014,7 +1011,7 @@ fn interpolated_string_term<'parsed>(
             parsed: Some(node),
             interpolated_string,
         },
-        ty: elements::ty::BaseTyKey::from_name("string").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "string").direct(),
     }))
 }
 
@@ -1029,7 +1026,7 @@ fn eval_var_term<'parsed>(
             parsed: Some(node),
             ident,
         },
-        ty: elements::ty::BaseTyKey::from_name("int").consume_key(context).unwrap().direct(), // TODO
+        ty: elements::ty::BaseTy::get_from_name(context, "int").direct(), // TODO
     }))
 }
 
@@ -1089,7 +1086,7 @@ fn while_term<'parsed>(
             condition,
             stats,
         },
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     }))
 }
 
@@ -1104,7 +1101,7 @@ fn loop_term<'parsed>(
             parsed: Some(node),
             stats,
         },
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     }))
 }
 
@@ -1125,7 +1122,7 @@ fn for_term<'parsed>(
             for_binds: fbs,
             stats,
         },
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     }))
 }
 
@@ -1143,7 +1140,7 @@ fn closure_term<'parsed>(
             var_decl,
             expr,
         },
-        ty: elements::ty::BaseTyKey::from_name("closure").consume_key(context).unwrap().direct(), // TODO
+        ty: elements::ty::BaseTy::get_from_name(context, "closure").direct(), // TODO
     }))
 }
 
@@ -1157,7 +1154,7 @@ fn type_expr_term<'parsed>(
             parsed: Some(type_expr),
             type_expr: te,
         },
-        ty: elements::ty::BaseTyKey::from_name("type").consume_key(context).unwrap().direct(), // TODO
+        ty: elements::ty::BaseTy::get_from_name(context, "type").direct(), // TODO
     }))
 }
 
@@ -1174,7 +1171,7 @@ fn apply_fn_term<'parsed>(
             parsed: Some(arg_exprs),
             args,
         },
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     }))
 }
 
@@ -1188,7 +1185,7 @@ fn apply_spread_fn_term<'parsed>(
             parsed: Some(expr),
             arg,
         },
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     }))
 }
 
@@ -1202,7 +1199,7 @@ fn apply_key_term<'parsed>(
             parsed: Some(expr),
             key,
         },
-        ty: elements::ty::BaseTyKey::from_name("unit").consume_key(context).unwrap().direct(),
+        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     }))
 }
 

@@ -2,7 +2,9 @@ use std::rc::Rc;
 use crate::impl_key_value_elements;
 use crate::context::Context;
 use super::{
+    ElementError,
     element::{
+        KeyElement,
         SemanticElement,
         ValueElement,
     },
@@ -55,6 +57,14 @@ impl BaseTy {
         let key = value.to_key();
         context.ty_store.add(key, value.clone());
         value
+    }
+
+    pub fn get_from_name(context: &Context, name: &str) -> Rc<Self> {
+        BaseTyKey::from_name(name).consume_key(context).unwrap()
+    }
+
+    pub fn get_from_name_or_err(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
+        BaseTyKey::from_name(name).consume_key_or_err(context)
     }
 
     pub fn apply(self: &Rc<Self>, args: Vec<TyArg>) -> Rc<Ty> {
