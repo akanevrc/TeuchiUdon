@@ -1518,9 +1518,9 @@ where
     for (pred, assoc) in ExprTree::priorities(context) {
         match assoc {
             ast::Assoc::Left =>
-                (es, os) = left_assoc(node, pred, es, os),
+                (es, os) = left_assoc(node, pred, es, os)?,
             ast::Assoc::Right =>
-                (es, os) = right_assoc(node, pred, es, os),
+                (es, os) = right_assoc(node, pred, es, os)?,
         }
     }
     if es.len() == 1 {
@@ -1538,26 +1538,27 @@ fn left_assoc<'parsed, ExprTree, SemanticOp, ParserExpr>(
     pred: &Box<dyn Fn(&SemanticOp) -> bool>,
     mut exprs: VecDeque<Rc<ExprTree>>,
     ops: VecDeque<SemanticOp>,
-) -> (VecDeque<Rc<ExprTree>>, VecDeque<SemanticOp>)
+) -> Result<(VecDeque<Rc<ExprTree>>, VecDeque<SemanticOp>), Vec<SemanticError<'parsed>>>
 where
     ExprTree: ast::ExprTree<'parsed, SemanticOp, ParserExpr>,
     SemanticOp: Clone,
 {
     let expr_0 = exprs.pop_front().unwrap();
     let (mut acc_exprs, acc_ops, expr) = ops.into_iter().zip(exprs.into_iter())
-    .fold((VecDeque::new(), VecDeque::new(), expr_0), |mut acc, x| {
+    .fold(Ok::<_, Vec<SemanticError>>((VecDeque::new(), VecDeque::new(), expr_0)), |acc, x| {
+        let mut acc = acc?;
         if pred(&x.0) {
-            let infix_op = ExprTree::infix_op(node, acc.2, x.0, x.1);
-            (acc.0, acc.1, infix_op)
+            let infix_op = ExprTree::infix_op(node, acc.2, x.0, x.1)?;
+            Ok((acc.0, acc.1, infix_op))
         }
         else {
             acc.0.push_back(acc.2);
             acc.1.push_back(x.0);
-            (acc.0, acc.1, x.1)
+            Ok((acc.0, acc.1, x.1))
         }
-    });
+    })?;
     acc_exprs.push_back(expr);
-    (acc_exprs, acc_ops)
+    Ok((acc_exprs, acc_ops))
 }
 
 fn right_assoc<'parsed, ExprTree, SemanticOp, ParserExpr>(
@@ -1565,24 +1566,75 @@ fn right_assoc<'parsed, ExprTree, SemanticOp, ParserExpr>(
     pred: &Box<dyn Fn(&SemanticOp) -> bool>,
     mut exprs: VecDeque<Rc<ExprTree>>,
     ops: VecDeque<SemanticOp>,
-) -> (VecDeque<Rc<ExprTree>>, VecDeque<SemanticOp>)
+) -> Result<(VecDeque<Rc<ExprTree>>, VecDeque<SemanticOp>), Vec<SemanticError<'parsed>>>
 where
     ExprTree: ast::ExprTree<'parsed, SemanticOp, ParserExpr>,
     SemanticOp: Clone,
 {
     let expr_0 = exprs.pop_back().unwrap();
     let (mut acc_exprs, acc_ops, expr) = ops.into_iter().rev().zip(exprs.into_iter().rev())
-    .fold((VecDeque::new(), VecDeque::new(), expr_0), |mut acc, x| {
+    .fold(Ok::<_, Vec<SemanticError>>((VecDeque::new(), VecDeque::new(), expr_0)), |acc, x| {
+        let mut acc = acc?;
         if pred(&x.0) {
-            let infix_op = ExprTree::infix_op(node, x.1, x.0, acc.2);
-            (acc.0, acc.1, infix_op)
+            let infix_op = ExprTree::infix_op(node, x.1, x.0, acc.2)?;
+            Ok((acc.0, acc.1, infix_op))
         }
         else {
             acc.0.push_front(acc.2);
             acc.1.push_front(x.0);
-            (acc.0, acc.1, x.1)
+            Ok((acc.0, acc.1, x.1))
         }
-    });
+    })?;
     acc_exprs.push_front(expr);
-    (acc_exprs, acc_ops)
+    Ok((acc_exprs, acc_ops))
+}
+
+impl<'parsed> ast::ExprTree<'parsed, ast::TypeOp, parser::ast::TypeExpr<'parsed>> for ast::TypeExpr<'parsed> {
+    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&ast::TypeOp) -> bool>, ast::Assoc)> {
+        &context.semantic_type_op.priorities
+    }
+
+    fn infix_op(
+        parsed: &'parsed parser::ast::TypeExpr,
+        left: Rc<Self>,
+        op: ast::TypeOp,
+        right: Rc<Self>,
+    ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
+        match &op {
+            ast::TypeOp::Access => {
+                Ok(Rc::new(Self {
+                    detail: ast::TypeExprDetail::InfixOp {
+                        parsed: Some(parsed),
+                        left: left.clone(),
+                        op,
+                        right: right.clone(),
+                    },
+                    ty: left.ty.clone(),
+                }))
+            }
+        }
+    }
+}
+
+impl<'parsed> ast::ExprTree<'parsed, ast::Op, parser::ast::Expr<'parsed>> for ast::Expr<'parsed> {
+    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&ast::Op) -> bool>, ast::Assoc)> {
+        &context.semantic_op.priorities
+    }
+
+    fn infix_op(
+        parsed: &'parsed parser::ast::Expr,
+        left: Rc<Self>,
+        op: ast::Op,
+        right: Rc<Self>,
+    ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
+        Ok(Rc::new(Self {
+            detail: ast::ExprDetail::InfixOp {
+                parsed: Some(parsed),
+                left: left.clone(),
+                op,
+                right,
+            },
+            ty: left.ty.clone(), // TODO
+        }))
+    }
 }

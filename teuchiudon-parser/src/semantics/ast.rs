@@ -2,7 +2,10 @@ use std::rc::Rc;
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
-use super::elements;
+use super::{
+    SemanticError,
+    elements,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Target<'parsed> {
@@ -426,51 +429,5 @@ pub trait ExprTree<'parsed, SemanticOp, ParserExpr> {
         left: Rc<Self>,
         op: SemanticOp,
         right: Rc<Self>,
-    ) -> Rc<Self>;
-}
-
-impl<'parsed> ExprTree<'parsed, TypeOp, parser::ast::TypeExpr<'parsed>> for TypeExpr<'parsed> {
-    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&TypeOp) -> bool>, Assoc)> {
-        &context.semantic_type_op.priorities
-    }
-
-    fn infix_op(
-        parsed: &'parsed parser::ast::TypeExpr,
-        left: Rc<Self>,
-        op: TypeOp,
-        right: Rc<Self>,
-    ) -> Rc<Self> {
-        Rc::new(Self {
-            detail: TypeExprDetail::InfixOp {
-                parsed: Some(parsed),
-                left: left.clone(),
-                op,
-                right,
-            },
-            ty: left.ty.clone(),
-        })
-    }
-}
-
-impl<'parsed> ExprTree<'parsed, Op, parser::ast::Expr<'parsed>> for Expr<'parsed> {
-    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&Op) -> bool>, Assoc)> {
-        &context.semantic_op.priorities
-    }
-
-    fn infix_op(
-        parsed: &'parsed parser::ast::Expr,
-        left: Rc<Self>,
-        op: Op,
-        right: Rc<Self>,
-    ) -> Rc<Self> {
-        Rc::new(Self {
-            detail: ExprDetail::InfixOp {
-                parsed: Some(parsed),
-                left: left.clone(),
-                op,
-                right,
-            },
-            ty: left.ty.clone(), // TODO
-        })
-    }
+    ) -> Result<Rc<Self>, Vec<SemanticError>>;
 }
