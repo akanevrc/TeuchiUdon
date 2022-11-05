@@ -373,15 +373,35 @@ fn access_op_type_expr<'parsed>(
 }
 
 fn hidden_unknown_type_expr<'parsed>(
-    _context: &Context,
+    context: &Context,
 ) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }]) // TODO
+    let term = Rc::new(ast::TypeTerm {
+        detail: ast::TypeTermDetail::None,
+        ty: elements::ty::TyKey::from_name("unknown").consume_key(context).unwrap(),
+    });
+    Ok(Rc::new(ast::TypeExpr {
+        detail: ast::TypeExprDetail::Term {
+            parsed: None,
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
+    }))
 }
 
 fn hidden_unit_type_expr<'parsed>(
-    _context: &Context,
+    context: &Context,
 ) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }]) // TODO
+    let term = Rc::new(ast::TypeTerm {
+        detail: ast::TypeTermDetail::None,
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
+    });
+    Ok(Rc::new(ast::TypeExpr {
+        detail: ast::TypeExprDetail::Term {
+            parsed: None,
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
+    }))
 }
 
 fn access_type_op<'parsed>(
@@ -708,9 +728,19 @@ fn assign_op_expr<'parsed>(
 }
 
 fn hidden_unit_expr<'parsed>(
-    _context: &Context,
+    context: &Context,
 ) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    Err(vec![SemanticError { slice: None, message: "Not implemented".to_owned() }]) // TODO
+    let term = Rc::new(ast::Term {
+        detail: ast::TermDetail::None,
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
+    });
+    Ok(Rc::new(ast::Expr {
+        detail: ast::ExprDetail::Term {
+            parsed: None,
+            term: term.clone(),
+        },
+        ty: term.ty.clone(),
+    }))
 }
 
 pub fn type_access_op<'parsed>(
@@ -969,7 +999,7 @@ fn this_literal_term<'parsed>(
             parsed: Some(node),
             literal,
         },
-        ty: elements::ty::TyKey::from_name("udonbehaviour").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("udon").consume_key(context).unwrap(),
     }))
 }
 
@@ -984,7 +1014,7 @@ fn interpolated_string_term<'parsed>(
             parsed: Some(node),
             interpolated_string,
         },
-        ty: elements::ty::TyKey::from_name("string").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("string").consume_key(context).unwrap(),
     }))
 }
 
@@ -1059,7 +1089,7 @@ fn while_term<'parsed>(
             condition,
             stats,
         },
-        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
     }))
 }
 
@@ -1074,7 +1104,7 @@ fn loop_term<'parsed>(
             parsed: Some(node),
             stats,
         },
-        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
     }))
 }
 
@@ -1095,7 +1125,7 @@ fn for_term<'parsed>(
             for_binds: fbs,
             stats,
         },
-        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
     }))
 }
 
@@ -1144,7 +1174,7 @@ fn apply_fn_term<'parsed>(
             parsed: Some(arg_exprs),
             args,
         },
-        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
     }))
 }
 
@@ -1158,7 +1188,7 @@ fn apply_spread_fn_term<'parsed>(
             parsed: Some(expr),
             arg,
         },
-        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
     }))
 }
 
@@ -1172,7 +1202,7 @@ fn apply_key_term<'parsed>(
             parsed: Some(expr),
             key,
         },
-        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(), // TODO
+        ty: elements::ty::TyKey::from_name("unit").consume_key(context).unwrap(),
     }))
 }
 

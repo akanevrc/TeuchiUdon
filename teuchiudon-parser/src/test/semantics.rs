@@ -15,9 +15,8 @@ fn test_type_expr() {
         &context,
         elements::qual::Qual::TOP,
         "int".to_owned(),
-        Vec::new(),
         "SystemInt32".to_owned(),
-        "SystemInt32".to_owned()
+        Some("SystemInt32".to_owned()),
     );
     let parsed = parser::type_expr(&context)("T::U::V").unwrap().1;
     assert_eq!(

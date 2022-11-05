@@ -11,9 +11,8 @@ pub struct Ty {
     pub id: usize,
     pub qual: Qual,
     pub name: String,
-    pub args: Vec<TyArg>,
     pub logical_name: String,
-    pub real_name: String,
+    pub real_name: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -36,12 +35,11 @@ impl_key_value_elements!(
 );
 
 impl Ty {
-    pub fn new(context: &Context, qual: Qual, name: String, args: Vec<TyArg>, logical_name: String, real_name: String) -> Rc<Self> {
+    pub fn new(context: &Context, qual: Qual, name: String, logical_name: String, real_name: Option<String>) -> Rc<Self> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
             qual,
             name,
-            args,
             logical_name,
             real_name,
         });

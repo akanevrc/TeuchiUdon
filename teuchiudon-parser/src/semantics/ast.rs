@@ -135,6 +135,7 @@ pub struct TypeTerm<'parsed> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TypeTermDetail<'parsed> {
+    None,
     EvalType {
         parsed: Option<&'parsed parser::ast::TypeTerm<'parsed>>,
         ident: Ident<'parsed>,
@@ -235,6 +236,7 @@ pub struct Term<'parsed> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TermDetail<'parsed> {
+    None,
     TypeExpr {
         parsed: Option<&'parsed parser::ast::TypeExpr<'parsed>>,
         type_expr: Rc<TypeExpr<'parsed>>,
