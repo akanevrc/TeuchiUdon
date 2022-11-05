@@ -24,8 +24,8 @@ pub fn register_default_tys(context: &Context) {
         BaseTy::new(
             context,
             Qual::TOP,
-            "ty".to_owned(),
-            "ty".to_owned(),
+            "type".to_owned(),
+            "type".to_owned(),
             None,
         ),
         BaseTy::new(
@@ -104,13 +104,6 @@ pub fn register_default_tys(context: &Context) {
             "object".to_owned(),
             "SystemObject".to_owned(),
             Some("SystemObject".to_owned()),
-        ),
-        BaseTy::new(
-            context,
-            Qual::TOP,
-            "type".to_owned(),
-            "SystemType".to_owned(),
-            Some("SystemType".to_owned()),
         ),
         BaseTy::new(
             context,
