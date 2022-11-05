@@ -19,7 +19,7 @@ impl Qual {
         scopes: Vec::new(),
     };
 
-    pub fn qualify(&self, sep: &'static str) -> String {
+    pub fn qualify(&self, sep: &str) -> String {
         let desc = self.scopes.iter().map(|x| x.description()).collect::<Vec<_>>().join(sep);
         if desc.len() == 0 { desc } else { desc + sep }
     }
