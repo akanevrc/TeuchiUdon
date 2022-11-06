@@ -25,7 +25,7 @@ pub struct VarBind<'input>(pub lexer::ast::Keyword<'input>, pub VarDecl<'input>,
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum VarDecl<'input> {
-    SingleDecl(Option<MutAttr<'input>>, lexer::ast::Ident<'input>, Option<Rc<TypeExpr<'input>>>),
+    SingleDecl(Option<MutAttr<'input>>, lexer::ast::Ident<'input>, Option<Rc<TyExpr<'input>>>),
     TupleDecl(Vec<VarDecl<'input>>),
 }
 
@@ -36,19 +36,19 @@ pub struct MutAttr<'input>(pub lexer::ast::Keyword<'input>);
 pub struct FnBind<'input>(pub lexer::ast::Keyword<'input>, pub FnDecl<'input>, pub StatsBlock<'input>);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FnDecl<'input>(pub lexer::ast::Ident<'input>, pub VarDecl<'input>, pub Option<Rc<TypeExpr<'input>>>);
+pub struct FnDecl<'input>(pub lexer::ast::Ident<'input>, pub VarDecl<'input>, pub Option<Rc<TyExpr<'input>>>);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TypeExpr<'input>(pub Rc<TypeTerm<'input>>, pub Vec<TypeOp<'input>>);
+pub struct TyExpr<'input>(pub Rc<TyTerm<'input>>, pub Vec<TyOp<'input>>);
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TypeOp<'input> {
-    Access(lexer::ast::OpCode<'input>, Rc<TypeTerm<'input>>),
+pub enum TyOp<'input> {
+    Access(lexer::ast::OpCode<'input>, Rc<TyTerm<'input>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TypeTerm<'input> {
-    EvalType(lexer::ast::Ident<'input>),
+pub enum TyTerm<'input> {
+    EvalTy(lexer::ast::Ident<'input>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -69,12 +69,12 @@ pub struct Expr<'input>(pub Rc<Term<'input>>, pub Vec<Op<'input>>);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Op<'input> {
-    TypeAccess(lexer::ast::OpCode<'input>, Rc<Term<'input>>),
+    TyAccess(lexer::ast::OpCode<'input>, Rc<Term<'input>>),
     Access(lexer::ast::OpCode<'input>, Rc<Term<'input>>),
     EvalFn(Vec<ArgExpr<'input>>),
     EvalSpreadFn(Rc<Expr<'input>>),
     EvalKey(Rc<Expr<'input>>),
-    CastOp(lexer::ast::Keyword<'input>, Rc<TypeExpr<'input>>),
+    CastOp(lexer::ast::Keyword<'input>, Rc<TyExpr<'input>>),
     InfixOp(lexer::ast::OpCode<'input>, Rc<Term<'input>>),
     Assign(Rc<Term<'input>>),
 }

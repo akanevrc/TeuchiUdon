@@ -9,7 +9,7 @@ use crate::semantics::{
 };
 
 #[test]
-fn test_type_expr() {
+fn test_ty_expr() {
     let context = Context::new();
     let ty_int = elements::ty::BaseTy::new(
         &context,
@@ -18,20 +18,20 @@ fn test_type_expr() {
         "SystemInt32".to_owned(),
         Some("SystemInt32".to_owned()),
     ).direct();
-    let parsed = parser::type_expr(&context)("T::U::V").unwrap().1;
+    let parsed = parser::ty_expr(&context)("T::U::V").unwrap().1;
     assert_eq!(
-        analyzer::type_expr(&context, &parsed).ok(),
-        Some(Rc::new(ast::TypeExpr {
-            detail: ast::TypeExprDetail::InfixOp {
+        analyzer::ty_expr(&context, &parsed).ok(),
+        Some(Rc::new(ast::TyExpr {
+            detail: ast::TyExprDetail::InfixOp {
                 parsed: Some(&parsed),
-                left: Rc::new(ast::TypeExpr {
-                    detail: ast::TypeExprDetail::InfixOp {
+                left: Rc::new(ast::TyExpr {
+                    detail: ast::TyExprDetail::InfixOp {
                         parsed: Some(&parsed),
-                        left: Rc::new(ast::TypeExpr {
-                            detail: ast::TypeExprDetail::Term {
+                        left: Rc::new(ast::TyExpr {
+                            detail: ast::TyExprDetail::Term {
                                 parsed: Some(&parsed),
-                                term: Rc::new(ast::TypeTerm {
-                                    detail: ast::TypeTermDetail::EvalType {
+                                term: Rc::new(ast::TyTerm {
+                                    detail: ast::TyTermDetail::EvalTy {
                                         parsed: Some(&parsed.0),
                                         ident: ast::Ident {
                                             parsed: Some(&lexer::ast::Ident("T")),
@@ -43,13 +43,13 @@ fn test_type_expr() {
                             },
                             ty: ty_int.clone(),
                         }),
-                        op: ast::TypeOp::Access,
-                        right: Rc::new(ast::TypeExpr {
-                            detail: ast::TypeExprDetail::Term {
+                        op: ast::TyOp::Access,
+                        right: Rc::new(ast::TyExpr {
+                            detail: ast::TyExprDetail::Term {
                                 parsed: Some(&parsed),
-                                term: Rc::new(ast::TypeTerm {
-                                    detail: ast::TypeTermDetail::EvalType {
-                                        parsed: match &parsed.1[0] { parser::ast::TypeOp::Access(_, x) => Some(x) },
+                                term: Rc::new(ast::TyTerm {
+                                    detail: ast::TyTermDetail::EvalTy {
+                                        parsed: match &parsed.1[0] { parser::ast::TyOp::Access(_, x) => Some(x) },
                                         ident: ast::Ident {
                                             parsed: Some(&lexer::ast::Ident("U")),
                                             name: "U".to_owned(),
@@ -63,13 +63,13 @@ fn test_type_expr() {
                     },
                     ty: ty_int.clone(),
                 }),
-                op: ast::TypeOp::Access,
-                right: Rc::new(ast::TypeExpr {
-                    detail: ast::TypeExprDetail::Term {
+                op: ast::TyOp::Access,
+                right: Rc::new(ast::TyExpr {
+                    detail: ast::TyExprDetail::Term {
                         parsed: Some(&parsed),
-                        term: Rc::new(ast::TypeTerm {
-                            detail: ast::TypeTermDetail::EvalType {
-                                parsed: match &parsed.1[1] { parser::ast::TypeOp::Access(_, x) => Some(x) },
+                        term: Rc::new(ast::TyTerm {
+                            detail: ast::TyTermDetail::EvalTy {
+                                parsed: match &parsed.1[1] { parser::ast::TyOp::Access(_, x) => Some(x) },
                                 ident: ast::Ident {
                                     parsed: Some(&lexer::ast::Ident("V")),
                                     name: "V".to_owned(),

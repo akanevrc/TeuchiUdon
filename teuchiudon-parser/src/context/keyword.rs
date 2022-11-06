@@ -28,7 +28,7 @@ impl KeywordContext {
                 ("match", KeywordKind::Match),
                 ("mod", KeywordKind::Mod),
                 ("mut", KeywordKind::Mut),
-                ("newtype", KeywordKind::Newtype),
+                ("newty", KeywordKind::Newty),
                 ("null", KeywordKind::Null),
                 ("pub", KeywordKind::Pub),
                 ("ref", KeywordKind::Ref),
@@ -38,7 +38,7 @@ impl KeywordContext {
                 ("sync", KeywordKind::Sync),
                 ("this", KeywordKind::This),
                 ("true", KeywordKind::True),
-                ("type", KeywordKind::Type),
+                ("ty", KeywordKind::Ty),
                 ("use", KeywordKind::Use),
                 ("while", KeywordKind::While),
             ]

@@ -208,8 +208,8 @@ pub fn var_decl<'parsed>(
     node: &'parsed parser::ast::VarDecl,
 ) -> Result<ast::VarDecl<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
-        parser::ast::VarDecl::SingleDecl(mut_attr, ident, type_expr) =>
-            single_var_decl(context, node, mut_attr, ident, type_expr),
+        parser::ast::VarDecl::SingleDecl(mut_attr, ident, ty_expr) =>
+            single_var_decl(context, node, mut_attr, ident, ty_expr),
         parser::ast::VarDecl::TupleDecl(var_decls) =>
             tuple_var_decl(context, node, var_decls),
     }
@@ -220,19 +220,19 @@ fn single_var_decl<'parsed>(
     node: &'parsed parser::ast::VarDecl,
     mut_attr: &'parsed Option<parser::ast::MutAttr>,
     ident: &'parsed lexer::ast::Ident,
-    type_expr: &'parsed Option<Rc<parser::ast::TypeExpr>>,
+    ty_expr: &'parsed Option<Rc<parser::ast::TyExpr>>,
 ) -> Result<ast::VarDecl<'parsed>, Vec<SemanticError<'parsed>>> {
     let mut_attr = self::mut_attr(context, mut_attr)?;
     let ident = self::ident(context, ident)?;
-    let type_expr = match type_expr {
-        Some(x) => self::type_expr(context, x)?,
-        None => hidden_unknown_type_expr(context)?,
+    let ty_expr = match ty_expr {
+        Some(x) => self::ty_expr(context, x)?,
+        None => hidden_unknown_ty_expr(context)?,
     };
     let var = elements::var::Var::new(
         context,
         elements::qual::Qual::TOP,
         ident.name.clone(),
-        type_expr.ty.clone(),
+        ty_expr.ty.clone(),
         matches!(mut_attr, ast::MutAttr::Mut { parsed: _ }),
         false,
     );
@@ -240,7 +240,7 @@ fn single_var_decl<'parsed>(
         parsed: Some(node),
         mut_attr,
         ident,
-        type_expr,
+        ty_expr,
         var: var.clone(),
     })
 }
@@ -308,34 +308,34 @@ pub fn fn_decl<'parsed>(
 ) -> Result<ast::FnDecl<'parsed>, Vec<SemanticError<'parsed>>> {
     let ident = ident(context, &node.0)?;
     let var_decl = var_decl(context, &node.1)?;
-    let type_expr = match &node.2 {
-        Some(x) => type_expr(context, x)?,
-        None => hidden_unit_type_expr(context)?,
+    let ty_expr = match &node.2 {
+        Some(x) => ty_expr(context, x)?,
+        None => hidden_unit_ty_expr(context)?,
     };
     Ok(ast::FnDecl {
         parsed: Some(node),
         ident,
         var_decl,
-        type_expr,
+        ty_expr,
     })
 }
 
-pub fn type_expr<'parsed>(
+pub fn ty_expr<'parsed>(
     context: &Context,
-    node: &'parsed parser::ast::TypeExpr,
-) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    construct_type_expr_tree(context, node)
+    node: &'parsed parser::ast::TyExpr,
+) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    construct_ty_expr_tree(context, node)
 }
 
-fn construct_type_expr_tree<'parsed>(
+fn construct_ty_expr_tree<'parsed>(
     context: &Context,
-    node: &'parsed parser::ast::TypeExpr,
-) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    node: &'parsed parser::ast::TyExpr,
+) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
-    let term = type_term(context, &node.0)?;
-    exprs.push_back(Rc::new(ast::TypeExpr {
-        detail: ast::TypeExprDetail::Term {
+    let term = ty_term(context, &node.0)?;
+    exprs.push_back(Rc::new(ast::TyExpr {
+        detail: ast::TyExprDetail::Term {
             parsed: Some(node),
             term: term.clone(),
         },
@@ -343,8 +343,8 @@ fn construct_type_expr_tree<'parsed>(
     }));
     for op in &node.1 {
         let (op, expr) = match op {
-            parser::ast::TypeOp::Access(_, term) =>
-                access_op_type_expr(context, node, term)?,
+            parser::ast::TyOp::Access(_, term) =>
+                access_op_ty_expr(context, node, term)?,
         };
         ops.push_back(op);
         exprs.push_back(expr);
@@ -352,15 +352,15 @@ fn construct_type_expr_tree<'parsed>(
     expr_tree(context, node, exprs, ops)
 }
 
-fn access_op_type_expr<'parsed>(
+fn access_op_ty_expr<'parsed>(
     context: &Context,
-    node: &'parsed parser::ast::TypeExpr,
-    term: &'parsed parser::ast::TypeTerm,
-) -> Result<(ast::TypeOp, Rc<ast::TypeExpr<'parsed>>), Vec<SemanticError<'parsed>>> {
-    let op = access_type_op(context)?;
-    let term = type_term(context, term)?;
-    let expr = Rc::new(ast::TypeExpr {
-        detail: ast::TypeExprDetail::Term {
+    node: &'parsed parser::ast::TyExpr,
+    term: &'parsed parser::ast::TyTerm,
+) -> Result<(ast::TyOp, Rc<ast::TyExpr<'parsed>>), Vec<SemanticError<'parsed>>> {
+    let op = access_ty_op(context)?;
+    let term = ty_term(context, term)?;
+    let expr = Rc::new(ast::TyExpr {
+        detail: ast::TyExprDetail::Term {
             parsed: Some(node),
             term: term.clone(),
         },
@@ -369,15 +369,15 @@ fn access_op_type_expr<'parsed>(
     Ok((op, expr))
 }
 
-fn hidden_unknown_type_expr<'parsed>(
+fn hidden_unknown_ty_expr<'parsed>(
     context: &Context,
-) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    let term = Rc::new(ast::TypeTerm {
-        detail: ast::TypeTermDetail::None,
+) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    let term = Rc::new(ast::TyTerm {
+        detail: ast::TyTermDetail::None,
         ty: elements::ty::BaseTy::get_from_name(context, "unknown").direct(),
     });
-    Ok(Rc::new(ast::TypeExpr {
-        detail: ast::TypeExprDetail::Term {
+    Ok(Rc::new(ast::TyExpr {
+        detail: ast::TyExprDetail::Term {
             parsed: None,
             term: term.clone(),
         },
@@ -385,15 +385,15 @@ fn hidden_unknown_type_expr<'parsed>(
     }))
 }
 
-fn hidden_unit_type_expr<'parsed>(
+fn hidden_unit_ty_expr<'parsed>(
     context: &Context,
-) -> Result<Rc<ast::TypeExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    let term = Rc::new(ast::TypeTerm {
-        detail: ast::TypeTermDetail::None,
+) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    let term = Rc::new(ast::TyTerm {
+        detail: ast::TyTermDetail::None,
         ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
     });
-    Ok(Rc::new(ast::TypeExpr {
-        detail: ast::TypeExprDetail::Term {
+    Ok(Rc::new(ast::TyExpr {
+        detail: ast::TyExprDetail::Term {
             parsed: None,
             term: term.clone(),
         },
@@ -401,30 +401,30 @@ fn hidden_unit_type_expr<'parsed>(
     }))
 }
 
-fn access_type_op<'parsed>(
+fn access_ty_op<'parsed>(
     _context: &Context,
-) -> Result<ast::TypeOp, Vec<SemanticError<'parsed>>> {
-    Ok(ast::TypeOp::Access)
+) -> Result<ast::TyOp, Vec<SemanticError<'parsed>>> {
+    Ok(ast::TyOp::Access)
 }
 
-pub fn type_term<'parsed>(
+pub fn ty_term<'parsed>(
     context: &Context,
-    node: &'parsed parser::ast::TypeTerm,
-) -> Result<Rc<ast::TypeTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
+    node: &'parsed parser::ast::TyTerm,
+) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     match node {
-        parser::ast::TypeTerm::EvalType(ident) =>
-            eval_type_type_term(context, node, ident),
+        parser::ast::TyTerm::EvalTy(ident) =>
+            eval_ty_ty_term(context, node, ident),
     }
 }
 
-fn eval_type_type_term<'parsed>(
+fn eval_ty_ty_term<'parsed>(
     context: &Context,
-    node: &'parsed parser::ast::TypeTerm,
+    node: &'parsed parser::ast::TyTerm,
     ident: &'parsed lexer::ast::Ident,
-) -> Result<Rc<ast::TypeTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
+) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    Ok(Rc::new(ast::TypeTerm {
-        detail: ast::TypeTermDetail::EvalType {
+    Ok(Rc::new(ast::TyTerm {
+        detail: ast::TyTermDetail::EvalTy {
             parsed: Some(node),
             ident
         },
@@ -563,8 +563,8 @@ fn construct_expr_tree<'parsed>(
     }));
     for parser_op in &node.1 {
         let (op, expr) = match parser_op {
-            parser::ast::Op::TypeAccess(_, term) =>
-                type_access_op_expr(context, node, term)?,
+            parser::ast::Op::TyAccess(_, term) =>
+                ty_access_op_expr(context, node, term)?,
             parser::ast::Op::Access(op_code, term) =>
                 access_op_expr(context, node, op_code, term)?,
             parser::ast::Op::EvalFn(arg_exprs) =>
@@ -573,8 +573,8 @@ fn construct_expr_tree<'parsed>(
                 eval_spread_fn_op_expr(context, node, expr)?,
             parser::ast::Op::EvalKey(expr) =>
                 eval_key_op_expr(context, node, expr)?,
-            parser::ast::Op::CastOp(_, type_expr) =>
-                cast_op_expr(context, node, type_expr)?,
+            parser::ast::Op::CastOp(_, ty_expr) =>
+                cast_op_expr(context, node, ty_expr)?,
             parser::ast::Op::InfixOp(op_code, term) =>
                 infix_op_expr(context, node, op_code, term)?,
             parser::ast::Op::Assign(term) =>
@@ -586,12 +586,12 @@ fn construct_expr_tree<'parsed>(
     expr_tree(context, node, exprs, ops)
 }
 
-fn type_access_op_expr<'parsed>(
+fn ty_access_op_expr<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Expr,
     term: &'parsed parser::ast::Term,
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
-    let op = type_access_op(context)?;
+    let op = ty_access_op(context)?;
     let term = self::term(context, term)?;
     let expr = Rc::new(ast::Expr {
         detail: ast::ExprDetail::Term {
@@ -675,10 +675,10 @@ fn eval_key_op_expr<'parsed>(
 fn cast_op_expr<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Expr,
-    type_expr: &'parsed parser::ast::TypeExpr,
+    ty_expr: &'parsed parser::ast::TyExpr,
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = cast_op(context)?;
-    let term = type_expr_term(context, type_expr)?;
+    let term = ty_expr_term(context, ty_expr)?;
     let expr = Rc::new(ast::Expr {
         detail: ast::ExprDetail::Term {
             parsed: Some(node),
@@ -740,10 +740,10 @@ fn hidden_unit_expr<'parsed>(
     }))
 }
 
-pub fn type_access_op<'parsed>(
+pub fn ty_access_op<'parsed>(
     _context: &Context,
 ) -> Result<ast::Op, Vec<SemanticError<'parsed>>> {
-    Ok(ast::Op::TypeAccess)
+    Ok(ast::Op::TyAccess)
 }
 
 #[named]
@@ -1144,15 +1144,15 @@ fn closure_term<'parsed>(
     }))
 }
 
-fn type_expr_term<'parsed>(
+fn ty_expr_term<'parsed>(
     context: &Context,
-    type_expr: &'parsed parser::ast::TypeExpr,
+    ty_expr: &'parsed parser::ast::TyExpr,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
-    let te = self::type_expr(context, type_expr)?;
+    let te = self::ty_expr(context, ty_expr)?;
     Ok(Rc::new(ast::Term {
-        detail: ast::TermDetail::TypeExpr {
-            parsed: Some(type_expr),
-            type_expr: te,
+        detail: ast::TermDetail::TyExpr {
+            parsed: Some(ty_expr),
+            ty_expr: te,
         },
         ty: elements::ty::BaseTy::get_from_name(context, "type").direct(), // TODO
     }))
@@ -1589,21 +1589,21 @@ where
     Ok((acc_exprs, acc_ops))
 }
 
-impl<'parsed> ast::ExprTree<'parsed, ast::TypeOp, parser::ast::TypeExpr<'parsed>> for ast::TypeExpr<'parsed> {
-    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&ast::TypeOp) -> bool>, ast::Assoc)> {
-        &context.semantic_type_op.priorities
+impl<'parsed> ast::ExprTree<'parsed, ast::TyOp, parser::ast::TyExpr<'parsed>> for ast::TyExpr<'parsed> {
+    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&ast::TyOp) -> bool>, ast::Assoc)> {
+        &context.semantic_ty_op.priorities
     }
 
     fn infix_op(
-        parsed: &'parsed parser::ast::TypeExpr,
+        parsed: &'parsed parser::ast::TyExpr,
         left: Rc<Self>,
-        op: ast::TypeOp,
+        op: ast::TyOp,
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
         match &op {
-            ast::TypeOp::Access => {
+            ast::TyOp::Access => {
                 Ok(Rc::new(Self {
-                    detail: ast::TypeExprDetail::InfixOp {
+                    detail: ast::TyExprDetail::InfixOp {
                         parsed: Some(parsed),
                         left: left.clone(),
                         op,

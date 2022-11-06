@@ -106,10 +106,10 @@ fn test_fn_bind_top_stat() {
                         ast::VarDecl::SingleDecl(
                             None,
                             lexer::ast::Ident("x"),
-                            Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                         ),
                     ]),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
                 ast::StatsBlock(
                     vec![],
@@ -146,7 +146,7 @@ fn test_var_bind() {
             ast::VarDecl::SingleDecl(
                 Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                 lexer::ast::Ident("x"),
-                Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
             ),
             Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
         ))),
@@ -173,7 +173,7 @@ fn test_single_var_decl() {
         Some(("", ast::VarDecl::SingleDecl(
             Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
             lexer::ast::Ident("x"),
-            Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
         ))),
     );
 }
@@ -197,7 +197,7 @@ fn test_tuple_var_decl() {
             ast::VarDecl::SingleDecl(
                 Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                 lexer::ast::Ident("x"),
-                Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
             ),
             ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
         ]))),
@@ -208,7 +208,7 @@ fn test_tuple_var_decl() {
             ast::VarDecl::SingleDecl(
                 Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                 lexer::ast::Ident("x"),
-                Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
             ),
             ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
         ]))),
@@ -228,11 +228,11 @@ fn test_fn_bind() {
                     ast::VarDecl::SingleDecl(
                         Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                         lexer::ast::Ident("x"),
-                        Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                        Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                     ),
                     ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
                 ]),
-                Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
             ),
             ast::StatsBlock(
                 vec![
@@ -268,30 +268,30 @@ fn test_fn_decl() {
                 ast::VarDecl::SingleDecl(
                     Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                     lexer::ast::Ident("x"),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
                 ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
             ]),
-            Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
         ))),
     );
 }
 
 #[test]
-fn test_type_expr() {
+fn test_ty_expr() {
     let context = Context::new();
     assert_eq!(
-        parser::type_expr(&context)("T::U::V").ok(),
-        Some(("", Rc::new(ast::TypeExpr(
-            Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("T"))),
+        parser::ty_expr(&context)("T::U::V").ok(),
+        Some(("", Rc::new(ast::TyExpr(
+            Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("T"))),
             vec![
-                ast::TypeOp::Access(
+                ast::TyOp::Access(
                     lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-                    Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("U"))),
+                    Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("U"))),
                 ),
-                ast::TypeOp::Access(
+                ast::TyOp::Access(
                     lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-                    Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("V"))),
+                    Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("V"))),
                 ),
             ],
         )))),
@@ -299,23 +299,23 @@ fn test_type_expr() {
 }
 
 #[test]
-fn test_type_op() {
+fn test_ty_op() {
     let context = Context::new();
     assert_eq!(
-        parser::type_op(&context)("::T").ok(),
-        Some(("", ast::TypeOp::Access(
+        parser::ty_op(&context)("::T").ok(),
+        Some(("", ast::TyOp::Access(
             lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-            Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("T"))),
+            Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("T"))),
         ))),
     );
 }
 
 #[test]
-fn test_type_term() {
+fn test_ty_term() {
     let context = Context::new();
     assert_eq!(
-        parser::type_term(&context)("string").ok(),
-        Some(("", Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("string"))))),
+        parser::ty_term(&context)("string").ok(),
+        Some(("", Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("string"))))),
     );
 }
 
@@ -416,7 +416,7 @@ fn test_var_bind_stat() {
                 ast::VarDecl::SingleDecl(
                     Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                     lexer::ast::Ident("x"),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
                 Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
             ),
@@ -432,7 +432,7 @@ fn test_var_bind_stat() {
                         ast::VarDecl::SingleDecl(
                             Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                             lexer::ast::Ident("x"),
-                            Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                         ),
                         ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
                     ],
@@ -465,10 +465,10 @@ fn test_fn_bind_stat() {
                         ast::VarDecl::SingleDecl(
                             None,
                             lexer::ast::Ident("x"),
-                            Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                         ),
                     ]),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
                 ast::StatsBlock(
                     vec![],
@@ -508,7 +508,7 @@ fn test_expr() {
                 ast::Op::Assign(
                     Rc::new(ast::Term::EvalVar(lexer::ast::Ident("T"))),
                 ),
-                ast::Op::TypeAccess(
+                ast::Op::TyAccess(
                     lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
                     Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
                 ),
@@ -546,11 +546,11 @@ fn test_expr() {
 }
 
 #[test]
-fn test_type_access_op() {
+fn test_ty_access_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("::x").ok(),
-        Some(("", ast::Op::TypeAccess(
+        Some(("", ast::Op::TyAccess(
             lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
             Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
         ))),
@@ -648,7 +648,7 @@ fn test_cast_op() {
         parser::op(&context)("as T").ok(),
         Some(("", ast::Op::CastOp(
             lexer::ast::Keyword("as", lexer::ast::KeywordKind::As),
-            Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("T"))), vec![])),
+            Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("T"))), vec![])),
         ))),
     );
 }
@@ -1080,7 +1080,7 @@ fn test_let_in_bind_term() {
                 ast::VarDecl::SingleDecl(
                     Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
                     lexer::ast::Ident("i"),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
                 Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
             ),
@@ -1363,12 +1363,12 @@ fn test_closure_term() {
                 ast::VarDecl::SingleDecl(
                     None,
                     lexer::ast::Ident("x"),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
                 ast::VarDecl::SingleDecl(
                     None,
                     lexer::ast::Ident("y"),
-                    Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
                 ),
             ]),
             Rc::new(ast::Expr(
@@ -1480,7 +1480,7 @@ fn test_let_for_bind() {
             ast::VarDecl::SingleDecl(
                 None,
                 lexer::ast::Ident("i"),
-                Some(Rc::new(ast::TypeExpr(Rc::new(ast::TypeTerm::EvalType(lexer::ast::Ident("int"))), vec![]))),
+                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
             ),
             ast::ForIterExpr::Spread(
                 Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("arr"))), vec![])),

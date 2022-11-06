@@ -11,7 +11,7 @@ impl SemanticOpContext {
     pub fn new() -> Self {
         Self {
             priorities: vec![
-                (Box::new(|op_code: &Op| *op_code == Op::TypeAccess),Assoc::Left),
+                (Box::new(|op_code: &Op| *op_code == Op::TyAccess),Assoc::Left),
                 (Box::new(|op_code: &Op| *op_code == Op::Access || *op_code == Op::CoalescingAccess),Assoc::Left),
                 (Box::new(|op_code: &Op| *op_code == Op::EvalFn),Assoc::Left),
                 (Box::new(|op_code: &Op| *op_code == Op::EvalSpreadFn),Assoc::Left),

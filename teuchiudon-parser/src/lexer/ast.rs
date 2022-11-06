@@ -24,7 +24,7 @@ pub enum KeywordKind {
     Mod,
     Mut,
     Null,
-    Newtype,
+    Newty,
     Pub,
     Ref,
     Return,
@@ -33,7 +33,7 @@ pub enum KeywordKind {
     Sync,
     This,
     True,
-    Type,
+    Ty,
     Use,
     While,
 }

@@ -73,7 +73,7 @@ pub enum VarDecl<'parsed> {
         parsed: Option<&'parsed parser::ast::VarDecl<'parsed>>,
         mut_attr: MutAttr<'parsed>,
         ident: Ident<'parsed>,
-        type_expr: Rc<TypeExpr<'parsed>>,
+        ty_expr: Rc<TyExpr<'parsed>>,
         var: Rc<elements::var::Var>,
     },
     TupleDecl {
@@ -102,45 +102,45 @@ pub struct FnDecl<'parsed> {
     pub parsed: Option<&'parsed parser::ast::FnDecl<'parsed>>,
     pub ident: Ident<'parsed>,
     pub var_decl: VarDecl<'parsed>,
-    pub type_expr: Rc<TypeExpr<'parsed>>
+    pub ty_expr: Rc<TyExpr<'parsed>>
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TypeExpr<'parsed> {
-    pub detail: TypeExprDetail<'parsed>,
+pub struct TyExpr<'parsed> {
+    pub detail: TyExprDetail<'parsed>,
     pub ty: Rc<elements::ty::Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TypeExprDetail<'parsed> {
+pub enum TyExprDetail<'parsed> {
     Term {
-        parsed: Option<&'parsed parser::ast::TypeExpr<'parsed>>,
-        term: Rc<TypeTerm<'parsed>>,
+        parsed: Option<&'parsed parser::ast::TyExpr<'parsed>>,
+        term: Rc<TyTerm<'parsed>>,
     },
     InfixOp {
-        parsed: Option<&'parsed parser::ast::TypeExpr<'parsed>>,
-        left: Rc<TypeExpr<'parsed>>,
-        op: TypeOp,
-        right: Rc<TypeExpr<'parsed>>,
+        parsed: Option<&'parsed parser::ast::TyExpr<'parsed>>,
+        left: Rc<TyExpr<'parsed>>,
+        op: TyOp,
+        right: Rc<TyExpr<'parsed>>,
     },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum TypeOp {
+pub enum TyOp {
     Access,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TypeTerm<'parsed> {
-    pub detail: TypeTermDetail<'parsed>,
+pub struct TyTerm<'parsed> {
+    pub detail: TyTermDetail<'parsed>,
     pub ty: Rc<elements::ty::Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TypeTermDetail<'parsed> {
+pub enum TyTermDetail<'parsed> {
     None,
-    EvalType {
-        parsed: Option<&'parsed parser::ast::TypeTerm<'parsed>>,
+    EvalTy {
+        parsed: Option<&'parsed parser::ast::TyTerm<'parsed>>,
         ident: Ident<'parsed>,
     },
 }
@@ -200,7 +200,7 @@ pub enum ExprDetail<'parsed> {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Op {
-    TypeAccess,
+    TyAccess,
     Access,
     CoalescingAccess,
     EvalFn,
@@ -240,9 +240,9 @@ pub struct Term<'parsed> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum TermDetail<'parsed> {
     None,
-    TypeExpr {
-        parsed: Option<&'parsed parser::ast::TypeExpr<'parsed>>,
-        type_expr: Rc<TypeExpr<'parsed>>,
+    TyExpr {
+        parsed: Option<&'parsed parser::ast::TyExpr<'parsed>>,
+        ty_expr: Rc<TyExpr<'parsed>>,
     },
     ApplyFn {
         parsed: Option<&'parsed Vec<parser::ast::ArgExpr<'parsed>>>,

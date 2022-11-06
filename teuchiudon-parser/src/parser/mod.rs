@@ -157,7 +157,7 @@ fn single_var_decl<'context: 'input, 'input>(
             opt(
                 preceded(
                     lex(lexer::op_code(context, ":")),
-                    type_expr(context),
+                    ty_expr(context),
                 ),
             ),
         )),
@@ -219,7 +219,7 @@ pub fn fn_decl<'context: 'input, 'input>(
             tuple_var_decl(context, "(", ")", "()"),
             opt(preceded(
                 lex(lexer::op_code(context, "->")),
-                type_expr(context),
+                ty_expr(context),
             )),
         )),
         |x| ast::FnDecl(x.0, x.1, x.2),
@@ -229,47 +229,47 @@ pub fn fn_decl<'context: 'input, 'input>(
 }
 
 #[named]
-pub fn type_expr<'context: 'input, 'input>(
+pub fn ty_expr<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TypeExpr>> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyExpr>> {
     |input: &'input str| map(
-        tuple((type_term(context), many0(type_op(context)))),
-        |x| Rc::new(ast::TypeExpr(x.0, x.1))
+        tuple((ty_term(context), many0(ty_op(context)))),
+        |x| Rc::new(ast::TyExpr(x.0, x.1))
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn type_op<'context: 'input, 'input>(
+pub fn ty_op<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeOp> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TyOp> {
     |input: &'input str| alt((
-        access_type_op(context),
+        access_ty_op(context),
     ))
     .context(function_name!().to_owned())
     .parse(input)
 }
 
-fn access_type_op<'context: 'input, 'input>(
+fn access_ty_op<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeOp> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TyOp> {
     |input: &'input str| map(
         tuple((
             lex(lexer::op_code(context, "::")),
-            type_term(context),
+            ty_term(context),
         )),
-        |x| ast::TypeOp::Access(x.0, x.1),
+        |x| ast::TyOp::Access(x.0, x.1),
     )(input)
 }
 
 #[named]
-pub fn type_term<'context: 'input, 'input>(
+pub fn ty_term<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TypeTerm>> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyTerm>> {
     |input: &'input str| map(
         alt((
-            eval_type_type_term(context),
+            eval_ty_ty_term(context),
         )),
         |x| Rc::new(x),
     )
@@ -277,12 +277,12 @@ pub fn type_term<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn eval_type_type_term<'context: 'input, 'input>(
+fn eval_ty_ty_term<'context: 'input, 'input>(
     context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TypeTerm> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TyTerm> {
     |input: &'input str| map(
         lex(lexer::ident(context)),
-        |x| ast::TypeTerm::EvalType(x),
+        |x| ast::TyTerm::EvalTy(x),
     )(input)
 }
 
@@ -371,7 +371,7 @@ pub fn op<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
     |input: &'input str| alt((
-        type_access_op(context),
+        ty_access_op(context),
         access_op(context),
         eval_fn_op(context),
         eval_spread_fn_op(context),
@@ -384,7 +384,7 @@ pub fn op<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn type_access_op<'context: 'input, 'input>(
+fn ty_access_op<'context: 'input, 'input>(
     context: &'context Context,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
     |input: &'input str| map(
@@ -392,7 +392,7 @@ fn type_access_op<'context: 'input, 'input>(
             lex(lexer::op_code(context, "::")),
             term(context),
         )),
-        |x| ast::Op::TypeAccess(x.0, x.1),
+        |x| ast::Op::TyAccess(x.0, x.1),
     )(input)
 }
 
@@ -459,7 +459,7 @@ fn cast_op<'context: 'input, 'input>(
     |input: &'input str| map(
         tuple((
             lex(lexer::keyword(context, "as")),
-            type_expr(context),
+            ty_expr(context),
         )),
         |x| ast::Op::CastOp(x.0, x.1),
     )(input)
