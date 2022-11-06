@@ -34,6 +34,7 @@ pub struct Ty {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum TyArg {
+    Qual(Qual),
     Ty(Rc<Ty>),
 }
 
@@ -44,6 +45,26 @@ impl_key_value_elements!(
     format!("{}{}", qual, name),
     ty_store
 );
+
+impl SemanticElement for Ty {
+    fn description(&self) -> String {
+        format!(
+            "{}{}<{}>",
+            self.base.qual.description(),
+            self.base.name.description(),
+            self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
+        )
+    }
+}
+
+impl SemanticElement for TyArg {
+    fn description(&self) -> String {
+        match self {
+            Self::Qual(x) => x.description(),
+            Self::Ty(x) => x.description(),
+        }
+    }
+}
 
 impl BaseTy {
     pub fn new(context: &Context, qual: Qual, name: String, logical_name: String, real_name: Option<String>) -> Rc<Self> {
@@ -87,26 +108,37 @@ impl BaseTyKey {
         }
     }
 
-    pub fn equiv_with(&self, ty: &Rc<Ty>) -> bool {
+    pub fn eq_with(&self, ty: &Rc<Ty>) -> bool {
         *self == ty.base.to_key()
     }
 }
 
-impl SemanticElement for Ty {
-    fn description(&self) -> String {
-        format!(
-            "{}{}<{}>",
-            self.base.qual.description(),
-            self.base.name.description(),
-            self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
-        )
+impl Ty {
+    pub fn arg_as_qual(&self) -> Qual {
+        if self.args.len() == 1 {
+            match &self.args[0] {
+                TyArg::Qual(x) =>
+                    x.clone(),
+                _ =>
+                    panic!("Illegal state"),
+            }
+        }
+        else {
+            panic!("Illegal state")
+        }
     }
-}
 
-impl SemanticElement for TyArg {
-    fn description(&self) -> String {
-        match self {
-            Self::Ty(x) => x.description(),
+    pub fn arg_as_ty(&self) -> Rc<Ty> {
+        if self.args.len() == 1 {
+            match &self.args[0] {
+                TyArg::Ty(x) =>
+                    x.clone(),
+                _ =>
+                    panic!("Illegal state"),
+            }
+        }
+        else {
+            panic!("Illegal state")
         }
     }
 }
