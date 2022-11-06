@@ -19,6 +19,16 @@ impl Qual {
         scopes: Vec::new(),
     };
 
+    pub fn added(&self, scope: Scope) -> Self {
+        Self {
+            scopes: {
+                let mut cloned = self.scopes.clone();
+                cloned.push(scope);
+                cloned
+            }
+        }
+    }
+
     pub fn qualify(&self, sep: &str) -> String {
         let desc = self.scopes.iter().map(|x| x.description()).collect::<Vec<_>>().join(sep);
         if desc.len() == 0 { desc } else { desc + sep }
