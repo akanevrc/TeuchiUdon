@@ -16,7 +16,6 @@ use self::{
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ElementError {
-    IllegalState(&'static str),
     LiteralNotFound(LiteralKey),
     TyNotFound(BaseTyKey),
     VarNotFound(VarKey),
@@ -27,8 +26,6 @@ impl ElementError {
         SemanticError {
             slice,
             message: match self {
-                Self::IllegalState(name) =>
-                    format!("Illegal state, in {}", name),
                 Self::LiteralNotFound(key) =>
                     format!("Specific literal `{}` not found", key.description()),
                 Self::TyNotFound(key) =>

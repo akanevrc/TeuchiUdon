@@ -2,7 +2,6 @@ use std::{
     collections::VecDeque,
     rc::Rc,
 };
-use function_name::named;
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
@@ -108,7 +107,6 @@ fn stat_top_stat<'parsed>(
     })
 }
 
-#[named]
 pub fn access_attr<'parsed>(
     context: &Context,
     node: &'parsed Option<parser::ast::AccessAttr>,
@@ -119,9 +117,7 @@ pub fn access_attr<'parsed>(
                 lexer::ast::KeywordKind::Pub =>
                     pub_access_attr(context, attr),
                 _ =>
-                    Err(vec![
-                        SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-                    ]),
+                    panic!("Illegal state"),
             },
         None =>
             Ok(ast::AccessAttr::None),
@@ -138,7 +134,6 @@ fn pub_access_attr<'parsed>(
     })
 }
 
-#[named]
 fn sync_attr<'parsed>(
     context: &Context,
     node: &'parsed Option<parser::ast::SyncAttr>,
@@ -153,9 +148,7 @@ fn sync_attr<'parsed>(
                 lexer::ast::KeywordKind::Smooth =>
                     smooth_sync_attr(context, attr),
                 _ =>
-                    Err(vec![
-                        SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-                    ]),
+                    panic!("Illegal state"),
             },
         None =>
             Ok(ast::SyncAttr::None),
@@ -260,7 +253,6 @@ fn tuple_var_decl<'parsed>(
     })
 }
 
-#[named]
 pub fn mut_attr<'parsed>(
     context: &Context,
     node: &'parsed Option<parser::ast::MutAttr>,
@@ -271,9 +263,7 @@ pub fn mut_attr<'parsed>(
                 lexer::ast::KeywordKind::Mut =>
                     mut_mut_attr(context, attr),
                 _ =>
-                    Err(vec![
-                        SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-                    ]),
+                    panic!("Illegal state"),
             },
         None =>
             Ok(ast::MutAttr::None),
@@ -746,7 +736,6 @@ pub fn ty_access_op<'parsed>(
     Ok(ast::Op::TyAccess)
 }
 
-#[named]
 fn access_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
@@ -757,9 +746,7 @@ fn access_op<'parsed>(
         lexer::ast::OpCodeKind::CoalescingAccess =>
             Ok(ast::Op::CoalescingAccess),
         _ =>
-            Err(vec![
-                SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-            ]),
+            panic!("Illegal state"),
     }
 }
 
@@ -787,7 +774,6 @@ fn cast_op<'parsed>(
     Ok(ast::Op::CastOp)
 }
 
-#[named]
 fn infix_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
@@ -836,9 +822,7 @@ fn infix_op<'parsed>(
         lexer::ast::OpCodeKind::LeftPipeline =>
             Ok(ast::Op::LeftPipeline),
         _ =>
-            Err(vec![
-                SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-            ]),
+            panic!("Illegal state"),
     }
 }
 
@@ -1203,7 +1187,6 @@ fn apply_key_term<'parsed>(
     }))
 }
 
-#[named]
 fn prefix_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
@@ -1218,9 +1201,7 @@ fn prefix_op<'parsed>(
         lexer::ast::OpCodeKind::Tilde =>
             Ok(ast::PrefixOp::Tilde),
         _ =>
-            Err(vec![
-                SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-            ]),
+            panic!("Illegal state"),
     }
 }
 
@@ -1430,7 +1411,6 @@ pub fn ident<'parsed>(
     })
 }
 
-#[named]
 pub fn literal<'parsed>(
     context: &Context,
     node: &'parsed lexer::ast::Literal,
@@ -1470,9 +1450,7 @@ pub fn literal<'parsed>(
             elements::literal::Literal::new_verbatium_string(context, (*s).to_owned())
             .map_err(|e| vec![e.convert(Some(s))]),
         _ =>
-            Err(vec![
-                SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-            ]),
+            panic!("Illegal state"),
         
     }
 }
@@ -1502,7 +1480,6 @@ pub fn interpolated_string<'parsed>(
     })
 }
 
-#[named]
 fn expr_tree<'parsed, ExprTree, SemanticOp, ParserExpr>(
     context: &Context,
     node: &'parsed ParserExpr,
@@ -1527,9 +1504,7 @@ where
         Ok(es.pop_front().unwrap())
     }
     else {
-        Err(vec![
-            SemanticError { slice: None, message: format!("Illegal state, in {}", function_name!()) },
-        ])
+        panic!("Illegal state")
     }
 }
 
