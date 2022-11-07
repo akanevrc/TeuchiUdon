@@ -144,14 +144,14 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private void AddMethod(MethodSymbol method)
         {
-            if (method.realName.StartsWith("Const_")) return;
-            if (method.realName.StartsWith("Variable_")) return;
+            if (method.real_name.StartsWith("Const_")) return;
+            if (method.real_name.StartsWith("Variable_")) return;
 
-            if (method.realName.StartsWith("Event_"))
+            if (method.real_name.StartsWith("Event_"))
             {
                 if (!Evs.ContainsKey(method.name))
                 {
-                    var ev = new EvSymbol(method.name, method.paramTys, method.paramInOuts, method.realName, method.paramRealNames);
+                    var ev = new EvSymbol(method.name, method.param_tys, method.param_in_outs, method.real_name, method.param_real_names);
                     Evs.Add(ev.name, ev);
                 }
                 return;
@@ -159,7 +159,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             
             if (method.ty == "SystemVoid") return;
 
-            if (method.realName.EndsWith("__T")) return;
+            if (method.real_name.EndsWith("__T")) return;
 
             var key = GetMethodKey(method);
             if (!Methods.ContainsKey(key))
@@ -206,7 +206,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private string GetMethodKey(MethodSymbol method)
         {
-            return $"{method.ty}{(method.isStatic ? "::" : "..")}{method.realName}";
+            return $"{method.ty}{(method.is_static ? "::" : "..")}{method.real_name}";
         }
     }
 }

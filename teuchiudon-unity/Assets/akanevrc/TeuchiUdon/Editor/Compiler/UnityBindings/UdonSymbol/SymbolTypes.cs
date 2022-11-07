@@ -6,23 +6,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class UdonSymbols
     {
         public TySymbol[] tys;
-        public ArrayTySymbol[] arrayTys;
-        public GenericBaseTySymbol[] genericBaseTys;
+        public ArrayTySymbol[] array_tys;
+        public GenericBaseTySymbol[] generic_base_tys;
         public MethodSymbol[] methods;
         public EvSymbol[] evs;
 
         public UdonSymbols
         (
             TySymbol[] tys,
-            ArrayTySymbol[] arrayTys,
-            GenericBaseTySymbol[] genericBaseTys,
+            ArrayTySymbol[] array_tys,
+            GenericBaseTySymbol[] generic_base_tys,
             MethodSymbol[] methods,
             EvSymbol[] evs
         )
         {
             this.tys = tys;
-            this.arrayTys = arrayTys;
-            this.genericBaseTys = genericBaseTys;
+            this.array_tys = array_tys;
+            this.generic_base_tys = generic_base_tys;
             this.methods = methods;
             this.evs = evs;
         }
@@ -33,23 +33,23 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public string[] scopes;
         public string name;
-        public string logicalName;
-        public string realName;
+        public string logical_name;
+        public string real_name;
         public string[] args;
 
         public TySymbol
         (
             string[] scopes,
             string name,
-            string logicalName,
-            string realName,
+            string logical_name,
+            string real_name,
             string[] args
         )
         {
             this.scopes = scopes;
             this.name = name;
-            this.logicalName = logicalName;
-            this.realName = realName;
+            this.logical_name = logical_name;
+            this.real_name = real_name;
             this.args = args;
         }
     }
@@ -57,13 +57,13 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     [Serializable]
     public class ArrayTySymbol
     {
-        public string realName;
-        public string elementTy;
+        public string real_name;
+        public string element_ty;
 
-        public ArrayTySymbol(string realName, string elementTy)
+        public ArrayTySymbol(string real_name, string element_ty)
         {
-            this.realName = realName;
-            this.elementTy = elementTy;
+            this.real_name = real_name;
+            this.element_ty = element_ty;
         }
     }
 
@@ -72,45 +72,45 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public string[] scopes;
         public string name;
-        public string logicalName;
+        public string logical_name;
 
-        public GenericBaseTySymbol(string[] scopes, string name, string logicalName)
+        public GenericBaseTySymbol(string[] scopes, string name, string logical_name)
         {
             this.scopes = scopes;
             this.name = name;
-            this.logicalName = logicalName;
+            this.logical_name = logical_name;
         }
     }
 
     [Serializable]
     public class MethodSymbol
     {
-        public bool isStatic;
+        public bool is_static;
         public string ty;
         public string name;
-        public string[] paramTys;
-        public string[] paramInOuts;
-        public string realName;
-        public string[] paramRealNames;
+        public string[] param_tys;
+        public string[] param_in_outs;
+        public string real_name;
+        public string[] param_real_names;
 
         public MethodSymbol
         (
-            bool isStatic,
+            bool is_static,
             string ty,
             string name,
-            string[] paramTys,
-            string[] paramInOuts,
-            string realName,
-            string[] paramRealNames
+            string[] param_tys,
+            string[] param_in_outs,
+            string real_name,
+            string[] param_real_names
         )
         {
-            this.isStatic = isStatic;
+            this.is_static = is_static;
             this.ty = ty;
             this.name = name;
-            this.paramTys = paramTys;
-            this.paramInOuts = paramInOuts;
-            this.realName = realName;
-            this.paramRealNames = paramRealNames;
+            this.param_tys = param_tys;
+            this.param_in_outs = param_in_outs;
+            this.real_name = real_name;
+            this.param_real_names = param_real_names;
         }
     }
 
@@ -118,25 +118,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     public class EvSymbol
     {
         public string name;
-        public string[] paramTys;
-        public string[] paramInOuts;
-        public string realName;
-        public string[] paramRealNames;
+        public string[] param_tys;
+        public string[] param_in_outs;
+        public string real_name;
+        public string[] param_real_names;
 
         public EvSymbol
         (
             string name,
-            string[] paramTys,
-            string[] paramInOuts,
-            string realName,
-            string[] paramRealNames
+            string[] param_tys,
+            string[] param_in_outs,
+            string real_name,
+            string[] param_real_names
         )
         {
             this.name = name;
-            this.paramTys = paramTys;
-            this.paramInOuts = paramInOuts;
-            this.realName = realName;
-            this.paramRealNames = paramRealNames;
+            this.param_tys = param_tys;
+            this.param_in_outs = param_in_outs;
+            this.real_name = real_name;
+            this.param_real_names = param_real_names;
         }
     }
 }
