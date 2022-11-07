@@ -19,6 +19,12 @@ impl Qual {
         scopes: Vec::new(),
     };
 
+    pub fn new(scopes: Vec<Scope>) -> Self {
+        Self {
+            scopes
+        }
+    }
+
     pub fn added(&self, scope: Scope) -> Self {
         Self {
             scopes: {

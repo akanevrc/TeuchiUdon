@@ -10,7 +10,6 @@ pub enum Scope {
     Closure,
     LetIn,
     Qual(String),
-    Ty(String),
     VarBind,
 }
 
@@ -18,8 +17,6 @@ impl SemanticElement for Scope {
     fn description(&self) -> String {
         match self {
             Self::Qual(name) =>
-                name.clone(),
-            Self::Ty(name) =>
                 name.clone(),
             _ =>
                 "Not implemented error occured".to_owned(),

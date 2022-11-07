@@ -1,3 +1,4 @@
+pub mod json;
 pub mod keyword;
 pub mod op_code;
 pub mod semantic_op;
@@ -6,6 +7,7 @@ pub mod store;
 pub mod ty_store;
 
 use self::{
+    json::register_from_json,
     keyword::KeywordContext,
     op_code::OpCodeContext,
     semantic_op::SemanticOpContext,
@@ -52,5 +54,11 @@ impl Context {
         };
         register_default_tys(&context);
         context
+    }
+
+    pub fn new_with_json(json: String) -> Result<Self, Vec<String>> {
+        let context = Self::new();
+        register_from_json(&context, json)?;
+        Ok(context)
     }
 }
