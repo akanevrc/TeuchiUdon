@@ -3,6 +3,32 @@ using System;
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     [Serializable]
+    public class UdonSymbols
+    {
+        public TySymbol[] tys;
+        public ArrayTySymbol[] arrayTys;
+        public GenericBaseTySymbol[] genericBaseTys;
+        public MethodSymbol[] methods;
+        public EvSymbol[] evs;
+
+        public UdonSymbols
+        (
+            TySymbol[] tys,
+            ArrayTySymbol[] arrayTys,
+            GenericBaseTySymbol[] genericBaseTys,
+            MethodSymbol[] methods,
+            EvSymbol[] evs
+        )
+        {
+            this.tys = tys;
+            this.arrayTys = arrayTys;
+            this.genericBaseTys = genericBaseTys;
+            this.methods = methods;
+            this.evs = evs;
+        }
+    }
+
+    [Serializable]
     public class TySymbol
     {
         public string[] scopes;
