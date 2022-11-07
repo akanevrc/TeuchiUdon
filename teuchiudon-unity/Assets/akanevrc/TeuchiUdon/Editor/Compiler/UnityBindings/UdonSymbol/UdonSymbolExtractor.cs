@@ -11,17 +11,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     internal class UdonSymbolExtractor
     {
-        private Dictionary<string, UdonTypeSymbol> Types { get; } = new Dictionary<string, UdonTypeSymbol>();
-        private Dictionary<string, UdonArrayTypeSymbol> ArrayTypes { get; } = new Dictionary<string, UdonArrayTypeSymbol>();
-        private Dictionary<string, UdonGenericBaseTypeSymbol> GenericBaseTypes { get; } = new Dictionary<string, UdonGenericBaseTypeSymbol>();
-        private Dictionary<string, UdonMethodSymbol> Methods { get; } = new Dictionary<string, UdonMethodSymbol>();
-        private Dictionary<string, UdonEventSymbol> Events { get; } = new Dictionary<string, UdonEventSymbol>();
+        private Dictionary<string, TySymbol> Tys { get; } = new Dictionary<string, TySymbol>();
+        private Dictionary<string, ArrayTySymbol> ArrayTys { get; } = new Dictionary<string, ArrayTySymbol>();
+        private Dictionary<string, GenericBaseTySymbol> GenericBaseTys { get; } = new Dictionary<string, GenericBaseTySymbol>();
+        private Dictionary<string, MethodSymbol> Methods { get; } = new Dictionary<string, MethodSymbol>();
+        private Dictionary<string, EvSymbol> Evs { get; } = new Dictionary<string, EvSymbol>();
 
         public void ExtractSymbols()
         {
-            var udonBehaviourType = GetType(typeof(UdonBehaviour));
-            var componentType = GetType(typeof(Component));
-            var udonEventReceiverType = GetType(typeof(IUdonEventReceiver));
+            var udonBehaviourTy = GetTy(typeof(UdonBehaviour));
+            var componentTy = GetTy(typeof(Component));
+            var udonEventReceiverTy = GetTy(typeof(IUdonEventReceiver));
 
             var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
             foreach (var topReg in topRegistries)
@@ -32,20 +32,20 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     {
                         if (def.type == null) continue;
 
-                        var type = GetType(def.type);
+                        var ty = GetTy(def.type);
 
                         var methodName = def.name.Substring(def.name.LastIndexOf(' ') + 1);
                         var parameters = def.parameters;
-                        var paramTypes =
+                        var paramTys =
                             parameters
-                            .Select(x => GetType(x.type))
+                            .Select(x => GetTy(x.type))
                             .ToArray();
                         var paramInOuts =
                             parameters
                             .Select(x => Enum.GetName(typeof(UdonNodeParameter.ParameterType), x.parameterType))
                             .ToArray();
-                        var instanceType =
-                            paramTypes
+                        var instanceTy =
+                            paramTys
                             .Zip(parameters, (t, p) => (t, p))
                             .FirstOrDefault(x => x.p.parameterType == UdonNodeParameter.ParameterType.IN && x.p.name == "instance")
                             .t;
@@ -55,27 +55,27 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                             .ToArray();
 
                         var method =
-                            new UdonMethodSymbol
+                            new MethodSymbol
                             (
-                                instanceType == null,
-                                instanceType ?? type,
+                                instanceTy == null,
+                                instanceTy ?? ty,
                                 methodName,
-                                paramTypes,
+                                paramTys,
                                 paramInOuts,
                                 def.fullName,
                                 paramUdonNames
                             );
                         AddMethod(method);
 
-                        if (instanceType == componentType || instanceType == udonEventReceiverType)
+                        if (instanceTy == componentTy || instanceTy == udonEventReceiverTy)
                         {
                             var udonBehaviourMethod =
-                                new UdonMethodSymbol
+                                new MethodSymbol
                                 (
                                     false,
-                                    udonBehaviourType,
+                                    udonBehaviourTy,
                                     methodName,
-                                    paramTypes,
+                                    paramTys,
                                     paramInOuts,
                                     def.fullName,
                                     paramUdonNames
@@ -87,34 +87,34 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        private string GetType(Type type)
+        private string GetTy(Type type)
         {
-            var realName = GetTypeRealName(type);
+            var realName = GetTyRealName(type);
 
-            if (type.IsArray && !ArrayTypes.ContainsKey(realName))
+            if (type.IsArray && !ArrayTys.ContainsKey(realName))
             {
-                var elemType = GetType(type.GetElementType());
+                var elemTy = GetTy(type.GetElementType());
 
-                var arrayType = new UdonArrayTypeSymbol(realName, elemType);
-                ArrayTypes.Add(realName, arrayType);
+                var arrayTy = new ArrayTySymbol(realName, elemTy);
+                ArrayTys.Add(realName, arrayTy);
             }
-            else if (!Types.ContainsKey(realName))
+            else if (!Tys.ContainsKey(realName))
             {
-                var typeName = GetTypeSimpleName(type);
-                var argTypes = type.GenericTypeArguments.Select(x => GetType(x)).ToArray();
+                var tyName = GetTySimpleName(type);
+                var argTys = type.GenericTypeArguments.Select(x => GetTy(x)).ToArray();
                 var scopes = GetQualScopes(type);
 
-                var t = new UdonTypeSymbol(scopes, typeName, realName, realName, argTypes);
-                Types.Add(realName, t);
+                var t = new TySymbol(scopes, tyName, realName, realName, argTys);
+                Tys.Add(realName, t);
 
-                if (argTypes.Length != 0)
+                if (argTys.Length != 0)
                 {
-                    var genericName = GetQualifiedName(scopes, typeName);
+                    var genericName = GetQualifiedName(scopes, tyName);
 
-                    if (!GenericBaseTypes.ContainsKey(genericName))
+                    if (!GenericBaseTys.ContainsKey(genericName))
                     {
-                        var genericType = new UdonGenericBaseTypeSymbol(scopes, typeName, genericName);
-                        GenericBaseTypes.Add(genericName, genericType);
+                        var genericTy = new GenericBaseTySymbol(scopes, tyName, genericName);
+                        GenericBaseTys.Add(genericName, genericTy);
                     }
                 }
             }
@@ -122,24 +122,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return realName;
         }
 
-        private void AddMethod(UdonMethodSymbol method)
+        private void AddMethod(MethodSymbol method)
         {
-            if (method.RealName.StartsWith("Const_")) return;
-            if (method.RealName.StartsWith("Variable_")) return;
+            if (method.realName.StartsWith("Const_")) return;
+            if (method.realName.StartsWith("Variable_")) return;
 
-            if (method.RealName.StartsWith("Event_"))
+            if (method.realName.StartsWith("Event_"))
             {
-                if (!Events.ContainsKey(method.Name))
+                if (!Evs.ContainsKey(method.name))
                 {
-                    var ev = new UdonEventSymbol(method.Name, method.ParamTypes, method.ParamInOuts, method.RealName, method.ParamRealNames);
-                    Events.Add(ev.Name, ev);
+                    var ev = new EvSymbol(method.name, method.paramTys, method.paramInOuts, method.realName, method.paramRealNames);
+                    Evs.Add(ev.name, ev);
                 }
                 return;
             }
             
-            if (method.Type == "SystemVoid") return;
+            if (method.ty == "SystemVoid") return;
 
-            if (method.RealName.EndsWith("__T")) return;
+            if (method.realName.EndsWith("__T")) return;
 
             var key = GetMethodKey(method);
             if (!Methods.ContainsKey(key))
@@ -148,25 +148,25 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             }
         }
 
-        private string GetTypeRealName(Type type)
+        private string GetTyRealName(Type type)
         {
             var genericIndex = type.FullName.IndexOf('`');
-            var arrayIndex   = type.FullName.IndexOf('[');
-            var index        = genericIndex == -1 ? arrayIndex : arrayIndex == -1 ? genericIndex : genericIndex < arrayIndex ? genericIndex : arrayIndex;
-            var name         = index == -1 ? type.FullName : type.FullName.Substring(0, index);
+            var arrayIndex = type.FullName.IndexOf('[');
+            var index = genericIndex == -1 ? arrayIndex : arrayIndex == -1 ? genericIndex : genericIndex < arrayIndex ? genericIndex : arrayIndex;
+            var name = index == -1 ? type.FullName : type.FullName.Substring(0, index);
             name = name.Replace(".", "");
             name = name.Replace("+", "");
-            name = $"{name}{(type.IsGenericType ? string.Join("", type.GenericTypeArguments.Select(x => GetTypeRealName(x))) : "")}";
+            name = $"{name}{(type.IsGenericType ? string.Join("", type.GenericTypeArguments.Select(x => GetTyRealName(x))) : "")}";
             name = $"{name}{(type.IsArray ? "Array" : "")}";
             return name;
         }
 
-        private string GetTypeSimpleName(Type type)
+        private string GetTySimpleName(Type type)
         {
             var genericIndex = type.Name.IndexOf('`');
-            var arrayIndex   = type.Name.IndexOf('[');
-            var index        = genericIndex == -1 ? arrayIndex : arrayIndex == -1 ? genericIndex : genericIndex < arrayIndex ? genericIndex : arrayIndex;
-            var name         = index == -1 ? type.Name : type.Name.Substring(0, index);
+            var arrayIndex = type.Name.IndexOf('[');
+            var index = genericIndex == -1 ? arrayIndex : arrayIndex == -1 ? genericIndex : genericIndex < arrayIndex ? genericIndex : arrayIndex;
+            var name = index == -1 ? type.Name : type.Name.Substring(0, index);
             name = $"{name}{(type.IsArray ? "Array" : "")}";
             return name;
         }
@@ -174,8 +174,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private string[] GetQualScopes(Type type)
         {
             var genericIndex = type.FullName.IndexOf('`');
-            var typeName     = genericIndex == -1 ? type.FullName : type.FullName.Substring(0, genericIndex);
-            var qualNames    = typeName.Split(new char[] { '.', '+' });
+            var tyName = genericIndex == -1 ? type.FullName : type.FullName.Substring(0, genericIndex);
+            var qualNames = tyName.Split(new char[] { '.', '+' });
             return qualNames.Take(qualNames.Length - 1).ToArray();
         }
 
@@ -184,9 +184,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             return string.Join("", scopes.Concat(new string[] { name }));
         }
 
-        private string GetMethodKey(UdonMethodSymbol method)
+        private string GetMethodKey(MethodSymbol method)
         {
-            return $"{method.Type}{(method.IsStatic ? "::" : "..")}{method.RealName}";
+            return $"{method.ty}{(method.isStatic ? "::" : "..")}{method.realName}";
         }
     }
 }

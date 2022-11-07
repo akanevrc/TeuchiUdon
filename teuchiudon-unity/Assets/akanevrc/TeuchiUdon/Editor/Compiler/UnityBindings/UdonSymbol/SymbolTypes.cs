@@ -1,15 +1,15 @@
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    internal class UdonTypeSymbol
+    internal class TySymbol
     {
-        public string[] Scopes { get; }
-        public string Name { get; }
-        public string LogicalName { get; }
-        public string RealName { get; }
-        public string[] Args { get; }
+        public string[] scopes;
+        public string name;
+        public string logicalName;
+        public string realName;
+        public string[] args;
 
-        public UdonTypeSymbol
+        public TySymbol
         (
             string[] scopes,
             string name,
@@ -18,93 +18,93 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             string[] args
         )
         {
-            Scopes = scopes;
-            Name = name;
-            LogicalName = logicalName;
-            RealName = realName;
-            Args = args;
+            this.scopes = scopes;
+            this.name = name;
+            this.logicalName = logicalName;
+            this.realName = realName;
+            this.args = args;
         }
     }
 
-    internal class UdonArrayTypeSymbol
+    internal class ArrayTySymbol
     {
-        public string RealName { get; }
-        public string ElementType { get; }
+        public string realName;
+        public string elementTy;
 
-        public UdonArrayTypeSymbol(string realName, string elementType)
+        public ArrayTySymbol(string realName, string elementTy)
         {
-            RealName = realName;
-            ElementType = elementType;
+            this.realName = realName;
+            this.elementTy = elementTy;
         }
     }
 
-    internal class UdonGenericBaseTypeSymbol
+    internal class GenericBaseTySymbol
     {
-        public string[] Scopes { get; }
-        public string Name { get; }
-        public string LogicalName { get; }
+        public string[] scopes;
+        public string name;
+        public string logicalName;
 
-        public UdonGenericBaseTypeSymbol(string[] scopes, string name, string logicalName)
+        public GenericBaseTySymbol(string[] scopes, string name, string logicalName)
         {
-            Scopes = scopes;
-            Name = name;
-            LogicalName = logicalName;
+            this.scopes = scopes;
+            this.name = name;
+            this.logicalName = logicalName;
         }
     }
 
-    internal class UdonMethodSymbol
+    internal class MethodSymbol
     {
-        public bool IsStatic { get; }
-        public string Type { get; }
-        public string Name { get; }
-        public string[] ParamTypes { get; }
-        public string[] ParamInOuts { get; }
-        public string RealName { get; }
-        public string[] ParamRealNames { get; }
+        public bool isStatic;
+        public string ty;
+        public string name;
+        public string[] paramTys;
+        public string[] paramInOuts;
+        public string realName;
+        public string[] paramRealNames;
 
-        public UdonMethodSymbol
+        public MethodSymbol
         (
             bool isStatic,
-            string type,
+            string ty,
             string name,
-            string[] paramTypes,
+            string[] paramTys,
             string[] paramInOuts,
             string realName,
             string[] paramRealNames
         )
         {
-            IsStatic = isStatic;
-            Type = type;
-            Name = name;
-            ParamTypes = paramTypes;
-            ParamInOuts = paramInOuts;
-            RealName = realName;
-            ParamRealNames = paramRealNames;
+            this.isStatic = isStatic;
+            this.ty = ty;
+            this.name = name;
+            this.paramTys = paramTys;
+            this.paramInOuts = paramInOuts;
+            this.realName = realName;
+            this.paramRealNames = paramRealNames;
         }
     }
 
-    internal class UdonEventSymbol
+    internal class EvSymbol
     {
-        public string Name { get; }
-        public string[] ParamTypes { get; }
-        public string[] ParamInOuts { get; }
-        public string RealName { get; }
-        public string[] ParamRealNames { get; }
+        public string name;
+        public string[] paramTys;
+        public string[] paramInOuts;
+        public string realName;
+        public string[] paramRealNames;
 
-        public UdonEventSymbol
+        public EvSymbol
         (
             string name,
-            string[] paramTypes,
+            string[] paramTys,
             string[] paramInOuts,
             string realName,
             string[] paramRealNames
         )
         {
-            Name = name;
-            ParamTypes = paramTypes;
-            ParamInOuts = paramInOuts;
-            RealName = realName;
-            ParamRealNames = paramRealNames;
+            this.name = name;
+            this.paramTys = paramTys;
+            this.paramInOuts = paramInOuts;
+            this.realName = realName;
+            this.paramRealNames = paramRealNames;
         }
     }
 }
