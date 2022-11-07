@@ -1,7 +1,9 @@
+using System;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
-    internal class TySymbol
+    [Serializable]
+    public class TySymbol
     {
         public string[] scopes;
         public string name;
@@ -26,7 +28,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    internal class ArrayTySymbol
+    [Serializable]
+    public class ArrayTySymbol
     {
         public string realName;
         public string elementTy;
@@ -38,7 +41,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    internal class GenericBaseTySymbol
+    [Serializable]
+    public class GenericBaseTySymbol
     {
         public string[] scopes;
         public string name;
@@ -52,7 +56,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    internal class MethodSymbol
+    [Serializable]
+    public class MethodSymbol
     {
         public bool isStatic;
         public string ty;
@@ -83,7 +88,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         }
     }
 
-    internal class EvSymbol
+    [Serializable]
+    public class EvSymbol
     {
         public string name;
         public string[] paramTys;
