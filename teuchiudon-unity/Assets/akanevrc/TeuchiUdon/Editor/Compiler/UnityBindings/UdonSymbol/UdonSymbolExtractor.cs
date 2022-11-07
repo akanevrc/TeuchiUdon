@@ -11,80 +11,100 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 {
     internal class UdonSymbolExtractor
     {
-        private Dictionary<string, TySymbol> Tys { get; } = new Dictionary<string, TySymbol>();
-        private Dictionary<string, ArrayTySymbol> ArrayTys { get; } = new Dictionary<string, ArrayTySymbol>();
-        private Dictionary<string, GenericBaseTySymbol> GenericBaseTys { get; } = new Dictionary<string, GenericBaseTySymbol>();
-        private Dictionary<string, MethodSymbol> Methods { get; } = new Dictionary<string, MethodSymbol>();
-        private Dictionary<string, EvSymbol> Evs { get; } = new Dictionary<string, EvSymbol>();
+        private bool Initialized { get; set; } = false;
+        private Dictionary<string, TySymbol> Tys { get; set; }
+        private Dictionary<string, ArrayTySymbol> ArrayTys { get; set; }
+        private Dictionary<string, GenericBaseTySymbol> GenericBaseTys { get; set; }
+        private Dictionary<string, MethodSymbol> Methods { get; set; }
+        private Dictionary<string, EvSymbol> Evs { get; set; }
 
-        public void ExtractSymbols()
+        public UdonSymbols ExtractSymbols()
         {
-            var udonBehaviourTy = GetTy(typeof(UdonBehaviour));
-            var componentTy = GetTy(typeof(Component));
-            var udonEventReceiverTy = GetTy(typeof(IUdonEventReceiver));
-
-            var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
-            foreach (var topReg in topRegistries)
+            if (!Initialized)
             {
-                foreach (var reg in topReg.Value)
+                Tys = new Dictionary<string, TySymbol>();
+                ArrayTys = new Dictionary<string, ArrayTySymbol>();
+                GenericBaseTys = new Dictionary<string, GenericBaseTySymbol>();
+                Methods = new Dictionary<string, MethodSymbol>();
+                Evs = new Dictionary<string, EvSymbol>();
+
+                var udonBehaviourTy = GetTy(typeof(UdonBehaviour));
+                var componentTy = GetTy(typeof(Component));
+                var udonEventReceiverTy = GetTy(typeof(IUdonEventReceiver));
+
+                var topRegistries = UdonEditorManager.Instance.GetTopRegistries();
+                foreach (var topReg in topRegistries)
                 {
-                    foreach (var def in reg.Value.GetNodeDefinitions())
+                    foreach (var reg in topReg.Value)
                     {
-                        if (def.type == null) continue;
-
-                        var ty = GetTy(def.type);
-
-                        var methodName = def.name.Substring(def.name.LastIndexOf(' ') + 1);
-                        var parameters = def.parameters;
-                        var paramTys =
-                            parameters
-                            .Select(x => GetTy(x.type))
-                            .ToArray();
-                        var paramInOuts =
-                            parameters
-                            .Select(x => Enum.GetName(typeof(UdonNodeParameter.ParameterType), x.parameterType))
-                            .ToArray();
-                        var instanceTy =
-                            paramTys
-                            .Zip(parameters, (t, p) => (t, p))
-                            .FirstOrDefault(x => x.p.parameterType == UdonNodeParameter.ParameterType.IN && x.p.name == "instance")
-                            .t;
-                        var paramUdonNames =
-                            parameters
-                            .Select(x => x.name)
-                            .ToArray();
-
-                        var method =
-                            new MethodSymbol
-                            (
-                                instanceTy == null,
-                                instanceTy ?? ty,
-                                methodName,
-                                paramTys,
-                                paramInOuts,
-                                def.fullName,
-                                paramUdonNames
-                            );
-                        AddMethod(method);
-
-                        if (instanceTy == componentTy || instanceTy == udonEventReceiverTy)
+                        foreach (var def in reg.Value.GetNodeDefinitions())
                         {
-                            var udonBehaviourMethod =
+                            if (def.type == null) continue;
+
+                            var ty = GetTy(def.type);
+
+                            var methodName = def.name.Substring(def.name.LastIndexOf(' ') + 1);
+                            var parameters = def.parameters;
+                            var paramTys =
+                                parameters
+                                .Select(x => GetTy(x.type))
+                                .ToArray();
+                            var paramInOuts =
+                                parameters
+                                .Select(x => Enum.GetName(typeof(UdonNodeParameter.ParameterType), x.parameterType))
+                                .ToArray();
+                            var instanceTy =
+                                paramTys
+                                .Zip(parameters, (t, p) => (t, p))
+                                .FirstOrDefault(x => x.p.parameterType == UdonNodeParameter.ParameterType.IN && x.p.name == "instance")
+                                .t;
+                            var paramUdonNames =
+                                parameters
+                                .Select(x => x.name)
+                                .ToArray();
+
+                            var method =
                                 new MethodSymbol
                                 (
-                                    false,
-                                    udonBehaviourTy,
+                                    instanceTy == null,
+                                    instanceTy ?? ty,
                                     methodName,
                                     paramTys,
                                     paramInOuts,
                                     def.fullName,
                                     paramUdonNames
                                 );
-                            AddMethod(udonBehaviourMethod);
+                            AddMethod(method);
+
+                            if (instanceTy == componentTy || instanceTy == udonEventReceiverTy)
+                            {
+                                var udonBehaviourMethod =
+                                    new MethodSymbol
+                                    (
+                                        false,
+                                        udonBehaviourTy,
+                                        methodName,
+                                        paramTys,
+                                        paramInOuts,
+                                        def.fullName,
+                                        paramUdonNames
+                                    );
+                                AddMethod(udonBehaviourMethod);
+                            }
                         }
                     }
                 }
+                Initialized = true;
             }
+
+            return new UdonSymbols
+            (
+                Tys.Values.ToArray(),
+                ArrayTys.Values.ToArray(),
+                GenericBaseTys.Values.ToArray(),
+                Methods.Values.ToArray(),
+                Evs.Values.ToArray()
+            );
         }
 
         private string GetTy(Type type)
