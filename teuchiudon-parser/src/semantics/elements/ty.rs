@@ -3,6 +3,7 @@ use crate::impl_key_value_elements;
 use crate::context::Context;
 use super::{
     ElementError,
+    base_ty::BaseTy,
     element::{
         KeyElement,
         SemanticElement,
@@ -12,24 +13,18 @@ use super::{
 };
 
 #[derive(Clone, Debug)]
-pub struct BaseTy {
-    pub id: usize,
-    pub qual: Qual,
-    pub name: String,
-    pub logical_name: String,
-    pub real_name: Option<String>,
-}
-
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct BaseTyKey {
-    pub qual: Qual,
-    pub name: String,
-}
-
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Ty {
+    pub id: usize,
     pub base: Rc<BaseTy>,
     pub args: Vec<TyArg>,
+    pub real_name: String,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct TyKey {
+    pub qual: Qual,
+    pub name: String,
+    pub args: Vec<TyKeyArg>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -38,24 +33,28 @@ pub enum TyArg {
     Ty(Rc<Ty>),
 }
 
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum TyKeyArg {
+    Qual(Qual),
+    Ty(TyKey),
+}
+
 impl_key_value_elements!(
-    BaseTyKey,
-    BaseTy,
-    BaseTyKey { qual, name },
-    format!("{}{}", qual, name),
+    TyKey,
+    Ty,
+    TyKey {
+        qual: self.base.qual.clone(),
+        name: self.base.name.clone(),
+        args: self.args.iter().map(|x| x.to_key()).collect()
+    },
+    format!(
+        "{}{}<{}>",
+        self.qual.description(),
+        self.name.description(),
+        self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
+    ),
     ty_store
 );
-
-impl SemanticElement for Ty {
-    fn description(&self) -> String {
-        format!(
-            "{}{}<{}>",
-            self.base.qual.description(),
-            self.base.name.description(),
-            self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
-        )
-    }
-}
 
 impl SemanticElement for TyArg {
     fn description(&self) -> String {
@@ -66,13 +65,21 @@ impl SemanticElement for TyArg {
     }
 }
 
-impl BaseTy {
-    pub fn new(context: &Context, qual: Qual, name: String, logical_name: String, real_name: Option<String>) -> Rc<Self> {
+impl SemanticElement for TyKeyArg {
+    fn description(&self) -> String {
+        match self {
+            Self::Qual(x) => x.description(),
+            Self::Ty(x) => x.description(),
+        }
+    }
+}
+
+impl Ty {
+    pub fn new(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>, real_name: String) -> Rc<Self> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
-            qual,
-            name,
-            logical_name,
+            base,
+            args,
             real_name,
         });
         let key = value.to_key();
@@ -80,40 +87,10 @@ impl BaseTy {
         value
     }
 
-    pub fn get_from_name(context: &Context, name: &str) -> Rc<Self> {
-        BaseTyKey::from_name(name).consume_key(context).unwrap()
+    pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
+        TyKey::from_name(name).consume_key(context)
     }
 
-    pub fn get_from_name_or_err(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
-        BaseTyKey::from_name(name).consume_key_or_err(context)
-    }
-
-    pub fn apply(self: &Rc<Self>, args: Vec<TyArg>) -> Rc<Ty> {
-        Rc::new(Ty {
-            base: self.clone(),
-            args,
-        })
-    }
-
-    pub fn direct(self: &Rc<Self>) -> Rc<Ty> {
-        self.apply(Vec::new())
-    }
-}
-
-impl BaseTyKey {
-    pub fn from_name(name: &str) -> Self {
-        Self {
-            qual: Qual::TOP,
-            name: name.to_owned(),
-        }
-    }
-
-    pub fn eq_with(&self, ty: &Rc<Ty>) -> bool {
-        *self == ty.base.to_key()
-    }
-}
-
-impl Ty {
     pub fn arg_as_qual(&self) -> Qual {
         if self.args.len() == 1 {
             match &self.args[0] {
@@ -139,6 +116,33 @@ impl Ty {
         }
         else {
             panic!("Illegal state")
+        }
+    }
+}
+
+impl TyKey {
+    pub fn new(qual: Qual, name: String, args: Vec<TyKeyArg>) -> Self {
+        Self {
+            qual,
+            name,
+            args,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Self {
+        Self {
+            qual: Qual::TOP,
+            name: name.to_owned(),
+            args: Vec::new(),
+        }
+    }
+}
+
+impl TyArg {
+    pub fn to_key(&self) -> TyKeyArg {
+        match self {
+            Self::Qual(x) => TyKeyArg::Qual(x.clone()),
+            Self::Ty(x) => TyKeyArg::Ty(x.to_key())
         }
     }
 }

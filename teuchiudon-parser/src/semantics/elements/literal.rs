@@ -3,11 +3,9 @@ use crate::impl_key_value_elements;
 use crate::context::Context;
 use super::{
     ElementError,
+    base_ty::BaseTy,
     element::ValueElement,
-    ty::{
-        Ty,
-        BaseTy,
-    },
+    ty::Ty,
 };
 
 #[derive(Clone, Debug)]
@@ -26,8 +24,15 @@ pub struct LiteralKey {
 impl_key_value_elements!(
     LiteralKey,
     Literal,
-    LiteralKey { text, ty },
-    format!("'{}': {}", text, ty),
+    LiteralKey {
+        text: self.text.clone(),
+        ty: self.ty.clone()
+    },
+    format!(
+        "'{}': {}",
+        self.text.description(),
+        self.ty.description()
+    ),
     literal_store
 );
 
@@ -44,61 +49,61 @@ impl Literal {
     }
 
     pub fn new_unit(context: &Context) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "unit")?.direct();
+        let ty = BaseTy::get_from_name(context, "unit")?.direct(context)?;
         Ok(Self::new(context, "()".to_owned(), ty))
     }
 
     pub fn new_null(context: &Context) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "nulltype")?.direct();
+        let ty = BaseTy::get_from_name(context, "nulltype")?.direct(context)?;
         Ok(Self::new(context, "null".to_owned(), ty))
     }
 
     pub fn new_bool(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "bool")?.direct();
+        let ty = BaseTy::get_from_name(context, "bool")?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_pure_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "int")?.direct();
+        let ty = BaseTy::get_from_name(context, "int")?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_dec_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = BaseTy::get_from_name_or_err(context, ty_name)?.direct();
+        let ty = BaseTy::get_from_name(context, ty_name)?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_hex_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = BaseTy::get_from_name_or_err(context, ty_name)?.direct();
+        let ty = BaseTy::get_from_name(context, ty_name)?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_bin_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = BaseTy::get_from_name_or_err(context, ty_name)?.direct();
+        let ty = BaseTy::get_from_name(context, ty_name)?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_real_number(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_real_number_text(text);
-        let ty = BaseTy::get_from_name_or_err(context, ty_name)?.direct();
+        let ty = BaseTy::get_from_name(context, ty_name)?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_character(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "char")?.direct();
+        let ty = BaseTy::get_from_name(context, "char")?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_regular_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "string")?.direct();
+        let ty = BaseTy::get_from_name(context, "string")?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 
     pub fn new_verbatium_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name_or_err(context, "string")?.direct();
+        let ty = BaseTy::get_from_name(context, "string")?.direct(context)?;
         Ok(Self::new(context, text, ty))
     }
 

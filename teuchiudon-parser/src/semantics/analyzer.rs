@@ -364,7 +364,8 @@ fn hidden_unknown_ty_expr<'parsed>(
 ) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let term = Rc::new(ast::TyTerm {
         detail: ast::TyTermDetail::None,
-        ty: elements::ty::BaseTy::get_from_name(context, "unknown").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unknown")
+            .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
         detail: ast::TyExprDetail::Term {
@@ -380,7 +381,8 @@ fn hidden_unit_ty_expr<'parsed>(
 ) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let term = Rc::new(ast::TyTerm {
         detail: ast::TyTermDetail::None,
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
         detail: ast::TyExprDetail::Term {
@@ -418,7 +420,8 @@ fn eval_ty_ty_term<'parsed>(
             parsed: Some(node),
             ident
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "int").direct(), // TODO
+        ty: elements::ty::Ty::get_from_name(context, "int")
+            .map_err(|e| e.convert(None))?, // TODO
     }))
 }
 
@@ -719,7 +722,8 @@ fn hidden_unit_expr<'parsed>(
 ) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let term = Rc::new(ast::Term {
         detail: ast::TermDetail::None,
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::Expr {
         detail: ast::ExprDetail::Term {
@@ -932,7 +936,8 @@ fn tuple_term<'parsed>(
             parsed: Some(node),
             exprs: es,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "tuple").direct(), // TODO
+        ty: elements::ty::Ty::get_from_name(context, "tuple")
+            .map_err(|e| e.convert(None))?, // TODO
     }))
 }
 
@@ -950,7 +955,8 @@ fn array_ctor_term<'parsed>(
             parsed: Some(node),
             iter_expr,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "array").direct(), // TODO
+        ty: elements::ty::Ty::get_from_name(context, "array")
+            .map_err(|e| e.convert(None))?, // TODO
     }))
 }
 
@@ -980,7 +986,8 @@ fn this_literal_term<'parsed>(
             parsed: Some(node),
             literal,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "udon").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "udon")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -995,7 +1002,8 @@ fn interpolated_string_term<'parsed>(
             parsed: Some(node),
             interpolated_string,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "string").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "string")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1010,7 +1018,8 @@ fn eval_var_term<'parsed>(
             parsed: Some(node),
             ident,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "int").direct(), // TODO
+        ty: elements::ty::Ty::get_from_name(context, "int")
+            .map_err(|e| e.convert(None))?, // TODO
     }))
 }
 
@@ -1070,7 +1079,8 @@ fn while_term<'parsed>(
             condition,
             stats,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1085,7 +1095,8 @@ fn loop_term<'parsed>(
             parsed: Some(node),
             stats,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1106,7 +1117,8 @@ fn for_term<'parsed>(
             for_binds: fbs,
             stats,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1124,7 +1136,8 @@ fn closure_term<'parsed>(
             var_decl,
             expr,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "closure").direct(), // TODO
+        ty: elements::ty::Ty::get_from_name(context, "closure")
+            .map_err(|e| e.convert(None))?, // TODO
     }))
 }
 
@@ -1138,7 +1151,8 @@ fn ty_expr_term<'parsed>(
             parsed: Some(ty_expr),
             ty_expr: te,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "type").direct(), // TODO
+        ty: elements::ty::Ty::get_from_name(context, "type")
+            .map_err(|e| e.convert(None))?, // TODO
     }))
 }
 
@@ -1155,7 +1169,8 @@ fn apply_fn_term<'parsed>(
             parsed: Some(arg_exprs),
             args,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1169,7 +1184,8 @@ fn apply_spread_fn_term<'parsed>(
             parsed: Some(expr),
             arg,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1183,7 +1199,8 @@ fn apply_key_term<'parsed>(
             parsed: Some(expr),
             key,
         },
-        ty: elements::ty::BaseTy::get_from_name(context, "unit").direct(),
+        ty: elements::ty::Ty::get_from_name(context, "unit")
+            .map_err(|e| e.convert(None))?,
     }))
 }
 
@@ -1418,37 +1435,37 @@ pub fn literal<'parsed>(
     match node {
         lexer::ast::Literal::Unit(op_code, _) =>
             elements::literal::Literal::new_unit(context)
-            .map_err(|e| vec![e.convert(Some(op_code.0))]),
+            .map_err(|e| e.convert(Some(op_code.0))),
         lexer::ast::Literal::Null(keyword) =>
             elements::literal::Literal::new_null(context)
-            .map_err(|e| vec![e.convert(Some(keyword.0))]),
+            .map_err(|e| e.convert(Some(keyword.0))),
         lexer::ast::Literal::Bool(lexer::ast::Keyword(s, _)) =>
             elements::literal::Literal::new_bool(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::PureInteger(s) =>
             elements::literal::Literal::new_pure_integer(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::DecInteger(s) =>
             elements::literal::Literal::new_dec_integer(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::HexInteger(s) =>
             elements::literal::Literal::new_hex_integer(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::BinInteger(s) =>
             elements::literal::Literal::new_bin_integer(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::RealNumber(s) =>
             elements::literal::Literal::new_real_number(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::Character(s) =>
             elements::literal::Literal::new_character(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::RegularString(s) =>
             elements::literal::Literal::new_regular_string(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         lexer::ast::Literal::VerbatiumString(s) =>
             elements::literal::Literal::new_verbatium_string(context, (*s).to_owned())
-            .map_err(|e| vec![e.convert(Some(s))]),
+            .map_err(|e| e.convert(Some(s))),
         _ =>
             panic!("Illegal state"),
         

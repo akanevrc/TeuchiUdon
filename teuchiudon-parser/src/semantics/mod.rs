@@ -7,3 +7,12 @@ pub struct SemanticError<'parsed> {
     pub slice: Option<&'parsed str>,
     pub message: String,
 }
+
+impl<'parsed> SemanticError<'parsed> {
+    pub fn new(slice: Option<&'parsed str>, message: String) -> Self {
+        SemanticError {
+            slice,
+            message,
+        }
+    }
+}

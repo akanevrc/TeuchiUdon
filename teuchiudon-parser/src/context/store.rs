@@ -6,21 +6,20 @@ use std::{
 };
 use crate::semantics::elements::ElementError;
 
-#[derive(Debug)]
 pub struct Store<Key, Value>
 where
     Key: Clone + Eq + Hash,
 {
     id_map: RefCell<HashMap<Key, usize>>,
     values: RefCell<Vec<Rc<Value>>>,
-    not_found: fn(Key) -> ElementError,
+    not_found: fn(&Key) -> String,
 }
 
 impl<Key, Value> Store<Key, Value>
 where
     Key: Clone + Eq + Hash,
 {
-    pub fn new(not_found: fn(Key) -> ElementError) -> Self {
+    pub fn new(not_found: fn(&Key) -> String) -> Self {
         Self {
             id_map: RefCell::new(HashMap::new()),
             values: RefCell::new(Vec::new()),
@@ -38,12 +37,8 @@ where
         self.values.borrow_mut().push(value.clone());
     }
 
-    pub fn get(&self, key: Key) -> Option<Rc<Value>> {
-        self.id_map.borrow().get(&key).map(|x| self.values.borrow()[*x].clone())
-    }
-
-    pub fn get_unwrap(&self, key: Key) -> Result<Rc<Value>, ElementError> {
-        self.get(key.clone()).ok_or((self.not_found)(key))
+    pub fn get(&self, key: &Key) -> Result<Rc<Value>, ElementError> {
+        self.id_map.borrow().get(key).map(|x| self.values.borrow()[*x].clone()).ok_or(ElementError::new((self.not_found)(key)))
     }
 
     pub fn values(&self) -> impl Iterator<Item = Rc<Value>> {

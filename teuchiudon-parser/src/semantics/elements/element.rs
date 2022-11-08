@@ -11,8 +11,7 @@ pub trait ValueElement<Key> {
 }
 
 pub trait KeyElement<Value> {
-    fn consume_key(self, context: &Context) -> Option<Rc<Value>>;
-    fn consume_key_or_err(self, context: &Context) -> Result<Rc<Value>, ElementError>;
+    fn consume_key(self, context: &Context) -> Result<Rc<Value>, ElementError>;
 }
 
 impl SemanticElement for String {

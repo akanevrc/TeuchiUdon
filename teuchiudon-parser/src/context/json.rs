@@ -2,9 +2,9 @@ use serde::Deserialize;
 use serde_json::from_str;
 use super::Context;
 use crate::semantics::elements::{
+    base_ty::BaseTy,
     qual::Qual,
     scope::Scope,
-    ty::BaseTy,
 };
 
 pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<String>> {
@@ -28,7 +28,6 @@ fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) {
             Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect()),
             sym.name.clone(),
             sym.logical_name.clone(),
-            Some(sym.real_name.clone()),
         );
     }
 }
@@ -44,7 +43,6 @@ fn register_from_generic_base_ty_symbols(context: &Context, symbols: &Vec<Generi
             Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect()),
             sym.name.clone(),
             sym.logical_name.clone(),
-            None,
         );
     }
 }

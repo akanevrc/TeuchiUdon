@@ -26,8 +26,15 @@ pub struct VarKey {
 impl_key_value_elements!(
     VarKey,
     Var,
-    VarKey { qual, name },
-    format!("{}{}", qual, name),
+    VarKey {
+        qual: self.qual.clone(),
+        name: self.name.clone()
+    },
+    format!(
+        "{}{}",
+        self.qual.description(),
+        self.name.description()
+    ),
     var_store
 );
 
