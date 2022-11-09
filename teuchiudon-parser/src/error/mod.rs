@@ -77,7 +77,8 @@ where
     let mut prev_offset = 1usize;
     for s in filtered {
         let ptr = s.as_ptr() as usize;
-        let offset = ptr - input_ptr;
+        let trimmed = s.trim().as_ptr() as usize;
+        let offset = trimmed - input_ptr;
         if offset == 0 {
             let line_slice = input.lines().next().unwrap_or("");
             line_char_slice.insert(ptr, (1, 1, line_slice));

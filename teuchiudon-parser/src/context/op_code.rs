@@ -57,7 +57,7 @@ impl OpCodeContext {
     }
 
     pub fn from_str<'context: 'input, 'input>(&'context self, name: &str, slice: &'input str) -> Option<OpCode<'input>> {
-        self.op_codes.iter().find(|x| x.0 == name).map(|x| OpCode(slice, x.1))
+        self.op_codes.iter().find(|x| x.0 == name).map(|x| OpCode { slice, kind: x.1 })
     }
 
     pub fn iter_op_code_str(&self) -> impl Iterator<Item = &str> {

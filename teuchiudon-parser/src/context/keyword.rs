@@ -46,7 +46,7 @@ impl KeywordContext {
     }
 
     pub fn from_str<'context: 'input, 'input>(&'context self, name: &str, slice: &'input str) -> Option<Keyword<'input>> {
-        self.keywords.iter().find(|x| x.0 == name).map(|x| Keyword(slice, x.1))
+        self.keywords.iter().find(|x| x.0 == name).map(|x| Keyword { slice, kind: x.1 })
     }
 
     pub fn iter_keyword_str(&self) -> impl Iterator<Item = &str> {

@@ -10,9 +10,9 @@ use crate::parser;
 #[test]
 fn test_lex() {
     let context = Context::new();
-    assert_eq!(lex(lexer::keyword(&context, "as"))("as xxx").ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
-    assert_eq!(lex(lexer::keyword(&context, "as"))("  as xxx").ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
-    assert_eq!(lex(lexer::keyword(&context, "as"))(" {/ comment /} // comment\nas xxx").ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
+    assert_eq!(lex(lexer::keyword(&context, "as"))("as xxx").ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
+    assert_eq!(lex(lexer::keyword(&context, "as"))("  as xxx").ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
+    assert_eq!(lex(lexer::keyword(&context, "as"))(" {/ comment /} // comment\nas xxx").ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
 }
 
 #[test]
@@ -54,32 +54,32 @@ fn test_delimited_comment() {
 #[test]
 fn test_keyword() {
     let context = Context::new();
-    assert_eq!(lexer::keyword(&context, "as")("as xxx").0.ok(), Some((" xxx", ast::Keyword("as", ast::KeywordKind::As))));
+    assert_eq!(lexer::keyword(&context, "as")("as xxx").0.ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
     assert_eq!(lexer::keyword(&context, "as")("asxxx").0.ok(), None);
 }
 
 #[test]
 fn test_op_code() {
     let context = Context::new();
-    assert_eq!(lexer::op_code(&context, "{")("{xxx").0.ok(), Some(("xxx", ast::OpCode("{", ast::OpCodeKind::OpenBrace))));
-    assert_eq!(lexer::op_code(&context, ",")(",xxx").0.ok(), Some(("xxx", ast::OpCode(",", ast::OpCodeKind::Comma))));
-    assert_eq!(lexer::op_code(&context, ";")(";xxx").0.ok(), Some(("xxx", ast::OpCode(";", ast::OpCodeKind::Semicolon))));
-    assert_eq!(lexer::op_code(&context, ".")(".xxx").0.ok(), Some(("xxx", ast::OpCode(".", ast::OpCodeKind::Dot))));
-    assert_eq!(lexer::op_code(&context, "<")("<xxx").0.ok(), Some(("xxx", ast::OpCode("<", ast::OpCodeKind::Lt))));
-    assert_eq!(lexer::op_code(&context, "<=")("<==xxx").0.ok(), Some(("=xxx", ast::OpCode("<=", ast::OpCodeKind::Le))));
+    assert_eq!(lexer::op_code(&context, "{")("{xxx").0.ok(), Some(("xxx", ast::OpCode { slice: "{", kind: ast::OpCodeKind::OpenBrace })));
+    assert_eq!(lexer::op_code(&context, ",")(",xxx").0.ok(), Some(("xxx", ast::OpCode { slice: ",", kind: ast::OpCodeKind::Comma })));
+    assert_eq!(lexer::op_code(&context, ";")(";xxx").0.ok(), Some(("xxx", ast::OpCode { slice: ";", kind: ast::OpCodeKind::Semicolon })));
+    assert_eq!(lexer::op_code(&context, ".")(".xxx").0.ok(), Some(("xxx", ast::OpCode { slice: ".", kind: ast::OpCodeKind::Dot })));
+    assert_eq!(lexer::op_code(&context, "<")("<xxx").0.ok(), Some(("xxx", ast::OpCode { slice: "<", kind: ast::OpCodeKind::Lt })));
+    assert_eq!(lexer::op_code(&context, "<=")("<==xxx").0.ok(), Some(("=xxx", ast::OpCode { slice: "<=", kind: ast::OpCodeKind::Le })));
     assert_eq!(lexer::op_code(&context, "<")("<=xxx").0.ok(), None);
 }
 
 #[test]
 fn test_ident() {
     let context = Context::new();
-    assert_eq!(lexer::ident(&context)("A xxx").0.ok(), Some((" xxx", ast::Ident("A"))));
-    assert_eq!(lexer::ident(&context)("a xxx").0.ok(), Some((" xxx", ast::Ident("a"))));
-    assert_eq!(lexer::ident(&context)("AbC xxx").0.ok(), Some((" xxx", ast::Ident("AbC"))));
-    assert_eq!(lexer::ident(&context)("abc xxx").0.ok(), Some((" xxx", ast::Ident("abc"))));
-    assert_eq!(lexer::ident(&context)("ab1 xxx").0.ok(), Some((" xxx", ast::Ident("ab1"))));
+    assert_eq!(lexer::ident(&context)("A xxx").0.ok(), Some((" xxx", ast::Ident { slice: "A" })));
+    assert_eq!(lexer::ident(&context)("a xxx").0.ok(), Some((" xxx", ast::Ident { slice: "a" })));
+    assert_eq!(lexer::ident(&context)("AbC xxx").0.ok(), Some((" xxx", ast::Ident { slice: "AbC" })));
+    assert_eq!(lexer::ident(&context)("abc xxx").0.ok(), Some((" xxx", ast::Ident { slice: "abc" })));
+    assert_eq!(lexer::ident(&context)("ab1 xxx").0.ok(), Some((" xxx", ast::Ident { slice: "ab1" })));
     assert_eq!(lexer::ident(&context)("1ab xxx").0.ok(), None);
-    assert_eq!(lexer::ident(&context)("a_b xxx").0.ok(), Some((" xxx", ast::Ident("a_b"))));
+    assert_eq!(lexer::ident(&context)("a_b xxx").0.ok(), Some((" xxx", ast::Ident { slice: "a_b" })));
     assert_eq!(lexer::ident(&context)("_ab xxx").0.ok(), None);
 }
 
@@ -88,87 +88,87 @@ fn test_unit_literal() {
     let context = Context::new();
     assert_eq!(
         lexer::unit_literal(&context)("()xxx").0.ok(),
-        Some(("xxx", ast::Literal::Unit(ast::OpCode("(", ast::OpCodeKind::OpenParen), ast::OpCode(")", ast::OpCodeKind::CloseParen))))
+        Some(("xxx", ast::Literal { slice: "()", kind: ast::LiteralKind::Unit { left: ast::OpCode { slice: "(", kind: ast::OpCodeKind::OpenParen }, right: ast::OpCode { slice: ")", kind: ast::OpCodeKind::CloseParen } } }))
     );
     assert_eq!(
         lexer::unit_literal(&context)("( )xxx").0.ok(),
-        Some(("xxx", ast::Literal::Unit(ast::OpCode("(", ast::OpCodeKind::OpenParen), ast::OpCode(")", ast::OpCodeKind::CloseParen))))
+        Some(("xxx", ast::Literal { slice: "( )", kind: ast::LiteralKind::Unit { left: ast::OpCode { slice: "(", kind: ast::OpCodeKind::OpenParen }, right: ast::OpCode { slice: ")", kind: ast::OpCodeKind::CloseParen } } }))
     );
 }
 
 #[test]
 fn test_null_literal() {
     let context = Context::new();
-    assert_eq!(lexer::null_literal(&context)("null xxx").0.ok(), Some((" xxx", ast::Literal::Null(ast::Keyword("null", ast::KeywordKind::Null)))));
+    assert_eq!(lexer::null_literal(&context)("null xxx").0.ok(), Some((" xxx", ast::Literal { slice: "null", kind: ast::LiteralKind::Null { keyword: ast::Keyword { slice: "null", kind: ast::KeywordKind::Null } } })));
     assert_eq!(lexer::null_literal(&context)("nullxxx").0.ok(), None);
 }
 
 #[test]
 fn test_bool_literal() {
     let context = Context::new();
-    assert_eq!(lexer::bool_literal(&context)("true xxx").0.ok(), Some((" xxx", ast::Literal::Bool(ast::Keyword("true", ast::KeywordKind::True)))));
-    assert_eq!(lexer::bool_literal(&context)("false xxx").0.ok(), Some((" xxx", ast::Literal::Bool(ast::Keyword("false", ast::KeywordKind::False)))));
+    assert_eq!(lexer::bool_literal(&context)("true xxx").0.ok(), Some((" xxx", ast::Literal { slice: "true", kind: ast::LiteralKind::Bool { keyword: ast::Keyword { slice: "true", kind: ast::KeywordKind::True } } })));
+    assert_eq!(lexer::bool_literal(&context)("false xxx").0.ok(), Some((" xxx", ast::Literal { slice: "false", kind: ast::LiteralKind::Bool { keyword: ast::Keyword { slice: "false", kind: ast::KeywordKind::False } } })));
     assert_eq!(lexer::bool_literal(&context)("truexxx").0.ok(), None);
 }
 
 #[test]
 fn test_integer_literal() {
-    assert_eq!(lexer::integer_literal("123 xxx").0.ok(), Some((" xxx", ast::Literal::PureInteger("123"))));
-    assert_eq!(lexer::integer_literal("1_2__3 xxx").0.ok(), Some((" xxx", ast::Literal::PureInteger("1_2__3"))));
-    assert_eq!(lexer::integer_literal("123L xxx").0.ok(), Some((" xxx", ast::Literal::DecInteger("123L"))));
-    assert_eq!(lexer::integer_literal("123U xxx").0.ok(), Some((" xxx", ast::Literal::DecInteger("123U"))));
-    assert_eq!(lexer::integer_literal("123LU xxx").0.ok(), Some((" xxx", ast::Literal::DecInteger("123LU"))));
-    assert_eq!(lexer::integer_literal("123UL xxx").0.ok(), Some((" xxx", ast::Literal::DecInteger("123UL"))));
+    assert_eq!(lexer::integer_literal("123 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123", kind: ast::LiteralKind::PureInteger { slice: "123" } })));
+    assert_eq!(lexer::integer_literal("1_2__3 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "1_2__3", kind: ast::LiteralKind::PureInteger { slice: "1_2__3" } })));
+    assert_eq!(lexer::integer_literal("123L xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123L", kind: ast::LiteralKind::DecInteger { slice: "123L" } })));
+    assert_eq!(lexer::integer_literal("123U xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123U", kind: ast::LiteralKind::DecInteger { slice: "123U" } })));
+    assert_eq!(lexer::integer_literal("123LU xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123LU", kind: ast::LiteralKind::DecInteger { slice: "123LU" } })));
+    assert_eq!(lexer::integer_literal("123UL xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123UL", kind: ast::LiteralKind::DecInteger { slice: "123UL" } })));
     assert_eq!(lexer::integer_literal("123xxx").0.ok(), None);
     assert_eq!(lexer::integer_literal("_123 xxx").0.ok(), None);
 }
 
 #[test]
 fn test_hex_integer_literal() {
-    assert_eq!(lexer::hex_integer_literal("0xFA3 xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0xFA3"))));
-    assert_eq!(lexer::hex_integer_literal("0XFA3 xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0XFA3"))));
-    assert_eq!(lexer::hex_integer_literal("0xfa3 xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0xfa3"))));
-    assert_eq!(lexer::hex_integer_literal("0x_F_A__3 xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0x_F_A__3"))));
-    assert_eq!(lexer::hex_integer_literal("0xFA3L xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0xFA3L"))));
-    assert_eq!(lexer::hex_integer_literal("0xFA3U xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0xFA3U"))));
-    assert_eq!(lexer::hex_integer_literal("0xFA3LU xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0xFA3LU"))));
-    assert_eq!(lexer::hex_integer_literal("0xFA3UL xxx").0.ok(), Some((" xxx", ast::Literal::HexInteger("0xFA3UL"))));
+    assert_eq!(lexer::hex_integer_literal("0xFA3 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0xFA3", kind: ast::LiteralKind::HexInteger { slice: "0xFA3" } })));
+    assert_eq!(lexer::hex_integer_literal("0XFA3 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0XFA3", kind: ast::LiteralKind::HexInteger { slice: "0XFA3" } })));
+    assert_eq!(lexer::hex_integer_literal("0xfa3 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0xfa3", kind: ast::LiteralKind::HexInteger { slice: "0xfa3" } })));
+    assert_eq!(lexer::hex_integer_literal("0x_F_A__3 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0x_F_A__3", kind: ast::LiteralKind::HexInteger { slice: "0x_F_A__3" } })));
+    assert_eq!(lexer::hex_integer_literal("0xFA3L xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0xFA3L", kind: ast::LiteralKind::HexInteger { slice: "0xFA3L" } })));
+    assert_eq!(lexer::hex_integer_literal("0xFA3U xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0xFA3U", kind: ast::LiteralKind::HexInteger { slice: "0xFA3U" } })));
+    assert_eq!(lexer::hex_integer_literal("0xFA3LU xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0xFA3LU", kind: ast::LiteralKind::HexInteger { slice: "0xFA3LU" } })));
+    assert_eq!(lexer::hex_integer_literal("0xFA3UL xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0xFA3UL", kind: ast::LiteralKind::HexInteger { slice: "0xFA3UL" } })));
     assert_eq!(lexer::hex_integer_literal("0xFA3xxx").0.ok(), None);
 }
 
 #[test]
 fn test_bin_integer_literal() {
-    assert_eq!(lexer::bin_integer_literal("0b101 xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0b101"))));
-    assert_eq!(lexer::bin_integer_literal("0B101 xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0B101"))));
-    assert_eq!(lexer::bin_integer_literal("0b_1_0__1 xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0b_1_0__1"))));
-    assert_eq!(lexer::bin_integer_literal("0b101L xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0b101L"))));
-    assert_eq!(lexer::bin_integer_literal("0b101U xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0b101U"))));
-    assert_eq!(lexer::bin_integer_literal("0b101LU xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0b101LU"))));
-    assert_eq!(lexer::bin_integer_literal("0b101UL xxx").0.ok(), Some((" xxx", ast::Literal::BinInteger("0b101UL"))));
+    assert_eq!(lexer::bin_integer_literal("0b101 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0b101", kind: ast::LiteralKind::BinInteger { slice: "0b101" } })));
+    assert_eq!(lexer::bin_integer_literal("0B101 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0B101", kind: ast::LiteralKind::BinInteger { slice: "0B101" } })));
+    assert_eq!(lexer::bin_integer_literal("0b_1_0__1 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0b_1_0__1", kind: ast::LiteralKind::BinInteger { slice: "0b_1_0__1" } })));
+    assert_eq!(lexer::bin_integer_literal("0b101L xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0b101L", kind: ast::LiteralKind::BinInteger { slice: "0b101L" } })));
+    assert_eq!(lexer::bin_integer_literal("0b101U xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0b101U", kind: ast::LiteralKind::BinInteger { slice: "0b101U" } })));
+    assert_eq!(lexer::bin_integer_literal("0b101LU xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0b101LU", kind: ast::LiteralKind::BinInteger { slice: "0b101LU" } })));
+    assert_eq!(lexer::bin_integer_literal("0b101UL xxx").0.ok(), Some((" xxx", ast::Literal { slice: "0b101UL", kind: ast::LiteralKind::BinInteger { slice: "0b101UL" } })));
     assert_eq!(lexer::bin_integer_literal("0b101xxx").0.ok(), None);
     assert_eq!(lexer::bin_integer_literal("0b123 xxx").0.ok(), None);
 }
 
 #[test]
 fn test_real_number_literal() {
-    assert_eq!(lexer::real_number_literal("12.345 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345"))));
-    assert_eq!(lexer::real_number_literal("1__2.3_4__5 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("1__2.3_4__5"))));
-    assert_eq!(lexer::real_number_literal("12.345E67 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345E67"))));
-    assert_eq!(lexer::real_number_literal("12.345e67 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345e67"))));
-    assert_eq!(lexer::real_number_literal("12.345E+67 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345E+67"))));
-    assert_eq!(lexer::real_number_literal("12.345E-67 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345E-67"))));
-    assert_eq!(lexer::real_number_literal("12.345F xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345F"))));
-    assert_eq!(lexer::real_number_literal("12.345D xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345D"))));
-    assert_eq!(lexer::real_number_literal("12.345M xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345M"))));
-    assert_eq!(lexer::real_number_literal("12.345E-67D xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("12.345E-67D"))));
-    assert_eq!(lexer::real_number_literal("123E45 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123E45"))));
-    assert_eq!(lexer::real_number_literal("123e45 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123e45"))));
-    assert_eq!(lexer::real_number_literal("123E+45 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123E+45"))));
-    assert_eq!(lexer::real_number_literal("123E-45 xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123E-45"))));
-    assert_eq!(lexer::real_number_literal("123F xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123F"))));
-    assert_eq!(lexer::real_number_literal("123D xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123D"))));
-    assert_eq!(lexer::real_number_literal("123M xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123M"))));
-    assert_eq!(lexer::real_number_literal("123E-45D xxx").0.ok(), Some((" xxx", ast::Literal::RealNumber("123E-45D"))));
+    assert_eq!(lexer::real_number_literal("12.345 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345", kind: ast::LiteralKind::RealNumber { slice: "12.345" } })));
+    assert_eq!(lexer::real_number_literal("1__2.3_4__5 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "1__2.3_4__5", kind: ast::LiteralKind::RealNumber { slice: "1__2.3_4__5" } })));
+    assert_eq!(lexer::real_number_literal("12.345E67 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345E67", kind: ast::LiteralKind::RealNumber { slice: "12.345E67" } })));
+    assert_eq!(lexer::real_number_literal("12.345e67 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345e67", kind: ast::LiteralKind::RealNumber { slice: "12.345e67" } })));
+    assert_eq!(lexer::real_number_literal("12.345E+67 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345E+67", kind: ast::LiteralKind::RealNumber { slice: "12.345E+67" } })));
+    assert_eq!(lexer::real_number_literal("12.345E-67 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345E-67", kind: ast::LiteralKind::RealNumber { slice: "12.345E-67" } })));
+    assert_eq!(lexer::real_number_literal("12.345F xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345F", kind: ast::LiteralKind::RealNumber { slice: "12.345F" } })));
+    assert_eq!(lexer::real_number_literal("12.345D xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345D", kind: ast::LiteralKind::RealNumber { slice: "12.345D" } })));
+    assert_eq!(lexer::real_number_literal("12.345M xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345M", kind: ast::LiteralKind::RealNumber { slice: "12.345M" } })));
+    assert_eq!(lexer::real_number_literal("12.345E-67D xxx").0.ok(), Some((" xxx", ast::Literal { slice: "12.345E-67D", kind: ast::LiteralKind::RealNumber { slice: "12.345E-67D" } })));
+    assert_eq!(lexer::real_number_literal("123E45 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123E45", kind: ast::LiteralKind::RealNumber { slice: "123E45" } })));
+    assert_eq!(lexer::real_number_literal("123e45 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123e45", kind: ast::LiteralKind::RealNumber { slice: "123e45" } })));
+    assert_eq!(lexer::real_number_literal("123E+45 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123E+45", kind: ast::LiteralKind::RealNumber { slice: "123E+45" } })));
+    assert_eq!(lexer::real_number_literal("123E-45 xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123E-45", kind: ast::LiteralKind::RealNumber { slice: "123E-45" } })));
+    assert_eq!(lexer::real_number_literal("123F xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123F", kind: ast::LiteralKind::RealNumber { slice: "123F" } })));
+    assert_eq!(lexer::real_number_literal("123D xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123D", kind: ast::LiteralKind::RealNumber { slice: "123D" } })));
+    assert_eq!(lexer::real_number_literal("123M xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123M", kind: ast::LiteralKind::RealNumber { slice: "123M" } })));
+    assert_eq!(lexer::real_number_literal("123E-45D xxx").0.ok(), Some((" xxx", ast::Literal { slice: "123E-45D", kind: ast::LiteralKind::RealNumber { slice: "123E-45D" } })));
     assert_eq!(lexer::real_number_literal("12.345xxx").0.ok(), None);
     assert_eq!(lexer::real_number_literal("123Fxxx").0.ok(), None);
     assert_eq!(lexer::real_number_literal("123 xxx").0.ok(), None);
@@ -176,16 +176,16 @@ fn test_real_number_literal() {
 
 #[test]
 fn test_character_literal() {
-    assert_eq!(lexer::character_literal("'a'xxx").0.ok(), Some(("xxx", ast::Literal::Character("a"))));
-    assert_eq!(lexer::character_literal("' 'xxx").0.ok(), Some(("xxx", ast::Literal::Character(" "))));
-    assert_eq!(lexer::character_literal("'\"'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\""))));
-    assert_eq!(lexer::character_literal("'\\''xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\'"))));
-    assert_eq!(lexer::character_literal("'\\\\'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\\\"))));
-    assert_eq!(lexer::character_literal("'\\n'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\n"))));
-    assert_eq!(lexer::character_literal("'\\xF'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\xF"))));
-    assert_eq!(lexer::character_literal("'\\xFFFF'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\xFFFF"))));
-    assert_eq!(lexer::character_literal("'\\uFFFF'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\uFFFF"))));
-    assert_eq!(lexer::character_literal("'\\UFFFFFFFF'xxx").0.ok(), Some(("xxx", ast::Literal::Character("\\UFFFFFFFF"))));
+    assert_eq!(lexer::character_literal("'a'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "a", kind: ast::LiteralKind::Character { slice: "a" } })));
+    assert_eq!(lexer::character_literal("' 'xxx").0.ok(), Some(("xxx", ast::Literal { slice: " ", kind: ast::LiteralKind::Character { slice: " " } })));
+    assert_eq!(lexer::character_literal("'\"'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\"", kind: ast::LiteralKind::Character { slice: "\"" } })));
+    assert_eq!(lexer::character_literal("'\\''xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\'", kind: ast::LiteralKind::Character { slice: "\\'" } })));
+    assert_eq!(lexer::character_literal("'\\\\'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\\\", kind: ast::LiteralKind::Character { slice: "\\\\" } })));
+    assert_eq!(lexer::character_literal("'\\n'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\n", kind: ast::LiteralKind::Character { slice: "\\n" } })));
+    assert_eq!(lexer::character_literal("'\\xF'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\xF", kind: ast::LiteralKind::Character { slice: "\\xF" } })));
+    assert_eq!(lexer::character_literal("'\\xFFFF'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\xFFFF", kind: ast::LiteralKind::Character { slice: "\\xFFFF" } })));
+    assert_eq!(lexer::character_literal("'\\uFFFF'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\uFFFF", kind: ast::LiteralKind::Character { slice: "\\uFFFF" } })));
+    assert_eq!(lexer::character_literal("'\\UFFFFFFFF'xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\UFFFFFFFF", kind: ast::LiteralKind::Character { slice: "\\UFFFFFFFF" } })));
     assert_eq!(lexer::character_literal("'ab'xxx").0.ok(), None);
     assert_eq!(lexer::character_literal("' a'xxx").0.ok(), None);
     assert_eq!(lexer::character_literal("'\\1'xxx").0.ok(), None);
@@ -196,24 +196,24 @@ fn test_character_literal() {
 
 #[test]
 fn test_regular_string_literal() {
-    assert_eq!(lexer::regular_string_literal("\"\"xxx").0.ok(), Some(("xxx", ast::Literal::RegularString(""))));
-    assert_eq!(lexer::regular_string_literal("\"abc\"xxx").0.ok(), Some(("xxx", ast::Literal::RegularString("abc"))));
-    assert_eq!(lexer::regular_string_literal("\"'\"xxx").0.ok(), Some(("xxx", ast::Literal::RegularString("'"))));
-    assert_eq!(lexer::regular_string_literal("\"\\\"\"xxx").0.ok(), Some(("xxx", ast::Literal::RegularString("\\\""))));
+    assert_eq!(lexer::regular_string_literal("\"\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "", kind: ast::LiteralKind::RegularString { slice: "" } })));
+    assert_eq!(lexer::regular_string_literal("\"abc\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "abc", kind: ast::LiteralKind::RegularString { slice: "abc" } })));
+    assert_eq!(lexer::regular_string_literal("\"'\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "'", kind: ast::LiteralKind::RegularString { slice: "'" } })));
+    assert_eq!(lexer::regular_string_literal("\"\\\"\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\\\"", kind: ast::LiteralKind::RegularString { slice: "\\\"" } })));
 }
 
 #[test]
 fn test_verbatium_string_literal() {
-    assert_eq!(lexer::verbatium_string_literal("@\"\"xxx").0.ok(), Some(("xxx", ast::Literal::VerbatiumString(""))));
-    assert_eq!(lexer::verbatium_string_literal("@\"abc\"xxx").0.ok(), Some(("xxx", ast::Literal::VerbatiumString("abc"))));
-    assert_eq!(lexer::verbatium_string_literal("@\"\"\"\"xxx").0.ok(), Some(("xxx", ast::Literal::VerbatiumString("\"\""))));
+    assert_eq!(lexer::verbatium_string_literal("@\"\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "", kind: ast::LiteralKind::VerbatiumString { slice: "" } })));
+    assert_eq!(lexer::verbatium_string_literal("@\"abc\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "abc", kind: ast::LiteralKind::VerbatiumString { slice: "abc" } })));
+    assert_eq!(lexer::verbatium_string_literal("@\"\"\"\"xxx").0.ok(), Some(("xxx", ast::Literal { slice: "\"\"", kind: ast::LiteralKind::VerbatiumString { slice: "\"\"" } })));
     assert_eq!(lexer::verbatium_string_literal("@\"\"\"xxx").0.ok(), None);
 }
 
 #[test]
 fn test_this_literal() {
     let context = Context::new();
-    assert_eq!(lexer::this_literal(&context)("this xxx").0.ok(), Some((" xxx", ast::Literal::This(ast::Keyword("this", ast::KeywordKind::This)))));
+    assert_eq!(lexer::this_literal(&context)("this xxx").0.ok(), Some((" xxx", ast::Literal { slice: "this", kind: ast::LiteralKind::This { keyword: ast::Keyword { slice: "this", kind: ast::KeywordKind::This } } })));
     assert_eq!(lexer::this_literal(&context)("thisxxx").0.ok(), None);
 }
 
@@ -222,13 +222,30 @@ fn test_interpolated_string() {
     let context = Context::new();
     assert_eq!(
         lexer::interpolated_string(&context)("$\"abc{123}def{val}ghi\"xxx").0.ok(),
-        Some(("xxx", ast::InterpolatedString(
-            vec!["abc", "def", "ghi"],
-            vec![
-                Rc::new(parser::ast::Expr(Rc::new(parser::ast::Term::Literal(ast::Literal::PureInteger("123"))), vec![])),
-                Rc::new(parser::ast::Expr(Rc::new(parser::ast::Term::EvalVar(ast::Ident("val"))), vec![])),
+        Some(("xxx", ast::InterpolatedString {
+            slice: "abc{123}def{val}ghi",
+            string_parts: vec!["abc", "def", "ghi"],
+            exprs: vec![
+                Rc::new(parser::ast::Expr {
+                    slice: "123",
+                    term: Rc::new(parser::ast::Term {
+                        slice: "123",
+                        kind: parser::ast::TermKind::Literal {
+                            literal: ast::Literal { slice: "123", kind: ast::LiteralKind::PureInteger { slice: "123" } }
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(parser::ast::Expr {
+                    slice: "val",
+                    term: Rc::new(parser::ast::Term {
+                        slice: "val",
+                        kind: parser::ast::TermKind::EvalVar { ident: ast::Ident { slice: "val" } },
+                    }),
+                    ops: vec![],
+                }),
             ],
-        ))),
+        })),
     );
     assert_eq!(lexer::interpolated_string(&context)("$\"abc{123\"xxx").0.ok(), None);
 }

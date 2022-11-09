@@ -2,7 +2,10 @@ use std::rc::Rc;
 use crate::parser;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Keyword<'input>(pub &'input str, pub KeywordKind);
+pub struct Keyword<'input> {
+    pub slice: &'input str,
+    pub kind: KeywordKind,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum KeywordKind {
@@ -39,7 +42,10 @@ pub enum KeywordKind {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct OpCode<'input>(pub &'input str, pub OpCodeKind);
+pub struct OpCode<'input> {
+    pub slice: &'input str,
+    pub kind: OpCodeKind,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum OpCodeKind {
@@ -87,23 +93,60 @@ pub enum OpCodeKind {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Ident<'input>(pub &'input str);
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Literal<'input> {
-    Unit(OpCode<'input>, OpCode<'input>),
-    Null(Keyword<'input>),
-    Bool(Keyword<'input>),
-    PureInteger(&'input str),
-    DecInteger(&'input str),
-    HexInteger(&'input str),
-    BinInteger(&'input str),
-    RealNumber(&'input str),
-    Character(&'input str),
-    RegularString(&'input str),
-    VerbatiumString(&'input str),
-    This(Keyword<'input>),
+pub struct Ident<'input> {
+    pub slice: &'input str,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct InterpolatedString<'input>(pub Vec<&'input str>, pub Vec<Rc<parser::ast::Expr<'input>>>);
+pub struct Literal<'input> {
+    pub slice: &'input str,
+    pub kind: LiteralKind<'input>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum LiteralKind<'input> {
+    Unit {
+        left: OpCode<'input>,
+        right: OpCode<'input>,
+    },
+    Null {
+        keyword: Keyword<'input>,
+    },
+    Bool {
+        keyword: Keyword<'input>,
+    },
+    PureInteger {
+        slice: &'input str,
+    },
+    DecInteger {
+        slice: &'input str,
+    },
+    HexInteger {
+        slice: &'input str,
+    },
+    BinInteger {
+        slice: &'input str,
+    },
+    RealNumber {
+        slice: &'input str,
+    },
+    Character {
+        slice: &'input str,
+    },
+    RegularString {
+        slice: &'input str,
+    },
+    VerbatiumString {
+        slice: &'input str,
+    },
+    This {
+        keyword: Keyword<'input>,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct InterpolatedString<'input> {
+    pub slice: &'input str,
+    pub string_parts: Vec<&'input str>,
+    pub exprs: Vec<Rc<parser::ast::Expr<'input>>>,
+}

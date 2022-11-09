@@ -11,31 +11,67 @@ fn test_target() {
     let context = Context::new();
     assert_eq!(
         parser::target(&context)("pub let x = 123; pub fn f() {};").ok(),
-        Some(("", ast::Target(
-            Some(ast::Body(vec![
-                ast::TopStat::VarBind(
-                    Some(ast::AccessAttr(lexer::ast::Keyword("pub", lexer::ast::KeywordKind::Pub))),
-                    None,
-                    ast::VarBind(
-                        lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                        ast::VarDecl::SingleDecl(None, lexer::ast::Ident("x"), None),
-                        Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-                    ),
-                ),
-                ast::TopStat::FnBind(
-                    Some(ast::AccessAttr(lexer::ast::Keyword("pub", lexer::ast::KeywordKind::Pub))),
-                    ast::FnBind(
-                        lexer::ast::Keyword("fn", lexer::ast::KeywordKind::Fn),
-                        ast::FnDecl(
-                            lexer::ast::Ident("f"),
-                            ast::VarDecl::TupleDecl(vec![]),
-                            None,
-                        ),
-                        ast::StatsBlock(vec![], None),
-                    ),
-                ),
-            ]),
-        )))),
+        Some(("", ast::Target {
+            slice: "pub let x = 123; pub fn f() {};",
+            body: Some(ast::Body {
+                slice: "pub let x = 123; pub fn f() {};",
+                top_stats: vec![
+                    ast::TopStat {
+                        slice: "pub let x = 123;",
+                        kind: ast::TopStatKind::VarBind {
+                            access_attr: Some(ast::AccessAttr { slice: "pub", attr: lexer::ast::Keyword { slice: "pub", kind: lexer::ast::KeywordKind::Pub } }),
+                            sync_attr: None,
+                            var_bind: ast::VarBind {
+                                slice: " let x = 123",
+                                let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                                var_decl: ast::VarDecl {
+                                    slice: " x",
+                                    kind: ast::VarDeclKind::SingleDecl {
+                                        mut_attr: None,
+                                        ident: lexer::ast::Ident { slice: "x" },
+                                        ty_expr: None,
+                                    },
+                                },
+                                expr: Rc::new(ast::Expr {
+                                    slice: " 123",
+                                    term: Rc::new(ast::Term {
+                                        slice: " 123",
+                                        kind: ast::TermKind::Literal {
+                                            literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                                        },
+                                    }),
+                                    ops: vec![]
+                                }),
+                            },
+                        },
+                    },
+                    ast::TopStat {
+                        slice: " pub fn f() {};",
+                        kind: ast::TopStatKind::FnBind {
+                            access_attr: Some(ast::AccessAttr { slice: " pub", attr: lexer::ast::Keyword { slice: "pub", kind: lexer::ast::KeywordKind::Pub } }),
+                            fn_bind: ast::FnBind {
+                                slice: " fn f() {}",
+                                fn_keyword: lexer::ast::Keyword { slice: "fn", kind: lexer::ast::KeywordKind::Fn },
+                                fn_decl: ast::FnDecl {
+                                    slice: " f()",
+                                    ident: lexer::ast::Ident { slice: "f" },
+                                    var_decl: ast::VarDecl {
+                                        slice: "()",
+                                        kind: ast::VarDeclKind::TupleDecl { var_decls: vec![] },
+                                    },
+                                    ty_expr: None,
+                                },
+                                stats_block: ast::StatsBlock {
+                                    slice: " {}",
+                                    stats: vec![],
+                                    ret: None
+                                },
+                            },
+                        },
+                    },
+                ],
+            }),
+        })),
     );
 }
 
@@ -44,29 +80,64 @@ fn test_body() {
     let context = Context::new();
     assert_eq!(
         parser::body(&context)("pub let x = 123; pub fn f() {};").ok(),
-        Some(("", ast::Body(vec![
-            ast::TopStat::VarBind(
-                Some(ast::AccessAttr(lexer::ast::Keyword("pub", lexer::ast::KeywordKind::Pub))),
-                None,
-                ast::VarBind(
-                    lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                    ast::VarDecl::SingleDecl(None, lexer::ast::Ident("x"), None),
-                    Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-                ),
-            ),
-            ast::TopStat::FnBind(
-                Some(ast::AccessAttr(lexer::ast::Keyword("pub", lexer::ast::KeywordKind::Pub))),
-                ast::FnBind(
-                    lexer::ast::Keyword("fn", lexer::ast::KeywordKind::Fn),
-                    ast::FnDecl(
-                        lexer::ast::Ident("f"),
-                        ast::VarDecl::TupleDecl(vec![]),
-                        None,
-                    ),
-                    ast::StatsBlock(vec![], None),
-                ),
-            ),
-        ]))),
+        Some(("", ast::Body {
+            slice: "pub let x = 123; pub fn f() {};",
+            top_stats: vec![
+                ast::TopStat {
+                    slice: "pub let x = 123;",
+                    kind: ast::TopStatKind::VarBind {
+                        access_attr: Some(ast::AccessAttr { slice: "pub", attr: lexer::ast::Keyword { slice: "pub", kind: lexer::ast::KeywordKind::Pub } }),
+                        sync_attr: None,
+                        var_bind: ast::VarBind {
+                            slice: " let x = 123",
+                            let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                            var_decl: ast::VarDecl {
+                                slice: " x",
+                                kind: ast::VarDeclKind::SingleDecl {
+                                    mut_attr: None,
+                                    ident: lexer::ast::Ident { slice: "x" },
+                                    ty_expr: None,
+                                },
+                            },
+                            expr: Rc::new(ast::Expr {
+                                slice: " 123",
+                                term: Rc::new(ast::Term {
+                                    slice: " 123",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                                    },
+                                }),
+                                ops: vec![],
+                            }),
+                        },
+                    },
+                },
+                ast::TopStat {
+                    slice: " pub fn f() {};",
+                    kind: ast::TopStatKind::FnBind {
+                        access_attr: Some(ast::AccessAttr { slice: " pub", attr: lexer::ast::Keyword { slice: "pub", kind: lexer::ast::KeywordKind::Pub } }),
+                        fn_bind: ast::FnBind {
+                            slice: " fn f() {}",
+                            fn_keyword: lexer::ast::Keyword { slice: "fn", kind: lexer::ast::KeywordKind::Fn },
+                            fn_decl: ast::FnDecl {
+                                slice: " f()",
+                                ident: lexer::ast::Ident { slice: "f" },
+                                var_decl: ast::VarDecl {
+                                    slice: "()",
+                                    kind: ast::VarDeclKind::TupleDecl { var_decls: vec![] },
+                                },
+                                ty_expr: None,
+                            },
+                            stats_block: ast::StatsBlock {
+                                slice: " {}",
+                                stats: vec![],
+                                ret: None
+                            },
+                        },
+                    },
+                },
+            ],
+        })),
     );
 }
 
@@ -75,19 +146,35 @@ fn test_var_bind_top_stat() {
     let context = Context::new();
     assert_eq!(
         parser::top_stat(&context)("pub sync let mut x = 123;").ok(),
-        Some(("", ast::TopStat::VarBind(
-            Some(ast::AccessAttr(lexer::ast::Keyword("pub", lexer::ast::KeywordKind::Pub))),
-            Some(ast::SyncAttr(lexer::ast::Keyword("sync", lexer::ast::KeywordKind::Sync))),
-            ast::VarBind(
-                lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                ast::VarDecl::SingleDecl(
-                    Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                    lexer::ast::Ident("x"),
-                    None,
-                ),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-            ),
-        ))),
+        Some(("", ast::TopStat {
+            slice: "pub sync let mut x = 123;",
+            kind: ast::TopStatKind::VarBind {
+                access_attr: Some(ast::AccessAttr { slice: "pub", attr: lexer::ast::Keyword { slice: "pub", kind: lexer::ast::KeywordKind::Pub } }),
+                sync_attr: Some(ast::SyncAttr { slice: " sync", attr: lexer::ast::Keyword { slice: "sync", kind: lexer::ast::KeywordKind::Sync } }),
+                var_bind: ast::VarBind {
+                    slice: " let mut x = 123",
+                    let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                    var_decl: ast::VarDecl {
+                        slice: " mut x",
+                        kind: ast::VarDeclKind::SingleDecl {
+                            mut_attr: Some(ast::MutAttr { slice: " mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                            ident: lexer::ast::Ident { slice: "x" },
+                            ty_expr: None,
+                        },
+                    },
+                    expr: Rc::new(ast::Expr {
+                        slice: " 123",
+                        term: Rc::new(ast::Term {
+                            slice: " 123",
+                            kind: ast::TermKind::Literal {
+                                literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                            },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+            },
+        })),
     );
 }
 
@@ -96,27 +183,60 @@ fn test_fn_bind_top_stat() {
     let context = Context::new();
     assert_eq!(
         parser::top_stat(&context)("pub fn f(x: int) -> int { x };").ok(),
-        Some(("", ast::TopStat::FnBind(
-            Some(ast::AccessAttr(lexer::ast::Keyword("pub", lexer::ast::KeywordKind::Pub))),
-            ast::FnBind(
-                lexer::ast::Keyword("fn", lexer::ast::KeywordKind::Fn),
-                ast::FnDecl(
-                    lexer::ast::Ident("f"),
-                    ast::VarDecl::TupleDecl(vec![
-                        ast::VarDecl::SingleDecl(
-                            None,
-                            lexer::ast::Ident("x"),
-                            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                        ),
-                    ]),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-                ast::StatsBlock(
-                    vec![],
-                    Some(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))),
-                ),
-            ),
-        ))),
+        Some(("", ast::TopStat {
+            slice: "pub fn f(x: int) -> int { x };",
+            kind: ast::TopStatKind::FnBind {
+                access_attr: Some(ast::AccessAttr { slice: "pub", attr: lexer::ast::Keyword { slice: "pub", kind: lexer::ast::KeywordKind::Pub }}),
+                fn_bind: ast::FnBind {
+                    slice: " fn f(x: int) -> int { x }",
+                    fn_keyword: lexer::ast::Keyword { slice: "fn", kind: lexer::ast::KeywordKind::Fn },
+                    fn_decl: ast::FnDecl {
+                        slice: " f(x: int) -> int",
+                        ident: lexer::ast::Ident { slice: "f" },
+                        var_decl: ast::VarDecl {
+                            slice: "(x: int)",
+                            kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                                ast::VarDecl {
+                                    slice: "x: int",
+                                    kind: ast::VarDeclKind::SingleDecl {
+                                        mut_attr: None,
+                                        ident: lexer::ast::Ident { slice: "x" },
+                                        ty_expr: Some(Rc::new(ast::TyExpr {
+                                            slice: " int",
+                                            ty_term: Rc::new(ast::TyTerm {
+                                                slice: " int",
+                                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                            }),
+                                            ty_ops: vec![]
+                                        })),
+                                    },
+                                },
+                            ]},
+                        },
+                        ty_expr: Some(Rc::new(ast::TyExpr {
+                            slice: " int",
+                            ty_term: Rc::new(ast::TyTerm {
+                                slice: " int",
+                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                            }),
+                            ty_ops: vec![],
+                        })),
+                    },
+                    stats_block: ast::StatsBlock {
+                        slice: " { x }",
+                        stats: vec![],
+                        ret: Some(Rc::new(ast::Expr {
+                            slice: " x",
+                            term: Rc::new(ast::Term {
+                                slice: " x", kind:
+                                ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                            }),
+                            ops: vec![],
+                        })),
+                    },
+                },
+            },
+        })),
     );
 }
 
@@ -125,14 +245,24 @@ fn test_stat_top_stat() {
     let context = Context::new();
     assert_eq!(
         parser::top_stat(&context)("f();").ok(),
-        Some(("", ast::TopStat::Stat(
-            ast::Stat::Expr(
-                Rc::new(ast::Expr(
-                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                    vec![ast::Op::EvalFn(vec![])],
-                )),
-            ),
-        ))),
+        Some(("", ast::TopStat {
+            slice: "f();",
+            kind: ast::TopStatKind::Stat {
+                stat: ast::Stat {
+                    slice: "f()",
+                    kind: ast::StatKind::Expr {
+                        expr: Rc::new(ast::Expr {
+                            slice: "f()",
+                            term: Rc::new(ast::Term {
+                                slice: "f",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                            }),
+                            ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                        }),
+                    },
+                }
+            },
+        })),
     );
 }
 
@@ -141,15 +271,35 @@ fn test_var_bind() {
     let context = Context::new();
     assert_eq!(
         parser::var_bind(&context)("let mut x: int = 123").ok(),
-        Some(("", ast::VarBind(
-            lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-            ast::VarDecl::SingleDecl(
-                Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                lexer::ast::Ident("x"),
-                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-            ),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-        ))),
+        Some(("", ast::VarBind {
+            slice: "let mut x: int = 123",
+            let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+            var_decl: ast::VarDecl {
+                slice: " mut x: int",
+                kind: ast::VarDeclKind::SingleDecl {
+                    mut_attr: Some(ast::MutAttr { slice: " mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                    ident: lexer::ast::Ident { slice: "x" },
+                    ty_expr: Some(Rc::new(ast::TyExpr {
+                        slice: " int",
+                        ty_term: Rc::new(ast::TyTerm {
+                            slice: " int",
+                            kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                        }),
+                        ty_ops: vec![],
+                    })),
+                },
+            },
+            expr: Rc::new(ast::Expr {
+                slice: " 123",
+                term: Rc::new(ast::Term {
+                    slice: " 123",
+                    kind: ast::TermKind::Literal {
+                        literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                    },
+                }),
+                ops: vec![],
+            }),
+        })),
     );
 }
 
@@ -158,23 +308,43 @@ fn test_single_var_decl() {
     let context = Context::new();
     assert_eq!(
         parser::var_decl(&context)("x").ok(),
-        Some(("", ast::VarDecl::SingleDecl(None, lexer::ast::Ident("x"), None))),
+        Some(("", ast::VarDecl {
+            slice: "x",
+            kind: ast::VarDeclKind::SingleDecl {
+                mut_attr: None,
+                ident: lexer::ast::Ident { slice: "x" },
+                ty_expr: None,
+            },
+        })),
     );
     assert_eq!(
         parser::var_decl(&context)("mut x").ok(),
-        Some(("", ast::VarDecl::SingleDecl(
-            Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-            lexer::ast::Ident("x"),
-            None,
-        ))),
+        Some(("", ast::VarDecl {
+            slice: "mut x",
+            kind: ast::VarDeclKind::SingleDecl {
+                mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                ident: lexer::ast::Ident { slice: "x" },
+                ty_expr: None,
+            },
+        })),
     );
     assert_eq!(
         parser::var_decl(&context)("mut x: int").ok(),
-        Some(("", ast::VarDecl::SingleDecl(
-            Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-            lexer::ast::Ident("x"),
-            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-        ))),
+        Some(("", ast::VarDecl {
+            slice: "mut x: int",
+            kind: ast::VarDeclKind::SingleDecl {
+                mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                ident: lexer::ast::Ident { slice: "x" },
+                ty_expr: Some(Rc::new(ast::TyExpr {
+                    slice: " int",
+                    ty_term: Rc::new(ast::TyTerm {
+                        slice: " int",
+                        kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                    }),
+                    ty_ops: vec![],
+                })),
+            }
+        })),
     );
 }
 
@@ -183,35 +353,88 @@ fn test_tuple_var_decl() {
     let context = Context::new();
     assert_eq!(
         parser::var_decl(&context)("()").ok(),
-        Some(("", ast::VarDecl::TupleDecl(vec![]))),
+        Some(("", ast::VarDecl {
+            slice: "()",
+            kind: ast::VarDeclKind::TupleDecl { var_decls: vec![] }
+        })),
     );
     assert_eq!(
         parser::var_decl(&context)("(x)").ok(),
-        Some(("", ast::VarDecl::TupleDecl(vec![
-            ast::VarDecl::SingleDecl(None, lexer::ast::Ident("x"), None),
-        ]))),
+        Some(("", ast::VarDecl {
+            slice: "(x)",
+            kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                ast::VarDecl {
+                    slice: "x",
+                    kind: ast::VarDeclKind::SingleDecl {
+                        mut_attr: None,
+                        ident: lexer::ast::Ident { slice: "x" },
+                        ty_expr: None
+                    },
+                },
+            ]},
+        })),
     );
     assert_eq!(
         parser::var_decl(&context)("(mut x: int, y)").ok(),
-        Some(("", ast::VarDecl::TupleDecl(vec![
-            ast::VarDecl::SingleDecl(
-                Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                lexer::ast::Ident("x"),
-                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-            ),
-            ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
-        ]))),
+        Some(("", ast::VarDecl {
+            slice: "(mut x: int, y)",
+            kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                ast::VarDecl {
+                    slice: "mut x: int",
+                    kind: ast::VarDeclKind::SingleDecl {
+                        mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                        ident: lexer::ast::Ident { slice: "x" },
+                        ty_expr: Some(Rc::new(ast::TyExpr {
+                            slice: " int",
+                            ty_term: Rc::new(ast::TyTerm {
+                                slice: " int",
+                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                            }),
+                            ty_ops: vec![],
+                        })),
+                    },
+                },
+                ast::VarDecl {
+                    slice: " y",
+                    kind: ast::VarDeclKind::SingleDecl {
+                        mut_attr: None,
+                        ident: lexer::ast::Ident { slice: "y" },
+                        ty_expr: None,
+                    },
+                },
+            ]},
+        })),
     );
     assert_eq!(
         parser::var_decl(&context)("(mut x: int, y,)").ok(),
-        Some(("", ast::VarDecl::TupleDecl(vec![
-            ast::VarDecl::SingleDecl(
-                Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                lexer::ast::Ident("x"),
-                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-            ),
-            ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
-        ]))),
+        Some(("", ast::VarDecl {
+            slice: "(mut x: int, y,)",
+            kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                ast::VarDecl {
+                    slice: "mut x: int",
+                    kind: ast::VarDeclKind::SingleDecl {
+                        mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                        ident: lexer::ast::Ident { slice: "x" },
+                        ty_expr: Some(Rc::new(ast::TyExpr {
+                            slice: " int",
+                            ty_term: Rc::new(ast::TyTerm {
+                                slice: " int",
+                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                            }),
+                            ty_ops: vec![],
+                        })),
+                    },
+                },
+                ast::VarDecl {
+                    slice: " y",
+                    kind: ast::VarDeclKind::SingleDecl {
+                        mut_attr: None,
+                        ident: lexer::ast::Ident { slice: "y" },
+                        ty_expr: None,
+                    },
+                },
+            ]},
+        })),
     );
 }
 
@@ -220,32 +443,76 @@ fn test_fn_bind() {
     let context = Context::new();
     assert_eq!(
         parser::fn_bind(&context)("fn f(mut x: int, y) -> int { g(); x }").ok(),
-        Some(("", ast::FnBind(
-            lexer::ast::Keyword("fn", lexer::ast::KeywordKind::Fn),
-            ast::FnDecl(
-                lexer::ast::Ident("f"),
-                ast::VarDecl::TupleDecl(vec![
-                    ast::VarDecl::SingleDecl(
-                        Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                        lexer::ast::Ident("x"),
-                        Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                    ),
-                    ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
-                ]),
-                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-            ),
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("g"))),
-                            vec![ast::Op::EvalFn(vec![])]
-                        )),
-                    ),
+        Some(("", ast::FnBind {
+            slice: "fn f(mut x: int, y) -> int { g(); x }",
+            fn_keyword: lexer::ast::Keyword { slice: "fn", kind: lexer::ast::KeywordKind::Fn },
+            fn_decl: ast::FnDecl {
+                slice: " f(mut x: int, y) -> int",
+                ident: lexer::ast::Ident { slice: "f" },
+                var_decl: ast::VarDecl {
+                    slice: "(mut x: int, y)",
+                    kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                        ast::VarDecl {
+                            slice: "mut x: int",
+                            kind: ast::VarDeclKind::SingleDecl {
+                                mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                                ident: lexer::ast::Ident { slice: "x" },
+                                ty_expr: Some(Rc::new(ast::TyExpr {
+                                    slice: " int",
+                                    ty_term: Rc::new(ast::TyTerm {
+                                        slice: " int",
+                                        kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                    }),
+                                    ty_ops: vec![],
+                                })),
+                            },
+                        },
+                        ast::VarDecl {
+                            slice: " y",
+                            kind: ast::VarDeclKind::SingleDecl {
+                                mut_attr: None,
+                                ident: lexer::ast::Ident { slice: "y" },
+                                ty_expr: None
+                            },
+                        },
+                    ]},
+                },
+                ty_expr: Some(Rc::new(ast::TyExpr {
+                    slice: " int",
+                    ty_term: Rc::new(ast::TyTerm {
+                        slice: " int",
+                        kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                    }),
+                    ty_ops: vec![],
+                })),
+            },
+            stats_block: ast::StatsBlock {
+                slice: " { g(); x }",
+                stats: vec![
+                    ast::Stat {
+                        slice: " g()",
+                        kind: ast::StatKind::Expr {
+                            expr: Rc::new(ast::Expr {
+                                slice: " g()",
+                                term: Rc::new(ast::Term {
+                                    slice: " g",
+                                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "g" } },
+                                }),
+                                ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                            }),
+                        },
+                    },
                 ],
-                Some(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))),
-            ),
-        ))),
+                ret: Some(Rc::new(ast::Expr {
+                    slice: " x",
+                    term: Rc::new(ast::Term {
+                        slice: " x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                })),
+            },
+        })),
     );
 }
 
@@ -254,26 +521,58 @@ fn test_fn_decl() {
     let context = Context::new();
     assert_eq!(
         parser::fn_decl(&context)("f()").ok(),
-        Some(("", ast::FnDecl(
-            lexer::ast::Ident("f"),
-            ast::VarDecl::TupleDecl(vec![]),
-            None,
-        ))),
+        Some(("", ast::FnDecl {
+            slice: "f()",
+            ident: lexer::ast::Ident { slice: "f" },
+            var_decl: ast::VarDecl {
+                slice: "()",
+                kind: ast::VarDeclKind::TupleDecl { var_decls: vec![] },
+            },
+            ty_expr: None,
+        })),
     );
     assert_eq!(
         parser::fn_decl(&context)("f(mut x: int, y) -> int").ok(),
-        Some(("", ast::FnDecl(
-            lexer::ast::Ident("f"),
-            ast::VarDecl::TupleDecl(vec![
-                ast::VarDecl::SingleDecl(
-                    Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                    lexer::ast::Ident("x"),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-                ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
-            ]),
-            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-        ))),
+        Some(("", ast::FnDecl {
+            slice: "f(mut x: int, y) -> int",
+            ident: lexer::ast::Ident { slice: "f" },
+            var_decl: ast::VarDecl {
+                slice: "(mut x: int, y)",
+                kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                    ast::VarDecl {
+                        slice: "mut x: int",
+                        kind: ast::VarDeclKind::SingleDecl {
+                            mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                            ident: lexer::ast::Ident { slice: "x" },
+                            ty_expr: Some(Rc::new(ast::TyExpr {
+                                slice: " int",
+                                ty_term: Rc::new(ast::TyTerm {
+                                    slice: " int",
+                                    kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                }),
+                                ty_ops: vec![],
+                            })),
+                        },
+                    },
+                    ast::VarDecl {
+                        slice: " y",
+                        kind: ast::VarDeclKind::SingleDecl {
+                            mut_attr: None,
+                            ident: lexer::ast::Ident { slice: "y" },
+                            ty_expr: None
+                        },
+                    },
+                ]},
+            },
+            ty_expr: Some(Rc::new(ast::TyExpr {
+                slice: " int",
+                ty_term: Rc::new(ast::TyTerm {
+                    slice: " int",
+                    kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                }),
+                ty_ops: vec![],
+            })),
+        })),
     );
 }
 
@@ -282,19 +581,35 @@ fn test_ty_expr() {
     let context = Context::new();
     assert_eq!(
         parser::ty_expr(&context)("T::U::V").ok(),
-        Some(("", Rc::new(ast::TyExpr(
-            Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("T"))),
-            vec![
-                ast::TyOp::Access(
-                    lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-                    Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("U"))),
-                ),
-                ast::TyOp::Access(
-                    lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-                    Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("V"))),
-                ),
+        Some(("", Rc::new(ast::TyExpr {
+            slice: "T::U::V",
+            ty_term: Rc::new(ast::TyTerm {
+                slice: "T",
+                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "T" } },
+            }),
+            ty_ops: vec![
+                ast::TyOp {
+                    slice: "::U",
+                    kind: ast::TyOpKind::Access {
+                        op_code: lexer::ast::OpCode { slice: "::", kind: lexer::ast::OpCodeKind::DoubleColon },
+                        ty_term: Rc::new(ast::TyTerm {
+                            slice: "U",
+                            kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "U" } },
+                        }),
+                    },
+                },
+                ast::TyOp {
+                    slice: "::V",
+                    kind: ast::TyOpKind::Access {
+                        op_code: lexer::ast::OpCode { slice: "::", kind: lexer::ast::OpCodeKind::DoubleColon },
+                        ty_term: Rc::new(ast::TyTerm {
+                            slice: "V",
+                            kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "V" } },
+                        }),
+                    },
+                },
             ],
-        )))),
+        }))),
     );
 }
 
@@ -303,10 +618,16 @@ fn test_ty_op() {
     let context = Context::new();
     assert_eq!(
         parser::ty_op(&context)("::T").ok(),
-        Some(("", ast::TyOp::Access(
-            lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-            Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("T"))),
-        ))),
+        Some(("", ast::TyOp {
+            slice: "::T",
+            kind: ast::TyOpKind::Access {
+                op_code: lexer::ast::OpCode { slice: "::", kind: lexer::ast::OpCodeKind::DoubleColon },
+                ty_term: Rc::new(ast::TyTerm {
+                    slice: "T",
+                    kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "T" } },
+                }),
+            },
+        })),
     );
 }
 
@@ -315,7 +636,10 @@ fn test_ty_term() {
     let context = Context::new();
     assert_eq!(
         parser::ty_term(&context)("string").ok(),
-        Some(("", Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("string"))))),
+        Some(("", Rc::new(ast::TyTerm {
+            slice: "string",
+            kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "string" } },
+        }))),
     );
 }
 
@@ -324,36 +648,75 @@ fn test_stats_block() {
     let context = Context::new();
     assert_eq!(
         parser::stats_block(&context)("{}").ok(),
-        Some(("", ast::StatsBlock(vec![], None))),
+        Some(("", ast::StatsBlock {
+            slice: "{}",
+            stats: vec![],
+            ret: None
+        })),
     );
     assert_eq!(
         parser::stats_block(&context)("{ f(); x }").ok(),
-        Some(("", ast::StatsBlock(
-            vec![
-                ast::Stat::Expr(
-                    Rc::new(ast::Expr(
-                        Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                        vec![ast::Op::EvalFn(vec![])]
-                    )),
-                ),
+        Some(("", ast::StatsBlock {
+            slice: "{ f(); x }",
+            stats: vec![
+                ast::Stat {
+                    slice: " f()",
+                    kind: ast::StatKind::Expr {
+                        expr: Rc::new(ast::Expr {
+                            slice: " f()",
+                            term: Rc::new(ast::Term {
+                                slice: " f",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                            }),
+                            ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                        }),
+                    },
+                },
             ],
-            Some(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))),
-        ))),
+            ret: Some(Rc::new(ast::Expr {
+                slice: " x",
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+                ops: vec![],
+            })),
+        })),
     );
     assert_eq!(
         parser::stats_block(&context)("{ f(); x; }").ok(),
-        Some(("", ast::StatsBlock(
-            vec![
-                ast::Stat::Expr(
-                    Rc::new(ast::Expr(
-                        Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                        vec![ast::Op::EvalFn(vec![])]
-                    )),
-                ),
-                ast::Stat::Expr(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])))
+        Some(("", ast::StatsBlock {
+            slice: "{ f(); x; }",
+            stats: vec![
+                ast::Stat {
+                    slice: " f()",
+                    kind: ast::StatKind::Expr {
+                        expr: Rc::new(ast::Expr {
+                            slice: " f()",
+                            term: Rc::new(ast::Term {
+                                slice: " f",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                            }),
+                            ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                        }),
+                    },
+                },
+                ast::Stat {
+                    slice: " x",
+                    kind: ast::StatKind::Expr {
+                        expr: Rc::new(ast::Expr {
+                            slice: " x",
+                            term: Rc::new(ast::Term {
+                                slice: " x",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                },
             ],
-            None,
-        ))),
+            ret: None,
+        })),
     );
 }
 
@@ -362,14 +725,30 @@ fn test_return_stat() {
     let context = Context::new();
     assert_eq!(
         parser::stat(&context)("return;").ok(),
-        Some(("", ast::Stat::Return(lexer::ast::Keyword("return", lexer::ast::KeywordKind::Return), None))),
+        Some(("", ast::Stat {
+            slice: "return",
+            kind: ast::StatKind::Return {
+                return_keyword: lexer::ast::Keyword { slice: "return", kind: lexer::ast::KeywordKind::Return },
+                expr: None
+            }
+        })),
     );
     assert_eq!(
         parser::stat(&context)("return x;").ok(),
-        Some(("", ast::Stat::Return(
-            lexer::ast::Keyword("return", lexer::ast::KeywordKind::Return),
-            Some(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))),
-        ))),
+        Some(("", ast::Stat {
+            slice: "return x",
+            kind: ast::StatKind::Return {
+                return_keyword: lexer::ast::Keyword { slice: "return", kind: lexer::ast::KeywordKind::Return },
+                expr: Some(Rc::new(ast::Expr {
+                    slice: " x",
+                    term: Rc::new(ast::Term {
+                        slice: " x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                })),
+            },
+        })),
     );
 }
 
@@ -378,7 +757,12 @@ fn test_continue_stat() {
     let context = Context::new();
     assert_eq!(
         parser::stat(&context)("continue;").ok(),
-        Some(("", ast::Stat::Continue(lexer::ast::Keyword("continue", lexer::ast::KeywordKind::Continue)))),
+        Some(("", ast::Stat {
+            slice: "continue",
+            kind: ast::StatKind::Continue {
+                continue_keyword: lexer::ast::Keyword { slice: "continue", kind: lexer::ast::KeywordKind::Continue },
+            },
+        })),
     );
 }
 
@@ -387,7 +771,12 @@ fn test_break_stat() {
     let context = Context::new();
     assert_eq!(
         parser::stat(&context)("break;").ok(),
-        Some(("", ast::Stat::Break(lexer::ast::Keyword("break", lexer::ast::KeywordKind::Break)))),
+        Some(("", ast::Stat {
+            slice: "break",
+            kind: ast::StatKind::Break {
+                break_keyword: lexer::ast::Keyword { slice: "break", kind: lexer::ast::KeywordKind::Break },
+            },
+        })),
     );
 }
 
@@ -396,58 +785,139 @@ fn test_var_bind_stat() {
     let context = Context::new();
     assert_eq!(
         parser::stat(&context)("let x = 123;").ok(),
-        Some(("", ast::Stat::VarBind(
-            ast::VarBind(
-                lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                ast::VarDecl::SingleDecl(
-                    None,
-                    lexer::ast::Ident("x"),
-                    None,
-                ),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-            ),
-        ))),
+        Some(("", ast::Stat {
+            slice: "let x = 123",
+            kind: ast::StatKind::VarBind {
+                var_bind: ast::VarBind {
+                    slice: "let x = 123",
+                    let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                    var_decl: ast::VarDecl {
+                        slice: " x",
+                        kind: ast::VarDeclKind::SingleDecl {
+                            mut_attr: None,
+                            ident: lexer::ast::Ident { slice: "x" },
+                            ty_expr: None,
+                        },
+                    },
+                    expr: Rc::new(ast::Expr {
+                        slice: " 123",
+                        term: Rc::new(ast::Term {
+                            slice: " 123",
+                            kind: ast::TermKind::Literal {
+                                literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                            },
+                        }),
+                        ops: vec![]
+                    }),
+                },
+            },
+        })),
     );
     assert_eq!(
         parser::stat(&context)("let mut x: int = 123;").ok(),
-        Some(("", ast::Stat::VarBind(
-            ast::VarBind(
-                lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                ast::VarDecl::SingleDecl(
-                    Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                    lexer::ast::Ident("x"),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-            ),
-        ))),
+        Some(("", ast::Stat {
+            slice: "let mut x: int = 123",
+            kind: ast::StatKind::VarBind {
+                var_bind: ast::VarBind {
+                    slice: "let mut x: int = 123",
+                    let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                    var_decl: ast::VarDecl {
+                        slice: " mut x: int",
+                        kind: ast::VarDeclKind::SingleDecl {
+                            mut_attr: Some(ast::MutAttr { slice: " mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                            ident: lexer::ast::Ident { slice: "x" },
+                            ty_expr: Some(Rc::new(ast::TyExpr {
+                                slice: " int",
+                                ty_term: Rc::new(ast::TyTerm {
+                                    slice: " int",
+                                    kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                }),
+                                ty_ops: vec![],
+                            })),
+                        },
+                    },
+                    expr: Rc::new(ast::Expr {
+                        slice: " 123",
+                        term: Rc::new(ast::Term {
+                            slice: " 123",
+                            kind: ast::TermKind::Literal {
+                                literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                            },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+            },
+        })),
     );
     assert_eq!(
         parser::stat(&context)("let (mut x: int, y) = (123, 456);").ok(),
-        Some(("", ast::Stat::VarBind(
-            ast::VarBind(
-                lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                ast::VarDecl::TupleDecl(
-                    vec![
-                        ast::VarDecl::SingleDecl(
-                            Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                            lexer::ast::Ident("x"),
-                            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                        ),
-                        ast::VarDecl::SingleDecl(None, lexer::ast::Ident("y"), None),
-                    ],
-                ),
-                Rc::new(ast::Expr(
-                    Rc::new(ast::Term::Tuple(
-                        vec![
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("456"))), vec![])),
-                        ],
-                    )),
-                    vec![]
-                )),
-            ),
-        ))),
+        Some(("", ast::Stat {
+            slice: "let (mut x: int, y) = (123, 456)",
+            kind: ast::StatKind::VarBind {
+                var_bind: ast::VarBind {
+                    slice: "let (mut x: int, y) = (123, 456)",
+                    let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                    var_decl: ast::VarDecl {
+                        slice: " (mut x: int, y)",
+                        kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                            ast::VarDecl {
+                                slice: "mut x: int",
+                                kind: ast::VarDeclKind::SingleDecl {
+                                    mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                                    ident: lexer::ast::Ident { slice: "x" },
+                                    ty_expr: Some(Rc::new(ast::TyExpr {
+                                        slice: " int",
+                                        ty_term: Rc::new(ast::TyTerm {
+                                            slice: " int",
+                                            kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                        }),
+                                        ty_ops: vec![],
+                                    })),
+                                },
+                            },
+                            ast::VarDecl {
+                                slice: " y",
+                                kind: ast::VarDeclKind::SingleDecl {
+                                    mut_attr: None,
+                                    ident: lexer::ast::Ident { slice: "y" },
+                                    ty_expr: None
+                                },
+                            },
+                        ]},
+                    },
+                    expr: Rc::new(ast::Expr {
+                        slice: " (123, 456)",
+                        term: Rc::new(ast::Term {
+                            slice: " (123, 456)",
+                            kind: ast::TermKind::Tuple { exprs: vec![
+                                Rc::new(ast::Expr {
+                                    slice: "123",
+                                    term: Rc::new(ast::Term {
+                                        slice: "123",
+                                        kind: ast::TermKind::Literal {
+                                            literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                                        },
+                                    }),
+                                    ops: vec![],
+                                }),
+                                Rc::new(ast::Expr {
+                                    slice: " 456",
+                                    term: Rc::new(ast::Term {
+                                        slice: " 456",
+                                        kind: ast::TermKind::Literal {
+                                            literal: lexer::ast::Literal { slice: "456", kind: lexer::ast::LiteralKind::PureInteger { slice: "456" } },
+                                        },
+                                    }),
+                                    ops: vec![],
+                                }),
+                            ]},
+                        }),
+                        ops: vec![]
+                    }),
+                },
+            },
+        })),
     );
 }
 
@@ -456,26 +926,59 @@ fn test_fn_bind_stat() {
     let context = Context::new();
     assert_eq!(
         parser::stat(&context)("fn f(x: int) -> int { x };").ok(),
-        Some(("", ast::Stat::FnBind(
-            ast::FnBind(
-                lexer::ast::Keyword("fn", lexer::ast::KeywordKind::Fn),
-                ast::FnDecl(
-                    lexer::ast::Ident("f"),
-                    ast::VarDecl::TupleDecl(vec![
-                        ast::VarDecl::SingleDecl(
-                            None,
-                            lexer::ast::Ident("x"),
-                            Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                        ),
-                    ]),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-                ast::StatsBlock(
-                    vec![],
-                    Some(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))),
-                ),
-            ),
-        ))),
+        Some(("", ast::Stat {
+            slice: "fn f(x: int) -> int { x }",
+            kind: ast::StatKind::FnBind {
+                fn_bind: ast::FnBind {
+                    slice: "fn f(x: int) -> int { x }",
+                    fn_keyword: lexer::ast::Keyword { slice: "fn", kind: lexer::ast::KeywordKind::Fn },
+                    fn_decl: ast::FnDecl {
+                        slice: " f(x: int) -> int",
+                        ident: lexer::ast::Ident { slice: "f" },
+                        var_decl: ast::VarDecl {
+                            slice: "(x: int)",
+                            kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                                ast::VarDecl {
+                                    slice: "x: int",
+                                    kind: ast::VarDeclKind::SingleDecl {
+                                        mut_attr: None,
+                                        ident: lexer::ast::Ident { slice: "x" },
+                                        ty_expr: Some(Rc::new(ast::TyExpr {
+                                            slice: " int",
+                                            ty_term: Rc::new(ast::TyTerm {
+                                                slice: " int",
+                                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                            }),
+                                            ty_ops: vec![],
+                                        })),
+                                    },
+                                },
+                            ]},
+                        },
+                        ty_expr: Some(Rc::new(ast::TyExpr {
+                            slice: " int",
+                            ty_term: Rc::new(ast::TyTerm {
+                                slice: " int",
+                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                            }),
+                            ty_ops: vec![],
+                        })),
+                    },
+                    stats_block: ast::StatsBlock {
+                        slice: " { x }",
+                        stats: vec![],
+                        ret: Some(Rc::new(ast::Expr {
+                            slice: " x",
+                            term: Rc::new(ast::Term {
+                                slice: " x",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                            }),
+                            ops: vec![]
+                        })),
+                    },
+                },
+            },
+        })),
     );
 }
 
@@ -484,16 +987,31 @@ fn test_expr_stat() {
     let context = Context::new();
     assert_eq!(
         parser::stat(&context)("x = 123;").ok(),
-        Some(("", ast::Stat::Expr(
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-                vec![
-                    ast::Op::Assign(
-                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))),
-                    )
-                ],
-            ))
-        ))),
+        Some(("", ast::Stat {
+            slice: "x = 123",
+            kind: ast::StatKind::Expr {
+                expr: Rc::new(ast::Expr {
+                    slice: "x = 123",
+                    term: Rc::new(ast::Term {
+                        slice: "x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![
+                        ast::Op {
+                            slice: " = 123",
+                            kind: ast::OpKind::Assign {
+                                term: Rc::new(ast::Term {
+                                    slice: " 123",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                                    },
+                                }),
+                            },
+                        },
+                    ],
+                }),
+            },
+        })),
     );
 }
 
@@ -502,46 +1020,123 @@ fn test_expr() {
     let context = Context::new();
     assert_eq!(
         parser::expr(&context)("x = T::f(1, 2).t + a.g(...b)[y]").ok(),
-        Some(("", Rc::new(ast::Expr(
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-            vec![
-                ast::Op::Assign(
-                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("T"))),
-                ),
-                ast::Op::TyAccess(
-                    lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                ),
-                ast::Op::EvalFn(vec![
-                    ast::ArgExpr(
-                        None,
-                        Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))), vec![])),
-                    ),
-                    ast::ArgExpr(
-                        None,
-                        Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-                    )
-                ]),
-                ast::Op::Access(
-                    lexer::ast::OpCode(".", lexer::ast::OpCodeKind::Dot),
-                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("t"))),
-                ),
-                ast::Op::InfixOp(
-                    lexer::ast::OpCode("+", lexer::ast::OpCodeKind::Plus),
-                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("a"))),
-                ),
-                ast::Op::Access(
-                    lexer::ast::OpCode(".", lexer::ast::OpCodeKind::Dot),
-                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("g"))),
-                ),
-                ast::Op::EvalSpreadFn(
-                    Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("b"))), vec![])),
-                ),
-                ast::Op::EvalKey(
-                    Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("y"))), vec![])),
-                ),
+        Some(("", Rc::new(ast::Expr {
+            slice: "x = T::f(1, 2).t + a.g(...b)[y]",
+            term: Rc::new(ast::Term {
+                slice: "x",
+                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+            }),
+            ops: vec![
+                ast::Op {
+                    slice: " = T",
+                    kind: ast::OpKind::Assign {
+                        term: Rc::new(ast::Term {
+                            slice: " T",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "T" } },
+                        }),
+                    },
+                },
+                ast::Op {
+                    slice: "::f",
+                    kind: ast::OpKind::TyAccess {
+                        op_code: lexer::ast::OpCode { slice: "::", kind: lexer::ast::OpCodeKind::DoubleColon },
+                        term: Rc::new(ast::Term {
+                            slice: "f",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                        }),
+                    },
+                },
+                ast::Op {
+                    slice: "(1, 2)",
+                    kind: ast::OpKind::EvalFn { arg_exprs: vec![
+                        ast::ArgExpr {
+                            slice: "1",
+                            mut_attr: None,
+                            expr: Rc::new(ast::Expr {
+                                slice: "1",
+                                term: Rc::new(ast::Term {
+                                    slice: "1",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                                    },
+                                }),
+                                ops: vec![],
+                            }),
+                        },
+                        ast::ArgExpr {
+                            slice: " 2",
+                            mut_attr: None,
+                            expr: Rc::new(ast::Expr {
+                                slice: " 2",
+                                term: Rc::new(ast::Term {
+                                    slice: " 2",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                                    },
+                                }),
+                                ops: vec![],
+                            }),
+                        },
+                    ]},
+                },
+                ast::Op {
+                    slice: ".t",
+                    kind: ast::OpKind::Access {
+                        op_code: lexer::ast::OpCode { slice: ".", kind: lexer::ast::OpCodeKind::Dot },
+                        term: Rc::new(ast::Term {
+                            slice: "t",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "t" } },
+                        }),
+                    },
+                },
+                ast::Op {
+                    slice: " + a",
+                    kind: ast::OpKind::InfixOp {
+                        op_code: lexer::ast::OpCode { slice: "+", kind: lexer::ast::OpCodeKind::Plus },
+                        term: Rc::new(ast::Term {
+                            slice: " a",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "a" } },
+                        }),
+                    },
+                },
+                ast::Op {
+                    slice: ".g",
+                    kind: ast::OpKind::Access {
+                        op_code: lexer::ast::OpCode { slice: ".", kind: lexer::ast::OpCodeKind::Dot },
+                        term: Rc::new(ast::Term {
+                            slice: "g",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "g" } },
+                        }),
+                    },
+                },
+                ast::Op {
+                    slice: "(...b)",
+                    kind: ast::OpKind::EvalSpreadFn {
+                        expr: Rc::new(ast::Expr {
+                            slice: "b",
+                            term: Rc::new(ast::Term {
+                                slice: "b",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "b" } },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                },
+                ast::Op {
+                    slice: "[y]",
+                    kind: ast::OpKind::EvalKey {
+                        expr: Rc::new(ast::Expr {
+                            slice: "y",
+                            term: Rc::new(ast::Term {
+                                slice: "y",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "y" } },
+                            }),
+                            ops: vec![]
+                        }),
+                    },
+                },
             ]
-        )))),
+        }))),
     );
 }
 
@@ -550,10 +1145,16 @@ fn test_ty_access_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("::x").ok(),
-        Some(("", ast::Op::TyAccess(
-            lexer::ast::OpCode("::", lexer::ast::OpCodeKind::DoubleColon),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "::x",
+            kind: ast::OpKind::TyAccess {
+                op_code: lexer::ast::OpCode { slice: "::", kind: lexer::ast::OpCodeKind::DoubleColon },
+                term: Rc::new(ast::Term {
+                    slice: "x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
 }
 
@@ -562,17 +1163,29 @@ fn test_access_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)(".x").ok(),
-        Some(("", ast::Op::Access(
-            lexer::ast::OpCode(".", lexer::ast::OpCodeKind::Dot),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: ".x",
+            kind: ast::OpKind::Access {
+                op_code: lexer::ast::OpCode { slice: ".", kind: lexer::ast::OpCodeKind::Dot },
+                term: Rc::new(ast::Term {
+                    slice: "x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("?.x").ok(),
-        Some(("", ast::Op::Access(
-            lexer::ast::OpCode("?.", lexer::ast::OpCodeKind::CoalescingAccess),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "?.x",
+            kind: ast::OpKind::Access {
+                op_code: lexer::ast::OpCode { slice: "?.", kind: lexer::ast::OpCodeKind::CoalescingAccess },
+                term: Rc::new(ast::Term {
+                    slice: "x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
 }
 
@@ -581,41 +1194,95 @@ fn test_eval_fn_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("()").ok(),
-        Some(("", ast::Op::EvalFn(vec![]))),
+        Some(("", ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } })),
     );
     assert_eq!(
         parser::op(&context)("(mut x, y, z)").ok(),
-        Some(("", ast::Op::EvalFn(vec![
-            ast::ArgExpr(
-                Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))
-            ),
-            ast::ArgExpr(
-                None,
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("y"))), vec![]))
-            ),
-            ast::ArgExpr(
-                None,
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("z"))), vec![]))
-            ),
-        ]))),
+        Some(("", ast::Op {
+            slice: "(mut x, y, z)",
+            kind: ast::OpKind::EvalFn { arg_exprs: vec![
+                ast::ArgExpr {
+                    slice: "mut x",
+                    mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                    expr: Rc::new(ast::Expr {
+                        slice: " x",
+                        term: Rc::new(ast::Term {
+                            slice: " x",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+                ast::ArgExpr {
+                    slice: " y",
+                    mut_attr: None,
+                    expr: Rc::new(ast::Expr {
+                        slice: " y",
+                        term: Rc::new(ast::Term {
+                            slice: " y",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "y" } },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+                ast::ArgExpr {
+                    slice: " z",
+                    mut_attr: None,
+                    expr: Rc::new(ast::Expr {
+                        slice: " z",
+                        term: Rc::new(ast::Term {
+                            slice: " z",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "z" } },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+            ]},
+        })),
     );
     assert_eq!(
         parser::op(&context)("(mut x, y, z,)").ok(),
-        Some(("", ast::Op::EvalFn(vec![
-            ast::ArgExpr(
-                Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))
-            ),
-            ast::ArgExpr(
-                None,
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("y"))), vec![]))
-            ),
-            ast::ArgExpr(
-                None,
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("z"))), vec![]))
-            ),
-        ]))),
+        Some(("", ast::Op {
+            slice: "(mut x, y, z,)",
+            kind: ast::OpKind::EvalFn { arg_exprs: vec![
+                ast::ArgExpr {
+                    slice: "mut x",
+                    mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                    expr: Rc::new(ast::Expr {
+                        slice: " x",
+                        term: Rc::new(ast::Term {
+                            slice: " x",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+                ast::ArgExpr {
+                    slice: " y",
+                    mut_attr: None,
+                    expr: Rc::new(ast::Expr {
+                        slice: " y",
+                        term: Rc::new(ast::Term {
+                            slice: " y",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "y" } },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+                ast::ArgExpr {
+                    slice: " z",
+                    mut_attr: None,
+                    expr: Rc::new(ast::Expr {
+                        slice: " z",
+                        term: Rc::new(ast::Term {
+                            slice: " z",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "z" } },
+                        }),
+                        ops: vec![],
+                    }),
+                },
+            ]},
+        })),
     );
 }
 
@@ -624,9 +1291,19 @@ fn test_eval_spread_fn_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("(...x)").ok(),
-        Some(("", ast::Op::EvalSpreadFn(
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-        ))),
+        Some(("", ast::Op {
+            slice: "(...x)",
+            kind: ast::OpKind::EvalSpreadFn {
+                expr: Rc::new(ast::Expr {
+                    slice: "x",
+                    term: Rc::new(ast::Term {
+                        slice: "x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -635,9 +1312,19 @@ fn test_eval_key_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("[x]").ok(),
-        Some(("", ast::Op::EvalKey(
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-        ))),
+        Some(("", ast::Op {
+            slice: "[x]",
+            kind: ast::OpKind::EvalKey {
+                expr: Rc::new(ast::Expr {
+                    slice: "x",
+                    term: Rc::new(ast::Term {
+                        slice: "x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -646,10 +1333,20 @@ fn test_cast_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("as T").ok(),
-        Some(("", ast::Op::CastOp(
-            lexer::ast::Keyword("as", lexer::ast::KeywordKind::As),
-            Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("T"))), vec![])),
-        ))),
+        Some(("", ast::Op {
+            slice: "as T",
+            kind: ast::OpKind::CastOp {
+                as_keyword: lexer::ast::Keyword { slice: "as", kind: lexer::ast::KeywordKind::As },
+                ty_expr: Rc::new(ast::TyExpr {
+                    slice: " T",
+                    ty_term: Rc::new(ast::TyTerm {
+                        slice: " T",
+                        kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "T" } },
+                    }),
+                    ty_ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -658,150 +1355,276 @@ fn test_infix_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("* x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("*", lexer::ast::OpCodeKind::Star),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "* x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "*", kind: lexer::ast::OpCodeKind::Star },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("/ x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("/", lexer::ast::OpCodeKind::Div),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "/ x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "/", kind: lexer::ast::OpCodeKind::Div },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("% x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("%", lexer::ast::OpCodeKind::Percent),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "% x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "%", kind: lexer::ast::OpCodeKind::Percent },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("+ x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("+", lexer::ast::OpCodeKind::Plus),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "+ x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "+", kind: lexer::ast::OpCodeKind::Plus },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("- x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("-", lexer::ast::OpCodeKind::Minus),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "- x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "-", kind: lexer::ast::OpCodeKind::Minus },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("<< x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("<<", lexer::ast::OpCodeKind::LeftShift),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "<< x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "<<", kind: lexer::ast::OpCodeKind::LeftShift },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)(">> x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode(">>", lexer::ast::OpCodeKind::RightShift),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: ">> x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: ">>", kind: lexer::ast::OpCodeKind::RightShift },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("< x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("<", lexer::ast::OpCodeKind::Lt),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "< x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "<", kind: lexer::ast::OpCodeKind::Lt },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("> x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode(">", lexer::ast::OpCodeKind::Gt),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "> x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: ">", kind: lexer::ast::OpCodeKind::Gt },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("<= x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("<=", lexer::ast::OpCodeKind::Le),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "<= x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "<=", kind: lexer::ast::OpCodeKind::Le },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)(">= x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode(">=", lexer::ast::OpCodeKind::Ge),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: ">= x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: ">=", kind: lexer::ast::OpCodeKind::Ge },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("== x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("==", lexer::ast::OpCodeKind::Eq),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "== x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "==", kind: lexer::ast::OpCodeKind::Eq },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("!= x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("!=", lexer::ast::OpCodeKind::Ne),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "!= x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "!=", kind: lexer::ast::OpCodeKind::Ne },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("& x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("&", lexer::ast::OpCodeKind::Amp),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "& x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "&", kind: lexer::ast::OpCodeKind::Amp },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("^ x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("^", lexer::ast::OpCodeKind::Caret),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "^ x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "^", kind: lexer::ast::OpCodeKind::Caret },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("| x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("|", lexer::ast::OpCodeKind::Pipe),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "| x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "|", kind: lexer::ast::OpCodeKind::Pipe },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("&& x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("&&", lexer::ast::OpCodeKind::And),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "&& x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "&&", kind: lexer::ast::OpCodeKind::And },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("|| x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("||", lexer::ast::OpCodeKind::Or),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "|| x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "||", kind: lexer::ast::OpCodeKind::Or },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("?? x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("??", lexer::ast::OpCodeKind::Coalescing),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "?? x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "??", kind: lexer::ast::OpCodeKind::Coalescing },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("|> x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("|>", lexer::ast::OpCodeKind::RightPipeline),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "|> x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "|>", kind: lexer::ast::OpCodeKind::RightPipeline },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
     assert_eq!(
         parser::op(&context)("<| x").ok(),
-        Some(("", ast::Op::InfixOp(
-            lexer::ast::OpCode("<|", lexer::ast::OpCodeKind::LeftPipeline),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "<| x",
+            kind: ast::OpKind::InfixOp {
+                op_code: lexer::ast::OpCode { slice: "<|", kind: lexer::ast::OpCodeKind::LeftPipeline },
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
 }
 
@@ -810,9 +1633,15 @@ fn test_assign_op() {
     let context = Context::new();
     assert_eq!(
         parser::op(&context)("= x").ok(),
-        Some(("", ast::Op::Assign(
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        ))),
+        Some(("", ast::Op {
+            slice: "= x",
+            kind: ast::OpKind::Assign {
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        })),
     );
 }
 
@@ -821,31 +1650,64 @@ fn test_prefix_op_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("+x").ok(),
-        Some(("", Rc::new(ast::Term::PrefixOp(
-            lexer::ast::OpCode("+", lexer::ast::OpCodeKind::Plus),
-            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "+x",
+            kind: ast::TermKind::PrefixOp {
+                op_code: lexer::ast::OpCode { slice: "+", kind: lexer::ast::OpCodeKind::Plus },
+                term: Rc::new(ast::Term {
+                    slice: "x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("-123").ok(),
-        Some(("", Rc::new(ast::Term::PrefixOp(
-            lexer::ast::OpCode("-", lexer::ast::OpCodeKind::Minus),
-            Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "-123",
+            kind: ast::TermKind::PrefixOp {
+                op_code: lexer::ast::OpCode { slice: "-", kind: lexer::ast::OpCodeKind::Minus },
+                term: Rc::new(ast::Term {
+                    slice: "123",
+                    kind: ast::TermKind::Literal {
+                        literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                    },
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("!false").ok(),
-        Some(("", Rc::new(ast::Term::PrefixOp(
-            lexer::ast::OpCode("!", lexer::ast::OpCodeKind::Bang),
-            Rc::new(ast::Term::Literal(lexer::ast::Literal::Bool(lexer::ast::Keyword("false", lexer::ast::KeywordKind::False)))),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "!false",
+            kind: ast::TermKind::PrefixOp {
+                op_code: lexer::ast::OpCode { slice: "!", kind: lexer::ast::OpCodeKind::Bang },
+                term: Rc::new(ast::Term {
+                    slice: "false",
+                    kind: ast::TermKind::Literal {
+                        literal: lexer::ast::Literal {
+                            slice: "false",
+                            kind: lexer::ast::LiteralKind::Bool { keyword: lexer::ast::Keyword { slice: "false", kind: lexer::ast::KeywordKind::False } },
+                        },
+                    },
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("~0xFFFF").ok(),
-        Some(("", Rc::new(ast::Term::PrefixOp(
-            lexer::ast::OpCode("~", lexer::ast::OpCodeKind::Tilde),
-            Rc::new(ast::Term::Literal(lexer::ast::Literal::HexInteger("0xFFFF"))),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "~0xFFFF",
+            kind: ast::TermKind::PrefixOp {
+                op_code: lexer::ast::OpCode { slice: "~", kind: lexer::ast::OpCodeKind::Tilde },
+                term: Rc::new(ast::Term {
+                    slice: "0xFFFF",
+                    kind: ast::TermKind::Literal {
+                        literal: lexer::ast::Literal { slice: "0xFFFF", kind: lexer::ast::LiteralKind::HexInteger { slice: "0xFFFF" } }
+                    }
+                }),
+            },
+        }))),
     );
 }
 
@@ -854,47 +1716,90 @@ fn test_block_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("{ f(); g(); x }").ok(),
-        Some(("", Rc::new(ast::Term::Block(
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("g"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                Some(Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![]))),
-            ),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "{ f(); g(); x }",
+            kind: ast::TermKind::Block {
+                stats: ast::StatsBlock {
+                    slice: "{ f(); g(); x }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                        ast::Stat {
+                            slice: " g()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " g()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " g",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "g" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: Some(Rc::new(ast::Expr {
+                        slice: " x",
+                        term: Rc::new(ast::Term {
+                            slice: " x",
+                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                        }),
+                        ops: vec![],
+                    })),
+                },
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("{ f(); g(); }").ok(),
-        Some(("", Rc::new(ast::Term::Block(
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("g"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                None,
-            ),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "{ f(); g(); }",
+            kind: ast::TermKind::Block {
+                stats: ast::StatsBlock {
+                    slice: "{ f(); g(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                        ast::Stat {
+                            slice: " g()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " g()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " g",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "g" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+            },
+        }))),
     );
 }
 
@@ -903,9 +1808,19 @@ fn test_paren_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("(x)").ok(),
-        Some(("", Rc::new(ast::Term::Paren(
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "(x)",
+            kind: ast::TermKind::Paren {
+                expr: Rc::new(ast::Expr {
+                    slice: "x",
+                    term: Rc::new(ast::Term {
+                        slice: "x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        }))),
     );
 }
 
@@ -914,31 +1829,97 @@ fn test_tuple_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("(1, 2, 3)").ok(),
-        Some(("", Rc::new(ast::Term::Tuple(
-            vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("3"))), vec![])),
-            ],
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "(1, 2, 3)",
+            kind: ast::TermKind::Tuple { exprs: vec![
+                Rc::new(ast::Expr {
+                    slice: "1",
+                    term: Rc::new(ast::Term {
+                        slice: "1",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(ast::Expr {
+                    slice: " 2",
+                    term: Rc::new(ast::Term {
+                        slice: " 2",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(ast::Expr {
+                    slice: " 3",
+                    term: Rc::new(ast::Term {
+                        slice: " 3",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "3", kind: lexer::ast::LiteralKind::PureInteger { slice: "3" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            ]},
+        }))),
     );
     assert_eq!(
         parser::term(&context)("(1, 2, 3,)").ok(),
-        Some(("", Rc::new(ast::Term::Tuple(
-            vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("3"))), vec![])),
-            ],
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "(1, 2, 3,)",
+            kind: ast::TermKind::Tuple { exprs: vec![
+                Rc::new(ast::Expr {
+                    slice: "1",
+                    term: Rc::new(ast::Term {
+                        slice: "1",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(ast::Expr {
+                    slice: " 2",
+                    term: Rc::new(ast::Term {
+                        slice: " 2",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(ast::Expr {
+                    slice: " 3",
+                    term: Rc::new(ast::Term {
+                        slice: " 3",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "3", kind: lexer::ast::LiteralKind::PureInteger { slice: "3" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            ]},
+        }))),
     );
     assert_eq!(
         parser::term(&context)("(1,)").ok(),
-        Some(("", Rc::new(ast::Term::Tuple(
-            vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))), vec![])),
-            ],
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "(1,)",
+            kind: ast::TermKind::Tuple { exprs: vec![
+                Rc::new(ast::Expr {
+                    slice: "1",
+                    term: Rc::new(ast::Term {
+                        slice: "1",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            ]},
+        }))),
     );
 }
 
@@ -947,54 +1928,193 @@ fn test_array_ctor_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("[]").ok(),
-        Some(("", Rc::new(ast::Term::ArrayCtor(None)))),
+        Some(("", Rc::new(ast::Term {
+            slice: "[]",
+            kind: ast::TermKind::ArrayCtor { iter_expr: None },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("[0..10]").ok(),
-        Some(("", Rc::new(ast::Term::ArrayCtor(
-            Some(ast::IterExpr::Range(
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-            )),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "[0..10]",
+            kind: ast::TermKind::ArrayCtor {
+                iter_expr: Some(ast::IterExpr {
+                    slice: "0..10",
+                    kind: ast::IterExprKind::Range {
+                        left: Rc::new(ast::Expr {
+                            slice: "0",
+                            term: Rc::new(ast::Term {
+                                slice: "0",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        right: Rc::new(ast::Expr {
+                            slice: "10",
+                            term: Rc::new(ast::Term {
+                                slice: "10",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("[0..10..2]").ok(),
-        Some(("", Rc::new(ast::Term::ArrayCtor(
-            Some(ast::IterExpr::SteppedRange(
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-            )),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "[0..10..2]",
+            kind: ast::TermKind::ArrayCtor {
+                iter_expr: Some(ast::IterExpr {
+                    slice: "0..10..2",
+                    kind: ast::IterExprKind::SteppedRange {
+                        left: Rc::new(ast::Expr {
+                            slice: "0",
+                            term: Rc::new(ast::Term {
+                                slice: "0",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        right: Rc::new(ast::Expr {
+                            slice: "10",
+                            term: Rc::new(ast::Term {
+                                slice: "10",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        step: Rc::new(ast::Expr {
+                            slice: "2",
+                            term: Rc::new(ast::Term {
+                                slice: "2",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("[...x]").ok(),
-        Some(("", Rc::new(ast::Term::ArrayCtor(
-            Some(ast::IterExpr::Spread(
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-            )),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "[...x]",
+            kind: ast::TermKind::ArrayCtor {
+                iter_expr: Some(ast::IterExpr {
+                    slice: "...x",
+                    kind: ast::IterExprKind::Spread {
+                        expr: Rc::new(ast::Expr {
+                            slice: "x",
+                            term: Rc::new(ast::Term {
+                                slice: "x",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("[1, 2, 3]").ok(),
-        Some(("", Rc::new(ast::Term::ArrayCtor(
-            Some(ast::IterExpr::Elements(vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("3"))), vec![])),
-            ])),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "[1, 2, 3]",
+            kind: ast::TermKind::ArrayCtor {
+                iter_expr: Some(ast::IterExpr {
+                    slice: "1, 2, 3",
+                    kind: ast::IterExprKind::Elements { exprs: vec![
+                        Rc::new(ast::Expr {
+                            slice: "1",
+                            term: Rc::new(ast::Term {
+                                slice: "1",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        Rc::new(ast::Expr {
+                            slice: " 2",
+                            term: Rc::new(ast::Term {
+                                slice: " 2",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        Rc::new(ast::Expr {
+                            slice: " 3",
+                            term: Rc::new(ast::Term {
+                                slice: " 3",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "3", kind: lexer::ast::LiteralKind::PureInteger { slice: "3" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                    ]},
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("[1, 2, 3,]").ok(),
-        Some(("", Rc::new(ast::Term::ArrayCtor(
-            Some(ast::IterExpr::Elements(vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("3"))), vec![])),
-            ])),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "[1, 2, 3,]",
+            kind: ast::TermKind::ArrayCtor {
+                iter_expr: Some(ast::IterExpr {
+                    slice: "1, 2, 3,",
+                    kind: ast::IterExprKind::Elements { exprs: vec![
+                        Rc::new(ast::Expr {
+                            slice: "1",
+                            term: Rc::new(ast::Term {
+                                slice: "1",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        Rc::new(ast::Expr {
+                            slice: " 2",
+                            term: Rc::new(ast::Term {
+                                slice: " 2",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                        Rc::new(ast::Expr {
+                            slice: " 3",
+                            term: Rc::new(ast::Term {
+                                slice: " 3",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "3", kind: lexer::ast::LiteralKind::PureInteger { slice: "3" } },
+                                },
+                            }),
+                            ops: vec![],
+                        }),
+                    ]},
+                }),
+            },
+        }))),
     );
 }
 
@@ -1005,31 +2125,86 @@ fn test_literal_term() {
         parser::term(&context)("()").ok(),
         Some((
             "",
-            Rc::new(ast::Term::Literal(lexer::ast::Literal::Unit(
-                lexer::ast::OpCode("(",lexer::ast::OpCodeKind::OpenParen),
-                lexer::ast::OpCode(")", lexer::ast::OpCodeKind::CloseParen)
-            )))
+            Rc::new(ast::Term {
+                slice: "()",
+                kind: ast::TermKind::Literal {
+                    literal: lexer::ast::Literal {
+                        slice: "()",
+                        kind: lexer::ast::LiteralKind::Unit {
+                            left: lexer::ast::OpCode { slice: "(", kind: lexer::ast::OpCodeKind::OpenParen },
+                            right: lexer::ast::OpCode { slice: ")", kind: lexer::ast::OpCodeKind::CloseParen },
+                        },
+                    },
+                },
+            }),
         )),
     );
     assert_eq!(
         parser::term(&context)("null").ok(),
-        Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::Null(lexer::ast::Keyword("null", lexer::ast::KeywordKind::Null))))))
+        Some(("", Rc::new(ast::Term {
+            slice: "null",
+            kind: ast::TermKind::Literal {
+                literal: lexer::ast::Literal {
+                    slice: "null",
+                    kind: lexer::ast::LiteralKind::Null { keyword: lexer::ast::Keyword { slice: "null", kind: lexer::ast::KeywordKind::Null } }
+                },
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("true").ok(),
-        Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::Bool(lexer::ast::Keyword("true", lexer::ast::KeywordKind::True))))))
+        Some(("", Rc::new(ast::Term {
+            slice: "true",
+            kind: ast::TermKind::Literal {
+                literal: lexer::ast::Literal {
+                    slice: "true",
+                    kind: lexer::ast::LiteralKind::Bool { keyword: lexer::ast::Keyword { slice: "true", kind: lexer::ast::KeywordKind::True } },
+                },
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("false").ok(),
-        Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::Bool(lexer::ast::Keyword("false", lexer::ast::KeywordKind::False))))))
+        Some(("", Rc::new(ast::Term {
+            slice: "false",
+            kind: ast::TermKind::Literal {
+                literal: lexer::ast::Literal {
+                    slice: "false",
+                    kind: lexer::ast::LiteralKind::Bool { keyword: lexer::ast::Keyword { slice: "false", kind: lexer::ast::KeywordKind::False } },
+                },
+            },
+        }))),
     );
-    assert_eq!(parser::term(&context)("123.45").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::RealNumber("123.45"))))));
-    assert_eq!(parser::term(&context)("0x1AF").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::HexInteger("0x1AF"))))));
-    assert_eq!(parser::term(&context)("0b101").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::BinInteger("0b101"))))));
-    assert_eq!(parser::term(&context)("123").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))))));
-    assert_eq!(parser::term(&context)("'a'").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::Character("a"))))));
-    assert_eq!(parser::term(&context)("\"abc\"").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::RegularString("abc"))))));
-    assert_eq!(parser::term(&context)("@\"\\abc\"").ok(), Some(("", Rc::new(ast::Term::Literal(lexer::ast::Literal::VerbatiumString("\\abc"))))));
+    assert_eq!(parser::term(&context)("123.45").ok(), Some(("", Rc::new(ast::Term {
+        slice: "123.45",
+        kind: ast::TermKind::Literal { literal: lexer::ast::Literal { slice: "123.45", kind: lexer::ast::LiteralKind::RealNumber { slice: "123.45" } } }
+    }))));
+    assert_eq!(parser::term(&context)("0x1AF").ok(), Some(("", Rc::new(ast::Term {
+        slice: "0x1AF",
+        kind: ast::TermKind::Literal { literal: lexer::ast::Literal { slice: "0x1AF", kind: lexer::ast::LiteralKind::HexInteger { slice: "0x1AF" } } }
+    }))));
+    assert_eq!(parser::term(&context)("0b101").ok(), Some(("", Rc::new(ast::Term {
+        slice: "0b101",
+        kind: ast::TermKind::Literal { literal: lexer::ast::Literal { slice: "0b101", kind: lexer::ast::LiteralKind::BinInteger { slice: "0b101" } } }
+    }))));
+    assert_eq!(parser::term(&context)("123").ok(), Some(("", Rc::new(ast::Term {
+        slice: "123",
+        kind: ast::TermKind::Literal {
+            literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+        },
+    }))));
+    assert_eq!(parser::term(&context)("'a'").ok(), Some(("", Rc::new(ast::Term {
+        slice: "'a'",
+        kind: ast::TermKind::Literal { literal: lexer::ast::Literal { slice: "a", kind: lexer::ast::LiteralKind::Character { slice: "a" } } }
+    }))));
+    assert_eq!(parser::term(&context)("\"abc\"").ok(), Some(("", Rc::new(ast::Term {
+        slice: "\"abc\"",
+        kind: ast::TermKind::Literal { literal: lexer::ast::Literal { slice: "abc", kind: lexer::ast::LiteralKind::RegularString { slice: "abc" } } }
+    }))));
+    assert_eq!(parser::term(&context)("@\"\\abc\"").ok(), Some(("", Rc::new(ast::Term {
+        slice: "@\"\\abc\"",
+        kind: ast::TermKind::Literal { literal: lexer::ast::Literal { slice: "\\abc", kind: lexer::ast::LiteralKind::VerbatiumString { slice: "\\abc" } } }
+    }))));
 }
 
 #[test]
@@ -1037,7 +2212,15 @@ fn test_this_literal_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("this").ok(),
-        Some(("", Rc::new(ast::Term::ThisLiteral(lexer::ast::Literal::This(lexer::ast::Keyword("this", lexer::ast::KeywordKind::This))))))
+        Some(("", Rc::new(ast::Term {
+            slice: "this",
+            kind: ast::TermKind::ThisLiteral {
+                literal: lexer::ast::Literal {
+                    slice: "this",
+                    kind: lexer::ast::LiteralKind::This { keyword: lexer::ast::Keyword { slice: "this", kind: lexer::ast::KeywordKind::This } }
+                },
+            },
+        }))),
     );
 }
 
@@ -1046,27 +2229,53 @@ fn test_interpolated_string_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("$\"abc{123}{x}def\"").ok(),
-        Some(("", Rc::new(ast::Term::InterpolatedString(
-            lexer::ast::InterpolatedString(
-                vec![
-                    "abc",
-                    "",
-                    "def",
-                ],
-                vec![
-                    Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-                    Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-                ],
-            )
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "$\"abc{123}{x}def\"",
+            kind: ast::TermKind::InterpolatedString {
+                interpolated_string: lexer::ast::InterpolatedString {
+                    slice: "abc{123}{x}def",
+                    string_parts: vec![
+                        "abc",
+                        "",
+                        "def",
+                    ],
+                    exprs: vec![
+                        Rc::new(ast::Expr {
+                            slice: "123",
+                            term: Rc::new(ast::Term {
+                                slice: "123",
+                                kind: ast::TermKind::Literal {
+                                    literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                                },
+                            }),
+                            ops: vec![]
+                        }),
+                        Rc::new(ast::Expr {
+                            slice: "x",
+                            term: Rc::new(ast::Term {
+                                slice: "x",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                            }),
+                            ops: vec![],
+                        }),
+                    ],
+                },
+            },
+        }))),
     );
 }
 
 #[test]
 fn test_eval_var_term() {
     let context = Context::new();
-    assert_eq!(parser::term(&context)("someVar").ok(), Some(("", Rc::new(ast::Term::EvalVar(lexer::ast::Ident("someVar"))))));
-    assert_eq!(parser::term(&context)("some_var").ok(), Some(("", Rc::new(ast::Term::EvalVar(lexer::ast::Ident("some_var"))))));
+    assert_eq!(parser::term(&context)("someVar").ok(), Some(("", Rc::new(ast::Term {
+        slice: "someVar",
+        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "someVar" } },
+    }))));
+    assert_eq!(parser::term(&context)("some_var").ok(), Some(("", Rc::new(ast::Term {
+        slice: "some_var",
+        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "some_var" } },
+    }))));
 }
 
 #[test]
@@ -1074,27 +2283,62 @@ fn test_let_in_bind_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("let mut i: int = 123 in i + 1").ok(),
-        Some(("", Rc::new(ast::Term::LetInBind(
-            ast::VarBind(
-                lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                ast::VarDecl::SingleDecl(
-                    Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-                    lexer::ast::Ident("i"),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-                Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-            ),
-            lexer::ast::Keyword("in", lexer::ast::KeywordKind::In),
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("i"))),
-                vec![
-                    ast::Op::InfixOp(
-                        lexer::ast::OpCode("+", lexer::ast::OpCodeKind::Plus),
-                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("1"))),
-                    ),
-                ],
-            )),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "let mut i: int = 123 in i + 1",
+            kind: ast::TermKind::LetInBind {
+                var_bind: ast::VarBind {
+                    slice: "let mut i: int = 123",
+                    let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                    var_decl: ast::VarDecl {
+                        slice: " mut i: int",
+                        kind: ast::VarDeclKind::SingleDecl {
+                            mut_attr: Some(ast::MutAttr { slice: " mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+                            ident: lexer::ast::Ident { slice: "i" },
+                            ty_expr: Some(Rc::new(ast::TyExpr {
+                                slice: " int",
+                                ty_term: Rc::new(ast::TyTerm {
+                                    slice: " int",
+                                    kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                }),
+                                ty_ops: vec![],
+                            })),
+                        },
+                    },
+                    expr: Rc::new(ast::Expr {
+                        slice: " 123",
+                        term: Rc::new(ast::Term {
+                            slice: " 123",
+                            kind: ast::TermKind::Literal {
+                                literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                            },
+                        }),
+                        ops: vec![]
+                    }),
+                },
+                in_keyword: lexer::ast::Keyword { slice: "in", kind: lexer::ast::KeywordKind::In },
+                expr: Rc::new(ast::Expr {
+                    slice: " i + 1",
+                    term: Rc::new(ast::Term {
+                        slice: " i",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "i" } },
+                    }),
+                    ops: vec![
+                        ast::Op {
+                            slice: " + 1",
+                            kind: ast::OpKind::InfixOp {
+                                op_code: lexer::ast::OpCode { slice: "+", kind: lexer::ast::OpCodeKind::Plus },
+                                term: Rc::new(ast::Term {
+                                    slice: " 1",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "1", kind: lexer::ast::LiteralKind::PureInteger { slice: "1" } },
+                                    },
+                                }),
+                            },
+                        },
+                    ],
+                }),
+            },
+        }))),
     );
 }
 
@@ -1103,129 +2347,231 @@ fn test_if_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("if i == 0 { f(); }").ok(),
-        Some(("", Rc::new(ast::Term::If(
-            lexer::ast::Keyword("if", lexer::ast::KeywordKind::If),
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("i"))),
-                vec![
-                    ast::Op::InfixOp(
-                        lexer::ast::OpCode("==", lexer::ast::OpCodeKind::Eq),
-                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))),
-                    ),
-                ],
-            )),
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                None,
-            ),
-            None,
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "if i == 0 { f(); }",
+            kind: ast::TermKind::If {
+                if_keyword: lexer::ast::Keyword { slice: "if", kind: lexer::ast::KeywordKind::If },
+                condition: Rc::new(ast::Expr {
+                    slice: " i == 0",
+                    term: Rc::new(ast::Term {
+                        slice: " i",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "i" } },
+                    }),
+                    ops: vec![
+                        ast::Op {
+                            slice: " == 0",
+                            kind: ast::OpKind::InfixOp {
+                                op_code: lexer::ast::OpCode { slice: "==", kind: lexer::ast::OpCodeKind::Eq },
+                                term: Rc::new(ast::Term {
+                                    slice: " 0",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                    },
+                                }),
+                            },
+                        },
+                    ],
+                }),
+                if_part: ast::StatsBlock {
+                    slice: " { f(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+                else_part: None,
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("if i == 0 { f(); } else { g(); }").ok(),
-        Some(("", Rc::new(ast::Term::If(
-            lexer::ast::Keyword("if", lexer::ast::KeywordKind::If),
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("i"))),
-                vec![
-                    ast::Op::InfixOp(
-                        lexer::ast::OpCode("==", lexer::ast::OpCodeKind::Eq),
-                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))),
-                    ),
-                ],
-            )),
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                None,
-            ),
-            Some((
-                lexer::ast::Keyword("else", lexer::ast::KeywordKind::Else),
-                ast::StatsBlock(
-                    vec![
-                        ast::Stat::Expr(
-                            Rc::new(ast::Expr(
-                                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("g"))),
-                                vec![ast::Op::EvalFn(vec![])],
-                            )),
-                        ),
+        Some(("", Rc::new(ast::Term {
+            slice: "if i == 0 { f(); } else { g(); }",
+            kind: ast::TermKind::If {
+                if_keyword: lexer::ast::Keyword { slice: "if", kind: lexer::ast::KeywordKind::If },
+                condition: Rc::new(ast::Expr {
+                    slice: " i == 0",
+                    term: Rc::new(ast::Term {
+                        slice: " i",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "i" } },
+                    }),
+                    ops: vec![
+                        ast::Op {
+                            slice: " == 0",
+                            kind: ast::OpKind::InfixOp {
+                                op_code: lexer::ast::OpCode { slice: "==", kind: lexer::ast::OpCodeKind::Eq },
+                                term: Rc::new(ast::Term {
+                                    slice: " 0",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                    },
+                                }),
+                            },
+                        },
                     ],
-                    None,
-                ),
-            )),
-        )))),
+                }),
+                if_part: ast::StatsBlock {
+                    slice: " { f(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+                else_part: Some((
+                    lexer::ast::Keyword { slice: "else", kind: lexer::ast::KeywordKind::Else },
+                    ast::StatsBlock {
+                        slice: " { g(); }",
+                        stats: vec![
+                            ast::Stat {
+                                slice: " g()",
+                                kind: ast::StatKind::Expr {
+                                    expr: Rc::new(ast::Expr {
+                                        slice: " g()",
+                                        term: Rc::new(ast::Term {
+                                            slice: " g",
+                                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "g" } },
+                                        }),
+                                        ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                    }),
+                                },
+                            },
+                        ],
+                        ret: None,
+                    },
+                )),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("if i == 0 { f(); } else if j == 0 { g(); }").ok(),
-        Some(("", Rc::new(ast::Term::If(
-            lexer::ast::Keyword("if", lexer::ast::KeywordKind::If),
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("i"))),
-                vec![
-                    ast::Op::InfixOp(
-                        lexer::ast::OpCode("==", lexer::ast::OpCodeKind::Eq),
-                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))),
-                    ),
-                ]
-            )),
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                None,
-            ),
-            Some((
-                lexer::ast::Keyword("else", lexer::ast::KeywordKind::Else),
-                ast::StatsBlock(
-                    vec![],
-                    Some(Rc::new(ast::Expr(
-                        Rc::new(ast::Term::If(
-                            lexer::ast::Keyword("if", lexer::ast::KeywordKind::If),
-                            Rc::new(ast::Expr(
-                                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("j"))),
-                                vec![
-                                    ast::Op::InfixOp(
-                                        lexer::ast::OpCode("==", lexer::ast::OpCodeKind::Eq),
-                                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))),
-                                    ),
-                                ],
-                            )),
-                            ast::StatsBlock(
-                                vec![
-                                    ast::Stat::Expr(
-                                        Rc::new(ast::Expr(
-                                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("g"))),
-                                            vec![ast::Op::EvalFn(vec![])],
-                                        )),
-                                    ),
-                                ],
-                                None,
-                            ),
-                            None,
-                        )),
-                        vec![],
-                    ))),
-                ),
-            )),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "if i == 0 { f(); } else if j == 0 { g(); }",
+            kind: ast::TermKind::If {
+                if_keyword: lexer::ast::Keyword { slice: "if", kind: lexer::ast::KeywordKind::If },
+                condition: Rc::new(ast::Expr {
+                    slice: " i == 0",
+                    term: Rc::new(ast::Term {
+                        slice: " i",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "i" } },
+                    }),
+                    ops: vec![
+                        ast::Op {
+                            slice: " == 0",
+                            kind: ast::OpKind::InfixOp {
+                                op_code: lexer::ast::OpCode { slice: "==", kind: lexer::ast::OpCodeKind::Eq },
+                                term: Rc::new(ast::Term {
+                                    slice: " 0",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                    },
+                                }),
+                            },
+                        },
+                    ]
+                }),
+                if_part: ast::StatsBlock {
+                    slice: " { f(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+                else_part: Some((
+                    lexer::ast::Keyword { slice: "else", kind: lexer::ast::KeywordKind::Else },
+                    ast::StatsBlock {
+                        slice: " if j == 0 { g(); }",
+                        stats: vec![],
+                        ret: Some(Rc::new(ast::Expr {
+                            slice: " if j == 0 { g(); }",
+                            term: Rc::new(ast::Term {
+                                slice: " if j == 0 { g(); }",
+                                kind: ast::TermKind::If {
+                                    if_keyword: lexer::ast::Keyword { slice: "if", kind: lexer::ast::KeywordKind::If },
+                                    condition: Rc::new(ast::Expr {
+                                        slice: " j == 0",
+                                        term: Rc::new(ast::Term {
+                                            slice: " j",
+                                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "j" } },
+                                        }),
+                                        ops: vec![
+                                            ast::Op {
+                                                slice: " == 0",
+                                                kind: ast::OpKind::InfixOp {
+                                                    op_code: lexer::ast::OpCode { slice: "==", kind: lexer::ast::OpCodeKind::Eq },
+                                                    term: Rc::new(ast::Term {
+                                                        slice: " 0",
+                                                        kind: ast::TermKind::Literal {
+                                                            literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                                        },
+                                                    }),
+                                                },
+                                            },
+                                        ],
+                                    }),
+                                    if_part: ast::StatsBlock {
+                                        slice: " { g(); }",
+                                        stats: vec![
+                                            ast::Stat {
+                                                slice: " g()",
+                                                kind: ast::StatKind::Expr {
+                                                    expr: Rc::new(ast::Expr {
+                                                        slice: " g()",
+                                                        term: Rc::new(ast::Term {
+                                                            slice: " g",
+                                                            kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "g" } },
+                                                        }),
+                                                        ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                                    }),
+                                                },
+                                            },
+                                        ],
+                                        ret: None,
+                                    },
+                                    else_part: None,
+                                },
+                            }),
+                            ops: vec![],
+                        })),
+                    },
+                )),
+            },
+        }))),
     );
 }
 
@@ -1234,29 +2580,52 @@ fn test_while_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("while i == 0 { f(); }").ok(),
-        Some(("", Rc::new(ast::Term::While(
-            lexer::ast::Keyword("while", lexer::ast::KeywordKind::While),
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::EvalVar(lexer::ast::Ident("i"))),
-                vec![
-                    ast::Op::InfixOp(
-                        lexer::ast::OpCode("==", lexer::ast::OpCodeKind::Eq),
-                        Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))),
-                    ),
-                ],
-            )),
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                None,
-            ),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "while i == 0 { f(); }",
+            kind: ast::TermKind::While {
+                while_keyword: lexer::ast::Keyword { slice: "while", kind: lexer::ast::KeywordKind::While },
+                condition: Rc::new(ast::Expr {
+                    slice: " i == 0",
+                    term: Rc::new(ast::Term {
+                        slice: " i",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "i" } },
+                    }),
+                    ops: vec![
+                        ast::Op {
+                            slice: " == 0",
+                            kind: ast::OpKind::InfixOp {
+                                op_code: lexer::ast::OpCode { slice: "==", kind: lexer::ast::OpCodeKind::Eq },
+                                term: Rc::new(ast::Term {
+                                    slice: " 0",
+                                    kind: ast::TermKind::Literal {
+                                        literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                    },
+                                }),
+                            },
+                        },
+                    ],
+                }),
+                stats: ast::StatsBlock {
+                    slice: " { f(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+            },
+        }))),
     );
 }
 
@@ -1265,20 +2634,31 @@ fn test_loop_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("loop { f(); }").ok(),
-        Some(("", Rc::new(ast::Term::Loop(
-            lexer::ast::Keyword("loop", lexer::ast::KeywordKind::Loop),
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
-                    ),
-                ],
-                None,
-            ),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "loop { f(); }",
+            kind: ast::TermKind::Loop {
+                loop_keyword: lexer::ast::Keyword { slice: "loop", kind: lexer::ast::KeywordKind::Loop },
+                stats: ast::StatsBlock {
+                    slice: " { f(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+            },
+        }))),
     );
 }
 
@@ -1287,53 +2667,155 @@ fn test_for_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("for let i <- 0..10 for let j <- 0..10..2 for k <- arr { f(); }").ok(),
-        Some(("", Rc::new(ast::Term::For(
-            vec![
-                (
-                    lexer::ast::Keyword("for", lexer::ast::KeywordKind::For),
-                    ast::ForBind::Let(
-                        lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                        ast::VarDecl::SingleDecl(None, lexer::ast::Ident("i"), None),
-                        ast::ForIterExpr::Range(
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-                        ),
+        Some(("", Rc::new(ast::Term {
+            slice: "for let i <- 0..10 for let j <- 0..10..2 for k <- arr { f(); }",
+            kind: ast::TermKind::For {
+                for_binds: vec![
+                    (
+                        lexer::ast::Keyword { slice: "for", kind: lexer::ast::KeywordKind::For },
+                        ast::ForBind {
+                            slice: " let i <- 0..10",
+                            kind: ast::ForBindKind::Let {
+                                let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                                var_decl: ast::VarDecl {
+                                    slice: " i",
+                                    kind: ast::VarDeclKind::SingleDecl {
+                                        mut_attr: None,
+                                        ident: lexer::ast::Ident { slice: "i" },
+                                        ty_expr: None
+                                    },
+                                },
+                                for_iter_expr: ast::ForIterExpr {
+                                    slice: " 0..10",
+                                    kind: ast::ForIterExprKind::Range {
+                                        left: Rc::new(ast::Expr {
+                                            slice: " 0",
+                                            term: Rc::new(ast::Term {
+                                                slice: " 0",
+                                                kind: ast::TermKind::Literal {
+                                                    literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                                },
+                                            }),
+                                            ops: vec![],
+                                        }),
+                                        right: Rc::new(ast::Expr {
+                                            slice: "10",
+                                            term: Rc::new(ast::Term {
+                                                slice: "10",
+                                                kind: ast::TermKind::Literal {
+                                                    literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                                                },
+                                            }),
+                                            ops: vec![],
+                                        }),
+                                    },
+                                },
+                            },
+                        },
                     ),
-                ),
-                (
-                    lexer::ast::Keyword("for", lexer::ast::KeywordKind::For),
-                    ast::ForBind::Let(
-                        lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-                        ast::VarDecl::SingleDecl(None, lexer::ast::Ident("j"), None),
-                        ast::ForIterExpr::SteppedRange(
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-                            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-                        ),
+                    (
+                        lexer::ast::Keyword { slice: "for", kind: lexer::ast::KeywordKind::For },
+                        ast::ForBind {
+                            slice: " let j <- 0..10..2",
+                            kind: ast::ForBindKind::Let {
+                                let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                                var_decl: ast::VarDecl {
+                                    slice: " j",
+                                    kind: ast::VarDeclKind::SingleDecl {
+                                        mut_attr: None,
+                                        ident: lexer::ast::Ident { slice: "j" },
+                                        ty_expr: None,
+                                    },
+                                },
+                                for_iter_expr: ast::ForIterExpr {
+                                    slice: " 0..10..2",
+                                    kind: ast::ForIterExprKind::SteppedRange {
+                                        left: Rc::new(ast::Expr {
+                                            slice: " 0",
+                                            term: Rc::new(ast::Term {
+                                                slice: " 0",
+                                                kind: ast::TermKind::Literal {
+                                                    literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                                                },
+                                            }),
+                                            ops: vec![],
+                                        }),
+                                        right: Rc::new(ast::Expr {
+                                            slice: "10",
+                                            term: Rc::new(ast::Term {
+                                                slice: "10",
+                                                kind: ast::TermKind::Literal {
+                                                    literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                                                },
+                                            }),
+                                            ops: vec![],
+                                        }),
+                                        step: Rc::new(ast::Expr {
+                                            slice: "2",
+                                            term: Rc::new(ast::Term {
+                                                slice: "2",
+                                                kind: ast::TermKind::Literal {
+                                                    literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                                                },
+                                            }),
+                                            ops: vec![],
+                                        }),
+                                    },
+                                },
+                            },
+                        },
                     ),
-                ),
-                (
-                    lexer::ast::Keyword("for", lexer::ast::KeywordKind::For),
-                    ast::ForBind::Assign(
-                        Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("k"))), vec![])),
-                        ast::ForIterExpr::Spread(
-                            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("arr"))), vec![])),
-                        ),
-                    ),
-                ),
-            ],
-            ast::StatsBlock(
-                vec![
-                    ast::Stat::Expr(
-                        Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("f"))),
-                            vec![ast::Op::EvalFn(vec![])],
-                        )),
+                    (
+                        lexer::ast::Keyword { slice: "for", kind: lexer::ast::KeywordKind::For },
+                        ast::ForBind {
+                            slice: " k <- arr",
+                            kind: ast::ForBindKind::Assign {
+                                left: Rc::new(ast::Expr {
+                                    slice: " k",
+                                    term: Rc::new(ast::Term {
+                                        slice: " k",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "k" } },
+                                    }),
+                                    ops: vec![],
+                                }),
+                                for_iter_expr: ast::ForIterExpr {
+                                    slice: " arr",
+                                    kind: ast::ForIterExprKind::Spread {
+                                        expr: Rc::new(ast::Expr {
+                                            slice: " arr",
+                                            term: Rc::new(ast::Term {
+                                                slice: " arr",
+                                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "arr" } },
+                                            }),
+                                            ops: vec![],
+                                        }),
+                                    },
+                                },
+                            },
+                        },
                     ),
                 ],
-                None,
-            ),
-        )))),
+                stats: ast::StatsBlock {
+                    slice: " { f(); }",
+                    stats: vec![
+                        ast::Stat {
+                            slice: " f()",
+                            kind: ast::StatKind::Expr {
+                                expr: Rc::new(ast::Expr {
+                                    slice: " f()",
+                                    term: Rc::new(ast::Term {
+                                        slice: " f",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "f" } },
+                                    }),
+                                    ops: vec![ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } }],
+                                }),
+                            },
+                        },
+                    ],
+                    ret: None,
+                },
+            },
+        }))),
     );
 }
 
@@ -1342,53 +2824,129 @@ fn test_closure_term() {
     let context = Context::new();
     assert_eq!(
         parser::term(&context)("|| 123").ok(),
-        Some(("", Rc::new(ast::Term::Closure(
-            ast::VarDecl::TupleDecl(vec![]),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("123"))), vec![])),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "|| 123",
+            kind: ast::TermKind::Closure {
+                var_decl: ast::VarDecl {
+                    slice: "||",
+                    kind: ast::VarDeclKind::TupleDecl { var_decls: vec![] },
+                },
+                expr: Rc::new(ast::Expr {
+                    slice: " 123",
+                    term: Rc::new(ast::Term {
+                        slice: " 123",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "123", kind: lexer::ast::LiteralKind::PureInteger { slice: "123" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("|x| x").ok(),
-        Some(("", Rc::new(ast::Term::Closure(
-            ast::VarDecl::TupleDecl(vec![
-                ast::VarDecl::SingleDecl(None, lexer::ast::Ident("x"), None),
-            ]),
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "|x| x",
+            kind: ast::TermKind::Closure {
+                var_decl: ast::VarDecl {
+                    slice: "|x|",
+                    kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                        ast::VarDecl {
+                            slice: "x",
+                            kind: ast::VarDeclKind::SingleDecl {
+                                mut_attr: None,
+                                ident: lexer::ast::Ident { slice: "x" },
+                                ty_expr: None
+                            },
+                        },
+                    ]},
+                },
+                expr: Rc::new(ast::Expr {
+                    slice: " x",
+                    term: Rc::new(ast::Term {
+                        slice: " x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![]
+                }),
+            },
+        }))),
     );
     assert_eq!(
         parser::term(&context)("|x: int, y: int| { x + y }").ok(),
-        Some(("", Rc::new(ast::Term::Closure(
-            ast::VarDecl::TupleDecl(vec![
-                ast::VarDecl::SingleDecl(
-                    None,
-                    lexer::ast::Ident("x"),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-                ast::VarDecl::SingleDecl(
-                    None,
-                    lexer::ast::Ident("y"),
-                    Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-                ),
-            ]),
-            Rc::new(ast::Expr(
-                Rc::new(ast::Term::Block(
-                    ast::StatsBlock(
-                        vec![],
-                        Some(Rc::new(ast::Expr(
-                            Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))),
-                            vec![
-                                ast::Op::InfixOp(
-                                    lexer::ast::OpCode("+", lexer::ast::OpCodeKind::Plus),
-                                    Rc::new(ast::Term::EvalVar(lexer::ast::Ident("y"))),
-                                ),
-                            ],
-                        )))
-                    )
-                )),
-                vec![],
-            )),
-        )))),
+        Some(("", Rc::new(ast::Term {
+            slice: "|x: int, y: int| { x + y }",
+            kind: ast::TermKind::Closure {
+                var_decl: ast::VarDecl {
+                    slice: "|x: int, y: int|",
+                    kind: ast::VarDeclKind::TupleDecl { var_decls: vec![
+                        ast::VarDecl {
+                            slice: "x: int",
+                            kind: ast::VarDeclKind::SingleDecl {
+                                mut_attr: None,
+                                ident: lexer::ast::Ident { slice: "x" },
+                                ty_expr: Some(Rc::new(ast::TyExpr {
+                                    slice: " int",
+                                    ty_term: Rc::new(ast::TyTerm {
+                                        slice: " int",
+                                        kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                    }),
+                                    ty_ops: vec![],
+                                })),
+                            },
+                        },
+                        ast::VarDecl {
+                            slice: " y: int",
+                            kind: ast::VarDeclKind::SingleDecl {
+                                mut_attr: None,
+                                ident: lexer::ast::Ident { slice: "y" },
+                                ty_expr: Some(Rc::new(ast::TyExpr {
+                                    slice: " int",
+                                    ty_term: Rc::new(ast::TyTerm {
+                                        slice: " int",
+                                        kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                                    }),
+                                    ty_ops: vec![],
+                                })),
+                            },
+                        },
+                    ]},
+                },
+                expr: Rc::new(ast::Expr {
+                    slice: " { x + y }",
+                    term: Rc::new(ast::Term {
+                        slice: " { x + y }",
+                        kind: ast::TermKind::Block {
+                            stats: ast::StatsBlock {
+                                slice: " { x + y }",
+                                stats: vec![],
+                                ret: Some(Rc::new(ast::Expr {
+                                    slice: " x + y",
+                                    term: Rc::new(ast::Term {
+                                        slice: " x",
+                                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                                    }),
+                                    ops: vec![
+                                        ast::Op {
+                                            slice: " + y",
+                                            kind: ast::OpKind::InfixOp {
+                                                op_code: lexer::ast::OpCode { slice: "+", kind: lexer::ast::OpCodeKind::Plus },
+                                                term: Rc::new(ast::Term {
+                                                    slice: " y",
+                                                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "y" } },
+                                                }),
+                                            },
+                                        },
+                                    ],
+                                })),
+                            },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        }))),
     );
 }
 
@@ -1397,10 +2955,31 @@ fn test_range_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::iter_expr(&context)("0..10").ok(),
-        Some(("", ast::IterExpr::Range(
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-        ))),
+        Some(("", ast::IterExpr {
+            slice: "0..10",
+            kind: ast::IterExprKind::Range {
+                left: Rc::new(ast::Expr {
+                    slice: "0",
+                    term: Rc::new(ast::Term {
+                        slice: "0",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                right: Rc::new(ast::Expr {
+                    slice: "10",
+                    term: Rc::new(ast::Term {
+                        slice: "10",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -1409,11 +2988,41 @@ fn test_stepped_range_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::iter_expr(&context)("0..10..2").ok(),
-        Some(("", ast::IterExpr::SteppedRange(
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-        ))),
+        Some(("", ast::IterExpr {
+            slice: "0..10..2",
+            kind: ast::IterExprKind::SteppedRange {
+                left: Rc::new(ast::Expr {
+                    slice: "0",
+                    term: Rc::new(ast::Term {
+                        slice: "0",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                right: Rc::new(ast::Expr {
+                    slice: "10",
+                    term: Rc::new(ast::Term {
+                        slice: "10",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                step: Rc::new(ast::Expr {
+                    slice: "2",
+                    term: Rc::new(ast::Term {
+                        slice: "2",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -1422,9 +3031,19 @@ fn test_spread_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::iter_expr(&context)("...arr").ok(),
-        Some(("", ast::IterExpr::Spread(
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("arr"))), vec![])),
-        ))),
+        Some(("", ast::IterExpr {
+            slice: "...arr",
+            kind: ast::IterExprKind::Spread {
+                expr: Rc::new(ast::Expr {
+                    slice: "arr",
+                    term: Rc::new(ast::Term {
+                        slice: "arr",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "arr" } },
+                    }),
+                    ops: vec![]
+                }),
+            },
+        })),
     );
 }
 
@@ -1433,21 +3052,51 @@ fn test_elements_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::iter_expr(&context)("x, y").ok(),
-        Some(("", ast::IterExpr::Elements(
-            vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("y"))), vec![])),
-            ]
-        ))),
+        Some(("", ast::IterExpr {
+            slice: "x, y",
+            kind: ast::IterExprKind::Elements { exprs: vec![
+                Rc::new(ast::Expr {
+                    slice: "x",
+                    term: Rc::new(ast::Term {
+                        slice: "x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(ast::Expr {
+                    slice: " y",
+                    term: Rc::new(ast::Term {
+                        slice: " y",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "y" } },
+                    }),
+                    ops: vec![],
+                }),
+            ]},
+        })),
     );
     assert_eq!(
         parser::iter_expr(&context)("x, y,").ok(),
-        Some(("", ast::IterExpr::Elements(
-            vec![
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("y"))), vec![])),
-            ]
-        ))),
+        Some(("", ast::IterExpr {
+            slice: "x, y,",
+            kind: ast::IterExprKind::Elements { exprs: vec![
+                Rc::new(ast::Expr {
+                    slice: "x",
+                    term: Rc::new(ast::Term {
+                        slice: "x",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                    }),
+                    ops: vec![],
+                }),
+                Rc::new(ast::Expr {
+                    slice: " y",
+                    term: Rc::new(ast::Term {
+                        slice: " y",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "y" } },
+                    }),
+                    ops: vec![],
+                }),
+            ]},
+        })),
     );
 }
 
@@ -1456,17 +3105,33 @@ fn test_arg_expr() {
     let context = Context::new();
     assert_eq!(
         parser::arg_expr(&context)("x").ok(),
-        Some(("", ast::ArgExpr(
-            None,
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-        ))),
+        Some(("", ast::ArgExpr {
+            slice: "x",
+            mut_attr: None,
+            expr: Rc::new(ast::Expr {
+                slice: "x",
+                term: Rc::new(ast::Term {
+                    slice: "x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+                ops: vec![],
+            }),
+        })),
     );
     assert_eq!(
         parser::arg_expr(&context)("mut x").ok(),
-        Some(("", ast::ArgExpr(
-            Some(ast::MutAttr(lexer::ast::Keyword("mut", lexer::ast::KeywordKind::Mut))),
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("x"))), vec![])),
-        ))),
+        Some(("", ast::ArgExpr {
+            slice: "mut x",
+            mut_attr: Some(ast::MutAttr { slice: "mut", attr: lexer::ast::Keyword { slice: "mut", kind: lexer::ast::KeywordKind::Mut } }),
+            expr: Rc::new(ast::Expr {
+                slice: " x",
+                term: Rc::new(ast::Term {
+                    slice: " x",
+                    kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "x" } },
+                }),
+                ops: vec![],
+            }),
+        })),
     );
 }
 
@@ -1475,17 +3140,40 @@ fn test_let_for_bind() {
     let context = Context::new();
     assert_eq!(
         parser::for_bind(&context)("let i: int <- arr").ok(),
-        Some(("", ast::ForBind::Let(
-            lexer::ast::Keyword("let", lexer::ast::KeywordKind::Let),
-            ast::VarDecl::SingleDecl(
-                None,
-                lexer::ast::Ident("i"),
-                Some(Rc::new(ast::TyExpr(Rc::new(ast::TyTerm::EvalTy(lexer::ast::Ident("int"))), vec![]))),
-            ),
-            ast::ForIterExpr::Spread(
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("arr"))), vec![])),
-            ),
-        ))),
+        Some(("", ast::ForBind {
+            slice: "let i: int <- arr",
+            kind: ast::ForBindKind::Let {
+                let_keyword: lexer::ast::Keyword { slice: "let", kind: lexer::ast::KeywordKind::Let },
+                var_decl: ast::VarDecl {
+                    slice: " i: int",
+                    kind: ast::VarDeclKind::SingleDecl {
+                        mut_attr: None,
+                        ident: lexer::ast::Ident { slice: "i" },
+                        ty_expr: Some(Rc::new(ast::TyExpr {
+                            slice: " int",
+                            ty_term: Rc::new(ast::TyTerm {
+                                slice: " int",
+                                kind: ast::TyTermKind::EvalTy { ident: lexer::ast::Ident { slice: "int" } },
+                            }),
+                            ty_ops: vec![],
+                        })),
+                    },
+                },
+                for_iter_expr: ast::ForIterExpr {
+                    slice: " arr",
+                    kind: ast::ForIterExprKind::Spread {
+                        expr: Rc::new(ast::Expr {
+                            slice: " arr",
+                            term: Rc::new(ast::Term {
+                                slice: " arr",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "arr" } },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                },
+            },
+        })),
     );
 }
 
@@ -1494,12 +3182,32 @@ fn test_assign_for_bind() {
     let context = Context::new();
     assert_eq!(
         parser::for_bind(&context)("i <- arr").ok(),
-        Some(("", ast::ForBind::Assign(
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("i"))), vec![])),
-            ast::ForIterExpr::Spread(
-                Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("arr"))), vec![])),
-            ),
-        ))),
+        Some(("", ast::ForBind {
+            slice: "i <- arr",
+            kind: ast::ForBindKind::Assign {
+                left: Rc::new(ast::Expr {
+                    slice: "i",
+                    term: Rc::new(ast::Term {
+                        slice: "i",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "i" } },
+                    }),
+                    ops: vec![],
+                }),
+                for_iter_expr: ast::ForIterExpr {
+                    slice: " arr",
+                    kind: ast::ForIterExprKind::Spread {
+                        expr: Rc::new(ast::Expr {
+                            slice: " arr",
+                            term: Rc::new(ast::Term {
+                                slice: " arr",
+                                kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "arr" } },
+                            }),
+                            ops: vec![],
+                        }),
+                    },
+                },
+            },
+        })),
     );
 }
 
@@ -1508,10 +3216,31 @@ fn test_range_for_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::for_iter_expr(&context)("0..10").ok(),
-        Some(("", ast::ForIterExpr::Range(
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-        ))),
+        Some(("", ast::ForIterExpr {
+            slice: "0..10",
+            kind: ast::ForIterExprKind::Range {
+                left: Rc::new(ast::Expr {
+                    slice: "0",
+                    term: Rc::new(ast::Term {
+                        slice: "0",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                right: Rc::new(ast::Expr {
+                    slice: "10",
+                    term: Rc::new(ast::Term {
+                        slice: "10",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -1520,11 +3249,41 @@ fn test_stepped_range_for_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::for_iter_expr(&context)("0..10..2").ok(),
-        Some(("", ast::ForIterExpr::SteppedRange(
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("0"))), vec![])),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("10"))), vec![])),
-            Rc::new(ast::Expr(Rc::new(ast::Term::Literal(lexer::ast::Literal::PureInteger("2"))), vec![])),
-        ))),
+        Some(("", ast::ForIterExpr {
+            slice: "0..10..2",
+            kind: ast::ForIterExprKind::SteppedRange {
+                left: Rc::new(ast::Expr {
+                    slice: "0",
+                    term: Rc::new(ast::Term {
+                        slice: "0",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "0", kind: lexer::ast::LiteralKind::PureInteger { slice: "0" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                right: Rc::new(ast::Expr {
+                    slice: "10",
+                    term: Rc::new(ast::Term {
+                        slice: "10",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "10", kind: lexer::ast::LiteralKind::PureInteger { slice: "10" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+                step: Rc::new(ast::Expr {
+                    slice: "2",
+                    term: Rc::new(ast::Term {
+                        slice: "2",
+                        kind: ast::TermKind::Literal {
+                            literal: lexer::ast::Literal { slice: "2", kind: lexer::ast::LiteralKind::PureInteger { slice: "2" } },
+                        },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }
 
@@ -1533,8 +3292,18 @@ fn test_spread_for_iter_expr() {
     let context = Context::new();
     assert_eq!(
         parser::for_iter_expr(&context)("arr").ok(),
-        Some(("", ast::ForIterExpr::Spread(
-            Rc::new(ast::Expr(Rc::new(ast::Term::EvalVar(lexer::ast::Ident("arr"))), vec![])),
-        ))),
+        Some(("", ast::ForIterExpr {
+            slice: "arr",
+            kind: ast::ForIterExprKind::Spread {
+                expr: Rc::new(ast::Expr {
+                    slice: "arr",
+                    term: Rc::new(ast::Term {
+                        slice: "arr",
+                        kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "arr" } },
+                    }),
+                    ops: vec![],
+                }),
+            },
+        })),
     );
 }

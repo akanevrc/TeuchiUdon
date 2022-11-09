@@ -36,9 +36,9 @@ fn test_ty_expr() {
                                 parsed: Some(&parsed),
                                 term: Rc::new(ast::TyTerm {
                                     detail: ast::TyTermDetail::EvalTy {
-                                        parsed: Some(&parsed.0),
+                                        parsed: Some(&parsed.ty_term),
                                         ident: ast::Ident {
-                                            parsed: Some(&lexer::ast::Ident("T")),
+                                            parsed: Some(&lexer::ast::Ident { slice: "T" }),
                                             name: "T".to_owned(),
                                         },
                                     },
@@ -53,9 +53,11 @@ fn test_ty_expr() {
                                 parsed: Some(&parsed),
                                 term: Rc::new(ast::TyTerm {
                                     detail: ast::TyTermDetail::EvalTy {
-                                        parsed: match &parsed.1[0] { parser::ast::TyOp::Access(_, x) => Some(x) },
+                                        parsed: match &parsed.ty_ops[0].kind {
+                                            parser::ast::TyOpKind::Access { op_code: _, ty_term } => Some(ty_term),
+                                        },
                                         ident: ast::Ident {
-                                            parsed: Some(&lexer::ast::Ident("U")),
+                                            parsed: Some(&lexer::ast::Ident { slice: "U" }),
                                             name: "U".to_owned(),
                                         },
                                     },
@@ -73,9 +75,11 @@ fn test_ty_expr() {
                         parsed: Some(&parsed),
                         term: Rc::new(ast::TyTerm {
                             detail: ast::TyTermDetail::EvalTy {
-                                parsed: match &parsed.1[1] { parser::ast::TyOp::Access(_, x) => Some(x) },
+                                parsed: match &parsed.ty_ops[1].kind {
+                                    parser::ast::TyOpKind::Access { op_code: _, ty_term } => Some(ty_term),
+                                },
                                 ident: ast::Ident {
-                                    parsed: Some(&lexer::ast::Ident("V")),
+                                    parsed: Some(&lexer::ast::Ident { slice: "V" }),
                                     name: "V".to_owned(),
                                 },
                             },

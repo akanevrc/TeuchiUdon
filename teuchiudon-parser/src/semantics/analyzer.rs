@@ -15,7 +15,7 @@ pub fn target<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Target,
 ) -> Result<ast::Target<'parsed>, Vec<SemanticError<'parsed>>> {
-    let body = match &node.0 {
+    let body = match &node.body {
         Some(x) => body(context, x)?,
         None => empty_body(context)?,
     };
@@ -30,7 +30,7 @@ pub fn body<'parsed>(
     node: &'parsed parser::ast::Body,
 ) -> Result<ast::Body<'parsed>, Vec<SemanticError<'parsed>>> {
     let mut top_stats = Vec::new();
-    for x in &node.0 {
+    for x in &node.top_stats {
         top_stats.push(top_stat(context, x)?);
     }
     Ok(ast::Body {
@@ -52,12 +52,12 @@ pub fn top_stat<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::TopStat,
 ) -> Result<ast::TopStat<'parsed>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::TopStat::VarBind(access_attr, sync_attr, var_bind) =>
+    match &node.kind {
+        parser::ast::TopStatKind::VarBind { access_attr, sync_attr, var_bind } =>
             var_bind_top_stat(context, node, access_attr, sync_attr, var_bind),
-        parser::ast::TopStat::FnBind(access_attr, fn_bind) =>
+        parser::ast::TopStatKind::FnBind { access_attr, fn_bind } =>
             fn_bind_top_stat(context, node, access_attr, fn_bind),
-        parser::ast::TopStat::Stat(stat) =>
+        parser::ast::TopStatKind::Stat { stat } =>
             stat_top_stat(context, node, stat),
     }
 }
@@ -113,7 +113,7 @@ pub fn access_attr<'parsed>(
 ) -> Result<ast::AccessAttr<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
         Some(attr) =>
-            match &attr.0.1 {
+            match &attr.attr.kind {
                 lexer::ast::KeywordKind::Pub =>
                     pub_access_attr(context, attr),
                 _ =>
@@ -140,7 +140,7 @@ fn sync_attr<'parsed>(
 ) -> Result<ast::SyncAttr<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
         Some(attr) =>
-            match &attr.0.1 {
+            match &attr.attr.kind {
                 lexer::ast::KeywordKind::Sync =>
                     sync_sync_attr(context, attr),
                 lexer::ast::KeywordKind::Linear =>
@@ -187,8 +187,8 @@ pub fn var_bind<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::VarBind,
 ) -> Result<ast::VarBind<'parsed>, Vec<SemanticError<'parsed>>> {
-    let var_decl = var_decl(context, &node.1)?;
-    let expr = expr(context, &node.2)?;
+    let var_decl = var_decl(context, &node.var_decl)?;
+    let expr = expr(context, &node.expr)?;
     Ok(ast::VarBind {
         parsed: Some(node),
         var_decl,
@@ -200,10 +200,10 @@ pub fn var_decl<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::VarDecl,
 ) -> Result<ast::VarDecl<'parsed>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::VarDecl::SingleDecl(mut_attr, ident, ty_expr) =>
+    match &node.kind {
+        parser::ast::VarDeclKind::SingleDecl { mut_attr, ident, ty_expr } =>
             single_var_decl(context, node, mut_attr, ident, ty_expr),
-        parser::ast::VarDecl::TupleDecl(var_decls) =>
+        parser::ast::VarDeclKind::TupleDecl{ var_decls } =>
             tuple_var_decl(context, node, var_decls),
     }
 }
@@ -259,7 +259,7 @@ pub fn mut_attr<'parsed>(
 ) -> Result<ast::MutAttr<'parsed>, Vec<SemanticError<'parsed>>> {
     match node {
         Some(attr) =>
-            match &attr.0.1 {
+            match &attr.attr.kind {
                 lexer::ast::KeywordKind::Mut =>
                     mut_mut_attr(context, attr),
                 _ =>
@@ -283,8 +283,8 @@ pub fn fn_bind<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::FnBind,
 ) -> Result<ast::FnBind<'parsed>, Vec<SemanticError<'parsed>>> {
-    let fn_decl = fn_decl(context, &node.1)?;
-    let stats_block = stats_block(context, &node.2)?;
+    let fn_decl = fn_decl(context, &node.fn_decl)?;
+    let stats_block = stats_block(context, &node.stats_block)?;
     Ok(ast::FnBind {
         parsed: Some(node),
         fn_decl,
@@ -296,9 +296,9 @@ pub fn fn_decl<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::FnDecl,
 ) -> Result<ast::FnDecl<'parsed>, Vec<SemanticError<'parsed>>> {
-    let ident = ident(context, &node.0)?;
-    let var_decl = var_decl(context, &node.1)?;
-    let ty_expr = match &node.2 {
+    let ident = ident(context, &node.ident)?;
+    let var_decl = var_decl(context, &node.var_decl)?;
+    let ty_expr = match &node.ty_expr {
         Some(x) => ty_expr(context, x)?,
         None => hidden_unit_ty_expr(context)?,
     };
@@ -323,7 +323,7 @@ fn construct_ty_expr_tree<'parsed>(
 ) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
-    let term = ty_term(context, &node.0)?;
+    let term = ty_term(context, &node.ty_term)?;
     exprs.push_back(Rc::new(ast::TyExpr {
         detail: ast::TyExprDetail::Term {
             parsed: Some(node),
@@ -331,10 +331,10 @@ fn construct_ty_expr_tree<'parsed>(
         },
         ty: term.ty.clone(),
     }));
-    for op in &node.1 {
-        let (op, expr) = match op {
-            parser::ast::TyOp::Access(_, term) =>
-                access_op_ty_expr(context, node, term)?,
+    for op in &node.ty_ops {
+        let (op, expr) = match &op.kind {
+            parser::ast::TyOpKind::Access { op_code: _, ty_term } =>
+                access_op_ty_expr(context, node, ty_term)?,
         };
         ops.push_back(op);
         exprs.push_back(expr);
@@ -403,8 +403,8 @@ pub fn ty_term<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::TyTerm,
 ) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::TyTerm::EvalTy(ident) =>
+    match &node.kind {
+        parser::ast::TyTermKind::EvalTy { ident } =>
             eval_ty_ty_term(context, node, ident),
     }
 }
@@ -430,10 +430,10 @@ pub fn stats_block<'parsed>(
     node: &'parsed parser::ast::StatsBlock,
 ) -> Result<ast::StatsBlock<'parsed>, Vec<SemanticError<'parsed>>> {
     let mut stats = Vec::new();
-    for x in &node.0 {
+    for x in &node.stats {
         stats.push(stat(context, x)?);
     }
-    let ret = match &node.1 {
+    let ret = match &node.ret {
         Some(x) => expr(context, x)?,
         None => hidden_unit_expr(context)?,
     };
@@ -448,18 +448,18 @@ pub fn stat<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Stat,
 ) -> Result<ast::Stat<'parsed>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::Stat::Return(_, expr) =>
+    match &node.kind {
+        parser::ast::StatKind::Return { return_keyword: _, expr } =>
             return_stat(context, node, expr),
-        parser::ast::Stat::Continue(_) =>
+        parser::ast::StatKind::Continue { continue_keyword: _ } =>
             continue_stat(context, node),
-        parser::ast::Stat::Break(_) =>
+        parser::ast::StatKind::Break { break_keyword: _ } =>
             break_stat(context, node),
-        parser::ast::Stat::VarBind(var_bind) =>
+        parser::ast::StatKind::VarBind { var_bind } =>
             var_bind_stat(context, node, var_bind),
-        parser::ast::Stat::FnBind(fn_bind) =>
+        parser::ast::StatKind::FnBind { fn_bind } =>
             fn_bind_stat(context, node, fn_bind),
-        parser::ast::Stat::Expr(expr) =>
+        parser::ast::StatKind::Expr { expr } =>
             expr_stat(context, node, expr),
     }
 }
@@ -546,7 +546,7 @@ fn construct_expr_tree<'parsed>(
 ) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
-    let term = self::term(context, &node.0)?;
+    let term = self::term(context, &node.term)?;
     exprs.push_back(Rc::new(ast::Expr {
         detail: ast::ExprDetail::Term {
             parsed: Some(node),
@@ -554,23 +554,23 @@ fn construct_expr_tree<'parsed>(
         },
         ty: term.ty.clone(),
     }));
-    for parser_op in &node.1 {
-        let (op, expr) = match parser_op {
-            parser::ast::Op::TyAccess(_, term) =>
+    for parser_op in &node.ops {
+        let (op, expr) = match &parser_op.kind {
+            parser::ast::OpKind::TyAccess { op_code: _, term } =>
                 ty_access_op_expr(context, node, term)?,
-            parser::ast::Op::Access(op_code, term) =>
+            parser::ast::OpKind::Access { op_code, term } =>
                 access_op_expr(context, node, op_code, term)?,
-            parser::ast::Op::EvalFn(arg_exprs) =>
+            parser::ast::OpKind::EvalFn { arg_exprs } =>
                 eval_fn_op_expr(context, node, arg_exprs)?,
-            parser::ast::Op::EvalSpreadFn(expr) =>
+            parser::ast::OpKind::EvalSpreadFn { expr } =>
                 eval_spread_fn_op_expr(context, node, expr)?,
-            parser::ast::Op::EvalKey(expr) =>
+            parser::ast::OpKind::EvalKey { expr } =>
                 eval_key_op_expr(context, node, expr)?,
-            parser::ast::Op::CastOp(_, ty_expr) =>
+            parser::ast::OpKind::CastOp { as_keyword: _, ty_expr } =>
                 cast_op_expr(context, node, ty_expr)?,
-            parser::ast::Op::InfixOp(op_code, term) =>
+            parser::ast::OpKind::InfixOp { op_code, term } =>
                 infix_op_expr(context, node, op_code, term)?,
-            parser::ast::Op::Assign(term) =>
+            parser::ast::OpKind::Assign { term } =>
                 assign_op_expr(context, node, term)?,
         };
         ops.push_back(op);
@@ -744,7 +744,7 @@ fn access_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
 ) -> Result<ast::Op, Vec<SemanticError<'parsed>>> {
-    match node.1 {
+    match node.kind {
         lexer::ast::OpCodeKind::Dot =>
             Ok(ast::Op::Access),
         lexer::ast::OpCodeKind::CoalescingAccess =>
@@ -782,7 +782,7 @@ fn infix_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
 ) -> Result<ast::Op, Vec<SemanticError<'parsed>>> {
-    match node.1 {
+    match node.kind {
         lexer::ast::OpCodeKind::Star =>
             Ok(ast::Op::Mul),
         lexer::ast::OpCodeKind::Div =>
@@ -840,36 +840,36 @@ pub fn term<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Term,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::Term::PrefixOp(op_code, term) =>
+    match &node.kind {
+        parser::ast::TermKind::PrefixOp { op_code, term } =>
             prefix_op_term(context, node, op_code, term),
-        parser::ast::Term::Block(stats) =>
+        parser::ast::TermKind::Block { stats } =>
             block_term(context, node, stats),
-        parser::ast::Term::Paren(expr) =>
+        parser::ast::TermKind::Paren { expr } =>
             paren_term(context, node, expr),
-        parser::ast::Term::Tuple(exprs) =>
+        parser::ast::TermKind::Tuple { exprs } =>
             tuple_term(context, node, exprs),
-        parser::ast::Term::ArrayCtor(iter_expr) =>
+        parser::ast::TermKind::ArrayCtor { iter_expr } =>
             array_ctor_term(context, node, iter_expr),
-        parser::ast::Term::Literal(literal) =>
+        parser::ast::TermKind::Literal { literal } =>
             literal_term(context, node, literal),
-        parser::ast::Term::ThisLiteral(literal) =>
+        parser::ast::TermKind::ThisLiteral { literal } =>
             this_literal_term(context, node, literal),
-        parser::ast::Term::InterpolatedString(interpolated_string) =>
+        parser::ast::TermKind::InterpolatedString { interpolated_string } =>
             interpolated_string_term(context, node, interpolated_string),
-        parser::ast::Term::EvalVar(ident) =>
+        parser::ast::TermKind::EvalVar { ident } =>
             eval_var_term(context, node, ident),
-        parser::ast::Term::LetInBind(var_bind, _, expr) =>
+        parser::ast::TermKind::LetInBind { var_bind, in_keyword: _, expr } =>
             let_in_bind_term(context, node, var_bind, expr),
-        parser::ast::Term::If(_, condition, if_part, else_part) =>
+        parser::ast::TermKind::If { if_keyword: _, condition, if_part, else_part } =>
             if_term(context, node, condition, if_part, else_part),
-        parser::ast::Term::While(_, condition, stats) =>
+        parser::ast::TermKind::While { while_keyword: _, condition, stats } =>
             while_term(context, node, condition, stats),
-        parser::ast::Term::Loop(_, stats) =>
+        parser::ast::TermKind::Loop { loop_keyword: _, stats } =>
             loop_term(context, node, stats),
-        parser::ast::Term::For(for_binds, stats) =>
+        parser::ast::TermKind::For { for_binds, stats } =>
             for_term(context, node, for_binds, stats),
-        parser::ast::Term::Closure(var_decl, expr) =>
+        parser::ast::TermKind::Closure { var_decl, expr } =>
             closure_term(context, node, var_decl, expr),
     }
 }
@@ -1208,7 +1208,7 @@ fn prefix_op<'parsed>(
     _context: &Context,
     node: &'parsed lexer::ast::OpCode,
 ) -> Result<ast::PrefixOp, Vec<SemanticError<'parsed>>> {
-    match node.1 {
+    match node.kind {
         lexer::ast::OpCodeKind::Plus =>
             Ok(ast::PrefixOp::Plus),
         lexer::ast::OpCodeKind::Minus =>
@@ -1226,14 +1226,14 @@ pub fn iter_expr<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::IterExpr,
 ) -> Result<ast::IterExpr<'parsed>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::IterExpr::Range(left, right) =>
+    match &node.kind {
+        parser::ast::IterExprKind::Range { left, right } =>
             range_iter_expr(context, node, left, right),
-        parser::ast::IterExpr::SteppedRange(left, right, step) =>
+        parser::ast::IterExprKind::SteppedRange { left, right, step } =>
             stepped_range_iter_expr(context, node, left, right, step),
-        parser::ast::IterExpr::Spread(expr) =>
+        parser::ast::IterExprKind::Spread { expr } =>
             spread_iter_expr(context, node, expr),
-        parser::ast::IterExpr::Elements(exprs) =>
+        parser::ast::IterExprKind::Elements { exprs } =>
             elements_iter_expr(context, node, exprs),
     }
 }
@@ -1308,8 +1308,8 @@ pub fn arg_expr<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::ArgExpr,
 ) -> Result<ast::ArgExpr<'parsed>, Vec<SemanticError<'parsed>>> {
-    let mut_attr = mut_attr(context, &node.0)?;
-    let expr = expr(context, &node.1)?;
+    let mut_attr = mut_attr(context, &node.mut_attr)?;
+    let expr = expr(context, &node.expr)?;
     Ok(ast::ArgExpr {
         parsed: Some(node),
         mut_attr,
@@ -1321,10 +1321,10 @@ pub fn for_bind<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::ForBind,
 ) -> Result<ast::ForBind<'parsed>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::ForBind::Let(_, var_decl, for_iter_expr) =>
+    match &node.kind {
+        parser::ast::ForBindKind::Let { let_keyword: _, var_decl, for_iter_expr } =>
             let_for_bind(context, node, var_decl, for_iter_expr),
-        parser::ast::ForBind::Assign(left, for_iter_expr) =>
+        parser::ast::ForBindKind::Assign { left, for_iter_expr } =>
             assign_for_bind(context, node, left, for_iter_expr),
     }
 }
@@ -1363,12 +1363,12 @@ pub fn for_iter_expr<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::ForIterExpr,
 ) -> Result<ast::ForIterExpr<'parsed>, Vec<SemanticError<'parsed>>> {
-    match node {
-        parser::ast::ForIterExpr::Range(left, right) =>
+    match &node.kind {
+        parser::ast::ForIterExprKind::Range { left, right } =>
             range_for_iter_expr(context, node, left, right),
-        parser::ast::ForIterExpr::SteppedRange(left, right, step) =>
+        parser::ast::ForIterExprKind::SteppedRange { left, right, step } =>
             stepped_range_for_iter_expr(context, node, left, right, step),
-        parser::ast::ForIterExpr::Spread(expr) =>
+        parser::ast::ForIterExprKind::Spread { expr } =>
             spread_for_iter_expr(context, node, expr),
     }
 }
@@ -1424,7 +1424,7 @@ pub fn ident<'parsed>(
 ) -> Result<ast::Ident<'parsed>, Vec<SemanticError<'parsed>>> {
     Ok(ast::Ident {
         parsed: Some(node),
-        name: node.0.to_owned(),
+        name: node.slice.to_owned(),
     })
 }
 
@@ -1432,40 +1432,40 @@ pub fn literal<'parsed>(
     context: &Context,
     node: &'parsed lexer::ast::Literal,
 ) -> Result<Rc<elements::literal::Literal>, Vec<SemanticError<'parsed>>> {
-    match node {
-        lexer::ast::Literal::Unit(op_code, _) =>
+    match &node.kind {
+        lexer::ast::LiteralKind::Unit { left, right: _ } =>
             elements::literal::Literal::new_unit(context)
-            .map_err(|e| e.convert(Some(op_code.0))),
-        lexer::ast::Literal::Null(keyword) =>
+            .map_err(|e| e.convert(Some(left.slice))),
+        lexer::ast::LiteralKind::Null { keyword } =>
             elements::literal::Literal::new_null(context)
-            .map_err(|e| e.convert(Some(keyword.0))),
-        lexer::ast::Literal::Bool(lexer::ast::Keyword(s, _)) =>
-            elements::literal::Literal::new_bool(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::PureInteger(s) =>
-            elements::literal::Literal::new_pure_integer(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::DecInteger(s) =>
-            elements::literal::Literal::new_dec_integer(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::HexInteger(s) =>
-            elements::literal::Literal::new_hex_integer(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::BinInteger(s) =>
-            elements::literal::Literal::new_bin_integer(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::RealNumber(s) =>
-            elements::literal::Literal::new_real_number(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::Character(s) =>
-            elements::literal::Literal::new_character(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::RegularString(s) =>
-            elements::literal::Literal::new_regular_string(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
-        lexer::ast::Literal::VerbatiumString(s) =>
-            elements::literal::Literal::new_verbatium_string(context, (*s).to_owned())
-            .map_err(|e| e.convert(Some(s))),
+            .map_err(|e| e.convert(Some(keyword.slice))),
+        lexer::ast::LiteralKind::Bool { keyword } =>
+            elements::literal::Literal::new_bool(context, (*keyword.slice).to_owned())
+            .map_err(|e| e.convert(Some(keyword.slice))),
+        lexer::ast::LiteralKind::PureInteger { slice } =>
+            elements::literal::Literal::new_pure_integer(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::DecInteger { slice } =>
+            elements::literal::Literal::new_dec_integer(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::HexInteger { slice } =>
+            elements::literal::Literal::new_hex_integer(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::BinInteger { slice } =>
+            elements::literal::Literal::new_bin_integer(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::RealNumber { slice } =>
+            elements::literal::Literal::new_real_number(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::Character { slice } =>
+            elements::literal::Literal::new_character(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::RegularString { slice } =>
+            elements::literal::Literal::new_regular_string(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
+        lexer::ast::LiteralKind::VerbatiumString { slice } =>
+            elements::literal::Literal::new_verbatium_string(context, (*slice).to_owned())
+            .map_err(|e| e.convert(Some(slice))),
         _ =>
             panic!("Illegal state"),
         
@@ -1485,9 +1485,9 @@ pub fn interpolated_string<'parsed>(
     context: &Context,
     node: &'parsed lexer::ast::InterpolatedString,
 ) -> Result<ast::InterpolatedString<'parsed>, Vec<SemanticError<'parsed>>> {
-    let string_parts = node.0.iter().map(|x| (*x).to_owned()).collect();
+    let string_parts = node.string_parts.iter().map(|x| (*x).to_owned()).collect();
     let mut exprs = Vec::new();
-    for x in &node.1 {
+    for x in &node.exprs {
         exprs.push(expr(context, x)?);
     }
     Ok(ast::InterpolatedString {
