@@ -54,7 +54,7 @@ impl Hash for Ty {
 
 impl SemanticElement for Ty {
     fn description(&self) -> String {
-        ValueElement::to_key(self).description()
+        <Ty as ValueElement<TyKey>>::to_key(self).description()
     }
 }
 
@@ -95,6 +95,14 @@ pub struct TyRealKey {
     pub real_name: String,
 }
 
+impl ValueElement<TyRealKey> for Ty {
+    fn to_key(&self) -> TyRealKey {
+        TyRealKey {
+            real_name: self.real_name.clone(),
+        }
+    }
+}
+
 impl SemanticElement for TyRealKey {
     fn description(&self) -> String {
         self.real_name.clone()
@@ -125,7 +133,9 @@ impl Ty {
             real_name,
         });
         let key = value.to_key();
+        let real_key = value.to_key();
         context.ty_store.add(key, value.clone());
+        context.ty_real_store.add(real_key, value.clone());
         value
     }
 

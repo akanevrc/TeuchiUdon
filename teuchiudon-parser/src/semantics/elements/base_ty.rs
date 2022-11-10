@@ -110,7 +110,9 @@ impl BaseTy {
             logical_name,
         });
         let key = value.to_key();
+        let logical_key = value.to_key();
         context.base_ty_store.add(key, value.clone());
+        context.base_ty_logical_store.add(logical_key, value.clone());
         value
     }
 
