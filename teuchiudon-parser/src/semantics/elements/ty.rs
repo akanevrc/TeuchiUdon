@@ -1,5 +1,10 @@
-use std::rc::Rc;
-use crate::impl_key_value_elements;
+use std::{
+    hash::{
+        Hash,
+        Hasher,
+    },
+    rc::Rc,
+};
 use crate::context::Context;
 use super::{
     ElementError,
@@ -33,22 +38,74 @@ pub enum TyArg {
     Ty(TyKey),
 }
 
-impl_key_value_elements!(
-    TyKey,
-    Ty,
-    TyKey {
-        qual: self.base.qual.clone(),
-        name: self.base.name.clone(),
-        args: self.args.clone()
-    },
-    format!(
-        "{}{}<{}>",
-        self.qual.description(),
-        self.name.description(),
-        self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
-    ),
-    ty_store
-);
+impl PartialEq for Ty {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Ty {}
+
+impl Hash for Ty {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl SemanticElement for Ty {
+    fn description(&self) -> String {
+        ValueElement::to_key(self).description()
+    }
+}
+
+impl ValueElement<TyKey> for Ty {
+    fn to_key(&self) -> TyKey {
+        TyKey {
+            qual: self.base.qual.clone(),
+            name: self.base.name.clone(),
+            args: self.args.clone(),
+        }
+    }
+}
+
+impl SemanticElement for TyKey {
+    fn description(&self) -> String {
+        if self.args.len() == 0 {
+            format!("{}{}", self.qual.description(), self.name.description())
+        }
+        else {
+            format!(
+                "{}{}<{}>",
+                self.qual.description(),
+                self.name.description(),
+                self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", "),
+            )
+        }
+    }
+}
+
+impl KeyElement<Ty> for TyKey {
+    fn consume_key(self, context: &Context) -> Result<Rc<Ty>, ElementError> {
+        context.ty_store.get(&self)
+    }
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct TyRealKey {
+    pub real_name: String,
+}
+
+impl SemanticElement for TyRealKey {
+    fn description(&self) -> String {
+        self.real_name.clone()
+    }
+}
+
+impl KeyElement<Ty> for TyRealKey {
+    fn consume_key(self, context: &Context) -> Result<Rc<Ty>, ElementError> {
+        context.ty_real_store.get(&self)
+    }
+}
 
 impl SemanticElement for TyArg {
     fn description(&self) -> String {

@@ -24,8 +24,7 @@ macro_rules! impl_key_value_elements {
 
         impl crate::semantics::elements::element::SemanticElement for $value_ty {
             fn description(&self) -> String {
-                use crate::semantics::elements::element::ValueElement;
-                self.to_key().description()
+                crate::semantics::elements::element::ValueElement::to_key(self).description()
             }
         }
 

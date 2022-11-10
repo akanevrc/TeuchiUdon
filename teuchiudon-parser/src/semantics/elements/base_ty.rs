@@ -1,10 +1,16 @@
-use std::rc::Rc;
-use crate::impl_key_value_elements;
+use std::{
+    hash::{
+        Hash,
+        Hasher,
+    },
+    rc::Rc,
+};
 use crate::context::Context;
 use super::{
     ElementError,
     element::{
         KeyElement,
+        SemanticElement,
         ValueElement,
     },
     qual::Qual,
@@ -29,20 +35,71 @@ pub struct BaseTyKey {
     pub name: String,
 }
 
-impl_key_value_elements!(
-    BaseTyKey,
-    BaseTy,
-    BaseTyKey {
-        qual: self.qual.clone(),
-        name: self.name.clone()
-    },
-    format!(
-        "{}{}",
-        self.qual.description(),
-        self.name.description()
-    ),
-    base_ty_store
-);
+impl PartialEq for BaseTy {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for BaseTy {}
+
+impl Hash for BaseTy {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl SemanticElement for BaseTy {
+    fn description(&self) -> String {
+        <BaseTy as ValueElement<BaseTyKey>>::to_key(self).description()
+    }
+}
+
+impl ValueElement<BaseTyKey> for BaseTy {
+    fn to_key(&self) -> BaseTyKey {
+        BaseTyKey {
+            qual: self.qual.clone(),
+            name: self.name.clone(),
+        }
+    }
+}
+
+impl SemanticElement for BaseTyKey {
+    fn description(&self) -> String {
+        format!("{}{}", self.qual.description(), self.name.description())
+    }
+}
+
+impl KeyElement<BaseTy> for BaseTyKey {
+    fn consume_key(self, context: &Context) -> Result<Rc<BaseTy>, ElementError> {
+        context.base_ty_store.get(&self)
+    }
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct BaseTyLogicalKey {
+    pub logical_name: String,
+}
+
+impl ValueElement<BaseTyLogicalKey> for BaseTy {
+    fn to_key(&self) -> BaseTyLogicalKey {
+        BaseTyLogicalKey {
+            logical_name: self.logical_name.clone(),
+        }
+    }
+}
+
+impl SemanticElement for BaseTyLogicalKey {
+    fn description(&self) -> String {
+        self.logical_name.clone()
+    }
+}
+
+impl KeyElement<BaseTy> for BaseTyLogicalKey {
+    fn consume_key(self, context: &Context) -> Result<Rc<BaseTy>, ElementError> {
+        context.base_ty_logical_store.get(&self)
+    }
+}
 
 impl BaseTy {
     pub fn new(context: &Context, qual: Qual, name: String, logical_name: String) -> Rc<Self> {
@@ -65,8 +122,12 @@ impl BaseTy {
         BaseTyKey::from_name(name).consume_key(context)
     }
 
+    pub fn get_from_logical_name(context: &Context, logical_name: String) -> Result<Rc<Self>, ElementError> {
+        BaseTyLogicalKey::new(logical_name).consume_key(context)
+    }
+
     pub fn apply(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
-        self.to_key().apply(args).consume_key(context)
+        <BaseTy as ValueElement<BaseTyKey>>::to_key(self).apply(args).consume_key(context)
     }
 
     pub fn direct(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {
@@ -99,5 +160,13 @@ impl BaseTyKey {
 
     pub fn eq_with(&self, ty: &Rc<Ty>) -> bool {
         *self == ty.base.to_key()
+    }
+}
+
+impl BaseTyLogicalKey {
+    pub fn new(logical_name: String) -> Self {
+        Self {
+            logical_name,
+        }
     }
 }

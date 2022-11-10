@@ -19,6 +19,7 @@ use crate::semantics::elements::{
     base_ty::{
         BaseTy,
         BaseTyKey,
+        BaseTyLogicalKey,
     },
     element::SemanticElement,
     literal::{
@@ -28,6 +29,7 @@ use crate::semantics::elements::{
     ty::{
         Ty,
         TyKey,
+        TyRealKey,
     },
     var::{
         Var,
@@ -41,8 +43,10 @@ pub struct Context {
     pub semantic_op: SemanticOpContext,
     pub semantic_ty_op: SemanticTyOpContext,
     pub base_ty_store: Store<BaseTyKey, BaseTy>,
+    pub base_ty_logical_store: Store<BaseTyLogicalKey, BaseTy>,
     pub literal_store: Store<LiteralKey, Literal>,
     pub ty_store: Store<TyKey, Ty>,
+    pub ty_real_store: Store<TyRealKey, Ty>,
     pub var_store: Store<VarKey, Var>,
 }
 
@@ -54,8 +58,10 @@ impl Context {
             semantic_op: SemanticOpContext::new(),
             semantic_ty_op: SemanticTyOpContext::new(),
             base_ty_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
+            base_ty_logical_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
             literal_store: Store::new(|x| format!("Specific literal `{}` not found", x.description())),
             ty_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
+            ty_real_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specific variable `{}` not found", x.description())),
         };
         register_default_tys(&context);
