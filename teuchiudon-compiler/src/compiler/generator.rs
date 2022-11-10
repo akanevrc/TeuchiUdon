@@ -64,7 +64,7 @@ pub fn visit_var_decl<'context: 'semantics, 'semantics>(
     var_decl: &'semantics ast::VarDecl,
 ) -> Box<dyn Iterator<Item = Instruction> + 'semantics> {
     match var_decl {
-        ast::VarDecl::SingleDecl { parsed: _, mut_attr: _, ident: _, type_expr: _, var } =>
+        ast::VarDecl::SingleDecl { parsed: _, mut_attr: _, ident: _, ty_expr: _, var } =>
             Box::new(routine::set(get_var_label(context, var))),
         ast::VarDecl::TupleDecl { parsed: _, var_decls } =>
             Box::new(var_decls.iter().rev().flat_map(|x| visit_var_decl(context, x))),
