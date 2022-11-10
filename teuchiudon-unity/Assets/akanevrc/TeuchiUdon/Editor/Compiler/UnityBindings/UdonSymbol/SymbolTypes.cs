@@ -5,26 +5,41 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     [Serializable]
     public class UdonSymbols
     {
+        public BaseTySymbol[] base_tys;
         public TySymbol[] tys;
         public ArrayTySymbol[] array_tys;
-        public GenericBaseTySymbol[] generic_base_tys;
         public MethodSymbol[] methods;
         public EvSymbol[] evs;
 
         public UdonSymbols
         (
+            BaseTySymbol[] base_tys,
             TySymbol[] tys,
             ArrayTySymbol[] array_tys,
-            GenericBaseTySymbol[] generic_base_tys,
             MethodSymbol[] methods,
             EvSymbol[] evs
         )
         {
+            this.base_tys = base_tys;
             this.tys = tys;
             this.array_tys = array_tys;
-            this.generic_base_tys = generic_base_tys;
             this.methods = methods;
             this.evs = evs;
+        }
+    }
+
+    [Serializable]
+    public class BaseTySymbol
+    {
+        public string[] scopes;
+        public string name;
+        public string logical_name;
+
+        public BaseTySymbol(string[] scopes, string name, string logical_name)
+        {
+            this.scopes = scopes;
+            this.name = name;
+            this.logical_name = logical_name;
         }
     }
 
@@ -64,21 +79,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             this.real_name = real_name;
             this.element_ty = element_ty;
-        }
-    }
-
-    [Serializable]
-    public class GenericBaseTySymbol
-    {
-        public string[] scopes;
-        public string name;
-        public string logical_name;
-
-        public GenericBaseTySymbol(string[] scopes, string name, string logical_name)
-        {
-            this.scopes = scopes;
-            this.name = name;
-            this.logical_name = logical_name;
         }
     }
 

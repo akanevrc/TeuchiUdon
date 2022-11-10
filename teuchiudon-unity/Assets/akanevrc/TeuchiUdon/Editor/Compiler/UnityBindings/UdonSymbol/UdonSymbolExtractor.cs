@@ -12,9 +12,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     internal class UdonSymbolExtractor
     {
         private bool Initialized { get; set; } = false;
+        private Dictionary<string, BaseTySymbol> BaseTys { get; set; }
         private Dictionary<string, TySymbol> Tys { get; set; }
         private Dictionary<string, ArrayTySymbol> ArrayTys { get; set; }
-        private Dictionary<string, GenericBaseTySymbol> GenericBaseTys { get; set; }
         private Dictionary<string, MethodSymbol> Methods { get; set; }
         private Dictionary<string, EvSymbol> Evs { get; set; }
 
@@ -22,9 +22,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             if (!Initialized)
             {
+                BaseTys = new Dictionary<string, BaseTySymbol>();
                 Tys = new Dictionary<string, TySymbol>();
                 ArrayTys = new Dictionary<string, ArrayTySymbol>();
-                GenericBaseTys = new Dictionary<string, GenericBaseTySymbol>();
                 Methods = new Dictionary<string, MethodSymbol>();
                 Evs = new Dictionary<string, EvSymbol>();
 
@@ -99,9 +99,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
             return new UdonSymbols
             (
+                BaseTys.Values.ToArray(),
                 Tys.Values.ToArray(),
                 ArrayTys.Values.ToArray(),
-                GenericBaseTys.Values.ToArray(),
                 Methods.Values.ToArray(),
                 Evs.Values.ToArray()
             );
@@ -127,14 +127,22 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var t = new TySymbol(scopes, tyName, realName, realName, argTys);
                 Tys.Add(realName, t);
 
-                if (argTys.Length != 0)
+                if (argTys.Length == 0)
+                {
+                    if (!BaseTys.ContainsKey(tyName))
+                    {
+                        var baseTy = new BaseTySymbol(scopes, tyName, realName);
+                        BaseTys.Add(tyName, baseTy);
+                    }
+                }
+                else
                 {
                     var genericName = GetQualifiedName(scopes, tyName);
 
-                    if (!GenericBaseTys.ContainsKey(genericName))
+                    if (!BaseTys.ContainsKey(genericName))
                     {
-                        var genericTy = new GenericBaseTySymbol(scopes, tyName, genericName);
-                        GenericBaseTys.Add(genericName, genericTy);
+                        var baseTy = new BaseTySymbol(scopes, tyName, genericName);
+                        BaseTys.Add(genericName, baseTy);
                     }
                 }
             }
