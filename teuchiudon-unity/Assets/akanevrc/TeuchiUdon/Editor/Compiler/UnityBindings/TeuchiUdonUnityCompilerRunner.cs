@@ -14,6 +14,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
     public static class TeuchiUdonUnityCompilerRunner
     {
+        private static UdonSymbolExtractor UdonSymbolExtractor { get; } = new UdonSymbolExtractor();
+
         public static TeuchiUdonProgramAsset SaveTeuchiUdonAsset(string srcPath, string assetPath)
         {
             var (output, error) = CompileFromPath(srcPath);
@@ -56,7 +58,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             var output = (string)null;
             try
             {
-                output = TeuchiUdonUnityCompiler.compile("let x: int = 123;");
+                var json = UdonSymbolJsonConverter.ToJson(UdonSymbolExtractor.ExtractSymbols());
+                output = TeuchiUdonUnityCompiler.compile("let x: int = 123;", json);
+
                 var parsed = ParseOutput(output);
                 return parsed;
             }

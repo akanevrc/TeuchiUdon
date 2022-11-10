@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 namespace akanevrc.TeuchiUdon.Editor.Compiler
@@ -7,9 +6,9 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         [DllImport("Assets/akanevrc/TeuchiUdon/Editor/Compiler/External/teuchiudon_bin.dll")]
         [return: MarshalAs(UnmanagedType.LPUTF8Str)]
-        public static extern string compile([MarshalAs(UnmanagedType.LPUTF8Str)] string input);
+        public static extern string compile([MarshalAs(UnmanagedType.LPUTF8Str)] string input, [MarshalAs(UnmanagedType.LPUTF8Str)] string json);
 
         [DllImport("Assets/akanevrc/TeuchiUdon/Editor/Compiler/External/teuchiudon_bin.dll")]
-        public static extern void free_str([MarshalAs(UnmanagedType.LPUTF8Str)] string input);
+        public static extern void free_str([MarshalAs(UnmanagedType.LPUTF8Str)] string str);
     }
 }
