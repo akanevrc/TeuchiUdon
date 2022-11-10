@@ -2,9 +2,15 @@ use serde::Deserialize;
 use serde_json::from_str;
 use super::Context;
 use crate::semantics::elements::{
+    ElementError,
     base_ty::BaseTy,
     qual::Qual,
     scope::Scope,
+    ty::{
+        Ty,
+        TyArg,
+        TyRealKey,
+    },
 };
 
 pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<String>> {
@@ -13,77 +19,73 @@ pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<Str
         return Err(vec!["Udon symbols cannot be initialized".to_owned()]);
     };
 
-    register_from_ty_symbols(context, &symbols.tys);
-    register_from_array_ty_symbols(context, &symbols.array_tys);
-    register_from_generic_base_ty_symbols(context, &symbols.generic_base_tys);
-    register_from_method_symbols(context, &symbols.methods);
-    register_from_ev_symbols(context, &symbols.evs);
+    register_from_base_ty_symbols(context, &symbols.base_tys)
+        .map_err(|e| vec![e.message])?;
+    register_from_ty_symbols(context, &symbols.tys)
+        .map_err(|e| vec![e.message])?;
+    register_from_method_symbols(context, &symbols.methods)
+        .map_err(|e| vec![e.message])?;
+    register_from_ev_symbols(context, &symbols.evs)
+        .map_err(|e| vec![e.message])?;
     Ok(())
 }
 
-fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) {
+fn register_from_base_ty_symbols(context: &Context, symbols: &Vec<BaseTySymbol>) -> Result<(), ElementError> {
     for sym in symbols {
+        let qual = Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect());
         BaseTy::new(
             context,
-            Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect()),
+            qual,
             sym.name.clone(),
             sym.logical_name.clone(),
-        );
+        )?;
     }
+    Ok(())
 }
 
-fn register_from_array_ty_symbols(context: &Context, symbols: &Vec<ArrayTySymbol>) {
-
-}
-
-fn register_from_generic_base_ty_symbols(context: &Context, symbols: &Vec<GenericBaseTySymbol>) {
+fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) -> Result<(), ElementError> {
     for sym in symbols {
-        BaseTy::new(
+        let qual = Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect());
+        let args = sym.args.iter().map(|x| TyArg::Ty(TyRealKey::new(x.clone()))).collect();
+        Ty::new(
             context,
-            Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect()),
-            sym.name.clone(),
-            sym.logical_name.clone(),
-        );
+            BaseTy::get(context, qual, sym.name.clone())?,
+            args,
+            sym.real_name.clone(),
+        )?;
     }
+    Ok(())
 }
 
-fn register_from_method_symbols(context: &Context, symbols: &Vec<MethodSymbol>) {
-
+fn register_from_method_symbols(context: &Context, symbols: &Vec<MethodSymbol>) -> Result<(), ElementError> {
+    Ok(())
 }
 
-fn register_from_ev_symbols(context: &Context, symbols: &Vec<EvSymbol>) {
-
+fn register_from_ev_symbols(context: &Context, symbols: &Vec<EvSymbol>) -> Result<(), ElementError> {
+    Ok(())
 }
 
 #[derive(Deserialize)]
 struct UdonSymbols {
+    base_tys: Vec<BaseTySymbol>,
     tys: Vec<TySymbol>,
-    array_tys: Vec<ArrayTySymbol>,
-    generic_base_tys: Vec<GenericBaseTySymbol>,
     methods: Vec<MethodSymbol>,
     evs: Vec<EvSymbol>,
+}
+
+#[derive(Deserialize)]
+struct BaseTySymbol {
+    scopes: Vec<String>,
+    name: String,
+    logical_name: String,
 }
 
 #[derive(Deserialize)]
 struct TySymbol {
     scopes: Vec<String>,
     name: String,
-    logical_name: String,
     real_name: String,
     args: Vec<String>,
-}
-
-#[derive(Deserialize)]
-struct ArrayTySymbol {
-    real_name: String,
-    element_ty: String,
-}
-
-#[derive(Deserialize)]
-struct GenericBaseTySymbol {
-    scopes: Vec<String>,
-    name: String,
-    logical_name: String,
 }
 
 #[derive(Deserialize)]
