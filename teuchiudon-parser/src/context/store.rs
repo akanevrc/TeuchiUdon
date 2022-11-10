@@ -4,11 +4,14 @@ use std::{
     hash::Hash,
     rc::Rc,
 };
-use crate::semantics::elements::ElementError;
+use crate::semantics::elements::{
+    ElementError,
+    element::SemanticElement,
+};
 
 pub struct Store<Key, Value>
 where
-    Key: Clone + Eq + Hash,
+    Key: Clone + Eq + Hash + SemanticElement,
 {
     id_map: RefCell<HashMap<Key, usize>>,
     values: RefCell<Vec<Rc<Value>>>,
@@ -17,7 +20,7 @@ where
 
 impl<Key, Value> Store<Key, Value>
 where
-    Key: Clone + Eq + Hash,
+    Key: Clone + Eq + Hash + SemanticElement,
 {
     pub fn new(not_found: fn(&Key) -> String) -> Self {
         Self {
@@ -31,10 +34,12 @@ where
         self.values.borrow().len()
     }
 
-    pub fn add(&self, key: Key, value: Rc<Value>) {
+    pub fn add(&self, key: Key, value: Rc<Value>) -> Result<(), ElementError> {
         let len = self.values.borrow().len();
-        self.id_map.borrow_mut().insert(key, len);
+        self.id_map.borrow_mut().insert(key.clone(), len)
+            .map_or(Ok(()), |_| Err(ElementError::new(format!("Registration duplicated: `{}`", key.description()))))?;
         self.values.borrow_mut().push(value.clone());
+        Ok(())
     }
 
     pub fn get(&self, key: &Key) -> Result<Rc<Value>, ElementError> {

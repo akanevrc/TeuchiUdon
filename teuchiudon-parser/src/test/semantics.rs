@@ -10,18 +10,8 @@ use crate::semantics::{
 
 #[test]
 fn test_ty_expr() {
-    let context = Context::new();
-    let ty_int = elements::ty::Ty::new(
-        &context,
-        elements::base_ty::BaseTy::new(
-            &context,
-            elements::qual::Qual::TOP,
-            "int".to_owned(),
-            "SystemInt32".to_owned(),
-        ),
-        Vec::new(),
-        "SystemInt32".to_owned(),
-    );
+    let context = Context::new().unwrap();
+    let ty_int = elements::ty::Ty::get_from_name(&context, "int").unwrap();
     let parsed = parser::ty_expr(&context)("T::U::V").unwrap().1;
     assert_eq!(
         analyzer::ty_expr(&context, &parsed).ok(),

@@ -35,7 +35,7 @@ pub struct TyKey {
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum TyArg {
     Qual(Qual),
-    Ty(TyKey),
+    Ty(TyRealKey),
 }
 
 impl PartialEq for Ty {
@@ -125,7 +125,7 @@ impl SemanticElement for TyArg {
 }
 
 impl Ty {
-    pub fn new(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>, real_name: String) -> Rc<Self> {
+    pub fn new(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>, real_name: String) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
             base,
@@ -134,9 +134,9 @@ impl Ty {
         });
         let key = value.to_key();
         let real_key = value.to_key();
-        context.ty_store.add(key, value.clone());
-        context.ty_real_store.add(real_key, value.clone());
-        value
+        context.ty_store.add(key, value.clone())?;
+        context.ty_real_store.add(real_key, value.clone())?;
+        Ok(value)
     }
 
     pub fn get(context: &Context, qual: Qual, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
@@ -145,6 +145,10 @@ impl Ty {
 
     pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
         TyKey::from_name(name).consume_key(context)
+    }
+
+    pub fn get_from_real_name(context: &Context, real_name: String) -> Result<Rc<Self>, ElementError> {
+        TyRealKey::new(real_name).consume_key(context)
     }
 
     pub fn arg_as_qual(&self) -> Qual {
@@ -161,7 +165,7 @@ impl Ty {
         }
     }
 
-    pub fn arg_as_ty(&self) -> TyKey {
+    pub fn arg_as_ty(&self) -> TyRealKey {
         if self.args.len() == 1 {
             match &self.args[0] {
                 TyArg::Ty(x) =>
@@ -190,6 +194,14 @@ impl TyKey {
             qual: Qual::TOP,
             name: name.to_owned(),
             args: Vec::new(),
+        }
+    }
+}
+
+impl TyRealKey {
+    pub fn new(real_name: String) -> Self {
+        Self {
+            real_name,
         }
     }
 }

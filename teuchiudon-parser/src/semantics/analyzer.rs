@@ -228,7 +228,8 @@ fn single_var_decl<'parsed>(
         ty_expr.ty.clone(),
         matches!(mut_attr, ast::MutAttr::Mut { parsed: _ }),
         false,
-    );
+    )
+    .map_err(|e| e.convert(ident.parsed.map(|x| x.slice)))?;
     Ok(ast::VarDecl::SingleDecl {
         parsed: Some(node),
         mut_attr,

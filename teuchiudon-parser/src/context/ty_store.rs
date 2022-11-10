@@ -1,236 +1,73 @@
 use super::Context;
 use crate::semantics::elements::{
+    ElementError,
     base_ty::BaseTy,
     qual::Qual,
+    ty::Ty,
 };
 
-pub fn register_default_tys(context: &Context) {
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "unknown".to_owned(),
-        "unknown".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "qual".to_owned(),
-        "qual".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "type".to_owned(),
-        "type".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "unit".to_owned(),
-        "unit".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "tuple".to_owned(),
-        "tuple".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "array".to_owned(),
-        "array".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "function".to_owned(),
-        "function".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "nfunction".to_owned(),
-        "nfunction".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "closure".to_owned(),
-        "closure".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "method".to_owned(),
-        "method".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "getter".to_owned(),
-        "getter".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "setter".to_owned(),
-        "setter".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "nulltype".to_owned(),
-        "nulltype".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "object".to_owned(),
-        "SystemObject".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "bool".to_owned(),
-        "SystemBoolean".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "byte".to_owned(),
-        "SystemByte".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "sbyte".to_owned(),
-        "SystemSByte".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "short".to_owned(),
-        "SystemInt16".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "ushort".to_owned(),
-        "SystemUInt16".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "int".to_owned(),
-        "SystemInt32".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "uint".to_owned(),
-        "SystemUInt32".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "long".to_owned(),
-        "SystemInt64".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "ulong".to_owned(),
-        "SystemUInt64".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "float".to_owned(),
-        "SystemSingle".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "double".to_owned(),
-        "SystemDouble".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "decimal".to_owned(),
-        "SystemDecimal".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "decimal".to_owned(),
-        "SystemDecimal".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "char".to_owned(),
-        "SystemChar".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "string".to_owned(),
-        "SystemString".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "unityobject".to_owned(),
-        "UnityEngineObject".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "gameobject".to_owned(),
-        "UnityEngineGameObject".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "vec2".to_owned(),
-        "UnityEngineVector2".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "vec3".to_owned(),
-        "UnityEngineVector3".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "vec4".to_owned(),
-        "UnityEngineVector4".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "quat".to_owned(),
-        "UnityEngineQuaternion".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "color".to_owned(),
-        "UnityEngineColor".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "color32".to_owned(),
-        "UnityEngineColor32".to_owned(),
-    );
-    BaseTy::new(
-        context,
-        Qual::TOP,
-        "udon".to_owned(),
-        "VRCUdonUdonBehaviour".to_owned(),
-    );
+pub fn register_default_tys(context: &Context) -> Result<(), Vec<String>> {
+    register_default_tys_core(context).map_err(|e| vec![e.message])
+}
+
+fn register_default_tys_core(context: &Context) -> Result<(), ElementError> {
+    let ty_names = vec![
+        ("unknown", "unknown"),
+        ("qual", "qual"),
+        ("type", "type"),
+        ("unit", "unit"),
+        ("tuple", "tuple"),
+        ("array", "array"),
+        ("function", "function"),
+        ("nfunction", "nfunction"),
+        ("closure", "closure"),
+        ("method", "method"),
+        ("getter", "getter"),
+        ("setter", "setter"),
+        ("nulltype", "nulltype"),
+        ("object", "SystemObject"),
+        ("bool", "SystemBoolean"),
+        ("byte", "SystemByte"),
+        ("sbyte", "SystemSByte"),
+        ("short", "SystemInt16"),
+        ("ushort", "SystemUInt16"),
+        ("int", "SystemInt32"),
+        ("uint", "SystemUInt32"),
+        ("long", "SystemInt64"),
+        ("ulong", "SystemUInt64"),
+        ("float", "SystemSingle"),
+        ("double", "SystemDouble"),
+        ("decimal", "SystemDecimal"),
+        ("char", "SystemChar"),
+        ("string", "SystemString"),
+        ("unityobject", "UnityEngineObject"),
+        ("gameobject", "UnityEngineGameObject"),
+        ("vec2", "UnityEngineVector2"),
+        ("vec3", "UnityEngineVector3"),
+        ("vec4", "UnityEngineVector4"),
+        ("quat", "UnityEngineQuaternion"),
+        ("color", "UnityEngineColor"),
+        ("color32", "UnityEngineColor32"),
+        ("udon", "VRCUdonUdonBehaviour"),
+    ];
+    let mut base_tys = Vec::new();
+    for (name, logical_name) in ty_names {
+        base_tys.push(
+            BaseTy::new(
+                context,
+                Qual::TOP,
+                name.to_owned(),
+                logical_name.to_owned(),
+            )?,
+        )
+    }
+    for x in base_tys {
+        Ty::new(
+            context,
+            x.clone(),
+            Vec::new(),
+            x.logical_name.clone(),
+        )?;
+    }
+    Ok(())
 }

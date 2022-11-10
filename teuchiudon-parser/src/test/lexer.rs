@@ -9,7 +9,7 @@ use crate::parser;
 
 #[test]
 fn test_lex() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lex(lexer::keyword(&context, "as"))("as xxx").ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
     assert_eq!(lex(lexer::keyword(&context, "as"))("  as xxx").ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
     assert_eq!(lex(lexer::keyword(&context, "as"))(" {/ comment /} // comment\nas xxx").ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
@@ -53,14 +53,14 @@ fn test_delimited_comment() {
 
 #[test]
 fn test_keyword() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lexer::keyword(&context, "as")("as xxx").0.ok(), Some((" xxx", ast::Keyword { slice: "as", kind: ast::KeywordKind::As })));
     assert_eq!(lexer::keyword(&context, "as")("asxxx").0.ok(), None);
 }
 
 #[test]
 fn test_op_code() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lexer::op_code(&context, "{")("{xxx").0.ok(), Some(("xxx", ast::OpCode { slice: "{", kind: ast::OpCodeKind::OpenBrace })));
     assert_eq!(lexer::op_code(&context, ",")(",xxx").0.ok(), Some(("xxx", ast::OpCode { slice: ",", kind: ast::OpCodeKind::Comma })));
     assert_eq!(lexer::op_code(&context, ";")(";xxx").0.ok(), Some(("xxx", ast::OpCode { slice: ";", kind: ast::OpCodeKind::Semicolon })));
@@ -72,7 +72,7 @@ fn test_op_code() {
 
 #[test]
 fn test_ident() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lexer::ident(&context)("A xxx").0.ok(), Some((" xxx", ast::Ident { slice: "A" })));
     assert_eq!(lexer::ident(&context)("a xxx").0.ok(), Some((" xxx", ast::Ident { slice: "a" })));
     assert_eq!(lexer::ident(&context)("AbC xxx").0.ok(), Some((" xxx", ast::Ident { slice: "AbC" })));
@@ -85,7 +85,7 @@ fn test_ident() {
 
 #[test]
 fn test_unit_literal() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         lexer::unit_literal(&context)("()xxx").0.ok(),
         Some(("xxx", ast::Literal { slice: "()", kind: ast::LiteralKind::Unit { left: ast::OpCode { slice: "(", kind: ast::OpCodeKind::OpenParen }, right: ast::OpCode { slice: ")", kind: ast::OpCodeKind::CloseParen } } }))
@@ -98,14 +98,14 @@ fn test_unit_literal() {
 
 #[test]
 fn test_null_literal() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lexer::null_literal(&context)("null xxx").0.ok(), Some((" xxx", ast::Literal { slice: "null", kind: ast::LiteralKind::Null { keyword: ast::Keyword { slice: "null", kind: ast::KeywordKind::Null } } })));
     assert_eq!(lexer::null_literal(&context)("nullxxx").0.ok(), None);
 }
 
 #[test]
 fn test_bool_literal() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lexer::bool_literal(&context)("true xxx").0.ok(), Some((" xxx", ast::Literal { slice: "true", kind: ast::LiteralKind::Bool { keyword: ast::Keyword { slice: "true", kind: ast::KeywordKind::True } } })));
     assert_eq!(lexer::bool_literal(&context)("false xxx").0.ok(), Some((" xxx", ast::Literal { slice: "false", kind: ast::LiteralKind::Bool { keyword: ast::Keyword { slice: "false", kind: ast::KeywordKind::False } } })));
     assert_eq!(lexer::bool_literal(&context)("truexxx").0.ok(), None);
@@ -212,14 +212,14 @@ fn test_verbatium_string_literal() {
 
 #[test]
 fn test_this_literal() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(lexer::this_literal(&context)("this xxx").0.ok(), Some((" xxx", ast::Literal { slice: "this", kind: ast::LiteralKind::This { keyword: ast::Keyword { slice: "this", kind: ast::KeywordKind::This } } })));
     assert_eq!(lexer::this_literal(&context)("thisxxx").0.ok(), None);
 }
 
 #[test]
 fn test_interpolated_string() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         lexer::interpolated_string(&context)("$\"abc{123}def{val}ghi\"xxx").0.ok(),
         Some(("xxx", ast::InterpolatedString {

@@ -8,7 +8,7 @@ use crate::parser::{
 
 #[test]
 fn test_target() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::target(&context)("pub let x = 123; pub fn f() {};").ok(),
         Some(("", ast::Target {
@@ -77,7 +77,7 @@ fn test_target() {
 
 #[test]
 fn test_body() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::body(&context)("pub let x = 123; pub fn f() {};").ok(),
         Some(("", ast::Body {
@@ -143,7 +143,7 @@ fn test_body() {
 
 #[test]
 fn test_var_bind_top_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::top_stat(&context)("pub sync let mut x = 123;").ok(),
         Some(("", ast::TopStat {
@@ -180,7 +180,7 @@ fn test_var_bind_top_stat() {
 
 #[test]
 fn test_fn_bind_top_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::top_stat(&context)("pub fn f(x: int) -> int { x };").ok(),
         Some(("", ast::TopStat {
@@ -242,7 +242,7 @@ fn test_fn_bind_top_stat() {
 
 #[test]
 fn test_stat_top_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::top_stat(&context)("f();").ok(),
         Some(("", ast::TopStat {
@@ -268,7 +268,7 @@ fn test_stat_top_stat() {
 
 #[test]
 fn test_var_bind() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::var_bind(&context)("let mut x: int = 123").ok(),
         Some(("", ast::VarBind {
@@ -305,7 +305,7 @@ fn test_var_bind() {
 
 #[test]
 fn test_single_var_decl() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::var_decl(&context)("x").ok(),
         Some(("", ast::VarDecl {
@@ -350,7 +350,7 @@ fn test_single_var_decl() {
 
 #[test]
 fn test_tuple_var_decl() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::var_decl(&context)("()").ok(),
         Some(("", ast::VarDecl {
@@ -440,7 +440,7 @@ fn test_tuple_var_decl() {
 
 #[test]
 fn test_fn_bind() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::fn_bind(&context)("fn f(mut x: int, y) -> int { g(); x }").ok(),
         Some(("", ast::FnBind {
@@ -518,7 +518,7 @@ fn test_fn_bind() {
 
 #[test]
 fn test_fn_decl() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::fn_decl(&context)("f()").ok(),
         Some(("", ast::FnDecl {
@@ -578,7 +578,7 @@ fn test_fn_decl() {
 
 #[test]
 fn test_ty_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::ty_expr(&context)("T::U::V").ok(),
         Some(("", Rc::new(ast::TyExpr {
@@ -615,7 +615,7 @@ fn test_ty_expr() {
 
 #[test]
 fn test_ty_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::ty_op(&context)("::T").ok(),
         Some(("", ast::TyOp {
@@ -633,7 +633,7 @@ fn test_ty_op() {
 
 #[test]
 fn test_ty_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::ty_term(&context)("string").ok(),
         Some(("", Rc::new(ast::TyTerm {
@@ -645,7 +645,7 @@ fn test_ty_term() {
 
 #[test]
 fn test_stats_block() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stats_block(&context)("{}").ok(),
         Some(("", ast::StatsBlock {
@@ -722,7 +722,7 @@ fn test_stats_block() {
 
 #[test]
 fn test_return_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stat(&context)("return;").ok(),
         Some(("", ast::Stat {
@@ -754,7 +754,7 @@ fn test_return_stat() {
 
 #[test]
 fn test_continue_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stat(&context)("continue;").ok(),
         Some(("", ast::Stat {
@@ -768,7 +768,7 @@ fn test_continue_stat() {
 
 #[test]
 fn test_break_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stat(&context)("break;").ok(),
         Some(("", ast::Stat {
@@ -782,7 +782,7 @@ fn test_break_stat() {
 
 #[test]
 fn test_var_bind_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stat(&context)("let x = 123;").ok(),
         Some(("", ast::Stat {
@@ -923,7 +923,7 @@ fn test_var_bind_stat() {
 
 #[test]
 fn test_fn_bind_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stat(&context)("fn f(x: int) -> int { x };").ok(),
         Some(("", ast::Stat {
@@ -984,7 +984,7 @@ fn test_fn_bind_stat() {
 
 #[test]
 fn test_expr_stat() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::stat(&context)("x = 123;").ok(),
         Some(("", ast::Stat {
@@ -1017,7 +1017,7 @@ fn test_expr_stat() {
 
 #[test]
 fn test_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::expr(&context)("x = T::f(1, 2).t + a.g(...b)[y]").ok(),
         Some(("", Rc::new(ast::Expr {
@@ -1142,7 +1142,7 @@ fn test_expr() {
 
 #[test]
 fn test_ty_access_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("::x").ok(),
         Some(("", ast::Op {
@@ -1160,7 +1160,7 @@ fn test_ty_access_op() {
 
 #[test]
 fn test_access_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)(".x").ok(),
         Some(("", ast::Op {
@@ -1191,7 +1191,7 @@ fn test_access_op() {
 
 #[test]
 fn test_eval_fn_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("()").ok(),
         Some(("", ast::Op { slice: "()", kind: ast::OpKind::EvalFn { arg_exprs: vec![] } })),
@@ -1288,7 +1288,7 @@ fn test_eval_fn_op() {
 
 #[test]
 fn test_eval_spread_fn_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("(...x)").ok(),
         Some(("", ast::Op {
@@ -1309,7 +1309,7 @@ fn test_eval_spread_fn_op() {
 
 #[test]
 fn test_eval_key_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("[x]").ok(),
         Some(("", ast::Op {
@@ -1330,7 +1330,7 @@ fn test_eval_key_op() {
 
 #[test]
 fn test_cast_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("as T").ok(),
         Some(("", ast::Op {
@@ -1352,7 +1352,7 @@ fn test_cast_op() {
 
 #[test]
 fn test_infix_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("* x").ok(),
         Some(("", ast::Op {
@@ -1630,7 +1630,7 @@ fn test_infix_op() {
 
 #[test]
 fn test_assign_op() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::op(&context)("= x").ok(),
         Some(("", ast::Op {
@@ -1647,7 +1647,7 @@ fn test_assign_op() {
 
 #[test]
 fn test_prefix_op_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("+x").ok(),
         Some(("", Rc::new(ast::Term {
@@ -1713,7 +1713,7 @@ fn test_prefix_op_term() {
 
 #[test]
 fn test_block_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("{ f(); g(); x }").ok(),
         Some(("", Rc::new(ast::Term {
@@ -1805,7 +1805,7 @@ fn test_block_term() {
 
 #[test]
 fn test_paren_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("(x)").ok(),
         Some(("", Rc::new(ast::Term {
@@ -1826,7 +1826,7 @@ fn test_paren_term() {
 
 #[test]
 fn test_tuple_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("(1, 2, 3)").ok(),
         Some(("", Rc::new(ast::Term {
@@ -1925,7 +1925,7 @@ fn test_tuple_term() {
 
 #[test]
 fn test_array_ctor_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("[]").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2120,7 +2120,7 @@ fn test_array_ctor_term() {
 
 #[test]
 fn test_literal_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("()").ok(),
         Some((
@@ -2209,7 +2209,7 @@ fn test_literal_term() {
 
 #[test]
 fn test_this_literal_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("this").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2226,7 +2226,7 @@ fn test_this_literal_term() {
 
 #[test]
 fn test_interpolated_string_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("$\"abc{123}{x}def\"").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2267,7 +2267,7 @@ fn test_interpolated_string_term() {
 
 #[test]
 fn test_eval_var_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(parser::term(&context)("someVar").ok(), Some(("", Rc::new(ast::Term {
         slice: "someVar",
         kind: ast::TermKind::EvalVar { ident: lexer::ast::Ident { slice: "someVar" } },
@@ -2280,7 +2280,7 @@ fn test_eval_var_term() {
 
 #[test]
 fn test_let_in_bind_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("let mut i: int = 123 in i + 1").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2344,7 +2344,7 @@ fn test_let_in_bind_term() {
 
 #[test]
 fn test_if_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("if i == 0 { f(); }").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2577,7 +2577,7 @@ fn test_if_term() {
 
 #[test]
 fn test_while_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("while i == 0 { f(); }").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2631,7 +2631,7 @@ fn test_while_term() {
 
 #[test]
 fn test_loop_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("loop { f(); }").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2664,7 +2664,7 @@ fn test_loop_term() {
 
 #[test]
 fn test_for_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("for let i <- 0..10 for let j <- 0..10..2 for k <- arr { f(); }").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2821,7 +2821,7 @@ fn test_for_term() {
 
 #[test]
 fn test_closure_term() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::term(&context)("|| 123").ok(),
         Some(("", Rc::new(ast::Term {
@@ -2952,7 +2952,7 @@ fn test_closure_term() {
 
 #[test]
 fn test_range_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::iter_expr(&context)("0..10").ok(),
         Some(("", ast::IterExpr {
@@ -2985,7 +2985,7 @@ fn test_range_iter_expr() {
 
 #[test]
 fn test_stepped_range_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::iter_expr(&context)("0..10..2").ok(),
         Some(("", ast::IterExpr {
@@ -3028,7 +3028,7 @@ fn test_stepped_range_iter_expr() {
 
 #[test]
 fn test_spread_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::iter_expr(&context)("...arr").ok(),
         Some(("", ast::IterExpr {
@@ -3049,7 +3049,7 @@ fn test_spread_iter_expr() {
 
 #[test]
 fn test_elements_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::iter_expr(&context)("x, y").ok(),
         Some(("", ast::IterExpr {
@@ -3102,7 +3102,7 @@ fn test_elements_iter_expr() {
 
 #[test]
 fn test_arg_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::arg_expr(&context)("x").ok(),
         Some(("", ast::ArgExpr {
@@ -3137,7 +3137,7 @@ fn test_arg_expr() {
 
 #[test]
 fn test_let_for_bind() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::for_bind(&context)("let i: int <- arr").ok(),
         Some(("", ast::ForBind {
@@ -3179,7 +3179,7 @@ fn test_let_for_bind() {
 
 #[test]
 fn test_assign_for_bind() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::for_bind(&context)("i <- arr").ok(),
         Some(("", ast::ForBind {
@@ -3213,7 +3213,7 @@ fn test_assign_for_bind() {
 
 #[test]
 fn test_range_for_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::for_iter_expr(&context)("0..10").ok(),
         Some(("", ast::ForIterExpr {
@@ -3246,7 +3246,7 @@ fn test_range_for_iter_expr() {
 
 #[test]
 fn test_stepped_range_for_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::for_iter_expr(&context)("0..10..2").ok(),
         Some(("", ast::ForIterExpr {
@@ -3289,7 +3289,7 @@ fn test_stepped_range_for_iter_expr() {
 
 #[test]
 fn test_spread_for_iter_expr() {
-    let context = Context::new();
+    let context = Context::new().unwrap();
     assert_eq!(
         parser::for_iter_expr(&context)("arr").ok(),
         Some(("", ast::ForIterExpr {

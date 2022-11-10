@@ -102,7 +102,7 @@ impl KeyElement<BaseTy> for BaseTyLogicalKey {
 }
 
 impl BaseTy {
-    pub fn new(context: &Context, qual: Qual, name: String, logical_name: String) -> Rc<Self> {
+    pub fn new(context: &Context, qual: Qual, name: String, logical_name: String) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.base_ty_store.next_id(),
             qual,
@@ -111,9 +111,9 @@ impl BaseTy {
         });
         let key = value.to_key();
         let logical_key = value.to_key();
-        context.base_ty_store.add(key, value.clone());
-        context.base_ty_logical_store.add(logical_key, value.clone());
-        value
+        context.base_ty_store.add(key, value.clone())?;
+        context.base_ty_logical_store.add(logical_key, value.clone())?;
+        Ok(value)
     }
 
     pub fn get(context: &Context, qual: Qual, name: String) -> Result<Rc<Self>, ElementError> {

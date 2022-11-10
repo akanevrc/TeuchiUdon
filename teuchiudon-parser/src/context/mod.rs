@@ -51,7 +51,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self, Vec<String>> {
         let context = Self {
             keyword: KeywordContext::new(),
             op_code: OpCodeContext::new(),
@@ -64,12 +64,12 @@ impl Context {
             ty_real_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specific variable `{}` not found", x.description())),
         };
-        register_default_tys(&context);
-        context
+        register_default_tys(&context)?;
+        Ok(context)
     }
 
     pub fn new_with_json(json: String) -> Result<Self, Vec<String>> {
-        let context = Self::new();
+        let context = Self::new()?;
         register_from_json(&context, json)?;
         Ok(context)
     }
