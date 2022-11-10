@@ -16,8 +16,8 @@ use self::{
     context::Context as CompilerContext,
 };
 
-pub fn compile(input: &str, json: String) -> Result<String, Vec<String>> {
-    let parser_context = ParserContext::new_with_json(json)?;
+pub fn compile(input: &str, json: &str) -> Result<String, Vec<String>> {
+    let parser_context = ParserContext::new_with_json(json.to_owned())?;
     let parsed = parse(&parser_context, input)?;
     let target = analize(&parser_context, input, &parsed)?;
     let compiler_context = CompilerContext::convert(&parser_context);

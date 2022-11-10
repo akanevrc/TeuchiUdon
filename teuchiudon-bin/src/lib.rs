@@ -10,10 +10,11 @@ const NEWLINE: &'static str = "\r\n";
 const NEWLINE: &'static str = "\n";
 
 #[no_mangle]
-pub extern "C" fn compile(input: *const c_char) -> *const c_char {
-    let s = unsafe { CStr::from_ptr(input) }.to_str().unwrap();
+pub extern "C" fn compile(input: *const c_char, json: *const c_char) -> *const c_char {
+    let input = unsafe { CStr::from_ptr(input) }.to_str().unwrap();
+    let json = unsafe { CStr::from_ptr(json) }.to_str().unwrap();
     let output =
-        teuchiudon_compiler::compile(s)
+        teuchiudon_compiler::compile(input, json)
         .map_or_else(|e| format!("!{}", e.join(NEWLINE)), |x| x);
     CString::new(output).unwrap().into_raw()
 }
