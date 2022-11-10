@@ -45,7 +45,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public string[] scopes;
         public string name;
-        public string logical_name;
         public string real_name;
         public string[] args;
 
@@ -53,14 +52,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             string[] scopes,
             string name,
-            string logical_name,
             string real_name,
             string[] args
         )
         {
             this.scopes = scopes;
             this.name = name;
-            this.logical_name = logical_name;
             this.real_name = real_name;
             this.args = args;
         }

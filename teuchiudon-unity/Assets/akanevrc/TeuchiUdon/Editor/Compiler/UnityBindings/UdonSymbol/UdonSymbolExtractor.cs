@@ -114,7 +114,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                 if (!Tys.ContainsKey(realName))
                 {
-                    var arrayTy = new TySymbol(new string[0], "array", realName, realName, new string[] { elemTy });
+                    var arrayTy = new TySymbol(new string[0], "array", realName, new string[] { elemTy });
                     Tys.Add(realName, arrayTy);
                 }
             }
@@ -124,7 +124,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 var argTys = type.GenericTypeArguments.Select(x => GetTy(x)).ToArray();
                 var scopes = GetQualScopes(type);
 
-                var t = new TySymbol(scopes, tyName, realName, realName, argTys);
+                var t = new TySymbol(scopes, tyName, realName, argTys);
                 Tys.Add(realName, t);
 
                 if (argTys.Length == 0)
