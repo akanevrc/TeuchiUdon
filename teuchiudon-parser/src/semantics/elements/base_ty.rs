@@ -10,8 +10,8 @@ use super::{
     qual::Qual,
     ty::{
         Ty,
+        TyArg,
         TyKey,
-        TyKeyArg,
     }
 };
 
@@ -57,11 +57,15 @@ impl BaseTy {
         value
     }
 
+    pub fn get(context: &Context, qual: Qual, name: String) -> Result<Rc<Self>, ElementError> {
+        BaseTyKey::new(qual, name).consume_key(context)
+    }
+
     pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
         BaseTyKey::from_name(name).consume_key(context)
     }
 
-    pub fn apply(self: &Rc<Self>, context: &Context, args: Vec<TyKeyArg>) -> Result<Rc<Ty>, ElementError> {
+    pub fn apply(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
         self.to_key().apply(args).consume_key(context)
     }
 
@@ -85,7 +89,7 @@ impl BaseTyKey {
         }
     }
 
-    pub fn apply(&self, args: Vec<TyKeyArg>) -> TyKey {
+    pub fn apply(&self, args: Vec<TyArg>) -> TyKey {
         TyKey::new(self.qual.clone(), self.name.clone(), args)
     }
 

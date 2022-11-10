@@ -24,17 +24,11 @@ pub struct Ty {
 pub struct TyKey {
     pub qual: Qual,
     pub name: String,
-    pub args: Vec<TyKeyArg>,
+    pub args: Vec<TyArg>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum TyArg {
-    Qual(Qual),
-    Ty(Rc<Ty>),
-}
-
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub enum TyKeyArg {
     Qual(Qual),
     Ty(TyKey),
 }
@@ -45,7 +39,7 @@ impl_key_value_elements!(
     TyKey {
         qual: self.base.qual.clone(),
         name: self.base.name.clone(),
-        args: self.args.iter().map(|x| x.to_key()).collect()
+        args: self.args.clone()
     },
     format!(
         "{}{}<{}>",
@@ -57,15 +51,6 @@ impl_key_value_elements!(
 );
 
 impl SemanticElement for TyArg {
-    fn description(&self) -> String {
-        match self {
-            Self::Qual(x) => x.description(),
-            Self::Ty(x) => x.description(),
-        }
-    }
-}
-
-impl SemanticElement for TyKeyArg {
     fn description(&self) -> String {
         match self {
             Self::Qual(x) => x.description(),
@@ -87,6 +72,10 @@ impl Ty {
         value
     }
 
+    pub fn get(context: &Context, qual: Qual, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+        TyKey::new(qual, name, args).consume_key(context)
+    }
+
     pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
         TyKey::from_name(name).consume_key(context)
     }
@@ -105,7 +94,7 @@ impl Ty {
         }
     }
 
-    pub fn arg_as_ty(&self) -> Rc<Ty> {
+    pub fn arg_as_ty(&self) -> TyKey {
         if self.args.len() == 1 {
             match &self.args[0] {
                 TyArg::Ty(x) =>
@@ -121,7 +110,7 @@ impl Ty {
 }
 
 impl TyKey {
-    pub fn new(qual: Qual, name: String, args: Vec<TyKeyArg>) -> Self {
+    pub fn new(qual: Qual, name: String, args: Vec<TyArg>) -> Self {
         Self {
             qual,
             name,
@@ -134,15 +123,6 @@ impl TyKey {
             qual: Qual::TOP,
             name: name.to_owned(),
             args: Vec::new(),
-        }
-    }
-}
-
-impl TyArg {
-    pub fn to_key(&self) -> TyKeyArg {
-        match self {
-            Self::Qual(x) => TyKeyArg::Qual(x.clone()),
-            Self::Ty(x) => TyKeyArg::Ty(x.to_key())
         }
     }
 }
