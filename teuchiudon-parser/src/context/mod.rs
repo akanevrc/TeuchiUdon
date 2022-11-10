@@ -1,10 +1,10 @@
-pub mod json;
 pub mod keyword;
 pub mod op_code;
 pub mod semantic_op;
 pub mod semantic_ty_op;
 pub mod store;
-pub mod ty_store;
+mod json;
+mod ty_store;
 
 use self::{
     json::register_from_json,

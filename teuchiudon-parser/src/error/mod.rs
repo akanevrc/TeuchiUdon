@@ -1,6 +1,6 @@
-pub mod parsed_error;
-pub mod semantic_error;
-pub mod context_iter;
+pub(crate) mod context_iter;
+pub(crate) mod parsed_error;
+pub(crate) mod semantic_error;
 
 use std::{
     collections::HashMap,
