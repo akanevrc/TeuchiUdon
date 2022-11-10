@@ -10,7 +10,7 @@ use teuchiudon_parser::semantics::elements::label::{
     DataLabel,
     TyLabel,
 };
-use self::label::HasLabel;
+use self::label::Label;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Instruction {

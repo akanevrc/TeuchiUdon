@@ -12,12 +12,12 @@ use teuchiudon_parser::semantics::elements::{
     var::Var,
 };
 
-pub trait HasLabel {
+pub trait Label {
     fn part_name(&self) -> String;
     fn full_name(&self) -> String;
 }
 
-impl HasLabel for DataLabel {
+impl Label for DataLabel {
     fn part_name(&self) -> String {
         match &self.kind {
             DataLabelKind::Literal(x) => x.part_name(),
@@ -33,7 +33,7 @@ impl HasLabel for DataLabel {
     }
 }
 
-impl HasLabel for CodeLabel {
+impl Label for CodeLabel {
     fn part_name(&self) -> String {
         "".to_owned()
     }
@@ -43,7 +43,7 @@ impl HasLabel for CodeLabel {
     }
 }
 
-impl HasLabel for TyLabel {
+impl Label for TyLabel {
     fn part_name(&self) -> String {
         self.ty.part_name()
     }
@@ -53,7 +53,7 @@ impl HasLabel for TyLabel {
     }
 }
 
-impl HasLabel for Literal {
+impl Label for Literal {
     fn part_name(&self) -> String {
         format!("literal[{}]", self.id)
     }
@@ -63,7 +63,7 @@ impl HasLabel for Literal {
     }
 }
 
-impl HasLabel for Qual {
+impl Label for Qual {
     fn part_name(&self) -> String {
         self.qualify(">")
     }
@@ -73,23 +73,23 @@ impl HasLabel for Qual {
     }
 }
 
-impl HasLabel for Scope {
+impl Label for Scope {
     fn part_name(&self) -> String {
         match self {
-            Self::Ty(x) => x.part_name(),
+            Self::Qual(x) => x.clone(),
             _ => "".to_owned(),
         }
     }
 
     fn full_name(&self) -> String {
         match self {
-            Self::Ty(x) => x.full_name(),
+            Self::Qual(x) => x.clone(),
             _ => "".to_owned(),
         }
     }
 }
 
-impl HasLabel for Ty {
+impl Label for Ty {
     fn part_name(&self) -> String {
         self.real_name.clone()
     }
@@ -99,7 +99,7 @@ impl HasLabel for Ty {
     }
 }
 
-impl HasLabel for Var {
+impl Label for Var {
     fn part_name(&self) -> String {
         format!("var[{}]", self.name)
     }
