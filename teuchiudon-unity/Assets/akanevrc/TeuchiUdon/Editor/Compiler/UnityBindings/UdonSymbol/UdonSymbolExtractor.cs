@@ -14,7 +14,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private bool Initialized { get; set; } = false;
         private Dictionary<string, BaseTySymbol> BaseTys { get; set; }
         private Dictionary<string, TySymbol> Tys { get; set; }
-        private Dictionary<string, ArrayTySymbol> ArrayTys { get; set; }
         private Dictionary<string, MethodSymbol> Methods { get; set; }
         private Dictionary<string, EvSymbol> Evs { get; set; }
 
@@ -24,7 +23,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 BaseTys = new Dictionary<string, BaseTySymbol>();
                 Tys = new Dictionary<string, TySymbol>();
-                ArrayTys = new Dictionary<string, ArrayTySymbol>();
                 Methods = new Dictionary<string, MethodSymbol>();
                 Evs = new Dictionary<string, EvSymbol>();
 
@@ -101,7 +99,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             (
                 BaseTys.Values.ToArray(),
                 Tys.Values.ToArray(),
-                ArrayTys.Values.ToArray(),
                 Methods.Values.ToArray(),
                 Evs.Values.ToArray()
             );
@@ -111,12 +108,15 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         {
             var realName = GetTyRealName(type);
 
-            if (type.IsArray && !ArrayTys.ContainsKey(realName))
+            if (type.IsArray)
             {
                 var elemTy = GetTy(type.GetElementType());
 
-                var arrayTy = new ArrayTySymbol(realName, elemTy);
-                ArrayTys.Add(realName, arrayTy);
+                if (!Tys.ContainsKey(realName))
+                {
+                    var arrayTy = new TySymbol(new string[0], "array", realName, realName, new string[] { elemTy });
+                    Tys.Add(realName, arrayTy);
+                }
             }
             else if (!Tys.ContainsKey(realName))
             {
@@ -129,10 +129,10 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                 if (argTys.Length == 0)
                 {
-                    if (!BaseTys.ContainsKey(tyName))
+                    if (!BaseTys.ContainsKey(realName))
                     {
                         var baseTy = new BaseTySymbol(scopes, tyName, realName);
-                        BaseTys.Add(tyName, baseTy);
+                        BaseTys.Add(realName, baseTy);
                     }
                 }
                 else

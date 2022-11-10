@@ -7,7 +7,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
     {
         public BaseTySymbol[] base_tys;
         public TySymbol[] tys;
-        public ArrayTySymbol[] array_tys;
         public MethodSymbol[] methods;
         public EvSymbol[] evs;
 
@@ -15,14 +14,12 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         (
             BaseTySymbol[] base_tys,
             TySymbol[] tys,
-            ArrayTySymbol[] array_tys,
             MethodSymbol[] methods,
             EvSymbol[] evs
         )
         {
             this.base_tys = base_tys;
             this.tys = tys;
-            this.array_tys = array_tys;
             this.methods = methods;
             this.evs = evs;
         }
@@ -66,19 +63,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             this.logical_name = logical_name;
             this.real_name = real_name;
             this.args = args;
-        }
-    }
-
-    [Serializable]
-    public class ArrayTySymbol
-    {
-        public string real_name;
-        public string element_ty;
-
-        public ArrayTySymbol(string real_name, string element_ty)
-        {
-            this.real_name = real_name;
-            this.element_ty = element_ty;
         }
     }
 
