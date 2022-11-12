@@ -5,14 +5,35 @@ use crate::parser;
 use crate::semantics::{
     analyzer,
     ast,
-    elements,
+    elements::{
+        self,
+        base_ty:: BaseTy,
+        element::ValueElement,
+        qual::Qual,
+        ty::Ty,
+    },
 };
 
-#[ignore]
 #[test]
 fn test_ty_expr() {
     let context = Context::new().unwrap();
-    let ty_int = elements::ty::Ty::get_from_name(&context, "int").unwrap();
+    let qual_t = Qual::new_or_get_quals(&context, vec!["T".to_owned()]);
+    let qual_u = Qual::new_or_get_quals(&context, vec!["T".to_owned(), "U".to_owned()]);
+    let ty_t = Ty::new_or_get_qual_from_key(&context, qual_t.to_key()).unwrap();
+    let ty_u = Ty::new_or_get_qual_from_key(&context, qual_u.to_key()).unwrap();
+    let ty_v = Ty::new_or_get_type_from_key(&context,
+        Ty::new(
+            &context,
+            BaseTy::new(
+                &context,
+                qual_u,
+                "V".to_owned(),
+                "TUV".to_owned(),
+            ).unwrap(),
+            Vec::new(),
+        ).unwrap().to_key(),
+    ).unwrap();
+    let ty_unknown = elements::ty::Ty::get_from_name(&context, "unknown".to_owned()).unwrap();
     let parsed = parser::ty_expr(&context)("T::U::V").unwrap().1;
     assert_eq!(
         analyzer::ty_expr(&context, &parsed).ok(),
@@ -33,10 +54,10 @@ fn test_ty_expr() {
                                             name: "T".to_owned(),
                                         },
                                     },
-                                    ty: ty_int.clone(),
+                                    ty: ty_t.clone(),
                                 }),
                             },
-                            ty: ty_int.clone(),
+                            ty: ty_t.clone(),
                         }),
                         op: ast::TyOp::Access,
                         right: Rc::new(ast::TyExpr {
@@ -52,13 +73,13 @@ fn test_ty_expr() {
                                             name: "U".to_owned(),
                                         },
                                     },
-                                    ty: ty_int.clone(),
+                                    ty: ty_unknown.clone(),
                                 }),
                             },
-                            ty: ty_int.clone(),
+                            ty: ty_unknown.clone(),
                         }),
                     },
-                    ty: ty_int.clone(),
+                    ty: ty_u.clone(),
                 }),
                 op: ast::TyOp::Access,
                 right: Rc::new(ast::TyExpr {
@@ -74,13 +95,13 @@ fn test_ty_expr() {
                                     name: "V".to_owned(),
                                 },
                             },
-                            ty: ty_int.clone(),
+                            ty: ty_unknown.clone(),
                         }),
                     },
-                    ty: ty_int.clone(),
+                    ty: ty_unknown.clone(),
                 }),
             },
-            ty: ty_int.clone(),
+            ty: ty_v.clone(),
         })),
     )
 }

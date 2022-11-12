@@ -43,8 +43,8 @@ macro_rules! impl_key_value_elements {
         }
 
         impl crate::semantics::elements::element::KeyElement<$value_ty> for $key_ty {
-            fn consume_key(self, context: &crate::context::Context) -> Result<Rc<$value_ty>, crate::semantics::elements::ElementError> {
-                context.$store_name.get(&self)
+            fn get_value(&self, context: &crate::context::Context) -> Result<Rc<$value_ty>, crate::semantics::elements::ElementError> {
+                context.$store_name.get(self)
             }
         }
     };

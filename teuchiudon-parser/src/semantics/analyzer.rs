@@ -9,12 +9,14 @@ use super::{
     ast,
     SemanticError,
     elements::{
-        self,
-        base_ty::{
-            BaseTy,
-            BaseTyKey,
+        base_ty::BaseTyKey,
+        element::{
+            ValueElement,
         },
-        scope::Scope,
+        literal::Literal,
+        qual::Qual,
+        ty::Ty,
+        var::Var,
     },
 };
 
@@ -238,9 +240,10 @@ fn single_var_decl<'parsed>(
         Some(x) => self::ty_expr(context, x)?,
         None => hidden_unknown_ty_expr(context)?,
     };
-    let var = elements::var::Var::new(
+    let qual = Qual::top(context);
+    let var = Var::new(
         context,
-        elements::qual::Qual::TOP,
+        qual,
         ident.name.clone(),
         ty_expr.ty.clone(),
         matches!(mut_attr.detail, ast::MutAttrDetail::Mut),
@@ -371,7 +374,7 @@ fn access_op_ty_expr<'parsed>(
     term: &'parsed parser::ast::TyTerm,
 ) -> Result<(ast::TyOp, Rc<ast::TyExpr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = access_ty_op(context)?;
-    let term = ty_term(context, term)?;
+    let term = access_ty_term(context, term)?;
     let expr = Rc::new(ast::TyExpr {
         parsed: Some(node),
         detail: ast::TyExprDetail::Term {
@@ -388,7 +391,7 @@ fn hidden_unknown_ty_expr<'parsed>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: ast::TyTermDetail::None,
-        ty: elements::ty::Ty::get_from_name(context, "unknown")
+        ty: Ty::get_from_name(context, "unknown".to_owned())
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
@@ -406,7 +409,7 @@ fn hidden_unit_ty_expr<'parsed>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: ast::TyTermDetail::None,
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
@@ -434,19 +437,50 @@ pub fn ty_term<'parsed>(
     }
 }
 
+pub fn access_ty_term<'parsed>(
+    context: &Context,
+    node: &'parsed parser::ast::TyTerm,
+) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
+    match &node.kind {
+        parser::ast::TyTermKind::EvalTy { ident } =>
+            eval_ty_access_ty_term(context, node, ident),
+    }
+}
+
 fn eval_ty_ty_term<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::TyTerm,
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
+    let ty =
+        Ty::new_or_get_type_from_name(context, ident.name.clone())
+        .or(Ty::new_or_get_qual_from_names(context, vec![ident.name.clone()]))
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
             ident
         },
-        ty: elements::ty::Ty::get_from_name(context, "int")
-            .map_err(|e| e.convert(None))?, // TODO
+        ty,
+    }))
+}
+
+fn eval_ty_access_ty_term<'parsed>(
+    context: &Context,
+    node: &'parsed parser::ast::TyTerm,
+    ident: &'parsed lexer::ast::Ident,
+) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
+    let ident = self::ident(context, ident)?;
+    let ty =
+        Ty::get_from_name(context, "unknown".to_owned())
+        .map_err(|e| e.convert(None))?;
+    Ok(Rc::new(ast::TyTerm {
+        parsed: Some(node),
+        detail: ast::TyTermDetail::EvalTy {
+            ident
+        },
+        ty,
     }))
 }
 
@@ -758,7 +792,7 @@ fn hidden_unit_expr<'parsed>(
     let term = Rc::new(ast::Term {
         parsed: None,
         detail: ast::TermDetail::None,
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::Expr {
@@ -972,7 +1006,7 @@ fn tuple_term<'parsed>(
         detail: ast::TermDetail::Tuple {
             exprs: es,
         },
-        ty: elements::ty::Ty::get_from_name(context, "tuple")
+        ty: Ty::get_from_name(context, "tuple".to_owned())
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -991,7 +1025,7 @@ fn array_ctor_term<'parsed>(
         detail: ast::TermDetail::ArrayCtor {
             iter_expr,
         },
-        ty: elements::ty::Ty::get_from_name(context, "array")
+        ty: Ty::get_from_name(context, "array".to_owned())
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1019,7 +1053,7 @@ fn this_literal_term<'parsed>(
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::ThisLiteral,
-        ty: elements::ty::Ty::get_from_name(context, "udon")
+        ty: Ty::get_from_name(context, "udon".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1035,7 +1069,7 @@ fn interpolated_string_term<'parsed>(
         detail: ast::TermDetail::InterpolatedString {
             interpolated_string,
         },
-        ty: elements::ty::Ty::get_from_name(context, "string")
+        ty: Ty::get_from_name(context, "string".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1051,7 +1085,7 @@ fn eval_var_term<'parsed>(
         detail: ast::TermDetail::EvalVar {
             ident,
         },
-        ty: elements::ty::Ty::get_from_name(context, "int")
+        ty: Ty::get_from_name(context, "int".to_owned())
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1112,7 +1146,7 @@ fn while_term<'parsed>(
             condition,
             stats,
         },
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1128,7 +1162,7 @@ fn loop_term<'parsed>(
         detail: ast::TermDetail::Loop {
             stats,
         },
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1150,7 +1184,7 @@ fn for_term<'parsed>(
             for_binds: fbs,
             stats,
         },
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1169,7 +1203,7 @@ fn closure_term<'parsed>(
             var_decl,
             expr,
         },
-        ty: elements::ty::Ty::get_from_name(context, "closure")
+        ty: Ty::get_from_name(context, "closure".to_owned())
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1184,7 +1218,7 @@ fn ty_expr_term<'parsed>(
         detail: ast::TermDetail::TyExpr {
             ty_expr: te,
         },
-        ty: elements::ty::Ty::get_from_name(context, "type")
+        ty: Ty::get_from_name(context, "type".to_owned())
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1202,7 +1236,7 @@ fn apply_fn_term<'parsed>(
         detail: ast::TermDetail::ApplyFn {
             args,
         },
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1217,7 +1251,7 @@ fn apply_spread_fn_term<'parsed>(
         detail: ast::TermDetail::ApplySpreadFn {
             arg,
         },
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1232,7 +1266,7 @@ fn apply_key_term<'parsed>(
         detail: ast::TermDetail::ApplyKey {
             key,
         },
-        ty: elements::ty::Ty::get_from_name(context, "unit")
+        ty: Ty::get_from_name(context, "unit".to_owned())
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1482,40 +1516,40 @@ pub fn ident<'parsed>(
 pub fn literal<'parsed>(
     context: &Context,
     node: &'parsed lexer::ast::Literal,
-) -> Result<Rc<elements::literal::Literal>, Vec<SemanticError<'parsed>>> {
+) -> Result<Rc<Literal>, Vec<SemanticError<'parsed>>> {
     match &node.kind {
         lexer::ast::LiteralKind::Unit { left, right: _ } =>
-            elements::literal::Literal::new_unit(context)
+            Literal::new_unit(context)
             .map_err(|e| e.convert(Some(left.slice))),
         lexer::ast::LiteralKind::Null { keyword } =>
-            elements::literal::Literal::new_null(context)
+            Literal::new_null(context)
             .map_err(|e| e.convert(Some(keyword.slice))),
         lexer::ast::LiteralKind::Bool { keyword } =>
-            elements::literal::Literal::new_bool(context, (*keyword.slice).to_owned())
+            Literal::new_bool(context, (*keyword.slice).to_owned())
             .map_err(|e| e.convert(Some(keyword.slice))),
         lexer::ast::LiteralKind::PureInteger { slice } =>
-            elements::literal::Literal::new_pure_integer(context, (*slice).to_owned())
+            Literal::new_pure_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::DecInteger { slice } =>
-            elements::literal::Literal::new_dec_integer(context, (*slice).to_owned())
+            Literal::new_dec_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::HexInteger { slice } =>
-            elements::literal::Literal::new_hex_integer(context, (*slice).to_owned())
+            Literal::new_hex_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::BinInteger { slice } =>
-            elements::literal::Literal::new_bin_integer(context, (*slice).to_owned())
+            Literal::new_bin_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::RealNumber { slice } =>
-            elements::literal::Literal::new_real_number(context, (*slice).to_owned())
+            Literal::new_real_number(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::Character { slice } =>
-            elements::literal::Literal::new_character(context, (*slice).to_owned())
+            Literal::new_character(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::RegularString { slice } =>
-            elements::literal::Literal::new_regular_string(context, (*slice).to_owned())
+            Literal::new_regular_string(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::VerbatiumString { slice } =>
-            elements::literal::Literal::new_verbatium_string(context, (*slice).to_owned())
+            Literal::new_verbatium_string(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         _ =>
             panic!("Illegal state"),
@@ -1641,10 +1675,10 @@ impl<'parsed> ast::ExprTree<'parsed, ast::TyOp, parser::ast::TyExpr<'parsed>> fo
             ast::TyOp::Access => {
                 if let ast::TyExprDetail::Term { term } = &right.detail  {
                     if let ast::TyTermDetail::EvalTy { ident } = &term.detail {
-                        if BaseTyKey::from_name("qual").eq_with(&left.ty) {
+                        if BaseTyKey::from_name("qual".to_owned()).eq_with(&left.ty) {
                             let qual = left.ty.arg_as_qual();
-                            let ty = BaseTy::get(context, qual, ident.name.clone())
-                                .and_then(|x| x.direct(context))
+                            let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+                                .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
                                 .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
                             Ok(Rc::new(Self {
                                 parsed: Some(parsed),
@@ -1656,10 +1690,10 @@ impl<'parsed> ast::ExprTree<'parsed, ast::TyOp, parser::ast::TyExpr<'parsed>> fo
                                 ty,
                             }))
                         }
-                        else if BaseTyKey::from_name("type").eq_with(&left.ty) {
-                            let qual = left.ty.base.qual.added(Scope::Qual(left.ty.arg_as_ty().real_name));
-                            let ty = BaseTy::get(context, qual, ident.name.clone())
-                                .and_then(|x| x.direct(context))
+                        else if BaseTyKey::from_name("type".to_owned()).eq_with(&left.ty) {
+                            let qual = left.ty.base.qual.get_added_qual(context, left.ty.arg_as_ty().logical_name)
+                                .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
+                            let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
                                 .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
                             Ok(Rc::new(Self {
                                 parsed: Some(parsed),

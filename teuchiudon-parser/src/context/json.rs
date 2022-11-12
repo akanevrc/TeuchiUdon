@@ -4,13 +4,12 @@ use super::Context;
 use crate::semantics::elements::{
     ElementError,
     base_ty::BaseTy,
-    qual::Qual,
-    scope::Scope,
+    qual::QualKey,
     ty::{
         Ty,
         TyArg,
-        TyRealKey,
-    },
+        TyLogicalKey,
+    }, element::KeyElement,
 };
 
 pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<String>> {
@@ -32,7 +31,7 @@ pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<Str
 
 fn register_from_base_ty_symbols(context: &Context, symbols: &Vec<BaseTySymbol>) -> Result<(), ElementError> {
     for sym in symbols {
-        let qual = Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect());
+        let qual = QualKey::new_quals(sym.scopes.clone()).get_value(context)?;
         BaseTy::new(
             context,
             qual,
@@ -45,13 +44,14 @@ fn register_from_base_ty_symbols(context: &Context, symbols: &Vec<BaseTySymbol>)
 
 fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) -> Result<(), ElementError> {
     for sym in symbols {
-        let qual = Qual::new(sym.scopes.iter().map(|x| Scope::Qual(x.clone())).collect());
-        let args = sym.args.iter().map(|x| TyArg::Ty(TyRealKey::new(x.clone()))).collect();
-        Ty::new(
+        let qual = QualKey::new_quals(sym.scopes.clone());
+        let args = sym.args.iter().map(|x| TyArg::Ty(TyLogicalKey::new(x.clone()))).collect();
+        Ty::new_strict(
             context,
             BaseTy::get(context, qual, sym.name.clone())?,
             args,
             sym.real_name.clone(),
+            Some(sym.real_name.clone()),
         )?;
     }
     Ok(())

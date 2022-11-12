@@ -36,9 +36,12 @@ where
 
     pub fn add(&self, key: Key, value: Rc<Value>) -> Result<(), ElementError> {
         let len = self.values.borrow().len();
-        self.id_map.borrow_mut().insert(key.clone(), len)
-            .map_or(Ok(()), |_| Err(ElementError::new(format!("Registration duplicated: `{}`", key.description()))))?;
-        self.values.borrow_mut().push(value.clone());
+        let mut id_map = self.id_map.borrow_mut();
+        if id_map.contains_key(&key) {
+            return Err(ElementError::new(format!("Registration duplicated: `{}`", key.description())));
+        }
+        id_map.insert(key, len);
+        self.values.borrow_mut().push(value);
         Ok(())
     }
 

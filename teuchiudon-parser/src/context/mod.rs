@@ -26,10 +26,14 @@ use crate::semantics::elements::{
         Literal,
         LiteralKey,
     },
+    qual::{
+        Qual,
+        QualKey,
+    },
     ty::{
         Ty,
         TyKey,
-        TyRealKey,
+        TyLogicalKey,
     },
     var::{
         Var,
@@ -42,11 +46,12 @@ pub struct Context {
     pub op_code: OpCodeContext,
     pub semantic_op: SemanticOpContext,
     pub semantic_ty_op: SemanticTyOpContext,
+    pub qual_store: Store<QualKey, Qual>,
     pub base_ty_store: Store<BaseTyKey, BaseTy>,
     pub base_ty_logical_store: Store<BaseTyLogicalKey, BaseTy>,
-    pub literal_store: Store<LiteralKey, Literal>,
     pub ty_store: Store<TyKey, Ty>,
-    pub ty_real_store: Store<TyRealKey, Ty>,
+    pub ty_logical_store: Store<TyLogicalKey, Ty>,
+    pub literal_store: Store<LiteralKey, Literal>,
     pub var_store: Store<VarKey, Var>,
 }
 
@@ -57,12 +62,13 @@ impl Context {
             op_code: OpCodeContext::new(),
             semantic_op: SemanticOpContext::new(),
             semantic_ty_op: SemanticTyOpContext::new(),
-            base_ty_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
-            base_ty_logical_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
-            literal_store: Store::new(|x| format!("Specific literal `{}` not found", x.description())),
-            ty_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
-            ty_real_store: Store::new(|x| format!("Specific type `{}` not found", x.description())),
-            var_store: Store::new(|x| format!("Specific variable `{}` not found", x.description())),
+            qual_store: Store::new(|x| format!("Specified qualifier `{}` not found", x.description())),
+            base_ty_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
+            base_ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
+            ty_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
+            ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
+            literal_store: Store::new(|x| format!("Specified literal `{}` not found", x.description())),
+            var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };
         register_default_tys(&context)?;
         Ok(context)

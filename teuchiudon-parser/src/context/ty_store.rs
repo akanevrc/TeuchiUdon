@@ -12,62 +12,61 @@ pub fn register_default_tys(context: &Context) -> Result<(), Vec<String>> {
 
 fn register_default_tys_core(context: &Context) -> Result<(), ElementError> {
     let ty_names = vec![
-        ("unknown", "unknown"),
-        ("qual", "qual"),
-        ("type", "type"),
-        ("unit", "unit"),
-        ("tuple", "tuple"),
-        ("array", "array"),
-        ("function", "function"),
-        ("nfunction", "nfunction"),
-        ("closure", "closure"),
-        ("method", "method"),
-        ("getter", "getter"),
-        ("setter", "setter"),
-        ("nulltype", "nulltype"),
-        ("object", "SystemObject"),
-        ("bool", "SystemBoolean"),
-        ("byte", "SystemByte"),
-        ("sbyte", "SystemSByte"),
-        ("short", "SystemInt16"),
-        ("ushort", "SystemUInt16"),
-        ("int", "SystemInt32"),
-        ("uint", "SystemUInt32"),
-        ("long", "SystemInt64"),
-        ("ulong", "SystemUInt64"),
-        ("float", "SystemSingle"),
-        ("double", "SystemDouble"),
-        ("decimal", "SystemDecimal"),
-        ("char", "SystemChar"),
-        ("string", "SystemString"),
-        ("unityobject", "UnityEngineObject"),
-        ("gameobject", "UnityEngineGameObject"),
-        ("vec2", "UnityEngineVector2"),
-        ("vec3", "UnityEngineVector3"),
-        ("vec4", "UnityEngineVector4"),
-        ("quat", "UnityEngineQuaternion"),
-        ("color", "UnityEngineColor"),
-        ("color32", "UnityEngineColor32"),
-        ("udon", "VRCUdonUdonBehaviour"),
+        ("unknown", "unknown", None, true),
+        ("qual", "qual", None, false),
+        ("type", "type", None, false),
+        ("unit", "unit", None, true),
+        ("tuple", "tuple", None, false),
+        ("array", "array", None, false),
+        ("function", "function", None, false),
+        ("nfunction", "nfunction", None, false),
+        ("closure", "closure", None, false),
+        ("method", "method", None, false),
+        ("getter", "getter", None, false),
+        ("setter", "setter", None, false),
+        ("nulltype", "nulltype", Some("SystemObject"), true),
+        ("object", "SystemObject", Some("SystemObject"), true),
+        ("bool", "SystemBoolean", Some("SystemBoolean"), true),
+        ("byte", "SystemByte", Some("SystemByte"), true),
+        ("sbyte", "SystemSByte", Some("SystemSByte"), true),
+        ("short", "SystemInt16", Some("SystemInt16"), true),
+        ("ushort", "SystemUInt16", Some("SystemUInt16"), true),
+        ("int", "SystemInt32", Some("SystemInt32"), true),
+        ("uint", "SystemUInt32", Some("SystemUInt32"), true),
+        ("long", "SystemInt64", Some("SystemInt64"), true),
+        ("ulong", "SystemUInt64", Some("SystemUInt64"), true),
+        ("float", "SystemSingle", Some("SystemSingle"), true),
+        ("double", "SystemDouble", Some("SystemDouble"), true),
+        ("decimal", "SystemDecimal", Some("SystemDecimal"), true),
+        ("char", "SystemChar", Some("SystemChar"), true),
+        ("string", "SystemString", Some("SystemString"), true),
+        ("unityobject", "UnityEngineObject", Some("UnityEngineObject"), true),
+        ("gameobject", "UnityEngineGameObject", Some("UnityEngineGameObject"), true),
+        ("vec2", "UnityEngineVector2", Some("UnityEngineVector2"), true),
+        ("vec3", "UnityEngineVector3", Some("UnityEngineVector3"), true),
+        ("vec4", "UnityEngineVector4", Some("UnityEngineVector4"), true),
+        ("quat", "UnityEngineQuaternion", Some("UnityEngineQuaternion"), true),
+        ("color", "UnityEngineColor", Some("UnityEngineColor"), true),
+        ("color32", "UnityEngineColor32", Some("UnityEngineColor32"), true),
+        ("udon", "VRCUdonUdonBehaviour", Some("VRCUdonUdonBehaviour"), true),
     ];
-    let mut base_tys = Vec::new();
-    for (name, logical_name) in ty_names {
-        base_tys.push(
-            BaseTy::new(
-                context,
-                Qual::TOP,
-                name.to_owned(),
-                logical_name.to_owned(),
-            )?,
-        )
-    }
-    for x in base_tys {
-        Ty::new(
+    let top = Qual::top(context);
+    for (name, logical_name, real_name, is_ty) in ty_names {
+        let base = BaseTy::new(
             context,
-            x.clone(),
-            Vec::new(),
-            x.logical_name.clone(),
+            top.clone(),
+            name.to_owned(),
+            logical_name.to_owned(),
         )?;
+        if is_ty {
+            Ty::new_strict(
+                context,
+                base,
+                Vec::new(),
+                logical_name.to_owned(),
+                real_name.map(|x| x.to_owned()),
+            )?;
+        }
     }
     Ok(())
 }

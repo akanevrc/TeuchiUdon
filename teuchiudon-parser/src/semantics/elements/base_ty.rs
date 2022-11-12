@@ -13,7 +13,10 @@ use super::{
         SemanticElement,
         ValueElement,
     },
-    qual::Qual,
+    qual::{
+        Qual,
+        QualKey,
+    },
     ty::{
         Ty,
         TyArg,
@@ -24,15 +27,20 @@ use super::{
 #[derive(Clone, Debug)]
 pub struct BaseTy {
     pub id: usize,
-    pub qual: Qual,
+    pub qual: Rc<Qual>,
     pub name: String,
     pub logical_name: String,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct BaseTyKey {
-    pub qual: Qual,
+    pub qual: QualKey,
     pub name: String,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct BaseTyLogicalKey {
+    pub logical_name: String,
 }
 
 impl PartialEq for BaseTy {
@@ -58,7 +66,7 @@ impl SemanticElement for BaseTy {
 impl ValueElement<BaseTyKey> for BaseTy {
     fn to_key(&self) -> BaseTyKey {
         BaseTyKey {
-            qual: self.qual.clone(),
+            qual: self.qual.to_key(),
             name: self.name.clone(),
         }
     }
@@ -66,19 +74,14 @@ impl ValueElement<BaseTyKey> for BaseTy {
 
 impl SemanticElement for BaseTyKey {
     fn description(&self) -> String {
-        format!("{}{}", self.qual.description(), self.name.description())
+        format!("{}{}", self.qual.qualify("::"), self.name.description())
     }
 }
 
 impl KeyElement<BaseTy> for BaseTyKey {
-    fn consume_key(self, context: &Context) -> Result<Rc<BaseTy>, ElementError> {
-        context.base_ty_store.get(&self)
+    fn get_value(&self, context: &Context) -> Result<Rc<BaseTy>, ElementError> {
+        context.base_ty_store.get(self)
     }
-}
-
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct BaseTyLogicalKey {
-    pub logical_name: String,
 }
 
 impl ValueElement<BaseTyLogicalKey> for BaseTy {
@@ -96,13 +99,13 @@ impl SemanticElement for BaseTyLogicalKey {
 }
 
 impl KeyElement<BaseTy> for BaseTyLogicalKey {
-    fn consume_key(self, context: &Context) -> Result<Rc<BaseTy>, ElementError> {
-        context.base_ty_logical_store.get(&self)
+    fn get_value(&self, context: &Context) -> Result<Rc<BaseTy>, ElementError> {
+        context.base_ty_logical_store.get(self)
     }
 }
 
 impl BaseTy {
-    pub fn new(context: &Context, qual: Qual, name: String, logical_name: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new(context: &Context, qual: Rc<Qual>, name: String, logical_name: String) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.base_ty_store.next_id(),
             qual,
@@ -116,39 +119,40 @@ impl BaseTy {
         Ok(value)
     }
 
-    pub fn get(context: &Context, qual: Qual, name: String) -> Result<Rc<Self>, ElementError> {
-        BaseTyKey::new(qual, name).consume_key(context)
+    pub fn get(context: &Context, qual: QualKey, name: String) -> Result<Rc<Self>, ElementError> {
+        BaseTyKey::new(qual, name).get_value(context)
     }
 
-    pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
-        BaseTyKey::from_name(name).consume_key(context)
+    pub fn get_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
+        BaseTyKey::from_name(name).get_value(context)
     }
 
     pub fn get_from_logical_name(context: &Context, logical_name: String) -> Result<Rc<Self>, ElementError> {
-        BaseTyLogicalKey::new(logical_name).consume_key(context)
+        BaseTyLogicalKey::new(logical_name).get_value(context)
     }
 
-    pub fn apply(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
-        <BaseTy as ValueElement<BaseTyKey>>::to_key(self).apply(args).consume_key(context)
+    pub fn new_or_get_applied(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
+        let key: BaseTyKey = self.to_key();
+        Ty::new_or_get(context, key.get_value(context)?, args)
     }
 
-    pub fn direct(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {
-        self.apply(context, Vec::new())
+    pub fn new_or_get_applied_zero(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {
+        self.new_or_get_applied(context, Vec::new())
     }
 }
 
 impl BaseTyKey {
-    pub fn new(qual: Qual, name: String) -> Self {
+    pub fn new(qual: QualKey, name: String) -> Self {
         Self {
             qual,
             name,
         }
     }
 
-    pub fn from_name(name: &str) -> Self {
+    pub fn from_name(name: String) -> Self {
         Self {
-            qual: Qual::TOP,
-            name: name.to_owned(),
+            qual: QualKey::top(),
+            name,
         }
     }
 
