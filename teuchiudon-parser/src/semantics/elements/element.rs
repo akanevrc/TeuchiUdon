@@ -4,6 +4,7 @@ use super::ElementError;
 
 pub trait SemanticElement {
     fn description(&self) -> String;
+    fn logical_name(&self) -> String;
 }
 
 pub trait ValueElement<Key> {
@@ -16,6 +17,10 @@ pub trait KeyElement<Value> {
 
 impl SemanticElement for String {
     fn description(&self) -> String {
+        self.clone()
+    }
+
+    fn logical_name(&self) -> String {
         self.clone()
     }
 }

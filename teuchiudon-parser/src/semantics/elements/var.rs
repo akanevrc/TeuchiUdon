@@ -3,7 +3,10 @@ use crate::impl_key_value_elements;
 use crate::context::Context;
 use super::{
     ElementError,
-    element::ValueElement,
+    element::{
+        SemanticElement,
+        ValueElement,
+    },
     qual::{
         Qual,
         QualKey,
@@ -34,13 +37,26 @@ impl_key_value_elements!(
         qual: self.qual.to_key(),
         name: self.name.clone()
     },
-    format!(
-        "{}{}",
-        self.qual.qualify("::"),
-        self.name.description()
-    ),
     var_store
 );
+
+impl SemanticElement for VarKey {
+    fn description(&self) -> String {
+        format!(
+            "{}{}",
+            self.qual.qualify_description("::"),
+            self.name.description()
+        )
+    }
+
+    fn logical_name(&self) -> String {
+        format!(
+            "{}{}",
+            self.qual.qualify_logical_name("::"),
+            self.name.logical_name()
+        )
+    }
+}
 
 impl Var {
     pub fn new(context: &Context, qual: Rc<Qual>, name: String, ty: Rc<Ty>, mut_attr: bool, is_system_var: bool) -> Result<Rc<Self>, ElementError> {

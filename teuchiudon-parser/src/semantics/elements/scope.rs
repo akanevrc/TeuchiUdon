@@ -16,10 +16,19 @@ pub enum Scope {
 impl SemanticElement for Scope {
     fn description(&self) -> String {
         match self {
-            Self::Qual(name) =>
-                name.clone(),
+            Self::Qual(x) =>
+                x.description(),
             _ =>
-                "Not implemented error occured".to_owned(),
+                panic!("Not implemented error occured"),
+        }
+    }
+
+    fn logical_name(&self) -> String {
+        match self {
+            Self::Qual(x) =>
+                x.logical_name(),
+            _ =>
+                panic!("Not implemented error occured"),
         }
     }
 }

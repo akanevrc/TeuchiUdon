@@ -4,8 +4,14 @@ use crate::context::Context;
 use super::{
     ElementError,
     base_ty::BaseTy,
-    element::ValueElement,
-    ty::Ty,
+    element::{
+        SemanticElement,
+        ValueElement,
+    },
+    ty::{
+        Ty,
+        TyLogicalKey,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -18,7 +24,7 @@ pub struct Literal {
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct LiteralKey {
     pub text: String,
-    pub ty: Rc<Ty>,
+    pub ty: TyLogicalKey,
 }
 
 impl_key_value_elements!(
@@ -26,15 +32,28 @@ impl_key_value_elements!(
     Literal,
     LiteralKey {
         text: self.text.clone(),
-        ty: self.ty.clone()
+        ty: self.ty.to_key()
     },
-    format!(
-        "'{}': {}",
-        self.text.description(),
-        self.ty.description()
-    ),
     literal_store
 );
+
+impl SemanticElement for LiteralKey {
+    fn description(&self) -> String {
+        format!(
+            "'{}': {}",
+            self.text.description(),
+            self.ty.description()
+        )
+    }
+
+    fn logical_name(&self) -> String {
+        format!(
+            "literal[{}][{}]",
+            self.ty.logical_name(),
+            self.text.logical_name()
+        )
+    }
+}
 
 impl Literal {
     pub fn new(context: &Context, text: String, ty: Rc<Ty>) -> Result<Rc<Self>, ElementError> {

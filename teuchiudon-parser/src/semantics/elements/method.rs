@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use crate::impl_key_value_elements;
 use super::{
+    element::SemanticElement,
     ty::{
         Ty,
         TyLogicalKey,
@@ -44,11 +45,25 @@ impl_key_value_elements!(
         name: self.name.clone(),
         in_tys: self.in_tys.iter().map(|x| x.to_key()).collect()
     },
-    format!(
-        "{}::{}({})",
-        self.ty.description(),
-        self.name.description(),
-        self.in_tys.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
-    ),
     method_store
 );
+
+impl SemanticElement for MethodKey {
+    fn description(&self) -> String {
+        format!(
+            "{}::{}({})",
+            self.ty.description(),
+            self.name.description(),
+            self.in_tys.iter().map(|x| x.description()).collect::<Vec<_>>().join(", ")
+        )
+    }
+
+    fn logical_name(&self) -> String {
+        format!(
+            "method[{}][{}][{}]",
+            self.ty.logical_name(),
+            self.name.logical_name(),
+            self.in_tys.iter().map(|x| x.logical_name()).collect::<Vec<_>>().join("][")
+        )
+    }
+}

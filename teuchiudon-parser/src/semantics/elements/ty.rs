@@ -65,6 +65,10 @@ impl SemanticElement for Ty {
     fn description(&self) -> String {
         <Ty as ValueElement<TyKey>>::to_key(self).description()
     }
+
+    fn logical_name(&self) -> String {
+        <Ty as ValueElement<TyKey>>::to_key(self).logical_name()
+    }
 }
 
 impl ValueElement<TyKey> for Ty {
@@ -80,14 +84,36 @@ impl ValueElement<TyKey> for Ty {
 impl SemanticElement for TyKey {
     fn description(&self) -> String {
         if self.args.len() == 0 {
-            format!("{}{}", self.qual.qualify("::"), self.name.description())
+            format!(
+                "{}{}",
+                self.qual.qualify_description("::"),
+                self.name.description()
+            )
         }
         else {
             format!(
                 "{}{}<{}>",
-                self.qual.qualify("::"),
+                self.qual.qualify_description("::"),
                 self.name.description(),
                 self.args.iter().map(|x| x.description()).collect::<Vec<_>>().join(", "),
+            )
+        }
+    }
+
+    fn logical_name(&self) -> String {
+        if self.args.len() == 0 {
+            format!(
+                "{}{}",
+                self.qual.qualify_logical_name(">"),
+                self.name.logical_name()
+            )
+        }
+        else {
+            format!(
+                "{}{}[{}]",
+                self.qual.qualify_logical_name(">"),
+                self.name.logical_name(),
+                self.args.iter().map(|x| x.logical_name()).collect::<Vec<_>>().join("]["),
             )
         }
     }
@@ -109,7 +135,11 @@ impl ValueElement<TyLogicalKey> for Ty {
 
 impl SemanticElement for TyLogicalKey {
     fn description(&self) -> String {
-        self.logical_name.clone()
+        self.logical_name.description()
+    }
+
+    fn logical_name(&self) -> String {
+        self.logical_name.logical_name()
     }
 }
 
@@ -124,6 +154,13 @@ impl SemanticElement for TyArg {
         match self {
             Self::Qual(x) => x.description(),
             Self::Ty(x) => x.description(),
+        }
+    }
+
+    fn logical_name(&self) -> String {
+        match self {
+            Self::Qual(x) => x.logical_name(),
+            Self::Ty(x) => x.logical_name(),
         }
     }
 }
@@ -182,14 +219,18 @@ impl Ty {
 
     fn logical_name(base: &Rc<BaseTy>, args: &Vec<TyArg>) -> String {
         if args.len() == 0 {
-            format!("{}{}", base.qual.qualify(">"), base.name)
+            format!(
+                "{}{}",
+                base.qual.qualify_logical_name(">"),
+                base.name.logical_name()
+            )
         }
         else {
             format!(
                 "{}{}[{}]",
-                base.qual.qualify(">"),
-                base.name.description(),
-                args.iter().map(|x| x.description()).collect::<Vec<_>>().join("]["),
+                base.qual.qualify_logical_name(">"),
+                base.name.logical_name(),
+                args.iter().map(|x| x.logical_name()).collect::<Vec<_>>().join("]["),
             )
         }
     }

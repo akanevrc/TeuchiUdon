@@ -22,7 +22,11 @@ pub struct QualKey {
 
 impl SemanticElement for Qual {
     fn description(&self) -> String {
-        self.qualify("::")
+        self.to_key().description()
+    }
+
+    fn logical_name(&self) -> String {
+        self.to_key().logical_name()
     }
 }
 
@@ -36,7 +40,11 @@ impl ValueElement<QualKey> for Qual {
 
 impl SemanticElement for QualKey {
     fn description(&self) -> String {
-        self.qualify_self("::")
+        self.qualify_description_self("::")
+    }
+
+    fn logical_name(&self) -> String {
+        self.qualify_logical_name_self(">")
     }
 }
 
@@ -95,12 +103,20 @@ impl Qual {
         self.get_added(context, Scope::Qual(qual))
     }
 
-    pub fn qualify_self(&self, sep: &str) -> String {
-        self.to_key().qualify_self(sep)
+    pub fn qualify_description_self(&self, sep: &str) -> String {
+        self.to_key().qualify_description_self(sep)
     }
 
-    pub fn qualify(&self, sep: &str) -> String {
-        self.to_key().qualify(sep)
+    pub fn qualify_description(&self, sep: &str) -> String {
+        self.to_key().qualify_description(sep)
+    }
+
+    pub fn qualify_logical_name_self(&self, sep: &str) -> String {
+        self.to_key().qualify_logical_name_self(sep)
+    }
+
+    pub fn qualify_logical_name(&self, sep: &str) -> String {
+        self.to_key().qualify_logical_name(sep)
     }
 }
 
@@ -131,12 +147,21 @@ impl QualKey {
         Self::added(&self, Scope::Qual(qual))
     }
 
-    pub fn qualify_self(&self, sep: &str) -> String {
+    pub fn qualify_description_self(&self, sep: &str) -> String {
         self.scopes.iter().map(|x| x.description()).collect::<Vec<_>>().join(sep)
     }
 
-    pub fn qualify(&self, sep: &str) -> String {
-        let q = self.qualify_self(sep);
+    pub fn qualify_description(&self, sep: &str) -> String {
+        let q = self.qualify_description_self(sep);
+        if q.len() == 0 { q } else { q + sep }
+    }
+
+    pub fn qualify_logical_name_self(&self, sep: &str) -> String {
+        self.scopes.iter().map(|x| x.logical_name()).collect::<Vec<_>>().join(sep)
+    }
+
+    pub fn qualify_logical_name(&self, sep: &str) -> String {
+        let q = self.qualify_logical_name_self(sep);
         if q.len() == 0 { q } else { q + sep }
     }
 }

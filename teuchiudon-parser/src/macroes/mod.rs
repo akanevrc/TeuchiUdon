@@ -5,7 +5,6 @@ macro_rules! impl_key_value_elements {
         $key_ty:ty,
         $value_ty:ty,
         $key_ty_name:ident { $($key_field:ident: self.$($field_ident:ident$($(::<$field_ty:ty>)?($($field_tt:tt)*))?).+),* },
-        format!($format_str:literal $(, self.$($format_ident:ident$($(::<$format_ty:ty>)?($($format_tt:tt)*))?).+)*),
         $store_name:ident
     ) => {
         impl PartialEq for $value_ty {
@@ -26,6 +25,10 @@ macro_rules! impl_key_value_elements {
             fn description(&self) -> String {
                 crate::semantics::elements::element::ValueElement::to_key(self).description()
             }
+
+            fn logical_name(&self) -> String {
+                crate::semantics::elements::element::ValueElement::to_key(self).logical_name()
+            }
         }
 
         impl crate::semantics::elements::element::ValueElement<$key_ty> for $value_ty {
@@ -33,12 +36,6 @@ macro_rules! impl_key_value_elements {
                 $key_ty_name {
                     $($key_field: self.$($field_ident$($(::<$field_ty>)?($($field_tt)*))?).+),*
                 }
-            }
-        }
-
-        impl crate::semantics::elements::element::SemanticElement for $key_ty {
-            fn description(&self) -> String {
-                format!($format_str $(, self.$($format_ident$($(::<$format_ty>)?($($format_tt)*))?).+)*)
             }
         }
 

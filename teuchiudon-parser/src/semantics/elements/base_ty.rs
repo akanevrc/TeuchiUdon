@@ -61,6 +61,10 @@ impl SemanticElement for BaseTy {
     fn description(&self) -> String {
         <BaseTy as ValueElement<BaseTyKey>>::to_key(self).description()
     }
+
+    fn logical_name(&self) -> String {
+        <BaseTy as ValueElement<BaseTyKey>>::to_key(self).logical_name()
+    }
 }
 
 impl ValueElement<BaseTyKey> for BaseTy {
@@ -74,7 +78,19 @@ impl ValueElement<BaseTyKey> for BaseTy {
 
 impl SemanticElement for BaseTyKey {
     fn description(&self) -> String {
-        format!("{}{}", self.qual.qualify("::"), self.name.description())
+        format!(
+            "{}{}",
+            self.qual.qualify_description("::"),
+            self.name.description()
+        )
+    }
+
+    fn logical_name(&self) -> String {
+        format!(
+            "{}{}",
+            self.qual.qualify_logical_name(">"),
+            self.name.logical_name()
+        )
     }
 }
 
@@ -94,7 +110,11 @@ impl ValueElement<BaseTyLogicalKey> for BaseTy {
 
 impl SemanticElement for BaseTyLogicalKey {
     fn description(&self) -> String {
-        self.logical_name.clone()
+        self.logical_name.description()
+    }
+
+    fn logical_name(&self) -> String {
+        self.logical_name.logical_name()
     }
 }
 
