@@ -4,6 +4,7 @@ pub mod base_ty;
 pub mod element;
 pub mod label;
 pub mod literal;
+pub mod method;
 pub mod qual;
 pub mod scope;
 pub mod ty;

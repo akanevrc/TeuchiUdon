@@ -26,6 +26,10 @@ use crate::semantics::elements::{
         Literal,
         LiteralKey,
     },
+    method::{
+        Method,
+        MethodKey,
+    },
     qual::{
         Qual,
         QualKey,
@@ -52,6 +56,7 @@ pub struct Context {
     pub ty_store: Store<TyKey, Ty>,
     pub ty_logical_store: Store<TyLogicalKey, Ty>,
     pub literal_store: Store<LiteralKey, Literal>,
+    pub method_store: Store<MethodKey, Method>,
     pub var_store: Store<VarKey, Var>,
 }
 
@@ -68,6 +73,7 @@ impl Context {
             ty_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
             ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
             literal_store: Store::new(|x| format!("Specified literal `{}` not found", x.description())),
+            method_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };
         register_default_tys(&context)?;
