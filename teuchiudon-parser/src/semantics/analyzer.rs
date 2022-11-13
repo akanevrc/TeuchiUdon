@@ -1672,58 +1672,67 @@ impl<'parsed> ast::ExprTree<'parsed, ast::TyOp, parser::ast::TyExpr<'parsed>> fo
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
         match &op {
-            ast::TyOp::Access => {
-                if let ast::TyExprDetail::Term { term } = &right.detail  {
-                    if let ast::TyTermDetail::EvalTy { ident } = &term.detail {
-                        if BaseTyKey::from_name("qual".to_owned()).eq_with(&left.ty) {
-                            let qual = left.ty.arg_as_qual();
-                            let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
-                                .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
-                                .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-                            Ok(Rc::new(Self {
-                                parsed: Some(parsed),
-                                detail: ast::TyExprDetail::InfixOp {
-                                    left: left.clone(),
-                                    op,
-                                    right: right.clone(),
-                                },
-                                ty,
-                            }))
-                        }
-                        else if BaseTyKey::from_name("type".to_owned()).eq_with(&left.ty) {
-                            let qual = left.ty.base.qual.get_added_qual(context, left.ty.arg_as_ty().logical_name)
-                                .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-                            let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
-                                .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-                            Ok(Rc::new(Self {
-                                parsed: Some(parsed),
-                                detail: ast::TyExprDetail::InfixOp {
-                                    left: left.clone(),
-                                    op,
-                                    right: right.clone(),
-                                },
-                                ty,
-                            }))
-                        }
-                        else {
-                            Err(vec![
-                                SemanticError { slice: None, message: "left side of `::` does not have a type".to_owned() },
-                            ])
-                        }
-                    }
-                    else {
-                        Err(vec![
-                            SemanticError { slice: None, message: "right side of `::` cannot be evaluated".to_owned() },
-                        ])
-                    }
-                }
-                else {
-                    Err(vec![
-                        SemanticError { slice: None, message: "right side of `::` is not a term".to_owned() },
-                    ])
-                }
+            ast::TyOp::Access =>
+                access_ty_infix_op(context, parsed, left, op, right),
+        }
+    }
+}
+
+fn access_ty_infix_op<'parsed>(
+    context: &Context,
+    parsed: &'parsed parser::ast::TyExpr,
+    left: Rc<ast::TyExpr<'parsed>>,
+    op: ast::TyOp,
+    right: Rc<ast::TyExpr<'parsed>>,
+) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    if let ast::TyExprDetail::Term { term } = &right.detail  {
+        if let ast::TyTermDetail::EvalTy { ident } = &term.detail {
+            if BaseTyKey::from_name("qual".to_owned()).eq_with(&left.ty) {
+                let qual = left.ty.arg_as_qual();
+                let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+                    .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
+                    .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+                Ok(Rc::new(ast::TyExpr {
+                    parsed: Some(parsed),
+                    detail: ast::TyExprDetail::InfixOp {
+                        left: left.clone(),
+                        op,
+                        right: right.clone(),
+                    },
+                    ty,
+                }))
+            }
+            else if BaseTyKey::from_name("type".to_owned()).eq_with(&left.ty) {
+                let qual = left.ty.base.qual.get_added_qual(context, left.ty.arg_as_ty().logical_name)
+                    .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
+                let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
+                    .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+                Ok(Rc::new(ast::TyExpr {
+                    parsed: Some(parsed),
+                    detail: ast::TyExprDetail::InfixOp {
+                        left: left.clone(),
+                        op,
+                        right: right.clone(),
+                    },
+                    ty,
+                }))
+            }
+            else {
+                Err(vec![
+                    SemanticError { slice: None, message: "left side of `::` does not have a type".to_owned() },
+                ])
             }
         }
+        else {
+            Err(vec![
+                SemanticError { slice: None, message: "right side of `::` cannot be evaluated".to_owned() },
+            ])
+        }
+    }
+    else {
+        Err(vec![
+            SemanticError { slice: None, message: "right side of `::` is not a term".to_owned() },
+        ])
     }
 }
 
@@ -1739,14 +1748,17 @@ impl<'parsed> ast::ExprTree<'parsed, ast::Op, parser::ast::Expr<'parsed>> for as
         op: ast::Op,
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
-        Ok(Rc::new(Self {
-            parsed: Some(parsed),
-            detail: ast::ExprDetail::InfixOp {
-                left: left.clone(),
-                op,
-                right,
-            },
-            ty: left.ty.clone(), // TODO
-        }))
+        match &op {
+            _ =>
+                Ok(Rc::new(Self {
+                    parsed: Some(parsed),
+                    detail: ast::ExprDetail::InfixOp {
+                        left: left.clone(),
+                        op,
+                        right,
+                    },
+                    ty: left.ty.clone(), // TODO
+                }))
+        }
     }
 }
