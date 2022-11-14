@@ -1,7 +1,12 @@
 use std::rc::Rc;
 use crate::impl_key_value_elements;
+use crate::context::Context;
 use super::{
-    element::SemanticElement,
+    ElementError,
+    element::{
+        SemanticElement,
+        ValueElement,
+    },
     ty::{
         Ty,
         TyLogicalKey,
@@ -18,9 +23,9 @@ pub struct Method {
     pub out_tys: Vec<Rc<Ty>>,
     pub param_in_outs: Vec<MethodParamInOut>,
     pub real_name: String,
-    pub param_names: Vec<String>,
-    pub in_names: Vec<String>,
-    pub out_names: Vec<String>,
+    pub param_real_names: Vec<String>,
+    pub in_real_names: Vec<String>,
+    pub out_real_names: Vec<String>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -65,5 +70,48 @@ impl SemanticElement for MethodKey {
             self.name.logical_name(),
             self.in_tys.iter().map(|x| x.logical_name()).collect::<Vec<_>>().join("][")
         )
+    }
+}
+
+impl Method {
+    pub fn new(
+        context: &Context,
+        ty: Rc<Ty>,
+        name: String,
+        param_tys: Vec<Rc<Ty>>,
+        param_in_outs: Vec<MethodParamInOut>,
+        real_name: String,
+        param_real_names: Vec<String>,
+    ) -> Result<Rc<Self>, ElementError> {
+        let value = Rc::new(Self {
+            id: context.method_store.next_id(),
+            ty,
+            name,
+            param_tys: param_tys.clone(),
+            in_tys: Self::iter_in_or_in_out(param_tys.iter(), param_in_outs.iter()).collect(),
+            out_tys: Self::iter_out(param_tys.iter(), param_in_outs.iter()).collect(),
+            param_in_outs: param_in_outs.clone(),
+            real_name,
+            param_real_names: param_real_names.clone(),
+            in_real_names: Self::iter_in_or_in_out(param_real_names.iter(), param_in_outs.iter()).collect(),
+            out_real_names: Self::iter_out(param_real_names.iter(), param_in_outs.iter()).collect(),
+        });
+        let key = value.to_key();
+        context.method_store.add(key, value.clone())?;
+        Ok(value)
+    }
+
+    fn iter_in_or_in_out<'a, T: Clone + 'a>(
+        iter: impl Iterator<Item = &'a T> + 'a,
+        ios: impl Iterator<Item = &'a MethodParamInOut> + 'a
+    ) -> impl Iterator<Item = T> + 'a {
+        iter.zip(ios).filter_map(|(x, io)| (*io != MethodParamInOut::Out).then_some(x.clone()))
+    }
+
+    fn iter_out<'a, T: Clone + 'a>(
+        iter: impl Iterator<Item = &'a T> + 'a,
+        ios: impl Iterator<Item = &'a MethodParamInOut> + 'a
+    ) -> impl Iterator<Item = T> + 'a {
+        iter.zip(ios).filter_map(|(x, io)| (*io == MethodParamInOut::Out).then_some(x.clone()))
     }
 }

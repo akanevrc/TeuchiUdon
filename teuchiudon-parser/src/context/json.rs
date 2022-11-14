@@ -4,12 +4,17 @@ use super::Context;
 use crate::semantics::elements::{
     ElementError,
     base_ty::BaseTy,
+    element::KeyElement,
+    method::{
+        Method,
+        MethodParamInOut,
+    },
     qual::QualKey,
     ty::{
         Ty,
         TyArg,
         TyLogicalKey,
-    }, element::KeyElement,
+    },
 };
 
 pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<String>> {
@@ -59,6 +64,24 @@ fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) -> Resul
 }
 
 fn register_from_method_symbols(context: &Context, symbols: &Vec<MethodSymbol>) -> Result<(), ElementError> {
+    for sym in symbols {
+        Method::new(
+            context,
+            TyLogicalKey::new(sym.ty.clone()).get_value(context)?,
+            sym.name.clone(),
+            sym.param_tys.iter().map(|x| TyLogicalKey::new(x.to_owned()).get_value(context)).collect::<Result<_, _>>()?,
+            sym.param_in_outs.iter().map(|x|
+                match x.as_str() {
+                    "IN" => Ok(MethodParamInOut::In),
+                    "IN_OUT" => Ok(MethodParamInOut::InOut),
+                    "OUT" => Ok(MethodParamInOut::Out),
+                    _ => Err(ElementError::new("Illegal method param in/out kind".to_owned())),
+                })
+                .collect::<Result<_, _>>()?,
+            sym.real_name.clone(),
+            sym.param_real_names.clone(),
+        )?;
+    }
     Ok(())
 }
 
