@@ -17,6 +17,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private Dictionary<string, MethodSymbol> Methods { get; set; }
         private Dictionary<string, EvSymbol> Evs { get; set; }
 
+        private Dictionary<Type, TySymbol> TypeToTys { get; set; }
+
         public UdonSymbols ExtractSymbols()
         {
             if (!Initialized)
@@ -25,6 +27,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 Tys = new Dictionary<string, TySymbol>();
                 Methods = new Dictionary<string, MethodSymbol>();
                 Evs = new Dictionary<string, EvSymbol>();
+                TypeToTys = new Dictionary<Type, TySymbol>();
 
                 var udonBehaviourTy = GetTy(typeof(UdonBehaviour));
                 var componentTy = GetTy(typeof(Component));
@@ -95,6 +98,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 Initialized = true;
             }
 
+            FindTyParent();
+
             return new UdonSymbols
             (
                 BaseTys.Values.ToArray(),
@@ -116,6 +121,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                 {
                     var arrayTy = new TySymbol(new string[0], "array", realName, new string[] { elemTy });
                     Tys.Add(realName, arrayTy);
+                    TypeToTys.Add(type, arrayTy);
                 }
             }
             else if (!Tys.ContainsKey(realName))
@@ -126,6 +132,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
                 var t = new TySymbol(scopes, tyName, realName, argTys);
                 Tys.Add(realName, t);
+                TypeToTys.Add(type, t);
 
                 if (argTys.Length == 0)
                 {
@@ -173,6 +180,35 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             if (!Methods.ContainsKey(key))
             {
                 Methods.Add(key, method);
+            }
+        }
+
+        private void FindTyParent()
+        {
+            foreach (var (type, ty) in TypeToTys.Select(x => (x.Key, x.Value)))
+            {
+                var parents = new List<string>();
+
+                var t = type;
+                while (t.BaseType != null)
+                {
+                    t = t.BaseType;
+                    if (TypeToTys.ContainsKey(t))
+                    {
+                        parents.Add(TypeToTys[t].real_name);
+                        break;
+                    }
+                }
+
+                foreach(var i in type.GetInterfaces())
+                {
+                    if (TypeToTys.ContainsKey(i))
+                    {
+                        parents.Add(TypeToTys[i].real_name);
+                    }
+                }
+
+                ty.parents = parents.ToArray();
             }
         }
 

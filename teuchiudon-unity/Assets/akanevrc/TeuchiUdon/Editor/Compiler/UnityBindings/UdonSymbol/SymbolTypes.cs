@@ -47,6 +47,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         public string name;
         public string real_name;
         public string[] args;
+        public string[] parents;
 
         public TySymbol
         (
