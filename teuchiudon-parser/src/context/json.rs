@@ -52,6 +52,7 @@ fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) -> Resul
             args,
             sym.real_name.clone(),
             Some(sym.real_name.clone()),
+            sym.parents.iter().map(|x| TyLogicalKey::new(x.clone())).collect(),
         )?;
     }
     Ok(())
@@ -86,6 +87,7 @@ struct TySymbol {
     name: String,
     real_name: String,
     args: Vec<String>,
+    parents: Vec<String>,
 }
 
 #[derive(Deserialize)]

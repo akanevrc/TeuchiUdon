@@ -27,6 +27,7 @@ pub struct Ty {
     pub args: Vec<TyArg>,
     pub logical_name: String,
     pub real_name: Option<String>,
+    pub parents: Vec<TyLogicalKey>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -171,7 +172,8 @@ impl Ty {
         base: Rc<BaseTy>,
         args: Vec<TyArg>,
         logical_name: String,
-        real_name: Option<String>
+        real_name: Option<String>,
+        parents: Vec<TyLogicalKey>,
     ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
@@ -179,6 +181,7 @@ impl Ty {
             args,
             logical_name,
             real_name,
+            parents,
         });
         let key = value.to_key();
         let real_key = value.to_key();
@@ -188,7 +191,14 @@ impl Ty {
     }
 
     pub fn new(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
-        Self::new_strict(context, base.clone(), args.clone(), Self::logical_name(&base, &args), None)
+        Self::new_strict(
+            context,
+            base.clone(),
+            args.clone(),
+            Self::logical_name(&base, &args),
+            None,
+            Vec::new(),
+        )
     }
 
     pub fn new_or_get(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
@@ -198,6 +208,7 @@ impl Ty {
             args: args.clone(),
             logical_name: Self::logical_name(&base, &args),
             real_name: None,
+            parents: Vec::new(),
         });
 
         let key: TyKey = value.to_key();
