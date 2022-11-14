@@ -196,7 +196,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                     if (TypeToTys.ContainsKey(t))
                     {
                         parents.Add(TypeToTys[t].real_name);
-                        break;
                     }
                 }
 
