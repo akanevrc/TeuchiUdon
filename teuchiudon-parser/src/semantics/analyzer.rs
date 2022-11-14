@@ -38,10 +38,10 @@ pub fn body<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Body,
 ) -> Result<ast::Body<'parsed>, Vec<SemanticError<'parsed>>> {
-    let mut top_stats = Vec::new();
-    for x in &node.top_stats {
-        top_stats.push(top_stat(context, x)?);
-    }
+    let top_stats =
+        node.top_stats.iter()
+        .map(|x| top_stat(context, x))
+        .collect::<Result<_, _>>()?;
     Ok(ast::Body {
         parsed: Some(node),
         top_stats,
@@ -266,14 +266,14 @@ fn tuple_var_decl<'parsed>(
     node: &'parsed parser::ast::VarDecl,
     var_decls: &'parsed Vec<parser::ast::VarDecl>,
 ) -> Result<ast::VarDecl<'parsed>, Vec<SemanticError<'parsed>>> {
-    let mut vs = Vec::new();
-    for x in var_decls {
-        vs.push(var_decl(context, x)?);
-    }
+    let var_decls =
+        var_decls.iter()
+        .map(|x| var_decl(context, x))
+        .collect::<Result<_, _>>()?;
     Ok(ast::VarDecl {
         parsed: Some(node),
         detail: ast::VarDeclDetail::TupleDecl {
-            var_decls: vs,
+            var_decls,
         },
     })
 }
@@ -488,10 +488,10 @@ pub fn stats_block<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::StatsBlock,
 ) -> Result<ast::StatsBlock<'parsed>, Vec<SemanticError<'parsed>>> {
-    let mut stats = Vec::new();
-    for x in &node.stats {
-        stats.push(stat(context, x)?);
-    }
+    let stats =
+        node.stats.iter()
+        .map(|x| stat(context, x))
+        .collect::<Result<_, _>>()?;
     let ret = match &node.ret {
         Some(x) => expr(context, x)?,
         None => hidden_unit_expr(context)?,
@@ -997,14 +997,14 @@ fn tuple_term<'parsed>(
     node: &'parsed parser::ast::Term,
     exprs: &'parsed Vec<Rc<parser::ast::Expr>>,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
-    let mut es = Vec::new();
-    for x in exprs {
-        es.push(expr(context, x)?);
-    }
+    let exprs =
+        exprs.iter()
+        .map(|x| expr(context, x))
+        .collect::<Result<_, _>>()?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::Tuple {
-            exprs: es,
+            exprs,
         },
         ty: Ty::get_from_name(context, "tuple".to_owned())
             .map_err(|e| e.convert(None))?, // TODO
@@ -1173,15 +1173,15 @@ fn for_term<'parsed>(
     for_binds: &'parsed Vec<(lexer::ast::Keyword, parser::ast::ForBind)>,
     stats: &'parsed parser::ast::StatsBlock,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
-    let mut fbs = Vec::new();
-    for x in for_binds {
-        fbs.push(for_bind(context, &x.1)?);
-    }
+    let for_binds =
+        for_binds.iter()
+        .map(|x| for_bind(context, &x.1))
+        .collect::<Result<_, _>>()?;
     let stats = stats_block(context, stats)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::For {
-            for_binds: fbs,
+            for_binds,
             stats,
         },
         ty: Ty::get_from_name(context, "unit".to_owned())
@@ -1227,10 +1227,10 @@ fn apply_fn_term<'parsed>(
     context: &Context,
     arg_exprs: &'parsed Vec<parser::ast::ArgExpr>,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
-    let mut args = Vec::new();
-    for x in arg_exprs {
-        args.push(arg_expr(context, x)?);
-    }
+    let args =
+        arg_exprs.iter()
+        .map(|x| arg_expr(context, x))
+        .collect::<Result<_, _>>()?;
     Ok(Rc::new(ast::Term {
         parsed: None,
         detail: ast::TermDetail::ApplyFn {
@@ -1367,14 +1367,14 @@ fn elements_iter_expr<'parsed>(
     node: &'parsed parser::ast::IterExpr,
     exprs: &'parsed Vec<Rc<parser::ast::Expr>>,
 ) -> Result<ast::IterExpr<'parsed>, Vec<SemanticError<'parsed>>> {
-    let mut es = Vec::new();
-    for x in exprs {
-        es.push(expr(context, x)?);
-    }
+    let exprs =
+        exprs.iter()
+        .map(|x| expr(context, x))
+        .collect::<Result<_, _>>()?;
     Ok(ast::IterExpr {
         parsed: Some(node),
         detail: ast::IterExprDetail::Elements {
-            exprs: es,
+            exprs,
         },
     })
 }
@@ -1566,6 +1566,10 @@ pub fn interpolated_string<'parsed>(
     for x in &node.exprs {
         exprs.push(expr(context, x)?);
     }
+    let exprs =
+        node.exprs.iter()
+        .map(|x| expr(context, x))
+        .collect::<Result<_, _>>()?;
     Ok(ast::InterpolatedString {
         parsed: Some(node),
         string_parts,
@@ -1613,19 +1617,20 @@ where
     SemanticOp: Clone,
 {
     let expr_0 = exprs.pop_front().unwrap();
-    let (mut acc_exprs, acc_ops, expr) = ops.into_iter().zip(exprs.into_iter())
-    .fold(Ok::<_, Vec<SemanticError>>((VecDeque::new(), VecDeque::new(), expr_0)), |acc, x| {
-        let mut acc = acc?;
-        if pred(&x.0) {
-            let infix_op = ExprTree::infix_op(context, node, acc.2, x.0, x.1)?;
-            Ok((acc.0, acc.1, infix_op))
-        }
-        else {
-            acc.0.push_back(acc.2);
-            acc.1.push_back(x.0);
-            Ok((acc.0, acc.1, x.1))
-        }
-    })?;
+    let (mut acc_exprs, acc_ops, expr) =
+        ops.into_iter().zip(exprs.into_iter())
+        .fold(Ok::<_, Vec<SemanticError>>((VecDeque::new(), VecDeque::new(), expr_0)), |acc, x| {
+            let mut acc = acc?;
+            if pred(&x.0) {
+                let infix_op = ExprTree::infix_op(context, node, acc.2, x.0, x.1)?;
+                Ok((acc.0, acc.1, infix_op))
+            }
+            else {
+                acc.0.push_back(acc.2);
+                acc.1.push_back(x.0);
+                Ok((acc.0, acc.1, x.1))
+            }
+        })?;
     acc_exprs.push_back(expr);
     Ok((acc_exprs, acc_ops))
 }
@@ -1642,19 +1647,20 @@ where
     SemanticOp: Clone,
 {
     let expr_0 = exprs.pop_back().unwrap();
-    let (mut acc_exprs, acc_ops, expr) = ops.into_iter().rev().zip(exprs.into_iter().rev())
-    .fold(Ok::<_, Vec<SemanticError>>((VecDeque::new(), VecDeque::new(), expr_0)), |acc, x| {
-        let mut acc = acc?;
-        if pred(&x.0) {
-            let infix_op = ExprTree::infix_op(context, node, x.1, x.0, acc.2)?;
-            Ok((acc.0, acc.1, infix_op))
-        }
-        else {
-            acc.0.push_front(acc.2);
-            acc.1.push_front(x.0);
-            Ok((acc.0, acc.1, x.1))
-        }
-    })?;
+    let (mut acc_exprs, acc_ops, expr) =
+        ops.into_iter().rev().zip(exprs.into_iter().rev())
+        .fold(Ok::<_, Vec<SemanticError>>((VecDeque::new(), VecDeque::new(), expr_0)), |acc, x| {
+            let mut acc = acc?;
+            if pred(&x.0) {
+                let infix_op = ExprTree::infix_op(context, node, x.1, x.0, acc.2)?;
+                Ok((acc.0, acc.1, infix_op))
+            }
+            else {
+                acc.0.push_front(acc.2);
+                acc.1.push_front(x.0);
+                Ok((acc.0, acc.1, x.1))
+            }
+        })?;
     acc_exprs.push_front(expr);
     Ok((acc_exprs, acc_ops))
 }
@@ -1685,54 +1691,47 @@ fn access_ty_infix_op<'parsed>(
     op: ast::TyOp,
     right: Rc<ast::TyExpr<'parsed>>,
 ) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
-    if let ast::TyExprDetail::Term { term } = &right.detail  {
-        if let ast::TyTermDetail::EvalTy { ident } = &term.detail {
-            if BaseTyKey::from_name("qual".to_owned()).eq_with(&left.ty) {
-                let qual = left.ty.arg_as_qual();
-                let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
-                    .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
-                    .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-                Ok(Rc::new(ast::TyExpr {
-                    parsed: Some(parsed),
-                    detail: ast::TyExprDetail::InfixOp {
-                        left: left.clone(),
-                        op,
-                        right: right.clone(),
-                    },
-                    ty,
-                }))
-            }
-            else if BaseTyKey::from_name("type".to_owned()).eq_with(&left.ty) {
-                let qual = left.ty.base.qual.get_added_qual(context, left.ty.arg_as_ty().logical_name)
-                    .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-                let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
-                    .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-                Ok(Rc::new(ast::TyExpr {
-                    parsed: Some(parsed),
-                    detail: ast::TyExprDetail::InfixOp {
-                        left: left.clone(),
-                        op,
-                        right: right.clone(),
-                    },
-                    ty,
-                }))
-            }
-            else {
-                Err(vec![
-                    SemanticError { slice: None, message: "left side of `::` does not have a type".to_owned() },
-                ])
-            }
-        }
+    let ast::TyExprDetail::Term { term } = &right.detail
         else {
-            Err(vec![
-                SemanticError { slice: None, message: "right side of `::` cannot be evaluated".to_owned() },
-            ])
-        }
+            return Err(vec![SemanticError { slice: None, message: "right side of `::` is not a term".to_owned() }]);
+        };
+    let ast::TyTermDetail::EvalTy { ident } = &term.detail
+        else {
+            return Err(vec![SemanticError { slice: None, message: "right side of `::` cannot be evaluated".to_owned() }]);
+        };
+
+    if BaseTyKey::from_name("qual".to_owned()).eq_with(&left.ty) {
+        let qual = left.ty.arg_as_qual();
+        let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+            .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
+            .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+        Ok(Rc::new(ast::TyExpr {
+            parsed: Some(parsed),
+            detail: ast::TyExprDetail::InfixOp {
+                left: left.clone(),
+                op,
+                right: right.clone(),
+            },
+            ty,
+        }))
+    }
+    else if BaseTyKey::from_name("type".to_owned()).eq_with(&left.ty) {
+        let qual = left.ty.base.qual.get_added_qual(context, left.ty.arg_as_ty().logical_name)
+            .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
+        let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
+            .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+        Ok(Rc::new(ast::TyExpr {
+            parsed: Some(parsed),
+            detail: ast::TyExprDetail::InfixOp {
+                left: left.clone(),
+                op,
+                right: right.clone(),
+            },
+            ty,
+        }))
     }
     else {
-        Err(vec![
-            SemanticError { slice: None, message: "right side of `::` is not a term".to_owned() },
-        ])
+        Err(vec![SemanticError { slice: None, message: "left side of `::` does not have a type".to_owned() }])
     }
 }
 
