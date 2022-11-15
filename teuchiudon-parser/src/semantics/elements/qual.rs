@@ -12,6 +12,7 @@ use super::{
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Qual {
+    pub id: usize,
     pub scopes: Vec<Scope>,
 }
 
@@ -61,7 +62,8 @@ impl Qual {
 
     fn new_or_get_one(context: &Context, scopes: Vec<Scope>) -> Rc<Self> {
         let qual = Rc::new(Self {
-            scopes
+            id: context.qual_store.next_id(),
+            scopes,
         });
         let key = qual.to_key();
         context.qual_store.add(key, qual.clone()).ok();
