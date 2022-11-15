@@ -63,7 +63,7 @@ impl SemanticElement for BaseTy {
     }
 
     fn logical_name(&self) -> String {
-        <BaseTy as ValueElement<BaseTyKey>>::to_key(self).logical_name()
+        <BaseTy as ValueElement<BaseTyLogicalKey>>::to_key(self).logical_name()
     }
 }
 
@@ -159,6 +159,18 @@ impl BaseTy {
     pub fn new_or_get_applied_zero(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {
         self.new_or_get_applied(context, Vec::new())
     }
+
+    pub fn get_applied(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
+        Ty::get(context, self.qual.to_key(), self.name.clone(), args)
+    }
+
+    pub fn get_applied_zero(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {
+        self.get_applied(context, Vec::new())
+    }
+
+    pub fn eq_with(self: &Rc<Self>, ty: &Rc<Ty>) -> bool {
+        *self == ty.base
+    }
 }
 
 impl BaseTyKey {
@@ -176,12 +188,12 @@ impl BaseTyKey {
         }
     }
 
-    pub fn apply(&self, args: Vec<TyArg>) -> TyKey {
+    pub fn new_applied(&self, args: Vec<TyArg>) -> TyKey {
         TyKey::new(self.qual.clone(), self.name.clone(), args)
     }
 
-    pub fn direct(&self) -> TyKey {
-        self.apply(Vec::new())
+    pub fn new_applied_zero(&self) -> TyKey {
+        self.new_applied(Vec::new())
     }
 
     pub fn eq_with(&self, ty: &Rc<Ty>) -> bool {
@@ -194,5 +206,9 @@ impl BaseTyLogicalKey {
         Self {
             logical_name,
         }
+    }
+
+    pub fn eq_with(&self, ty: &Rc<Ty>) -> bool {
+        *self == ty.base.to_key()
     }
 }

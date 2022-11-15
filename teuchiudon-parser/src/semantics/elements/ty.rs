@@ -8,16 +8,13 @@ use std::{
 use crate::context::Context;
 use super::{
     ElementError,
-    base_ty::{
-        BaseTy,
-        BaseTyKey,
-    },
+    base_ty::BaseTy,
     element::{
         KeyElement,
         SemanticElement,
         ValueElement,
     },
-    qual::QualKey,
+    qual::QualKey, method::MethodKey,
 };
 
 #[derive(Clone, Debug)]
@@ -46,6 +43,7 @@ pub struct TyLogicalKey {
 pub enum TyArg {
     Qual(QualKey),
     Ty(TyLogicalKey),
+    Method(MethodKey),
 }
 
 impl PartialEq for Ty {
@@ -68,7 +66,7 @@ impl SemanticElement for Ty {
     }
 
     fn logical_name(&self) -> String {
-        <Ty as ValueElement<TyKey>>::to_key(self).logical_name()
+        <Ty as ValueElement<TyLogicalKey>>::to_key(self).logical_name()
     }
 }
 
@@ -155,6 +153,7 @@ impl SemanticElement for TyArg {
         match self {
             Self::Qual(x) => x.description(),
             Self::Ty(x) => x.description(),
+            Self::Method(x) => x.description(),
         }
     }
 
@@ -162,6 +161,7 @@ impl SemanticElement for TyArg {
         match self {
             Self::Qual(x) => x.logical_name(),
             Self::Ty(x) => x.logical_name(),
+            Self::Method(x) => x.logical_name(),
         }
     }
 }
@@ -256,62 +256,6 @@ impl Ty {
 
     pub fn get_from_logical_name(context: &Context, logical_name: String) -> Result<Rc<Self>, ElementError> {
         TyLogicalKey::new(logical_name).get_value(context)
-    }
-
-    pub fn new_or_get_qual_from_key(context: &Context, key: QualKey) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTyKey::from_name("qual".to_owned()).get_value(context)?;
-        Self::new_or_get(context, ty, vec![TyArg::Qual(key)])
-    }
-
-    pub fn new_or_get_qual_from_names(context: &Context, quals: Vec<String>) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTyKey::from_name("qual".to_owned()).get_value(context)?;
-        let arg = QualKey::new_quals(quals).get_value(context)?;
-        Self::new_or_get(context, ty, vec![TyArg::Qual(arg.to_key())])
-    }
-
-    pub fn new_or_get_type(context: &Context, qual: QualKey, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
-        let arg = Self::get(context, qual, name, args)?;
-        Self::new_or_get(context, ty, vec![TyArg::Ty(arg.to_key())])
-    }
-
-    pub fn new_or_get_type_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
-        Self::new_or_get(context, ty, vec![TyArg::Ty(key)])
-    }
-
-    pub fn new_or_get_type_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
-        let arg = Self::get_from_name(context, name)?;
-        Self::new_or_get(context, ty, vec![TyArg::Ty(arg.to_key())])
-    }
-
-    pub fn arg_as_qual(&self) -> QualKey {
-        if self.args.len() == 1 {
-            match &self.args[0] {
-                TyArg::Qual(x) =>
-                    x.clone(),
-                _ =>
-                    panic!("Illegal state"),
-            }
-        }
-        else {
-            panic!("Illegal state")
-        }
-    }
-
-    pub fn arg_as_ty(&self) -> TyLogicalKey {
-        if self.args.len() == 1 {
-            match &self.args[0] {
-                TyArg::Ty(x) =>
-                    x.clone(),
-                _ =>
-                    panic!("Illegal state"),
-            }
-        }
-        else {
-            panic!("Illegal state")
-        }
     }
 }
 

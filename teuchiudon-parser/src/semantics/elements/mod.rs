@@ -8,6 +8,7 @@ pub mod method;
 pub mod qual;
 pub mod scope;
 pub mod ty;
+pub mod ty_op;
 pub mod var;
 
 #[derive(Clone, Debug, PartialEq)]

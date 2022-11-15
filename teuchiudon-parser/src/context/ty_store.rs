@@ -16,6 +16,8 @@ pub fn register_default_tys(context: &Context) -> Result<(), Vec<String>> {
 fn register_default_tys_core(context: &Context) -> Result<(), ElementError> {
     let ty_names = vec![
         ("unknown", "unknown", None, true, Vec::new()),
+        ("any", "any", None, true, Vec::new()),
+        ("never", "never", None, true, Vec::new()),
         ("qual", "qual", None, false, Vec::new()),
         ("type", "type", None, false, Vec::new()),
         ("unit", "unit", None, true, Vec::new()),
@@ -51,6 +53,7 @@ fn register_default_tys_core(context: &Context) -> Result<(), ElementError> {
         ("quat", "UnityEngineQuaternion", Some("UnityEngineQuaternion"), true, vec!["SystemObject"]),
         ("color", "UnityEngineColor", Some("UnityEngineColor"), true, vec!["SystemObject"]),
         ("color32", "UnityEngineColor32", Some("UnityEngineColor32"), true, vec!["SystemObject"]),
+        ("vrcurl", "VRCSDKBaseVRCUrl", Some("VRCSDKBaseVRCUrl"), true, vec!["SystemObject"]),
         ("udon", "VRCUdonUdonBehaviour", Some("VRCUdonUdonBehaviour"), true, vec!["SystemObject", "UnityEngineObject", "UnityEngineComponent", "VRCUdonCommonInterfacesIUdonEventReceiver"]),
     ];
     let top = Qual::top(context);

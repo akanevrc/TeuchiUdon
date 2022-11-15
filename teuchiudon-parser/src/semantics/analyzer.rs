@@ -5,11 +5,11 @@ use std::{
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
+use super::elements::element::KeyElement;
 use super::{
     ast,
     SemanticError,
     elements::{
-        base_ty::BaseTyKey,
         element::{
             ValueElement,
         },
@@ -1700,7 +1700,7 @@ fn access_ty_infix_op<'parsed>(
             return Err(vec![SemanticError { slice: None, message: "right side of `::` cannot be evaluated".to_owned() }]);
         };
 
-    if BaseTyKey::from_name("qual".to_owned()).eq_with(&left.ty) {
+    if left.ty.base_eq_with_name("qual") {
         let qual = left.ty.arg_as_qual();
         let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
             .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
@@ -1715,8 +1715,10 @@ fn access_ty_infix_op<'parsed>(
             ty,
         }))
     }
-    else if BaseTyKey::from_name("type".to_owned()).eq_with(&left.ty) {
-        let qual = left.ty.base.qual.get_added_qual(context, left.ty.arg_as_ty().logical_name)
+    else if left.ty.base_eq_with_name("type") {
+        let parent = left.ty.arg_as_type().get_value(context)
+            .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
+        let qual = left.ty.base.qual.get_added_qual(context, parent.base.name.clone())
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
         let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
             .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
