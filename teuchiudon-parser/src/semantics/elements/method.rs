@@ -10,7 +10,7 @@ use super::{
     ty::{
         Ty,
         TyKey,
-    }
+    },
 };
 
 #[derive(Clone, Debug)]

@@ -8,6 +8,8 @@ use super::{
         ValueElement,
     },
     scope::Scope,
+    ty::Ty,
+    var::Var,
 };
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -56,53 +58,72 @@ impl KeyElement<Qual> for QualKey {
 }
 
 impl Qual {
-    pub fn top(context: &Context) -> Rc<Self> {
+    pub fn top(context: &Context) -> Result<Rc<Self>, ElementError> {
         Self::new_or_get(context, Vec::new())
     }
 
-    fn new_or_get_one(context: &Context, scopes: Vec<Scope>) -> Rc<Self> {
-        let qual = Rc::new(Self {
+    fn new_or_get_one(context: &Context, scopes: Vec<Scope>) -> Result<Rc<Self>, ElementError> {
+        let value = Rc::new(Self {
             id: context.qual_store.next_id(),
-            scopes,
+            scopes: scopes.clone(),
         });
-        let key = qual.to_key();
-        context.qual_store.add(key, qual.clone()).ok();
-        qual
+        let key = value.to_key();
+        let result = context.qual_store.add(key.clone(), value.clone());
+        
+        if result.is_ok() && scopes.len() != 0 {
+            let popped = value.get_popped(context)?;
+            let name = value.scopes.last().unwrap().logical_name();
+            let ty = Ty::new_or_get_qual_from_key(context, key)?;
+            Var::force_new(context, popped, name, ty, false, false)?;
+        }
+        Ok(value)
     }
 
-    pub fn new_or_get(context: &Context, scopes: Vec<Scope>) -> Rc<Self> {
+    pub fn new_or_get(context: &Context, scopes: Vec<Scope>) -> Result<Rc<Self>, ElementError> {
         for n in 1..scopes.len() {
-            Self::new_or_get_one(context, scopes.clone().into_iter().take(n).collect());
+            Self::new_or_get_one(context, scopes.clone().into_iter().take(n).collect())?;
         }
         Self::new_or_get_one(context, scopes)
     }
 
-    pub fn new_or_get_quals(context: &Context, quals: Vec<String>) -> Rc<Self> {
+    pub fn new_or_get_quals(context: &Context, quals: Vec<String>) -> Result<Rc<Self>, ElementError> {
         Self::new_or_get(context, quals.into_iter().map(|x| Scope::Qual(x)).collect())
     }
 
-    pub fn new_or_get_added(&self, context: &Context, scope: Scope) -> Rc<Self> {
+    pub fn new_or_get_pushed(&self, context: &Context, scope: Scope) -> Result<Rc<Self>, ElementError> {
         let mut cloned = self.scopes.clone();
         cloned.push(scope);
         Self::new_or_get_one(context, cloned)
     }
 
-    pub fn new_or_get_added_qual(&self, context: &Context, qual: String) -> Rc<Self> {
-        self.new_or_get_added(context, Scope::Qual(qual))
+    pub fn new_or_get_pushed_qual(&self, context: &Context, qual: String) -> Result<Rc<Self>, ElementError> {
+        self.new_or_get_pushed(context, Scope::Qual(qual))
+    }
+
+    pub fn new_or_get_popped(&self, context: &Context) -> Result<Rc<Self>, ElementError> {
+        let mut cloned = self.scopes.clone();
+        cloned.pop();
+        Self::new_or_get_one(context, cloned)
     }
 
     pub fn get(context: &Context, scopes: Vec<Scope>) -> Result<Rc<Self>, ElementError> {
         QualKey::new(scopes).get_value(context)
     }
 
-    pub fn get_added(&self, context: &Context, scope: Scope) -> Result<Rc<Self>, ElementError> {
+    pub fn get_pushed(&self, context: &Context, scope: Scope) -> Result<Rc<Self>, ElementError> {
         let mut cloned = self.scopes.clone();
         cloned.push(scope);
         Self::get(context, cloned)
     }
 
-    pub fn get_added_qual(&self, context: &Context, qual: String) -> Result<Rc<Self>, ElementError> {
-        self.get_added(context, Scope::Qual(qual))
+    pub fn get_pushed_qual(&self, context: &Context, qual: String) -> Result<Rc<Self>, ElementError> {
+        self.get_pushed(context, Scope::Qual(qual))
+    }
+
+    pub fn get_popped(&self, context: &Context) -> Result<Rc<Self>, ElementError> {
+        let mut cloned = self.scopes.clone();
+        cloned.pop();
+        Self::get(context, cloned)
     }
 
     pub fn qualify_description_self(&self, sep: &str) -> String {
@@ -139,14 +160,20 @@ impl QualKey {
         }
     }
 
-    pub fn added(&self, scope: Scope) -> Self {
+    pub fn pushed(&self, scope: Scope) -> Self {
         let mut cloned = self.scopes.clone();
         cloned.push(scope);
         Self::new(cloned)
     }
 
-    pub fn added_qual(&self, qual: String) -> Self {
-        Self::added(&self, Scope::Qual(qual))
+    pub fn pushed_qual(&self, qual: String) -> Self {
+        Self::pushed(&self, Scope::Qual(qual))
+    }
+
+    pub fn popped(&self) -> Self {
+        let mut cloned = self.scopes.clone();
+        cloned.pop();
+        Self::new(cloned)
     }
 
     pub fn qualify_description_self(&self, sep: &str) -> String {

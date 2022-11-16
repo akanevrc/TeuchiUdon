@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     collections::VecDeque,
     rc::Rc,
 };
@@ -14,9 +15,15 @@ use super::{
             ValueElement,
         },
         literal::Literal,
-        qual::Qual,
+        qual::{
+            QualKey,
+            Qual,
+        },
         ty::Ty,
-        var::Var,
+        var::{
+            Var,
+            VarKey,
+        },
     },
 };
 
@@ -240,8 +247,10 @@ fn single_var_decl<'parsed>(
         Some(x) => self::ty_expr(context, x)?,
         None => hidden_unknown_ty_expr(context)?,
     };
-    let qual = Qual::top(context);
-    let var = Var::new(
+    let qual =
+        Qual::top(context)
+        .map_err(|x| x.convert(None))?;
+    let var = Var::force_new(
         context,
         qual,
         ident.name.clone(),
@@ -453,16 +462,16 @@ fn eval_ty_ty_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    let ty =
-        Ty::new_or_get_type_from_name(context, ident.name.clone())
-        .or(Ty::new_or_get_qual_from_names(context, vec![ident.name.clone()]))
-        .map_err(|e| e.convert(None))?;
+    let var =
+        VarKey::new(QualKey::top(), ident.name.clone()).get_value(context)
+        .map_err(|e| e.convert(Some(node.slice)))?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
-            ident
+            ident,
+            var: RefCell::new(var.clone()),
         },
-        ty,
+        ty: var.ty.clone(),
     }))
 }
 
@@ -472,15 +481,16 @@ fn eval_ty_access_ty_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    let ty =
-        Ty::get_from_name(context, "unknown".to_owned())
+    let var =
+        Var::unknown(context)
         .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
-            ident
+            ident,
+            var: RefCell::new(var.clone()),
         },
-        ty,
+        ty: var.ty.clone(),
     }))
 }
 
@@ -654,7 +664,7 @@ fn ty_access_op_expr<'parsed>(
     term: &'parsed parser::ast::Term,
 ) -> Result<(ast::Op, Rc<ast::Expr<'parsed>>), Vec<SemanticError<'parsed>>> {
     let op = ty_access_op(context)?;
-    let term = self::term(context, term)?;
+    let term = self::ty_access_term(context, term)?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: ast::ExprDetail::Term {
@@ -944,6 +954,18 @@ pub fn term<'parsed>(
     }
 }
 
+fn ty_access_term<'parsed>(
+    context: &Context,
+    node: &'parsed parser::ast::Term,
+) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
+    match &node.kind {
+        parser::ast::TermKind::EvalVar { ident } =>
+            eval_var_ty_access_term(context, node, ident),
+        _ =>
+            Err(vec![SemanticError::new(Some(node.slice), "Illegal use of type access op `::`".to_owned())])
+    }
+}
+
 fn prefix_op_term<'parsed>(
     context: &Context,
     node: &'parsed parser::ast::Term,
@@ -1080,13 +1102,35 @@ fn eval_var_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
+    let var =
+        VarKey::new(QualKey::top(), ident.name.clone()).get_value(context)
+        .map_err(|e| e.convert(Some(node.slice)))?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::EvalVar {
             ident,
+            var: RefCell::new(var.clone()),
         },
-        ty: Ty::get_from_name(context, "int".to_owned())
-            .map_err(|e| e.convert(None))?, // TODO
+        ty: var.ty.clone(),
+    }))
+}
+
+fn eval_var_ty_access_term<'parsed>(
+    context: &Context,
+    node: &'parsed parser::ast::Term,
+    ident: &'parsed lexer::ast::Ident,
+) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
+    let ident = self::ident(context, ident)?;
+    let var =
+        Var::unknown(context)
+        .map_err(|e| e.convert(None))?;
+    Ok(Rc::new(ast::Term {
+        parsed: Some(node),
+        detail: ast::TermDetail::EvalVar {
+            ident,
+            var: RefCell::new(var.clone()),
+        },
+        ty: var.ty.clone(),
     }))
 }
 
@@ -1693,18 +1737,18 @@ fn access_ty_infix_op<'parsed>(
 ) -> Result<Rc<ast::TyExpr<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ast::TyExprDetail::Term { term } = &right.detail
         else {
-            return Err(vec![SemanticError { slice: None, message: "right side of `::` is not a term".to_owned() }]);
+            return Err(vec![SemanticError::new(None, "Right side of `::` is not a term".to_owned())]);
         };
-    let ast::TyTermDetail::EvalTy { ident } = &term.detail
+    let ast::TyTermDetail::EvalTy { ident, var } = &term.detail
         else {
-            return Err(vec![SemanticError { slice: None, message: "right side of `::` cannot be evaluated".to_owned() }]);
+            return Err(vec![SemanticError::new(None, "Right side of `::` cannot be evaluated".to_owned())]);
         };
 
     if left.ty.base_eq_with_name("qual") {
         let qual = left.ty.arg_as_qual();
-        let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
-            .or(Ty::new_or_get_qual_from_key(context, qual.added_qual(ident.name.clone())))
-            .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+        let v = VarKey::new(qual, ident.name.clone()).get_value(context)
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        var.replace(v.clone());
         Ok(Rc::new(ast::TyExpr {
             parsed: Some(parsed),
             detail: ast::TyExprDetail::InfixOp {
@@ -1712,16 +1756,17 @@ fn access_ty_infix_op<'parsed>(
                 op,
                 right: right.clone(),
             },
-            ty,
+            ty: v.ty.clone(),
         }))
     }
     else if left.ty.base_eq_with_name("type") {
         let parent = left.ty.arg_as_type().get_value(context)
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-        let qual = left.ty.base.qual.get_added_qual(context, parent.base.name.clone())
+        let qual = left.ty.base.qual.get_pushed_qual(context, parent.base.name.clone())
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-        let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
+        let v = Var::get(context, qual.to_key(), ident.name.clone())
             .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+        var.replace(v.clone());
         Ok(Rc::new(ast::TyExpr {
             parsed: Some(parsed),
             detail: ast::TyExprDetail::InfixOp {
@@ -1729,11 +1774,11 @@ fn access_ty_infix_op<'parsed>(
                 op,
                 right: right.clone(),
             },
-            ty,
+            ty: v.ty.clone(),
         }))
     }
     else {
-        Err(vec![SemanticError { slice: None, message: "left side of `::` does not have a type".to_owned() }])
+        Err(vec![SemanticError::new(None, "Left side of `::` is not a qualifier or a type".to_owned())])
     }
 }
 
@@ -1743,23 +1788,71 @@ impl<'parsed> ast::ExprTree<'parsed, ast::Op, parser::ast::Expr<'parsed>> for as
     }
 
     fn infix_op(
-        _context: &Context,
+        context: &Context,
         parsed: &'parsed parser::ast::Expr,
         left: Rc<Self>,
         op: ast::Op,
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
         match &op {
+            ast::Op::Access =>
+                ty_access_infix_op(context, parsed, left, op, right),
             _ =>
-                Ok(Rc::new(Self {
-                    parsed: Some(parsed),
-                    detail: ast::ExprDetail::InfixOp {
-                        left: left.clone(),
-                        op,
-                        right,
-                    },
-                    ty: left.ty.clone(), // TODO
-                }))
+                panic!("Not implemented")
         }
+    }
+}
+
+fn ty_access_infix_op<'parsed>(
+    context: &Context,
+    parsed: &'parsed parser::ast::Expr,
+    left: Rc<ast::Expr<'parsed>>,
+    op: ast::Op,
+    right: Rc<ast::Expr<'parsed>>,
+) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    let ast::ExprDetail::Term { term } = &right.detail
+        else {
+            return Err(vec![SemanticError::new(None, "Right side of `::` is not a term".to_owned())]);
+        };
+    let ast::TermDetail::EvalVar { ident, var } = &term.detail
+        else {
+            return Err(vec![SemanticError::new(None, "Right side of `::` cannot be evaluated".to_owned())]);
+        };
+
+    if left.ty.base_eq_with_name("qual") {
+        let qual = left.ty.arg_as_qual();
+        let v = VarKey::new(qual, ident.name.clone()).get_value(context)
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        var.replace(v.clone());
+        Ok(Rc::new(ast::Expr {
+            parsed: Some(parsed),
+            detail: ast::ExprDetail::InfixOp {
+                left: left.clone(),
+                op,
+                right: right.clone(),
+            },
+            ty: v.ty.clone(),
+        }))
+    }
+    else if left.ty.base_eq_with_name("type") {
+        let parent = left.ty.arg_as_type().get_value(context)
+            .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
+        let qual = left.ty.base.qual.get_pushed_qual(context, parent.base.name.clone())
+            .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
+        let v = Var::get(context, qual.to_key(), ident.name.clone())
+            .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
+        var.replace(v.clone());
+        Ok(Rc::new(ast::Expr {
+            parsed: Some(parsed),
+            detail: ast::ExprDetail::InfixOp {
+                left: left.clone(),
+                op,
+                right: right.clone(),
+            },
+            ty: v.ty.clone(),
+        }))
+    }
+    else {
+        Err(vec![SemanticError::new(None, "Left side of `::` is not a qualifier or a type".to_owned())])
     }
 }

@@ -1,4 +1,7 @@
-use std::rc::Rc;
+use std::{
+    cell::RefCell,
+    rc::Rc,
+};
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
@@ -156,6 +159,7 @@ pub enum TyTermDetail<'parsed> {
     None,
     EvalTy {
         ident: Ident<'parsed>,
+        var: RefCell<Rc<elements::var::Var>>,
     },
 }
 
@@ -289,6 +293,7 @@ pub enum TermDetail<'parsed> {
     },
     EvalVar {
         ident: Ident<'parsed>,
+        var: RefCell<Rc<elements::var::Var>>,
     },
     LetInBind {
         var_bind: VarBind<'parsed>,

@@ -12,6 +12,7 @@ use super::{
         Ty,
         TyKey,
     },
+    var::Var,
 };
 
 #[derive(Clone, Debug)]
@@ -68,7 +69,11 @@ impl NamedMethods {
             name: methods[0].name.clone(),
         });
         let key = value.to_key();
-        context.named_methods_store.add(key, value.clone())?;
+        context.named_methods_store.add(key.clone(), value.clone())?;
+
+        let pushed = value.ty.base.qual.new_or_get_pushed_qual(context, value.ty.base.name.clone())?;
+        let ty = Ty::get_method_from_key(context, key)?;
+        Var::force_new(context, pushed, value.name.clone(), ty, false, false)?;
         Ok(value)
     }
 }

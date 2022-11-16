@@ -26,9 +26,9 @@ impl ElementError {
     }
 
     pub fn convert(self, slice: Option<&str>) -> Vec<SemanticError> {
-        vec![SemanticError {
+        vec![SemanticError::new(
             slice,
-            message: self.message,
-        }]
+            self.message,
+        )]
     }
 }

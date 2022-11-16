@@ -14,7 +14,9 @@ use super::{
         SemanticElement,
         ValueElement,
     },
-    qual::QualKey, method::MethodKey,
+    method::MethodKey,
+    qual::QualKey,
+    var::Var,
 };
 
 #[derive(Clone, Debug)]
@@ -177,16 +179,19 @@ impl Ty {
     ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
-            base,
+            base: base.clone(),
             args,
             logical_name,
             real_name,
             parents,
         });
         let key = value.to_key();
-        let real_key = value.to_key();
+        let logical_key: TyLogicalKey = value.to_key();
         context.ty_store.add(key, value.clone())?;
-        context.ty_logical_store.add(real_key, value.clone())?;
+        context.ty_logical_store.add(logical_key.clone(), value.clone())?;
+
+        let ty = Ty::new_or_get_type_from_key(context, logical_key)?;
+        Var::force_new(context, base.qual.clone(), base.name.clone(), ty, false, false)?;
         Ok(value)
     }
 
@@ -201,7 +206,7 @@ impl Ty {
         )
     }
 
-    pub fn new_or_get(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Rc<Self> {
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
             base: base.clone(),
@@ -213,7 +218,7 @@ impl Ty {
 
         let key: TyKey = value.to_key();
         match key.clone().get_value(context) {
-            Ok(x) => return Ok(x),
+            Ok(x) => return x,
             Err(_) => (),
         }
 
@@ -225,7 +230,7 @@ impl Ty {
 
         context.ty_store.add(key, value.clone()).unwrap();
         context.ty_logical_store.add(real_key, value.clone()).unwrap();
-        Ok(value)
+        value
     }
 
     fn logical_name(base: &Rc<BaseTy>, args: &Vec<TyArg>) -> String {

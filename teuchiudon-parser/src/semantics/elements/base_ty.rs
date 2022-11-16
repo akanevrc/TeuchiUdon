@@ -153,7 +153,7 @@ impl BaseTy {
 
     pub fn new_or_get_applied(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
         let key: BaseTyKey = self.to_key();
-        Ty::new_or_get(context, key.get_value(context)?, args)
+        Ok(Ty::new_or_get(context, key.get_value(context)?, args))
     }
 
     pub fn new_or_get_applied_zero(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {

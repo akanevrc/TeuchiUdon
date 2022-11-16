@@ -9,6 +9,7 @@ use super::{
         ValueElement,
     },
     method::MethodKey,
+    named_methods::NamedMethodsKey,
     qual::QualKey,
     ty::{
         Ty,
@@ -22,7 +23,7 @@ impl Ty {
     pub fn new_or_get_qual_from_key(context: &Context, key: QualKey) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("qual".to_owned()).get_value(context)?;
         let arg = key.get_value(context)?;
-        Self::new_or_get(context, base, vec![TyArg::Qual(arg.to_key())])
+        Ok(Self::new_or_get(context, base, vec![TyArg::Qual(arg.to_key())]))
     }
 
     pub fn new_or_get_qual_from_names(context: &Context, quals: Vec<String>) -> Result<Rc<Self>, ElementError> {
@@ -32,13 +33,13 @@ impl Ty {
     pub fn new_or_get_type_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
         let arg = key.get_value(context)?;
-        Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())])
+        Ok(Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())]))
     }
 
     pub fn new_or_get_type(context: &Context, qual: QualKey, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
         let arg = Self::get(context, qual, name, args)?;
-        Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())])
+        Ok(Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())]))
     }
 
     pub fn new_or_get_type_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
@@ -48,7 +49,7 @@ impl Ty {
     pub fn new_or_get_tuple_from_keys(context: &Context, keys: Vec<TyLogicalKey>) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("tuple".to_owned()).get_value(context)?;
         let args = keys.iter().map(|x| Ok(TyArg::Ty(x.get_value(context)?.to_key()))).collect::<Result<_, _>>()?;
-        Self::new_or_get(context, base, args)
+        Ok(Self::new_or_get(context, base, args))
     }
 
     pub fn get_array_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
@@ -57,6 +58,12 @@ impl Ty {
 
     pub fn get_array_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
         Self::get_array_from_key(context, Ty::get_from_name(context, name)?.to_key())
+    }
+
+    pub fn get_method_from_key(context: &Context, key: NamedMethodsKey) -> Result<Rc<Self>, ElementError> {
+        let base = BaseTyKey::from_name("method".to_owned()).get_value(context)?;
+        let args = key.get_value(context)?.methods.iter().map(|x| TyArg::Method(x.to_key())).collect();
+        Ok(Self::new_or_get(context, base, args))
     }
 
     pub fn logical_eq_with(self: &Rc<Self>, context: &Context, key: TyKey) -> bool {

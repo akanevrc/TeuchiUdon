@@ -16,9 +16,6 @@ impl Context {
 
     fn register_default_tys_core(&self) -> Result<(), ElementError> {
         let ty_names = vec![
-            ("unknown", "unknown", None, true, Vec::new()),
-            ("any", "any", None, true, Vec::new()),
-            ("never", "never", None, true, Vec::new()),
             ("qual", "qual", None, false, Vec::new()),
             ("type", "type", None, false, Vec::new()),
             ("unit", "unit", None, true, Vec::new()),
@@ -30,6 +27,9 @@ impl Context {
             ("method", "method", None, false, Vec::new()),
             ("getter", "getter", None, false, Vec::new()),
             ("setter", "setter", None, false, Vec::new()),
+            ("unknown", "unknown", None, true, Vec::new()),
+            ("any", "any", None, true, Vec::new()),
+            ("never", "never", None, true, Vec::new()),
             ("nulltype", "nulltype", Some("SystemObject"), true, Vec::new()),
             ("object", "SystemObject", Some("SystemObject"), true, Vec::new()),
             ("bool", "SystemBoolean", Some("SystemBoolean"), true, vec!["SystemObject"]),
@@ -57,7 +57,7 @@ impl Context {
             ("vrcurl", "VRCSDKBaseVRCUrl", Some("VRCSDKBaseVRCUrl"), true, vec!["SystemObject"]),
             ("udon", "VRCUdonUdonBehaviour", Some("VRCUdonUdonBehaviour"), true, vec!["SystemObject", "UnityEngineObject", "UnityEngineComponent", "VRCUdonCommonInterfacesIUdonEventReceiver"]),
         ];
-        let top = Qual::top(self);
+        let top = Qual::top(self)?;
         for (name, logical_name, real_name, is_ty, parents) in ty_names {
             let base = BaseTy::new(
                 self,
