@@ -5,6 +5,7 @@ use crate::semantics::elements::{
     ElementError,
     base_ty::BaseTy,
     element::KeyElement,
+    ev::Ev,
     method::{
         Method,
         MethodParamInOut,
@@ -16,78 +17,6 @@ use crate::semantics::elements::{
         TyLogicalKey,
     },
 };
-
-pub fn register_from_json(context: &Context, json: String) -> Result<(), Vec<String>> {
-    let Ok(symbols) = from_str::<UdonSymbols>(json.as_str())
-    else {
-        return Err(vec!["Udon symbols cannot be initialized".to_owned()]);
-    };
-
-    register_from_base_ty_symbols(context, &symbols.base_tys)
-        .map_err(|e| vec![e.message])?;
-    register_from_ty_symbols(context, &symbols.tys)
-        .map_err(|e| vec![e.message])?;
-    register_from_method_symbols(context, &symbols.methods)
-        .map_err(|e| vec![e.message])?;
-    register_from_ev_symbols(context, &symbols.evs)
-        .map_err(|e| vec![e.message])?;
-    Ok(())
-}
-
-fn register_from_base_ty_symbols(context: &Context, symbols: &Vec<BaseTySymbol>) -> Result<(), ElementError> {
-    for sym in symbols {
-        let qual = QualKey::new_quals(sym.scopes.clone()).get_value(context)?;
-        BaseTy::new(
-            context,
-            qual,
-            sym.name.clone(),
-            sym.logical_name.clone(),
-        )?;
-    }
-    Ok(())
-}
-
-fn register_from_ty_symbols(context: &Context, symbols: &Vec<TySymbol>) -> Result<(), ElementError> {
-    for sym in symbols {
-        let qual = QualKey::new_quals(sym.scopes.clone());
-        let args = sym.args.iter().map(|x| TyArg::Ty(TyLogicalKey::new(x.clone()))).collect();
-        Ty::new_strict(
-            context,
-            BaseTy::get(context, qual, sym.name.clone())?,
-            args,
-            sym.real_name.clone(),
-            Some(sym.real_name.clone()),
-            sym.parents.iter().map(|x| TyLogicalKey::new(x.clone())).collect(),
-        )?;
-    }
-    Ok(())
-}
-
-fn register_from_method_symbols(context: &Context, symbols: &Vec<MethodSymbol>) -> Result<(), ElementError> {
-    for sym in symbols {
-        Method::new(
-            context,
-            TyLogicalKey::new(sym.ty.clone()).get_value(context)?,
-            sym.name.clone(),
-            sym.param_tys.iter().map(|x| TyLogicalKey::new(x.to_owned()).get_value(context)).collect::<Result<_, _>>()?,
-            sym.param_in_outs.iter().map(|x|
-                match x.as_str() {
-                    "IN" => Ok(MethodParamInOut::In),
-                    "IN_OUT" => Ok(MethodParamInOut::InOut),
-                    "OUT" => Ok(MethodParamInOut::Out),
-                    _ => Err(ElementError::new("Illegal method param in/out kind".to_owned())),
-                })
-                .collect::<Result<_, _>>()?,
-            sym.real_name.clone(),
-            sym.param_real_names.clone(),
-        )?;
-    }
-    Ok(())
-}
-
-fn register_from_ev_symbols(context: &Context, symbols: &Vec<EvSymbol>) -> Result<(), ElementError> {
-    Ok(())
-}
 
 #[derive(Deserialize)]
 struct UdonSymbols {
@@ -131,4 +60,101 @@ struct EvSymbol {
     param_in_outs: Vec<String>,
     real_name: String,
     param_real_names: Vec<String>,
+}
+
+impl Context {
+    pub fn register_from_json(&self, json: String) -> Result<(), Vec<String>> {
+        let Ok(symbols) = from_str::<UdonSymbols>(json.as_str())
+        else {
+            return Err(vec!["Udon symbols cannot be initialized".to_owned()]);
+        };
+
+        self.register_from_base_ty_symbols(&symbols.base_tys)
+            .map_err(|e| vec![e.message])?;
+        self.register_from_ty_symbols(&symbols.tys)
+            .map_err(|e| vec![e.message])?;
+        self.register_from_method_symbols(&symbols.methods)
+            .map_err(|e| vec![e.message])?;
+        self.register_from_ev_symbols(&symbols.evs)
+            .map_err(|e| vec![e.message])?;
+        Ok(())
+    }
+
+    fn register_from_base_ty_symbols(&self, symbols: &Vec<BaseTySymbol>) -> Result<(), ElementError> {
+        for sym in symbols {
+            let qual = QualKey::new_quals(sym.scopes.clone()).get_value(self)?;
+            BaseTy::new(
+                self,
+                qual,
+                sym.name.clone(),
+                sym.logical_name.clone(),
+            )?;
+        }
+        Ok(())
+    }
+
+    fn register_from_ty_symbols(&self, symbols: &Vec<TySymbol>) -> Result<(), ElementError> {
+        for sym in symbols {
+            let qual = QualKey::new_quals(sym.scopes.clone());
+            let args = sym.args.iter().map(|x| TyArg::Ty(TyLogicalKey::new(x.clone()))).collect();
+            Ty::new_strict(
+                self,
+                BaseTy::get(self, qual, sym.name.clone())?,
+                args,
+                sym.real_name.clone(),
+                Some(sym.real_name.clone()),
+                sym.parents.iter().map(|x| TyLogicalKey::new(x.clone())).collect(),
+            )?;
+        }
+        Ok(())
+    }
+
+    fn register_from_method_symbols(&self, symbols: &Vec<MethodSymbol>) -> Result<(), ElementError> {
+        for sym in symbols {
+            let ty = if sym.is_static {
+                Ty::new_or_get_type_from_key(self, TyLogicalKey::new(sym.ty.clone()))?
+            }
+            else {
+                TyLogicalKey::new(sym.ty.clone()).get_value(self)?
+            };
+            Method::new(
+                self,
+                ty,
+                sym.name.clone(),
+                sym.param_tys.iter().map(|x| TyLogicalKey::new(x.to_owned()).get_value(self)).collect::<Result<_, _>>()?,
+                sym.param_in_outs.iter().map(|x|
+                    match x.as_str() {
+                        "IN" => Ok(MethodParamInOut::In),
+                        "IN_OUT" => Ok(MethodParamInOut::InOut),
+                        "OUT" => Ok(MethodParamInOut::Out),
+                        _ => Err(ElementError::new("Illegal method param in/out kind".to_owned())),
+                    })
+                    .collect::<Result<_, _>>()?,
+                sym.real_name.clone(),
+                sym.param_real_names.clone(),
+            )?;
+        }
+        Ok(())
+    }
+
+    fn register_from_ev_symbols(&self, symbols: &Vec<EvSymbol>) -> Result<(), ElementError> {
+        for sym in symbols {
+            Ev::new(
+                self,
+                sym.name.clone(),
+                sym.param_tys.iter().map(|x| TyLogicalKey::new(x.to_owned()).get_value(self)).collect::<Result<_, _>>()?,
+                sym.param_in_outs.iter().map(|x|
+                    match x.as_str() {
+                        "IN" => Ok(MethodParamInOut::In),
+                        "IN_OUT" => Ok(MethodParamInOut::InOut),
+                        "OUT" => Ok(MethodParamInOut::Out),
+                        _ => Err(ElementError::new("Illegal method param in/out kind".to_owned())),
+                    })
+                    .collect::<Result<_, _>>()?,
+                sym.real_name.clone(),
+                sym.param_real_names.clone(),
+            )?;
+        }
+        Ok(())
+    }
 }

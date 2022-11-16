@@ -4,16 +4,13 @@ pub mod semantic_op;
 pub mod semantic_ty_op;
 pub mod store;
 mod json;
-mod ty_store;
 
 use self::{
-    json::register_from_json,
     keyword::KeywordContext,
     op_code::OpCodeContext,
     semantic_op::SemanticOpContext,
     semantic_ty_op::SemanticTyOpContext,
     store::Store,
-    ty_store::register_default_tys,
 };
 use crate::semantics::elements::{
     base_ty::{
@@ -22,6 +19,10 @@ use crate::semantics::elements::{
         BaseTyLogicalKey,
     },
     element::SemanticElement,
+    ev::{
+        Ev,
+        EvKey,
+    },
     literal::{
         Literal,
         LiteralKey,
@@ -29,6 +30,10 @@ use crate::semantics::elements::{
     method::{
         Method,
         MethodKey,
+    },
+    named_methods::{
+        NamedMethods,
+        NamedMethodsKey,
     },
     qual::{
         Qual,
@@ -55,8 +60,10 @@ pub struct Context {
     pub base_ty_logical_store: Store<BaseTyLogicalKey, BaseTy>,
     pub ty_store: Store<TyKey, Ty>,
     pub ty_logical_store: Store<TyLogicalKey, Ty>,
+    pub ev_store: Store<EvKey, Ev>,
     pub literal_store: Store<LiteralKey, Literal>,
     pub method_store: Store<MethodKey, Method>,
+    pub named_methods_store: Store<NamedMethodsKey, NamedMethods>,
     pub var_store: Store<VarKey, Var>,
 }
 
@@ -72,17 +79,20 @@ impl Context {
             base_ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
             ty_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
             ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
+            ev_store: Store::new(|x| format!("Specified event `{}` not found", x.description())),
             literal_store: Store::new(|x| format!("Specified literal `{}` not found", x.description())),
             method_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
+            named_methods_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };
-        register_default_tys(&context)?;
+        context.register_default_tys()?;
         Ok(context)
     }
 
     pub fn new_with_json(json: String) -> Result<Self, Vec<String>> {
         let context = Self::new()?;
-        register_from_json(&context, json)?;
+        context.register_from_json(json)?;
+        context.register_named_methods()?;
         Ok(context)
     }
 }

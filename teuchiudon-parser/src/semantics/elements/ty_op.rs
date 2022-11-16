@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    rc::Rc,
-};
+use std::rc::Rc;
 use crate::context::Context;
 use super::{
     ElementError,
@@ -446,7 +443,8 @@ impl Ty {
             return Err(ElementError::new("No compatible methods found".to_owned()));
         }
 
-        let mut just_count_to_methods = HashMap::new();
+        let mut just_count_to_methods = Vec::new();
+        just_count_to_methods.resize_with(in_tys.len() + 1, || Vec::new());
         for method in methods {
             let mut compatible = true;
             let mut just_count = 0;
@@ -463,21 +461,16 @@ impl Ty {
             }
 
             if compatible {
-                if !just_count_to_methods.contains_key(&just_count) {
-                    just_count_to_methods.insert(just_count, Vec::new());
-                }
-                just_count_to_methods.get_mut(&just_count).unwrap().push(method);
+                just_count_to_methods.get_mut(just_count).unwrap().push(method);
             }
         }
 
         for i in (0..=in_tys.len()).rev() {
-            if just_count_to_methods.contains_key(&i) {
-                if just_count_to_methods[&i].len() == 1 {
-                    return Ok(just_count_to_methods[&i][0].clone());
-                }
-                else {
-                    return Err(ElementError::new("Too many compatible methods found".to_owned()))
-                }
+            if just_count_to_methods[i].len() == 1 {
+                return Ok(just_count_to_methods[i][0].clone());
+            }
+            else if just_count_to_methods[i].len() >= 2 {
+                return Err(ElementError::new("Too many compatible methods found".to_owned()))
             }
         }
 
