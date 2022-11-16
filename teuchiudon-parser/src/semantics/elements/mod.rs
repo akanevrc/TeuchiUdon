@@ -1,5 +1,3 @@
-use super::SemanticError;
-
 pub mod base_ty;
 pub mod element;
 pub mod label;
@@ -10,6 +8,8 @@ pub mod scope;
 pub mod ty;
 pub mod ty_op;
 pub mod var;
+
+use super::SemanticError;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ElementError {
