@@ -9,7 +9,7 @@ use super::{
     },
     ty::{
         Ty,
-        TyLogicalKey,
+        TyKey,
     }
 };
 
@@ -37,9 +37,9 @@ pub enum MethodParamInOut {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct MethodKey {
-    pub ty: TyLogicalKey,
+    pub ty: TyKey,
     pub name: String,
-    pub in_tys: Vec<TyLogicalKey>,
+    pub in_tys: Vec<TyKey>,
 }
 
 impl_key_value_elements!(
