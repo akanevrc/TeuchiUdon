@@ -1,4 +1,7 @@
-use std::rc::Rc;
+use std::{
+    cell::RefCell,
+    rc::Rc,
+};
 use teuchiudon_parser::semantics::elements::label::{
     CodeLabel,
     DataLabel,
@@ -54,9 +57,9 @@ pub fn set(data: Rc<DataLabel>) -> impl Iterator<Item = Instruction> {
     .into_iter()
 }
 
-pub fn indirect() -> impl Iterator<Item = Instruction> {
+pub fn indirect(code: Rc<CodeLabel>) -> impl Iterator<Item = Instruction> {
     [
-        // TODO
+        Instruction::Push(DataAddr::Indirect(code, RefCell::new(None))),
     ]
     .into_iter()
 }

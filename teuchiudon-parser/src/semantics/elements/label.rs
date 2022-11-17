@@ -15,6 +15,7 @@ pub struct DataLabel {
 pub enum DataLabelKind {
     Literal(Rc<Literal>),
     Var(Rc<Var>),
+    Indirect(Rc<CodeLabel>, u32),
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -28,14 +29,21 @@ pub enum CodeLabelKind {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct TyLabel {
-    pub ty: Rc<Ty>,
+    pub kind: TyLabelKind,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum TyLabelKind {
+    Ty(Rc<Ty>),
+    Addr,
 }
 
 impl DataLabel {
     pub fn new(kind: DataLabelKind) -> Self {
         let ty = Rc::new(match &kind {
-            DataLabelKind::Literal(x) => TyLabel::new(x.ty.clone()),
-            DataLabelKind::Var(x) => TyLabel::new(x.ty.clone()),
+            DataLabelKind::Literal(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
+            DataLabelKind::Var(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
+            DataLabelKind::Indirect(_, _) => TyLabel::new(TyLabelKind::Addr),
         });
         Self {
             ty,
@@ -53,9 +61,9 @@ impl CodeLabel {
 }
 
 impl TyLabel {
-    pub fn new(ty: Rc<Ty>) -> Self {
+    pub fn new(kind: TyLabelKind) -> Self {
         Self {
-            ty,
+            kind,
         }
     }
 }

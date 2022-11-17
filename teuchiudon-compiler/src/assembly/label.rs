@@ -4,6 +4,7 @@ use teuchiudon_parser::semantics::elements::{
         DataLabel,
         DataLabelKind,
         TyLabel,
+        TyLabelKind,
     },
     literal::Literal,
     qual::Qual,
@@ -22,6 +23,7 @@ impl Label for DataLabel {
         match &self.kind {
             DataLabelKind::Literal(x) => x.part_name(),
             DataLabelKind::Var(x) => x.part_name(),
+            DataLabelKind::Indirect(x, _) => format!("indirect[{}]", x.part_name()),
         }
     }
 
@@ -29,6 +31,7 @@ impl Label for DataLabel {
         match &self.kind {
             DataLabelKind::Literal(x) => x.full_name(),
             DataLabelKind::Var(x) => x.full_name(),
+            DataLabelKind::Indirect(x, _) => format!("indirect[{}]", x.full_name()),
         }
     }
 }
@@ -45,11 +48,17 @@ impl Label for CodeLabel {
 
 impl Label for TyLabel {
     fn part_name(&self) -> String {
-        self.ty.part_name()
+        match &self.kind {
+            TyLabelKind::Ty(ty) => ty.part_name(),
+            TyLabelKind::Addr => "SysytemUInt32".to_owned(),
+        }
     }
 
     fn full_name(&self) -> String {
-        self.ty.full_name()
+        match &self.kind {
+            TyLabelKind::Ty(ty) => ty.full_name(),
+            TyLabelKind::Addr => "SysytemUInt32".to_owned(),
+        }
     }
 }
 
@@ -65,11 +74,11 @@ impl Label for Literal {
 
 impl Label for Qual {
     fn part_name(&self) -> String {
-        self.qualify(">")
+        self.qualify_logical_name(">")
     }
 
     fn full_name(&self) -> String {
-        self.qualify(">")
+        self.qualify_logical_name(">")
     }
 }
 
@@ -91,11 +100,21 @@ impl Label for Scope {
 
 impl Label for Ty {
     fn part_name(&self) -> String {
-        self.real_name.clone()
+        if let Some(real_name) = &self.real_name {
+            real_name.clone()
+        }
+        else {
+            panic!("Illegal state")
+        }
     }
 
     fn full_name(&self) -> String {
-        self.real_name.clone()
+        if let Some(real_name) = &self.real_name {
+            real_name.clone()
+        }
+        else {
+            panic!("Illegal state")
+        }
     }
 }
 

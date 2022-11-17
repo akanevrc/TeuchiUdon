@@ -39,8 +39,8 @@ pub fn visit_top_stat<'context: 'semantics, 'semantics>(
     context: &'context Context,
     top_stat: &'semantics ast::TopStat,
 ) -> Box<dyn Iterator<Item = Instruction> + 'semantics> {
-    match top_stat {
-        ast::TopStat::VarBind { parsed: _, access_attr: _, sync_attr: _, var_bind } =>
+    match &top_stat.detail {
+        ast::TopStatDetail::VarBind { access_attr: _, sync_attr: _, var_bind } =>
             visit_var_bind(context, var_bind),
         _ =>
             Box::new([].into_iter()),
@@ -63,10 +63,10 @@ pub fn visit_var_decl<'context: 'semantics, 'semantics>(
     context: &'context Context,
     var_decl: &'semantics ast::VarDecl,
 ) -> Box<dyn Iterator<Item = Instruction> + 'semantics> {
-    match var_decl {
-        ast::VarDecl::SingleDecl { parsed: _, mut_attr: _, ident: _, ty_expr: _, var } =>
+    match &var_decl.detail {
+        ast::VarDeclDetail::SingleDecl { mut_attr: _, ident: _, ty_expr: _, var } =>
             Box::new(routine::set(get_var_label(context, var))),
-        ast::VarDecl::TupleDecl { parsed: _, var_decls } =>
+        ast::VarDeclDetail::TupleDecl { var_decls } =>
             Box::new(var_decls.iter().rev().flat_map(|x| visit_var_decl(context, x))),
     }
 }
@@ -76,9 +76,9 @@ pub fn visit_expr<'context: 'semantics, 'semantics>(
     expr: &'semantics ast::Expr,
 ) -> Box<dyn Iterator<Item = Instruction> + 'semantics> {
     match &expr.detail {
-        ast::ExprDetail::Term { parsed: _, term } =>
+        ast::ExprDetail::Term { term } =>
             visit_term(context, &term),
-        ast::ExprDetail::InfixOp { parsed: _, left: _, op: _, right: _ } =>
+        ast::ExprDetail::InfixOp { left: _, op: _, right: _ } =>
             Box::new([].into_iter()),
     }
 }
@@ -88,7 +88,7 @@ pub fn visit_term<'context: 'semantics, 'semantics>(
     term: &'semantics ast::Term,
 ) -> Box<dyn Iterator<Item = Instruction> + 'semantics> {
     match &term.detail {
-        ast::TermDetail::Literal { parsed: _, literal } =>
+        ast::TermDetail::Literal { literal } =>
             Box::new(routine::get(get_literal_label(context, literal))),
         _ =>
             Box::new([].into_iter()),

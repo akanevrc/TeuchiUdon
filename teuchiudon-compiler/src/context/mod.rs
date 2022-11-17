@@ -7,6 +7,7 @@ use teuchiudon_parser::semantics::elements::{
         DataLabel,
         DataLabelKind,
         TyLabel,
+        TyLabelKind,
     },
     literal::Literal,
     ty::Ty,
@@ -28,7 +29,7 @@ impl Context {
                 .collect(),
             ty_labels:
                 context.ty_store.values()
-                .map(|x| (x.clone(), Rc::new(TyLabel::new(x.clone()))))
+                .map(|x| (x.clone(), Rc::new(TyLabel::new(TyLabelKind::Ty(x.clone())))))
                 .collect(),
             var_labels:
                 context.var_store.values()

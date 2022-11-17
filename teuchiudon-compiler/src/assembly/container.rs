@@ -1,13 +1,21 @@
 use std::{
-    collections::HashMap,
+    collections::{
+        HashMap,
+        HashSet,
+    },
     fmt,
     rc::Rc,
 };
 use teuchiudon_parser::semantics::elements::label::{
     CodeLabel,
     DataLabel,
+    DataLabelKind,
 };
-use super::Instruction;
+use super::{
+    AsmLiteral,
+    DataAddr,
+    Instruction,
+};
 
 #[cfg(windows)]
 const NEWLINE: &'static str = "\r\n";
@@ -59,6 +67,7 @@ impl AsmContainer {
                 self.code_part.insert(i + 1, Instruction::Nop);
             }
         }
+
         let mut code_byte = 0;
         for ins in &self.code_part {
             match ins {
@@ -70,23 +79,42 @@ impl AsmContainer {
             code_byte += ins.byte_size();
         }
 
-        // TODO
-
         for ins in &self.code_part {
-            match ins {
-                Instruction::Push(_data) => {
-                    // TODO
+            let data_addr = match ins {
+                Instruction::Push(data_addr) => Some(data_addr),
+                Instruction::JumpIndirect(data_addr) => Some(data_addr),
+                _ => None,
+            };
+            if let Some(DataAddr::Indirect(code, addr)) = data_addr {
+                addr.replace(Some(self.code_addr[code]));
+            }
+        }
+
+        let mut used_data = HashSet::new();
+        for ins in &self.code_part {
+            let data_addr = match ins {
+                Instruction::Push(data_addr) => Some(data_addr),
+                Instruction::JumpIndirect(data_addr) => Some(data_addr),
+                _ => None,
+            };
+            match data_addr {
+                Some(DataAddr::Label(data)) => {
+                    used_data.insert(data.clone());
                 },
-                Instruction::JumpIndirect(_data) => {
-                    // TODO
+                Some(DataAddr::Indirect(code, addr)) => {
+                    let addr = addr.borrow().unwrap();
+                    let data = Rc::new(DataLabel::new(DataLabelKind::Indirect(code.clone(), addr)));
+                    self.data_part.push(Instruction::DeclData(data.clone(), data.ty.clone(), AsmLiteral::Address(addr)));
+                    used_data.insert(data.clone());
                 },
                 _ => (),
             }
         }
+
         let mut data_byte = 0;
         for ins in &self.data_part {
             match ins {
-                Instruction::DeclData(data, _, _) if true => { // TODO
+                Instruction::DeclData(data, _, _) if used_data.contains(data) => {
                     self.data_addr.insert(data.clone(), data_byte);
                 },
                 _ => (),

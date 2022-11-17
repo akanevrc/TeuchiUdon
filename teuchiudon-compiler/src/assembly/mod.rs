@@ -2,6 +2,7 @@ pub mod label;
 pub mod container;
 
 use std::{
+    cell::RefCell,
     fmt,
     rc::Rc,
 };
@@ -56,7 +57,7 @@ pub enum AsmLiteral {
 #[derive(Clone, Debug, PartialEq)]
 pub enum DataAddr {
     Label(Rc<DataLabel>),
-    Indirect,
+    Indirect(Rc<CodeLabel>, RefCell<Option<u32>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -145,8 +146,8 @@ impl fmt::Display for DataAddr {
         match self {
             Self::Label(data) =>
                 write!(f, "{}", data.full_name()),
-            Self::Indirect =>
-                write!(f, ""),
+            Self::Indirect(code, _) =>
+                write!(f, "indirect[{}]", code.full_name()),
         }
     }
 }
