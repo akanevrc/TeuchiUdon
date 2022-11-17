@@ -60,31 +60,6 @@ impl SemanticElement for VarKey {
 }
 
 impl Var {
-    pub fn unknown(context: &Context) -> Result<Rc<Self>, ElementError> {
-        Ok(Self::new_or_get(
-            context,
-            Qual::top(context)?,
-            "!".to_owned(),
-            Ty::get_from_name(context, "unknown".to_owned())?,
-            false,
-            false
-        ))
-    }
-
-    fn new_or_get(context: &Context, qual: Rc<Qual>, name: String, ty: Rc<Ty>, mut_attr: bool, is_system_var: bool) -> Rc<Self> {
-        let value = Rc::new(Self {
-            id: context.var_store.next_id(),
-            qual,
-            name,
-            ty,
-            mut_attr,
-            is_system_var,
-        });
-        let key = value.to_key();
-        context.var_store.add(key, value.clone()).ok();
-        value
-    }
-
     pub fn force_new(context: &Context, qual: Rc<Qual>, name: String, ty: Rc<Ty>, mut_attr: bool, is_system_var: bool) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.var_store.next_id(),
@@ -105,10 +80,6 @@ impl Var {
 }
 
 impl VarKey {
-    pub fn unknown() -> Self {
-        Self::new(QualKey::top(), "!".to_owned())
-    }
-
     pub fn new(qual: QualKey, name: String) -> Self {
         Self {
             qual,

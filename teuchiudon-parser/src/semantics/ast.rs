@@ -159,7 +159,7 @@ pub enum TyTermDetail<'parsed> {
     None,
     EvalTy {
         ident: Ident<'parsed>,
-        var: RefCell<Rc<elements::var::Var>>,
+        var: RefCell<Option<Rc<elements::var::Var>>>,
     },
 }
 
@@ -261,6 +261,7 @@ pub enum TermDetail<'parsed> {
     },
     ApplyFn {
         args: Vec<ArgExpr<'parsed>>,
+        method: RefCell<Option<Rc<elements::method::Method>>>,
     },
     ApplySpreadFn {
         arg: Rc<Expr<'parsed>>,
@@ -293,7 +294,7 @@ pub enum TermDetail<'parsed> {
     },
     EvalVar {
         ident: Ident<'parsed>,
-        var: RefCell<Rc<elements::var::Var>>,
+        var: RefCell<Option<Rc<elements::var::Var>>>,
     },
     LetInBind {
         var_bind: VarBind<'parsed>,

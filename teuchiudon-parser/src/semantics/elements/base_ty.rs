@@ -143,7 +143,7 @@ impl BaseTy {
         BaseTyKey::new(qual, name).get_value(context)
     }
 
-    pub fn get_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
+    pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
         BaseTyKey::from_name(name).get_value(context)
     }
 
@@ -181,10 +181,10 @@ impl BaseTyKey {
         }
     }
 
-    pub fn from_name(name: String) -> Self {
+    pub fn from_name(name: &str) -> Self {
         Self {
             qual: QualKey::top(),
-            name,
+            name: name.to_owned(),
         }
     }
 

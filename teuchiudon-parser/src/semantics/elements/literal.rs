@@ -68,22 +68,22 @@ impl Literal {
     }
 
     pub fn new_unit(context: &Context) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "unit".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "unit")?.new_or_get_applied_zero(context)?;
         Self::new(context, "()".to_owned(), ty)
     }
 
     pub fn new_null(context: &Context) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "nulltype".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "nulltype")?.new_or_get_applied_zero(context)?;
         Self::new(context, "null".to_owned(), ty)
     }
 
     pub fn new_bool(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "bool".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "bool")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
     pub fn new_pure_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "int".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "int")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
@@ -112,45 +112,45 @@ impl Literal {
     }
 
     pub fn new_character(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "char".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "char")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
     pub fn new_regular_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "string".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
     pub fn new_verbatium_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "string".to_owned())?.new_or_get_applied_zero(context)?;
+        let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    fn trim_integer_text(text: String) -> (String, String) {
+    fn trim_integer_text(text: String) -> (String, &'static str) {
         let text = Self::formatted_number(text);
         match &text.chars().collect::<Vec<_>>()[..] {
             [.., x, y] if *x == 'L' && *y == 'U' || *x == 'U' && *y == 'L' =>
-                (text[0..text.len() - 2].to_owned(), "ulong".to_owned()),
+                (text[0..text.len() - 2].to_owned(), "ulong"),
             [.., x] if *x == 'L' =>
-                (text[0..text.len() - 1].to_owned(), "long".to_owned()),
+                (text[0..text.len() - 1].to_owned(), "long"),
             [.., x] if *x == 'U' =>
-                (text[0..text.len() - 1].to_owned(), "uint".to_owned()),
+                (text[0..text.len() - 1].to_owned(), "uint"),
             _ =>
-                (text, "int".to_owned()),
+                (text, "int"),
         }
     }
 
-    fn trim_real_number_text(text: String) -> (String, String) {
+    fn trim_real_number_text(text: String) -> (String, &'static str) {
         let text = Self::formatted_number(text);
         match &text.chars().collect::<Vec<_>>()[..] {
             [.., x] if *x == 'F' =>
-                (text[0..text.len() - 1].to_owned(), "float".to_owned()),
+                (text[0..text.len() - 1].to_owned(), "float"),
             [.., x] if *x == 'D' =>
-                (text[0..text.len() - 1].to_owned(), "double".to_owned()),
+                (text[0..text.len() - 1].to_owned(), "double"),
             [.., x] if *x == 'M' =>
-                (text[0..text.len() - 1].to_owned(), "decimal".to_owned()),
+                (text[0..text.len() - 1].to_owned(), "decimal"),
             _ =>
-                (text, "float".to_owned()),
+                (text, "float"),
         }
     }
 

@@ -42,7 +42,7 @@ fn test_ty_expr() {
             Vec::new(),
         ).unwrap().to_key(),
     ).unwrap();
-    let ty_unknown = elements::ty::Ty::get_from_name(&context, "unknown".to_owned()).unwrap();
+    let ty_unknown = elements::ty::Ty::get_from_name(&context, "unknown").unwrap();
     let var_t = VarKey::new(QualKey::top(), "T".to_owned()).get_value(&context).unwrap();
     let var_u = VarKey::new(qual_t.to_key(), "U".to_owned()).get_value(&context).unwrap();
     let var_v = VarKey::new(qual_u.to_key(), "V".to_owned()).get_value(&context).unwrap();
@@ -65,7 +65,7 @@ fn test_ty_expr() {
                                             parsed: Some(&lexer::ast::Ident { slice: "T" }),
                                             name: "T".to_owned(),
                                         },
-                                        var: RefCell::new(var_t),
+                                        var: RefCell::new(Some(var_t)),
                                     },
                                     ty: ty_t.clone(),
                                 }),
@@ -85,7 +85,7 @@ fn test_ty_expr() {
                                             parsed: Some(&lexer::ast::Ident { slice: "U" }),
                                             name: "U".to_owned(),
                                         },
-                                        var: RefCell::new(var_u),
+                                        var: RefCell::new(Some(var_u)),
                                     },
                                     ty: ty_unknown.clone(),
                                 }),
@@ -108,7 +108,7 @@ fn test_ty_expr() {
                                     parsed: Some(&lexer::ast::Ident { slice: "V" }),
                                     name: "V".to_owned(),
                                 },
-                                var: RefCell::new(var_v),
+                                var: RefCell::new(Some(var_v)),
                             },
                             ty: ty_unknown.clone(),
                         }),

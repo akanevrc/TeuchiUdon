@@ -21,7 +21,7 @@ use super::{
 
 impl Ty {
     pub fn new_or_get_qual_from_key(context: &Context, key: QualKey) -> Result<Rc<Self>, ElementError> {
-        let base = BaseTyKey::from_name("qual".to_owned()).get_value(context)?;
+        let base = BaseTyKey::from_name("qual").get_value(context)?;
         let arg = key.get_value(context)?;
         Ok(Self::new_or_get(context, base, vec![TyArg::Qual(arg.to_key())]))
     }
@@ -31,39 +31,51 @@ impl Ty {
     }
 
     pub fn new_or_get_type_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
-        let base = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
+        let base = BaseTyKey::from_name("type").get_value(context)?;
         let arg = key.get_value(context)?;
         Ok(Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())]))
     }
 
     pub fn new_or_get_type(context: &Context, qual: QualKey, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
-        let base = BaseTyKey::from_name("type".to_owned()).get_value(context)?;
+        let base = BaseTyKey::from_name("type").get_value(context)?;
         let arg = Self::get(context, qual, name, args)?;
         Ok(Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())]))
     }
 
-    pub fn new_or_get_type_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
-        Self::new_or_get_type(context, QualKey::top(), name, Vec::new())
+    pub fn new_or_get_type_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
+        Self::new_or_get_type(context, QualKey::top(), name.to_owned(), Vec::new())
     }
 
     pub fn new_or_get_tuple_from_keys(context: &Context, keys: Vec<TyLogicalKey>) -> Result<Rc<Self>, ElementError> {
-        let base = BaseTyKey::from_name("tuple".to_owned()).get_value(context)?;
+        let base = BaseTyKey::from_name("tuple").get_value(context)?;
         let args = keys.iter().map(|x| Ok(TyArg::Ty(x.get_value(context)?.to_key()))).collect::<Result<_, _>>()?;
         Ok(Self::new_or_get(context, base, args))
     }
 
     pub fn get_array_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
-        BaseTyKey::from_name("array".to_owned()).new_applied(vec![TyArg::Ty(key)]).get_value(context)
+        BaseTyKey::from_name("array").new_applied(vec![TyArg::Ty(key)]).get_value(context)
     }
 
-    pub fn get_array_from_name(context: &Context, name: String) -> Result<Rc<Self>, ElementError> {
+    pub fn get_array_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
         Self::get_array_from_key(context, Ty::get_from_name(context, name)?.to_key())
     }
 
     pub fn get_method_from_key(context: &Context, key: NamedMethodsKey) -> Result<Rc<Self>, ElementError> {
-        let base = BaseTyKey::from_name("method".to_owned()).get_value(context)?;
+        let base = BaseTyKey::from_name("method").get_value(context)?;
         let args = key.get_value(context)?.methods.iter().map(|x| TyArg::Method(x.to_key())).collect();
         Ok(Self::new_or_get(context, base, args))
+    }
+
+    pub fn tys_to_ty(context: &Context, tys: &Vec<Rc<Self>>) -> Result<Rc<Self>, ElementError> {
+        if tys.len() == 0 {
+            Self::get_from_name(context, "unit")
+        }
+        else if tys.len() == 1 {
+            Ok(tys[0].clone())
+        }
+        else {
+            Self::new_or_get_tuple_from_keys(context, tys.iter().map(|x| x.to_key()).collect())
+        }
     }
 
     pub fn logical_eq_with(self: &Rc<Self>, context: &Context, key: TyKey) -> bool {
@@ -72,7 +84,7 @@ impl Ty {
     }
     
     pub fn logical_eq_with_name(self: &Rc<Self>, context: &Context, name: &str) -> bool {
-        self.logical_eq_with(context, TyKey::from_name(name.to_owned()))
+        self.logical_eq_with(context, TyKey::from_name(name))
     }
 
     pub fn base_eq_with_name(self: &Rc<Self>, name: &str) -> bool {
@@ -344,7 +356,7 @@ impl Ty {
         ]
         .iter()
         .any(|x| {
-            let ty = Self::get_array_from_name(context, (*x).to_owned());
+            let ty = Self::get_array_from_name(context, x);
             ty.is_ok() && self.logical_eq_with(context, ty.unwrap().to_key())
         })
     }

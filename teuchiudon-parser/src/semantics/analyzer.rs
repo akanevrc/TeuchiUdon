@@ -6,12 +6,12 @@ use std::{
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
-use super::elements::element::KeyElement;
 use super::{
     ast,
     SemanticError,
     elements::{
         element::{
+            KeyElement,
             ValueElement,
         },
         literal::Literal,
@@ -400,7 +400,7 @@ fn hidden_unknown_ty_expr<'parsed>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: ast::TyTermDetail::None,
-        ty: Ty::get_from_name(context, "unknown".to_owned())
+        ty: Ty::get_from_name(context, "unknown")
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
@@ -418,7 +418,7 @@ fn hidden_unit_ty_expr<'parsed>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: ast::TyTermDetail::None,
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
@@ -469,7 +469,7 @@ fn eval_ty_ty_term<'parsed>(
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
             ident,
-            var: RefCell::new(var.clone()),
+            var: RefCell::new(Some(var.clone())),
         },
         ty: var.ty.clone(),
     }))
@@ -481,16 +481,16 @@ fn eval_ty_access_ty_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    let var =
-        Var::unknown(context)
+    let ty =
+        Ty::get_from_name(context, "unknown")
         .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
             ident,
-            var: RefCell::new(var.clone()),
+            var: RefCell::new(None),
         },
-        ty: var.ty.clone(),
+        ty,
     }))
 }
 
@@ -802,7 +802,7 @@ fn hidden_unit_expr<'parsed>(
     let term = Rc::new(ast::Term {
         parsed: None,
         detail: ast::TermDetail::None,
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::Expr {
@@ -1028,7 +1028,7 @@ fn tuple_term<'parsed>(
         detail: ast::TermDetail::Tuple {
             exprs,
         },
-        ty: Ty::get_from_name(context, "tuple".to_owned())
+        ty: Ty::get_from_name(context, "tuple")
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1047,7 +1047,7 @@ fn array_ctor_term<'parsed>(
         detail: ast::TermDetail::ArrayCtor {
             iter_expr,
         },
-        ty: Ty::get_from_name(context, "array".to_owned())
+        ty: Ty::get_from_name(context, "array")
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1075,7 +1075,7 @@ fn this_literal_term<'parsed>(
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::ThisLiteral,
-        ty: Ty::get_from_name(context, "udon".to_owned())
+        ty: Ty::get_from_name(context, "udon")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1091,7 +1091,7 @@ fn interpolated_string_term<'parsed>(
         detail: ast::TermDetail::InterpolatedString {
             interpolated_string,
         },
-        ty: Ty::get_from_name(context, "string".to_owned())
+        ty: Ty::get_from_name(context, "string")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1109,7 +1109,7 @@ fn eval_var_term<'parsed>(
         parsed: Some(node),
         detail: ast::TermDetail::EvalVar {
             ident,
-            var: RefCell::new(var.clone()),
+            var: RefCell::new(Some(var.clone())),
         },
         ty: var.ty.clone(),
     }))
@@ -1121,16 +1121,16 @@ fn eval_var_ty_access_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    let var =
-        Var::unknown(context)
+    let ty =
+        Ty::get_from_name(context, "unknown")
         .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::EvalVar {
             ident,
-            var: RefCell::new(var.clone()),
+            var: RefCell::new(None),
         },
-        ty: var.ty.clone(),
+        ty,
     }))
 }
 
@@ -1190,7 +1190,7 @@ fn while_term<'parsed>(
             condition,
             stats,
         },
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1206,7 +1206,7 @@ fn loop_term<'parsed>(
         detail: ast::TermDetail::Loop {
             stats,
         },
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1228,7 +1228,7 @@ fn for_term<'parsed>(
             for_binds,
             stats,
         },
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1247,7 +1247,7 @@ fn closure_term<'parsed>(
             var_decl,
             expr,
         },
-        ty: Ty::get_from_name(context, "closure".to_owned())
+        ty: Ty::get_from_name(context, "closure")
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1262,7 +1262,7 @@ fn ty_expr_term<'parsed>(
         detail: ast::TermDetail::TyExpr {
             ty_expr: te,
         },
-        ty: Ty::get_from_name(context, "type".to_owned())
+        ty: Ty::get_from_name(context, "type")
             .map_err(|e| e.convert(None))?, // TODO
     }))
 }
@@ -1275,13 +1275,16 @@ fn apply_fn_term<'parsed>(
         arg_exprs.iter()
         .map(|x| arg_expr(context, x))
         .collect::<Result<_, _>>()?;
+    let ty =
+        Ty::get_from_name(context, "unit")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: None,
         detail: ast::TermDetail::ApplyFn {
             args,
+            method: RefCell::new(None),
         },
-        ty: Ty::get_from_name(context, "unit".to_owned())
-            .map_err(|e| e.convert(None))?,
+        ty,
     }))
 }
 
@@ -1295,7 +1298,7 @@ fn apply_spread_fn_term<'parsed>(
         detail: ast::TermDetail::ApplySpreadFn {
             arg,
         },
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1310,7 +1313,7 @@ fn apply_key_term<'parsed>(
         detail: ast::TermDetail::ApplyKey {
             key,
         },
-        ty: Ty::get_from_name(context, "unit".to_owned())
+        ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     }))
 }
@@ -1748,7 +1751,7 @@ fn access_ty_infix_op<'parsed>(
         let qual = left.ty.arg_as_qual();
         let v = VarKey::new(qual, ident.name.clone()).get_value(context)
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        var.replace(v.clone());
+        var.replace(Some(v.clone()));
         Ok(Rc::new(ast::TyExpr {
             parsed: Some(parsed),
             detail: ast::TyExprDetail::InfixOp {
@@ -1766,7 +1769,7 @@ fn access_ty_infix_op<'parsed>(
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
         let v = Var::get(context, qual.to_key(), ident.name.clone())
             .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-        var.replace(v.clone());
+        var.replace(Some(v.clone()));
         Ok(Rc::new(ast::TyExpr {
             parsed: Some(parsed),
             detail: ast::TyExprDetail::InfixOp {
@@ -1797,6 +1800,8 @@ impl<'parsed> ast::ExprTree<'parsed, ast::Op, parser::ast::Expr<'parsed>> for as
         match &op {
             ast::Op::Access =>
                 ty_access_infix_op(context, parsed, left, op, right),
+            ast::Op::EvalFn =>
+                eval_fn_infix_op(context, parsed, left, op, right),
             _ =>
                 panic!("Not implemented")
         }
@@ -1823,7 +1828,7 @@ fn ty_access_infix_op<'parsed>(
         let qual = left.ty.arg_as_qual();
         let v = VarKey::new(qual, ident.name.clone()).get_value(context)
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        var.replace(v.clone());
+        var.replace(Some(v.clone()));
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: ast::ExprDetail::InfixOp {
@@ -1841,7 +1846,7 @@ fn ty_access_infix_op<'parsed>(
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
         let v = Var::get(context, qual.to_key(), ident.name.clone())
             .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-        var.replace(v.clone());
+        var.replace(Some(v.clone()));
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: ast::ExprDetail::InfixOp {
@@ -1854,5 +1859,45 @@ fn ty_access_infix_op<'parsed>(
     }
     else {
         Err(vec![SemanticError::new(None, "Left side of `::` is not a qualifier or a type".to_owned())])
+    }
+}
+
+fn eval_fn_infix_op<'parsed>(
+    context: &Context,
+    parsed: &'parsed parser::ast::Expr,
+    left: Rc<ast::Expr<'parsed>>,
+    op: ast::Op,
+    right: Rc<ast::Expr<'parsed>>,
+) -> Result<Rc<ast::Expr<'parsed>>, Vec<SemanticError<'parsed>>> {
+    let ast::ExprDetail::Term { term } = &right.detail
+        else {
+            return Err(vec![SemanticError::new(None, "Right side of `eval fn` is not a term".to_owned())]);
+        };
+    let ast::TermDetail::ApplyFn { args, method } = &term.detail
+        else {
+            return Err(vec![SemanticError::new(None, "Right side of `eval fn` cannot apply".to_owned())]);
+        };
+
+    if left.ty.base_eq_with_name("method") {
+        let in_tys = args.iter().map(|x| x.expr.ty.to_key()).collect();
+        let key = left.ty.most_compatible_method(context, in_tys)
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let m = key.get_value(context)
+            .map_err(|e| e.convert(None))?;
+        let ty = Ty::tys_to_ty(context, &m.out_tys)
+            .map_err(|e| e.convert(None))?;
+        method.replace(Some(m));
+        Ok(Rc::new(ast::Expr {
+            parsed: Some(parsed),
+            detail: ast::ExprDetail::InfixOp {
+                left: left.clone(),
+                op,
+                right: right.clone(),
+            },
+            ty,
+        }))
+    }
+    else {
+        return Err(vec![SemanticError::new(None, "Left side of `eval fn` is not a function or a method".to_owned())]);
     }
 }
