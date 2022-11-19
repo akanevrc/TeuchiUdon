@@ -16,7 +16,6 @@ use super::{
     },
     method::MethodKey,
     qual::QualKey,
-    var::Var,
 };
 
 #[derive(Clone, Debug)]
@@ -25,7 +24,7 @@ pub struct Ty {
     pub base: Rc<BaseTy>,
     pub args: Vec<TyArg>,
     pub logical_name: String,
-    pub real_name: Option<String>,
+    pub instance: Option<TyInstance>,
     pub parents: Vec<TyLogicalKey>,
 }
 
@@ -46,6 +45,13 @@ pub enum TyArg {
     Qual(QualKey),
     Ty(TyLogicalKey),
     Method(MethodKey),
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum TyInstance {
+    Unit,
+    Single { elem_name: Option<String>, ty_name: String },
+    Tuple { elem_name: Option<String>, instances: Vec<TyInstance> },
 }
 
 impl PartialEq for Ty {
@@ -174,7 +180,7 @@ impl Ty {
         base: Rc<BaseTy>,
         args: Vec<TyArg>,
         logical_name: String,
-        real_name: Option<String>,
+        instance: Option<TyInstance>,
         parents: Vec<TyLogicalKey>,
     ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
@@ -182,16 +188,13 @@ impl Ty {
             base: base.clone(),
             args,
             logical_name,
-            real_name,
+            instance,
             parents,
         });
         let key = value.to_key();
         let logical_key: TyLogicalKey = value.to_key();
         context.ty_store.add(key, value.clone())?;
-        context.ty_logical_store.add(logical_key.clone(), value.clone())?;
-
-        let ty = Ty::new_or_get_type_from_key(context, logical_key)?;
-        Var::force_new(context, base.qual.clone(), base.name.clone(), ty, false, false)?;
+        context.ty_logical_store.add(logical_key.clone(), value.clone()).ok();
         Ok(value)
     }
 
@@ -206,19 +209,20 @@ impl Ty {
         )
     }
 
-    pub fn new_or_get(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Rc<Self> {
+    pub fn new_or_get(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+        let instance = Self::instance(context, &base, &args)?;
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
             base: base.clone(),
             args: args.clone(),
             logical_name: Self::logical_name(&base, &args),
-            real_name: None,
+            instance,
             parents: Vec::new(),
         });
 
         let key: TyKey = value.to_key();
         match key.clone().get_value(context) {
-            Ok(x) => return x,
+            Ok(x) => return Ok(x),
             Err(_) => (),
         }
 
@@ -229,8 +233,8 @@ impl Ty {
         }
 
         context.ty_store.add(key, value.clone()).unwrap();
-        context.ty_logical_store.add(real_key, value.clone()).unwrap();
-        value
+        context.ty_logical_store.add(real_key, value.clone()).ok();
+        Ok(value)
     }
 
     fn logical_name(base: &Rc<BaseTy>, args: &Vec<TyArg>) -> String {
@@ -261,6 +265,59 @@ impl Ty {
 
     pub fn get_from_logical_name(context: &Context, logical_name: String) -> Result<Rc<Self>, ElementError> {
         TyLogicalKey::new(logical_name).get_value(context)
+    }
+
+    fn instance(context: &Context, base: &Rc<BaseTy>, args: &Vec<TyArg>) -> Result<Option<TyInstance>, ElementError> {
+        match base.logical_name.as_str() {
+            "qual" |
+            "type" |
+            "unknown" =>
+                Ok(None),
+            "unit" |
+            "never" |
+            "function" |
+            "nfunction" |
+            "closure" |
+            "method" |
+            "getter" |
+            "setter" =>
+                Ok(Some(TyInstance::Unit)),
+            "tuple" => {
+                    let instances =
+                        args.iter().enumerate()
+                        .map(|(i, x)| Self::sub_instance(context, x, i.to_string()))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    if instances.iter().any(|x| x.is_none()) {
+                        Ok(None)
+                    }
+                    else {
+                        let instances = instances.into_iter().map(|x| x.unwrap()).collect();
+                        Ok(Some(TyInstance::Tuple { elem_name: None, instances }))
+                    }
+                },
+            "any" =>
+                Ok(Some(TyInstance::Single { elem_name: None, ty_name: "SystemObject".to_owned() })),
+            _ =>
+                Ok(None),
+        }
+    }
+
+    fn sub_instance(context: &Context, arg: &TyArg, elem_name: String) -> Result<Option<TyInstance>, ElementError> {
+        match arg {
+            TyArg::Ty(x) =>
+                match &x.get_value(context)?.instance {
+                    Some(TyInstance::Unit) =>
+                        Ok(Some(TyInstance::Unit)),
+                    Some(TyInstance::Single { elem_name: _, ty_name }) =>
+                        Ok(Some(TyInstance::Single { elem_name: Some(elem_name), ty_name: ty_name.clone() })),
+                    Some(TyInstance::Tuple { elem_name: _, instances }) =>
+                        Ok(Some(TyInstance::Tuple { elem_name: Some(elem_name), instances: instances.clone() })),
+                    None =>
+                        Ok(None),
+                }
+            _ =>
+                panic!("Illegal state"),
+        }
     }
 }
 

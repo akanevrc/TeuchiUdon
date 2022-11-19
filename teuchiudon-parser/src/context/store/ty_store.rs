@@ -5,6 +5,7 @@ use crate::semantics::elements::{
     qual::Qual,
     ty::{
         Ty,
+        TyInstance,
         TyLogicalKey,
     },
 };
@@ -66,12 +67,18 @@ impl Context {
                 logical_name.to_owned(),
             )?;
             if is_ty {
+                let instance = if name == "unit" {
+                    Some(TyInstance::Unit)
+                }
+                else {
+                    real_name.map(|x| TyInstance::Single { elem_name: None, ty_name: x.to_owned() })
+                };
                 Ty::new_strict(
                     self,
                     base,
                     Vec::new(),
                     logical_name.to_owned(),
-                    real_name.map(|x| x.to_owned()),
+                    instance,
                     parents.into_iter().map(|x| TyLogicalKey::new(x.to_owned())).collect(),
                 )?;
             }

@@ -16,14 +16,11 @@ use super::{
         },
         literal::Literal,
         qual::{
-            QualKey,
             Qual,
+            QualKey,
         },
         ty::Ty,
-        var::{
-            Var,
-            VarKey,
-        },
+        var::Var,
     },
 };
 
@@ -250,11 +247,14 @@ fn single_var_decl<'parsed>(
     let qual =
         Qual::top(context)
         .map_err(|x| x.convert(None))?;
+    let ty =
+        ty_expr.ty.arg_as_type().get_value(context)
+        .map_err(|x| x.convert(None))?;
     let var = Var::force_new(
         context,
         qual,
         ident.name.clone(),
-        ty_expr.ty.clone(),
+        ty,
         matches!(mut_attr.detail, ast::MutAttrDetail::Mut),
         false,
     )
@@ -418,7 +418,7 @@ fn hidden_unit_ty_expr<'parsed>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: ast::TyTermDetail::None,
-        ty: Ty::get_from_name(context, "unit")
+        ty: Ty::new_or_get_type_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
@@ -462,16 +462,16 @@ fn eval_ty_ty_term<'parsed>(
     ident: &'parsed lexer::ast::Ident,
 ) -> Result<Rc<ast::TyTerm<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
-    let var =
-        VarKey::new(QualKey::top(), ident.name.clone()).get_value(context)
+    let ty =
+        Ty::new_or_get_type(context, QualKey::top(), ident.name.clone(), Vec::new())
+        .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
         .map_err(|e| e.convert(Some(node.slice)))?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
             ident,
-            var: RefCell::new(Some(var.clone())),
         },
-        ty: var.ty.clone(),
+        ty,
     }))
 }
 
@@ -488,7 +488,6 @@ fn eval_ty_access_ty_term<'parsed>(
         parsed: Some(node),
         detail: ast::TyTermDetail::EvalTy {
             ident,
-            var: RefCell::new(None),
         },
         ty,
     }))
@@ -1103,15 +1102,22 @@ fn eval_var_term<'parsed>(
 ) -> Result<Rc<ast::Term<'parsed>>, Vec<SemanticError<'parsed>>> {
     let ident = self::ident(context, ident)?;
     let var =
-        VarKey::new(QualKey::top(), ident.name.clone()).get_value(context)
-        .map_err(|e| e.convert(Some(node.slice)))?;
+        Var::get(context, QualKey::top(), ident.name.clone()).ok();
+    let ty = match &var {
+        Some(x) =>
+            x.ty.clone(),
+        None =>
+            Ty::new_or_get_type(context, QualKey::top(), ident.name.clone(), Vec::new())
+            .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+            .map_err(|e| e.convert(Some(node.slice)))?,
+    };
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: ast::TermDetail::EvalVar {
             ident,
-            var: RefCell::new(Some(var.clone())),
+            var: RefCell::new(var),
         },
-        ty: var.ty.clone(),
+        ty,
     }))
 }
 
@@ -1742,16 +1748,16 @@ fn access_ty_infix_op<'parsed>(
         else {
             return Err(vec![SemanticError::new(None, "Right side of `::` is not a term".to_owned())]);
         };
-    let ast::TyTermDetail::EvalTy { ident, var } = &term.detail
+    let ast::TyTermDetail::EvalTy { ident } = &term.detail
         else {
             return Err(vec![SemanticError::new(None, "Right side of `::` cannot be evaluated".to_owned())]);
         };
 
     if left.ty.base_eq_with_name("qual") {
         let qual = left.ty.arg_as_qual();
-        let v = VarKey::new(qual, ident.name.clone()).get_value(context)
+        let ty = Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+            .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        var.replace(Some(v.clone()));
         Ok(Rc::new(ast::TyExpr {
             parsed: Some(parsed),
             detail: ast::TyExprDetail::InfixOp {
@@ -1759,7 +1765,7 @@ fn access_ty_infix_op<'parsed>(
                 op,
                 right: right.clone(),
             },
-            ty: v.ty.clone(),
+            ty,
         }))
     }
     else if left.ty.base_eq_with_name("type") {
@@ -1767,9 +1773,8 @@ fn access_ty_infix_op<'parsed>(
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
         let qual = left.ty.base.qual.get_pushed_qual(context, parent.base.name.clone())
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-        let v = Var::get(context, qual.to_key(), ident.name.clone())
+        let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
             .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-        var.replace(Some(v.clone()));
         Ok(Rc::new(ast::TyExpr {
             parsed: Some(parsed),
             detail: ast::TyExprDetail::InfixOp {
@@ -1777,7 +1782,7 @@ fn access_ty_infix_op<'parsed>(
                 op,
                 right: right.clone(),
             },
-            ty: v.ty.clone(),
+            ty,
         }))
     }
     else {
@@ -1798,7 +1803,7 @@ impl<'parsed> ast::ExprTree<'parsed, ast::Op, parser::ast::Expr<'parsed>> for as
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>> {
         match &op {
-            ast::Op::Access =>
+            ast::Op::TyAccess =>
                 ty_access_infix_op(context, parsed, left, op, right),
             ast::Op::EvalFn =>
                 eval_fn_infix_op(context, parsed, left, op, right),
@@ -1826,9 +1831,17 @@ fn ty_access_infix_op<'parsed>(
 
     if left.ty.base_eq_with_name("qual") {
         let qual = left.ty.arg_as_qual();
-        let v = VarKey::new(qual, ident.name.clone()).get_value(context)
-            .map_err(|e| e.convert(Some(parsed.slice)))?;
-        var.replace(Some(v.clone()));
+        let v = Var::get(context, qual.clone(), ident.name.clone()).ok();
+        let ty = match &v {
+            Some(x) => {
+                var.replace(Some(x.clone()));
+                x.ty.clone()
+            },
+            None =>
+                Ty::new_or_get_type(context, qual, ident.name.clone(), Vec::new())
+                .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+                .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?,
+        };
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: ast::ExprDetail::InfixOp {
@@ -1836,17 +1849,25 @@ fn ty_access_infix_op<'parsed>(
                 op,
                 right: right.clone(),
             },
-            ty: v.ty.clone(),
+            ty,
         }))
     }
     else if left.ty.base_eq_with_name("type") {
         let parent = left.ty.arg_as_type().get_value(context)
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-        let qual = left.ty.base.qual.get_pushed_qual(context, parent.base.name.clone())
+        let qual = parent.base.qual.get_pushed_qual(context, parent.base.name.clone())
             .map_err(|e| e.convert(left.parsed.map(|x| x.slice)))?;
-        let v = Var::get(context, qual.to_key(), ident.name.clone())
-            .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?;
-        var.replace(Some(v.clone()));
+        let v = Var::get(context, qual.to_key(), ident.name.clone()).ok();
+        let ty = match &v {
+            Some(x) => {
+                var.replace(Some(x.clone()));
+                x.ty.clone()
+            },
+            None =>
+                Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
+                .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+                .map_err(|e| e.convert(right.parsed.map(|x| x.slice)))?,
+        };
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: ast::ExprDetail::InfixOp {
@@ -1854,7 +1875,7 @@ fn ty_access_infix_op<'parsed>(
                 op,
                 right: right.clone(),
             },
-            ty: v.ty.clone(),
+            ty,
         }))
     }
     else {

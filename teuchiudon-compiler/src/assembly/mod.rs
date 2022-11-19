@@ -1,17 +1,15 @@
-pub mod label;
 pub mod container;
+pub mod label;
 
 use std::{
     cell::RefCell,
     fmt,
-    rc::Rc,
 };
-use teuchiudon_parser::semantics::elements::label::{
-    CodeLabel,
-    DataLabel,
-    TyLabel,
+use self::label::{
+    CodeName,
+    DataName,
+    TyName,
 };
-use self::label::Label;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Instruction {
@@ -24,7 +22,7 @@ pub enum Instruction {
     Pop,
     JumpIfFalse(CodeAddr),
     Jump(CodeAddr),
-    Extern,
+    Extern(String),
     Annotation,
     JumpIndirect(DataAddr),
     Copy,
@@ -32,11 +30,11 @@ pub enum Instruction {
     DataEnd,
     CodeStart,
     CodeEnd,
-    ExportData(Rc<DataLabel>),
-    SyncData(Rc<DataLabel>, SyncMode),
-    DeclData(Rc<DataLabel>, Rc<TyLabel>, AsmLiteral),
-    ExportCode(Rc<CodeLabel>),
-    Label(Rc<CodeLabel>),
+    ExportData(DataName),
+    SyncData(DataName, SyncMode),
+    DeclData(DataName, TyName, AsmLiteral),
+    ExportCode(CodeName),
+    Label(CodeName),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -56,13 +54,13 @@ pub enum AsmLiteral {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum DataAddr {
-    Label(Rc<DataLabel>),
-    Indirect(Rc<CodeLabel>, RefCell<Option<u32>>),
+    Label(DataName),
+    Indirect(CodeName, RefCell<Option<u32>>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CodeAddr {
-    Label(Rc<CodeLabel>),
+    Label(CodeName),
     Number(u32),
 }
 
@@ -81,8 +79,8 @@ impl fmt::Display for Instruction {
                 write!(f, "JUMP_IF_FALSE, {}", addr.to_string()),
             Self::Jump(addr) =>
                 write!(f, "JUMP, {}", addr.to_string()),
-            Self::Extern =>
-                write!(f, "EXTERN,"),
+            Self::Extern(name) =>
+                write!(f, "EXTERN, \"{}\"", name),
             Self::Annotation =>
                 write!(f, "ANNOTATION"),
             Self::JumpIndirect(addr) =>
@@ -98,15 +96,15 @@ impl fmt::Display for Instruction {
             Self::CodeEnd =>
                 write!(f, ".code_end"),
             Self::ExportData(data) =>
-                write!(f, ".export {}", data.full_name()),
+                write!(f, ".export {}", data.real_name),
             Self::SyncData(data, mode) =>
-                write!(f, ".sync {}, {}", data.full_name(), mode.to_string()),
+                write!(f, ".sync {}, {}", data.real_name, mode.to_string()),
             Self::DeclData(data, ty, literal) =>
-                write!(f, "{}: %{}, {}", data.full_name(), ty.full_name(), literal.to_string()),
+                write!(f, "{}: %{}, {}", data.real_name, ty.real_name, literal.to_string()),
             Self::ExportCode(code) =>
-                write!(f, ".export {}", code.full_name()),
+                write!(f, ".export {}", code.real_name),
             Self::Label(code) =>
-                write!(f, "{}", code.full_name()),
+                write!(f, "{}", code.real_name),
             _ =>
                 fmt::Result::Err(fmt::Error),
         }
@@ -145,9 +143,9 @@ impl fmt::Display for DataAddr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Label(data) =>
-                write!(f, "{}", data.full_name()),
+                write!(f, "{}", data.real_name),
             Self::Indirect(code, _) =>
-                write!(f, "indirect[{}]", code.full_name()),
+                write!(f, "indirect[{}]", code.real_name),
         }
     }
 }
@@ -156,7 +154,7 @@ impl fmt::Display for CodeAddr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Label(code) =>
-                write!(f, "{}", code.full_name()),
+                write!(f, "{}", code.real_name),
             Self::Number(addr) =>
                 write!(f, "0x{:#010X}", addr),
         }
@@ -176,7 +174,7 @@ impl Instruction {
                 8,
             Self::Jump(_) =>
                 8,
-            Self::Extern =>
+            Self::Extern(_) =>
                 8,
             Self::Annotation =>
                 4,

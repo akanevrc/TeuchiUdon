@@ -159,7 +159,6 @@ pub enum TyTermDetail<'parsed> {
     None,
     EvalTy {
         ident: Ident<'parsed>,
-        var: RefCell<Option<Rc<elements::var::Var>>>,
     },
 }
 

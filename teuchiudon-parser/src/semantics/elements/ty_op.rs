@@ -23,7 +23,7 @@ impl Ty {
     pub fn new_or_get_qual_from_key(context: &Context, key: QualKey) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("qual").get_value(context)?;
         let arg = key.get_value(context)?;
-        Ok(Self::new_or_get(context, base, vec![TyArg::Qual(arg.to_key())]))
+        Self::new_or_get(context, base, vec![TyArg::Qual(arg.to_key())])
     }
 
     pub fn new_or_get_qual_from_names(context: &Context, quals: Vec<String>) -> Result<Rc<Self>, ElementError> {
@@ -33,13 +33,13 @@ impl Ty {
     pub fn new_or_get_type_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("type").get_value(context)?;
         let arg = key.get_value(context)?;
-        Ok(Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())]))
+        Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())])
     }
 
     pub fn new_or_get_type(context: &Context, qual: QualKey, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("type").get_value(context)?;
         let arg = Self::get(context, qual, name, args)?;
-        Ok(Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())]))
+        Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())])
     }
 
     pub fn new_or_get_type_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
@@ -48,8 +48,9 @@ impl Ty {
 
     pub fn new_or_get_tuple_from_keys(context: &Context, keys: Vec<TyLogicalKey>) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("tuple").get_value(context)?;
-        let args = keys.iter().map(|x| Ok(TyArg::Ty(x.get_value(context)?.to_key()))).collect::<Result<_, _>>()?;
-        Ok(Self::new_or_get(context, base, args))
+        let arg_tys = keys.iter().map(|x| Ok(x.get_value(context)?)).collect::<Result<Vec<_>, _>>()?;
+        let args = arg_tys.into_iter().map(|x| TyArg::Ty(x.to_key())).collect();
+        Self::new_or_get(context, base, args)
     }
 
     pub fn get_array_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
@@ -63,7 +64,7 @@ impl Ty {
     pub fn get_method_from_key(context: &Context, key: NamedMethodsKey) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("method").get_value(context)?;
         let args = key.get_value(context)?.methods.iter().map(|x| TyArg::Method(x.to_key())).collect();
-        Ok(Self::new_or_get(context, base, args))
+        Self::new_or_get(context, base, args)
     }
 
     pub fn tys_to_ty(context: &Context, tys: &Vec<Rc<Self>>) -> Result<Rc<Self>, ElementError> {
@@ -88,7 +89,7 @@ impl Ty {
     }
 
     pub fn base_eq_with_name(self: &Rc<Self>, name: &str) -> bool {
-        self.base.logical_name == name
+        self.base.eq_with_name(name)
     }
 
     pub fn arg_as_qual(self: &Rc<Self>) -> QualKey {
@@ -494,44 +495,5 @@ impl Ty {
         }
 
         Err(ElementError::new("No compatible methods found".to_owned()))
-    }
-
-    pub fn members(self: &Rc<Self>, context: &Context) -> Result<Vec<(Option<String>, Rc<Ty>)>, ElementError> {
-        if self.base_eq_with_name("unit") {
-            Ok(Vec::new())
-        }
-        else if self.base_eq_with_name("tuple") {
-            self.args_as_tuple().iter()
-            .enumerate()
-            .map(|(i, x)| Ok((Some(i.to_string()), x.get_value(context)?)))
-            .collect::<Result<_, _>>()
-        }
-        else if self.base_eq_with_name("array") {
-            Ok(vec![(None, self.clone())])
-        }
-        else if self.real_name == None {
-            Err(ElementError::new(format!("Cannot instantiate type: `{}`", self.description())))
-        }
-        else {
-            Ok(vec![(None, self.clone())])
-        }
-    }
-
-    pub fn member_count(self: &Rc<Self>) -> Result<usize, ElementError> {
-        if self.base_eq_with_name("unit") {
-            Ok(0)
-        }
-        else if self.base_eq_with_name("tuple") {
-            Ok(self.args_as_tuple().len())
-        }
-        else if self.base_eq_with_name("array") {
-            Ok(1)
-        }
-        else if self.real_name == None {
-            Err(ElementError::new(format!("Cannot instantiate type: `{}`", self.description())))
-        }
-        else {
-            Ok(1)
-        }
     }
 }

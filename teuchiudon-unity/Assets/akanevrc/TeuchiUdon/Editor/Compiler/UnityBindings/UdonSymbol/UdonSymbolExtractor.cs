@@ -95,17 +95,17 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
                         }
                     }
                 }
+                FindTyParent();
+
                 Initialized = true;
             }
 
-            FindTyParent();
-
             return new UdonSymbols
             (
-                BaseTys.Values.ToArray(),
-                Tys.Values.ToArray(),
-                Methods.Values.ToArray(),
-                Evs.Values.ToArray()
+                BaseTys.Values.OrderBy(x => x.logical_name).ToArray(),
+                Tys.Values.OrderBy(x => x.real_name).ToArray(),
+                Methods.Values.OrderBy(x => x.real_name).ToArray(),
+                Evs.Values.OrderBy(x => x.real_name).ToArray()
             );
         }
 
@@ -174,12 +174,19 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             
             if (method.ty == "SystemVoid") return;
 
-            if (method.real_name.EndsWith("__T")) return;
+            if (method.real_name.EndsWith("__T") || method.real_name.EndsWith("__TArray")) return;
 
-            var key = GetMethodKey(method);
-            if (!Methods.ContainsKey(key))
+            if (method.name == "Type" && method.real_name.EndsWith("Ref")) return;
+
+            if (method.name == "op_Implicit" || method.name == "op_Explicit") return;
+
+            if (method.real_name == "Type_VRCUdonCommonInterfacesIUdonEventReceiver") return;
+
+            if (method.real_name == "Type_VRCUdonCommonInterfacesIUdonEventReceiverArray") return;
+
+            if (!Methods.ContainsKey(method.real_name))
             {
-                Methods.Add(key, method);
+                Methods.Add(method.real_name, method);
             }
         }
 
@@ -245,11 +252,6 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private string GetQualifiedName(IEnumerable<string> scopes, string name)
         {
             return string.Join("", scopes.Concat(new string[] { name }));
-        }
-
-        private string GetMethodKey(MethodSymbol method)
-        {
-            return $"{method.ty}{(method.is_static ? "::" : "..")}{method.real_name}";
         }
     }
 }

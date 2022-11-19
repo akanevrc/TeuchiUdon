@@ -6,7 +6,7 @@ use super::{
     method::Method,
     element::{
         SemanticElement,
-        ValueElement,
+        ValueElement, KeyElement,
     },
     ty::{
         Ty,
@@ -71,9 +71,24 @@ impl NamedMethods {
         let key = value.to_key();
         context.named_methods_store.add(key.clone(), value.clone())?;
 
-        let pushed = value.ty.base.qual.new_or_get_pushed_qual(context, value.ty.base.name.clone())?;
-        let ty = Ty::get_method_from_key(context, key)?;
-        Var::force_new(context, pushed, value.name.clone(), ty, false, false)?;
+        let ty = if value.ty.base_eq_with_name("type") {
+            value.ty.arg_as_type().get_value(context)?
+        }
+        else {
+            value.ty.clone()
+        };
+        let pushed = ty.base.qual.new_or_get_pushed_qual(context, ty.base.name.clone())?;
+        let method_ty = Ty::get_method_from_key(context, key)?;
+        Var::force_new(context, pushed, value.name.clone(), method_ty, false, false)?;
         Ok(value)
+    }
+}
+
+impl NamedMethodsKey {
+    pub fn new(ty: TyKey, name: String) -> Self {
+        Self {
+            ty,
+            name,
+        }
     }
 }

@@ -135,7 +135,7 @@ impl BaseTy {
         let key = value.to_key();
         let logical_key = value.to_key();
         context.base_ty_store.add(key, value.clone())?;
-        context.base_ty_logical_store.add(logical_key, value.clone())?;
+        context.base_ty_logical_store.add(logical_key, value.clone()).ok();
         Ok(value)
     }
 
@@ -153,7 +153,7 @@ impl BaseTy {
 
     pub fn new_or_get_applied(self: &Rc<Self>, context: &Context, args: Vec<TyArg>) -> Result<Rc<Ty>, ElementError> {
         let key: BaseTyKey = self.to_key();
-        Ok(Ty::new_or_get(context, key.get_value(context)?, args))
+        Ty::new_or_get(context, key.get_value(context)?, args)
     }
 
     pub fn new_or_get_applied_zero(self: &Rc<Self>, context: &Context) -> Result<Rc<Ty>, ElementError> {
@@ -170,6 +170,10 @@ impl BaseTy {
 
     pub fn eq_with(self: &Rc<Self>, ty: &Rc<Ty>) -> bool {
         *self == ty.base
+    }
+
+    pub fn eq_with_name(self: &Rc<Self>, name: &str) -> bool {
+        self.logical_name == name
     }
 }
 

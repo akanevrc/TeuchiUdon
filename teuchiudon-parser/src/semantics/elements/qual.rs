@@ -8,8 +8,6 @@ use super::{
         ValueElement,
     },
     scope::Scope,
-    ty::Ty,
-    var::Var,
 };
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -68,14 +66,7 @@ impl Qual {
             scopes: scopes.clone(),
         });
         let key = value.to_key();
-        let result = context.qual_store.add(key.clone(), value.clone());
-        
-        if result.is_ok() && scopes.len() != 0 {
-            let popped = value.get_popped(context)?;
-            let name = value.scopes.last().unwrap().logical_name();
-            let ty = Ty::new_or_get_qual_from_key(context, key)?;
-            Var::force_new(context, popped, name, ty, false, false)?;
-        }
+        context.qual_store.add(key.clone(), value.clone()).ok();
         Ok(value)
     }
 
