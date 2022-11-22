@@ -5,6 +5,7 @@ use std::{
 use teuchiudon_parser::semantics::elements::label::{
     CodeLabel,
     DataLabel,
+    ExternLabel,
 };
 use crate::assembly::{
     AsmLiteral,
@@ -50,7 +51,7 @@ pub fn get(data: Rc<DataLabel>) -> impl Iterator<Item = Instruction> {
 }
 
 pub fn set(data: Rc<DataLabel>) -> impl Iterator<Item = Instruction> {
-    data.to_name().into_iter()
+    data.to_name().into_iter().rev()
     .flat_map(|data|
         [
             Instruction::Push(DataAddr::Label(data)),
@@ -88,11 +89,17 @@ pub fn decl_fn() -> impl Iterator<Item = Instruction> {
     .into_iter()
 }
 
-pub fn decl_ev() -> impl Iterator<Item = Instruction> {
+pub fn decl_ev(code: Rc<CodeLabel>, stats: impl Iterator<Item = Instruction>) -> impl Iterator<Item = Instruction> {
     [
-        // TODO
-    ]
-    .into_iter()
+        Instruction::ExportCode(code.to_name()),
+        Instruction::Label(code.to_name()),
+        Instruction::Indent(1),
+    ].into_iter()
+    .chain(stats.into_iter())
+    .chain([
+        Instruction::Jump(CodeAddr::Number(0xFFFFFFFC)),
+        Instruction::Indent(-1),
+    ].into_iter())
 }
 
 pub fn eval_fn() -> impl Iterator<Item = Instruction> {
@@ -109,10 +116,10 @@ pub fn eval_method() -> impl Iterator<Item = Instruction> {
     .into_iter()
 }
 
-pub fn call_method(args: impl Iterator<Item = Instruction>, method_name: String) -> impl Iterator<Item = Instruction> {
+pub fn call_method(args: impl Iterator<Item = Instruction>, ext: Rc<ExternLabel>) -> impl Iterator<Item = Instruction> {
     args
     .chain([
-        Instruction::Extern(method_name)
+        Instruction::Extern(ext.to_name())
     ]
     .into_iter())
 }

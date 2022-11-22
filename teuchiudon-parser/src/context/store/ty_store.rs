@@ -10,7 +10,7 @@ use crate::semantics::elements::{
     },
 };
 
-impl Context {
+impl<'input> Context<'input> {
     pub fn register_default_tys(&self) -> Result<(), Vec<String>> {
         self.register_default_tys_core().map_err(|e| vec![e.message])
     }

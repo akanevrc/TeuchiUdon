@@ -34,16 +34,16 @@ use crate::lexer::{
 };
 
 #[named]
-pub fn target<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Target> {
+pub fn target<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Target<'input>>> + 'context {
     |input: &'input str| alt((
-        value(ast::Target { slice: input, body: None }, tuple((opt(lex(lexer::byte_order_mark)), lex(lexer::eof)))),
+        value(Rc::new(ast::Target { slice: input, body: None }), tuple((opt(lex(lexer::byte_order_mark)), lex(lexer::eof)))),
         map(
             consumed(
                 delimited(opt(lex(lexer::byte_order_mark)), body(context), lex(lexer::eof)),
             ),
-            |x| ast::Target { slice: x.0, body: Some(x.1) },
+            |x| Rc::new(ast::Target { slice: x.0, body: Some(x.1) }),
         ),
     ))
     .context(function_name!().to_owned())
@@ -51,23 +51,23 @@ pub fn target<'context: 'input, 'input>(
 }
 
 #[named]
-pub fn body<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Body> {
+pub fn body<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Body<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             many1(top_stat(context)),
         ),
-        |x| ast::Body { slice: x.0, top_stats: x.1 },
+        |x| Rc::new(ast::Body { slice: x.0, top_stats: x.1 }),
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn top_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TopStat> {
+pub fn top_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TopStat<'input>>> + 'context {
     |input: &'input str| alt((
         var_bind_top_stat(context),
         fn_bind_top_stat(context),
@@ -77,9 +77,9 @@ pub fn top_stat<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn var_bind_top_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TopStat> {
+fn var_bind_top_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TopStat<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -97,20 +97,20 @@ fn var_bind_top_stat<'context: 'input, 'input>(
                 lex(lexer::op_code(context, ";")),
             )),
         ),
-        |x| ast::TopStat {
+        |x| Rc::new(ast::TopStat {
             slice: x.0,
-            kind: ast::TopStatKind::VarBind {
-                access_attr: x.1.0.1.map(|y| ast::AccessAttr { slice: x.1.0.0, attr: y }),
-                sync_attr: x.1.1.1.map(|y| ast::SyncAttr { slice: x.1.1.0, attr: y }),
+            kind: Rc::new(ast::TopStatKind::VarBind {
+                access_attr: x.1.0.1.map(|y| Rc::new(ast::AccessAttr { slice: x.1.0.0, attr: y })),
+                sync_attr: x.1.1.1.map(|y| Rc::new(ast::SyncAttr { slice: x.1.1.0, attr: y })),
                 var_bind: x.1.2,
-            },
-        },
+            }),
+        }),
     )(input)
 }
 
-fn fn_bind_top_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TopStat> {
+fn fn_bind_top_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TopStat<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -121,34 +121,34 @@ fn fn_bind_top_stat<'context: 'input, 'input>(
                 lex(lexer::op_code(context, ";")),
             )),
         ),
-        |x| ast::TopStat {
+        |x| Rc::new(ast::TopStat {
             slice: x.0,
-            kind: ast::TopStatKind::FnBind {
-                access_attr: x.1.0.1.map(|y| ast::AccessAttr { slice: x.1.0.0, attr: y }),
+            kind: Rc::new(ast::TopStatKind::FnBind {
+                access_attr: x.1.0.1.map(|y| Rc::new(ast::AccessAttr { slice: x.1.0.0, attr: y })),
                 fn_bind: x.1.1,
-            },
-        },
+            }),
+        }),
     )(input)
 }
 
-fn stat_top_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TopStat> {
+fn stat_top_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TopStat<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             stat(context),
         ),
-        |x| ast::TopStat {
+        |x| Rc::new(ast::TopStat {
             slice: x.0,
-            kind: ast::TopStatKind::Stat { stat: x.1 },
-        },
+            kind: Rc::new(ast::TopStatKind::Stat { stat: x.1 }),
+        }),
     )(input)
 }
 
 #[named]
-pub fn var_bind<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarBind> {
+pub fn var_bind<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::VarBind<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -158,21 +158,21 @@ pub fn var_bind<'context: 'input, 'input>(
                 expr(context),
             )),
         ),
-        |x| ast::VarBind {
+        |x| Rc::new(ast::VarBind {
             slice: x.0,
             let_keyword: x.1.0,
             var_decl: x.1.1,
             expr: x.1.3,
-        },
+        }),
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn var_decl<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
+pub fn var_decl<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::VarDecl<'input>>> + 'context {
     |input: &'input str| alt((
         single_var_decl(context),
         tuple_var_decl(context, "(", ")", "()"),
@@ -181,9 +181,9 @@ pub fn var_decl<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn single_var_decl<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
+fn single_var_decl<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::VarDecl<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -199,23 +199,23 @@ fn single_var_decl<'context: 'input, 'input>(
                 ),
             )),
         ),
-        |x| ast::VarDecl {
+        |x| Rc::new(ast::VarDecl {
             slice: x.0,
-            kind: ast::VarDeclKind::SingleDecl {
-                mut_attr: x.1.0.1.map(|y| ast::MutAttr { slice: x.1.0.0, attr: y }),
+            kind: Rc::new(ast::VarDeclKind::SingleDecl {
+                mut_attr: x.1.0.1.map(|y| Rc::new(ast::MutAttr { slice: x.1.0.0, attr: y })),
                 ident: x.1.1,
                 ty_expr: x.1.2,
-            },
-        }
+            }),
+        })
     )(input)
 }
 
-fn tuple_var_decl<'context: 'input, 'input>(
-    context: &'context Context,
+fn tuple_var_decl<'input: 'context, 'context>(
+    context: &'context Context<'input>,
     open: &'static str,
     close: &'static str,
     both: &'static str,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::VarDecl> {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::VarDecl<'input>>> + 'context {
     move |input: &'input str| map(
         consumed(
             alt((
@@ -232,19 +232,19 @@ fn tuple_var_decl<'context: 'input, 'input>(
                 value(None, lex(lexer::op_code(context, both))),
             )),
         ),
-        |x| ast::VarDecl {
+        |x| Rc::new(ast::VarDecl {
             slice: x.0,
-            kind: ast::VarDeclKind::TupleDecl {
+            kind: Rc::new(ast::VarDeclKind::TupleDecl {
                 var_decls: x.1.unwrap_or(Vec::new()),
-            },
-        }
+            }),
+        })
     )(input)
 }
 
 #[named]
-pub fn fn_bind<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::FnBind> {
+pub fn fn_bind<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FnBind<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -253,21 +253,21 @@ pub fn fn_bind<'context: 'input, 'input>(
                 stats_block(context),
             )),
         ),
-        |x| ast::FnBind {
+        |x| Rc::new(ast::FnBind {
             slice: x.0,
             fn_keyword: x.1.0,
             fn_decl: x.1.1,
             stats_block: x.1.2,
-        },
+        }),
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn fn_decl<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::FnDecl> {
+pub fn fn_decl<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FnDecl<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -279,21 +279,21 @@ pub fn fn_decl<'context: 'input, 'input>(
                 )),
             )),
         ),
-        |x| ast::FnDecl {
+        |x| Rc::new(ast::FnDecl {
             slice: x.0,
             ident: x.1.0,
             var_decl: x.1.1,
             ty_expr: x.1.2,
-        },
+        }),
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn ty_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyExpr>> {
+pub fn ty_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((ty_term(context), many0(ty_op(context)))),
@@ -309,9 +309,9 @@ pub fn ty_expr<'context: 'input, 'input>(
 }
 
 #[named]
-pub fn ty_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TyOp> {
+pub fn ty_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyOp<'input>>> + 'context {
     |input: &'input str| alt((
         access_ty_op(context),
     ))
@@ -319,9 +319,9 @@ pub fn ty_op<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn access_ty_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TyOp> {
+fn access_ty_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyOp<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -329,48 +329,45 @@ fn access_ty_op<'context: 'input, 'input>(
                 ty_term(context),
             )),
         ),
-        |x| ast::TyOp {
+        |x| Rc::new(ast::TyOp {
             slice: x.0,
-            kind: ast::TyOpKind::Access {
+            kind: Rc::new(ast::TyOpKind::Access {
                 op_code: x.1.0,
                 ty_term: x.1.1,
-            },
-        },
+            }),
+        }),
     )(input)
 }
 
 #[named]
-pub fn ty_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyTerm>> {
-    |input: &'input str| map(
-        alt((
-            eval_ty_ty_term(context),
-        )),
-        |x| Rc::new(x),
-    )
+pub fn ty_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyTerm<'input>>> + 'context {
+    |input: &'input str| alt((
+        eval_ty_ty_term(context),
+    ))
     .context(function_name!().to_owned())
     .parse(input)
 }
 
-fn eval_ty_ty_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::TyTerm> {
+fn eval_ty_ty_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyTerm<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::ident(context)),
         ),
-        |x| ast::TyTerm {
+        |x| Rc::new(ast::TyTerm {
             slice: x.0,
-            kind: TyTermKind::EvalTy { ident: x.1 },
-        },
+            kind: Rc::new(TyTermKind::EvalTy { ident: x.1 }),
+        }),
     )(input)
 }
 
 #[named]
-pub fn stats_block<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::StatsBlock> {
+pub fn stats_block<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::StatsBlock<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -382,20 +379,20 @@ pub fn stats_block<'context: 'input, 'input>(
                 lex(lexer::op_code(context, "}")),
             ),
         ),
-        |x| ast::StatsBlock {
+        |x| Rc::new(ast::StatsBlock {
             slice: x.0,
             stats: x.1.0,
             ret: x.1.1,
-        },
+        }),
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Stat> {
+pub fn stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Stat<'input>>> + 'context {
     |input: &'input str| terminated(
         alt((
             return_stat(context),
@@ -403,24 +400,24 @@ pub fn stat<'context: 'input, 'input>(
             break_stat(context),
             map(
                 consumed(var_bind(context)),
-                |x| ast::Stat {
+                |x| Rc::new(ast::Stat {
                     slice: x.0,
-                    kind: ast::StatKind::VarBind { var_bind: x.1 },
-                },
+                    kind: Rc::new(ast::StatKind::VarBind { var_bind: x.1 }),
+                }),
             ),
             map(
                 consumed(fn_bind(context)),
-                |x| ast::Stat {
+                |x| Rc::new(ast::Stat {
                     slice: x.0,
-                    kind: ast::StatKind::FnBind { fn_bind: x.1 },
-                },
+                    kind: Rc::new(ast::StatKind::FnBind { fn_bind: x.1 }),
+                }),
             ),
             map(
                 consumed(expr(context)),
-                |x| ast::Stat {
+                |x| Rc::new(ast::Stat {
                     slice: x.0,
-                    kind: ast::StatKind::Expr { expr: x.1 },
-                },
+                    kind: Rc::new(ast::StatKind::Expr { expr: x.1 }),
+                }),
             ),
         )),
         lex(lexer::op_code(context, ";")),
@@ -429,9 +426,9 @@ pub fn stat<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn return_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Stat> {
+fn return_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Stat<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -439,45 +436,45 @@ fn return_stat<'context: 'input, 'input>(
                 opt(expr(context)),
             )),
         ),
-        |x| ast::Stat {
+        |x| Rc::new(ast::Stat {
             slice: x.0,
-            kind: ast::StatKind::Return { return_keyword: x.1.0, expr: x.1.1 },
-        },
+            kind: Rc::new(ast::StatKind::Return { return_keyword: x.1.0, expr: x.1.1 }),
+        }),
     )(input)
 }
 
-fn continue_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Stat> {
+fn continue_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Stat<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::keyword(context, "continue")),
         ),
-        |x| ast::Stat {
+        |x| Rc::new(ast::Stat {
             slice: x.0,
-            kind: ast::StatKind::Continue { continue_keyword: x.1 },
-        },
+            kind: Rc::new(ast::StatKind::Continue { continue_keyword: x.1 }),
+        }),
     )(input)
 }
 
-fn break_stat<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Stat> {
+fn break_stat<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Stat<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::keyword(context, "break")),
         ),
-        |x| ast::Stat {
+        |x| Rc::new(ast::Stat {
             slice: x.0,
-            kind: ast::StatKind::Break { break_keyword: x.1 },
-        }
+            kind: Rc::new(ast::StatKind::Break { break_keyword: x.1 }),
+        })
     )(input)
 }
 
 #[named]
-pub fn expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Expr>> {
+pub fn expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Expr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((term(context), many0(op(context)))),
@@ -493,9 +490,9 @@ pub fn expr<'context: 'input, 'input>(
 }
 
 #[named]
-pub fn op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+pub fn op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| alt((
         ty_access_op(context),
         access_op(context),
@@ -510,9 +507,9 @@ pub fn op<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn ty_access_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn ty_access_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -520,16 +517,16 @@ fn ty_access_op<'context: 'input, 'input>(
                 term(context),
             )),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::TyAccess { op_code: x.1.0, term: x.1.1 },
-        },
+            kind: Rc::new(ast::OpKind::TyAccess { op_code: x.1.0, term: x.1.1 }),
+        }),
     )(input)
 }
 
-fn access_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn access_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -537,16 +534,16 @@ fn access_op<'context: 'input, 'input>(
                 term(context),
             )),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::Access { op_code: x.1.0, term: x.1.1 },
-        },
+            kind: Rc::new(ast::OpKind::Access { op_code: x.1.0, term: x.1.1 }),
+        }),
     )(input)
 }
 
-fn eval_fn_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn eval_fn_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -560,16 +557,16 @@ fn eval_fn_op<'context: 'input, 'input>(
                 lex(lexer::op_code(context, ")")),
             ),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::EvalFn { arg_exprs: x.1.unwrap_or(Vec::new()) },
-        },
+            kind: Rc::new(ast::OpKind::EvalFn { arg_exprs: x.1.unwrap_or(Vec::new()) }),
+        }),
     )(input)
 }
 
-fn eval_spread_fn_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn eval_spread_fn_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -579,16 +576,16 @@ fn eval_spread_fn_op<'context: 'input, 'input>(
                 lex(lexer::op_code(context, ")")),
             )),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::EvalSpreadFn { expr: x.1.2 },
-        },
+            kind: Rc::new(ast::OpKind::EvalSpreadFn { expr: x.1.2 }),
+        }),
     )(input)
 }
 
-fn eval_key_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn eval_key_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -597,16 +594,16 @@ fn eval_key_op<'context: 'input, 'input>(
                 lex(lexer::op_code(context, "]")),
             ),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::EvalKey { expr: x.1 },
-        }
+            kind: Rc::new(ast::OpKind::EvalKey { expr: x.1 }),
+        })
     )(input)
 }
 
-fn cast_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn cast_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -614,16 +611,16 @@ fn cast_op<'context: 'input, 'input>(
                 ty_expr(context),
             )),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::CastOp { as_keyword: x.1.0, ty_expr: x.1.1 },
-        },
+            kind: Rc::new(ast::OpKind::CastOp { as_keyword: x.1.0, ty_expr: x.1.1 }),
+        }),
     )(input)
 }
 
-fn infix_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn infix_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -657,16 +654,16 @@ fn infix_op<'context: 'input, 'input>(
                 term(context),
             )),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::InfixOp { op_code: x.1.0, term: x.1.1 },
-        },
+            kind: Rc::new(ast::OpKind::InfixOp { op_code: x.1.0, term: x.1.1 }),
+        }),
     )(input)
 }
 
-fn assign_op<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Op> {
+fn assign_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -674,44 +671,41 @@ fn assign_op<'context: 'input, 'input>(
                 term(context),
             )),
         ),
-        |x| ast::Op {
+        |x| Rc::new(ast::Op {
             slice: x.0,
-            kind: ast::OpKind::Assign { term: x.1.1 },
-        }
+            kind: Rc::new(ast::OpKind::Assign { term: x.1.1 }),
+        })
     )(input)
 }
 
 #[named]
-pub fn term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term>> {
-    |input: &'input str| map(
-        alt((
-            prefix_op_term(context),
-            block_term(context),
-            paren_term(context),
-            tuple_term(context),
-            array_ctor_term(context),
-            literal_term(context),
-            this_literal_term(context),
-            interpolated_string_term(context),
-            eval_var_term(context),
-            let_in_bind_term(context),
-            if_term(context),
-            while_term(context),
-            loop_term(context),
-            for_term(context),
-            closure_term(context),
-        )),
-        |x| Rc::new(x),
-    )
+pub fn term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+    |input: &'input str| alt((
+        prefix_op_term(context),
+        block_term(context),
+        paren_term(context),
+        tuple_term(context),
+        array_ctor_term(context),
+        literal_term(context),
+        this_literal_term(context),
+        interpolated_string_term(context),
+        eval_var_term(context),
+        let_in_bind_term(context),
+        if_term(context),
+        while_term(context),
+        loop_term(context),
+        for_term(context),
+        closure_term(context),
+    ))
     .context(function_name!().to_owned())
     .parse(input)
 }
 
-fn prefix_op_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn prefix_op_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -724,30 +718,30 @@ fn prefix_op_term<'context: 'input, 'input>(
                 term(context),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::PrefixOp { op_code: x.1.0, term: x.1.1 },
-        }
+            kind: Rc::new(ast::TermKind::PrefixOp { op_code: x.1.0, term: x.1.1 }),
+        })
     )(input)
 }
 
-fn block_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn block_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             stats_block(context),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::Block { stats: x.1 },
-        },
+            kind: Rc::new(ast::TermKind::Block { stats: x.1 }),
+        }),
     )(input)
 }
 
-fn paren_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn paren_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -756,16 +750,16 @@ fn paren_term<'context: 'input, 'input>(
                 lex(lexer::op_code(context, ")")),
             ),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::Paren { expr: x.1 },
-        },
+            kind: Rc::new(ast::TermKind::Paren { expr: x.1 }),
+        }),
     )(input)
 }
 
-fn tuple_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn tuple_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
         tuple((
@@ -787,21 +781,21 @@ fn tuple_term<'context: 'input, 'input>(
                 lex(lexer::op_code(context, ")")),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::Tuple {
+            kind: Rc::new(ast::TermKind::Tuple {
                 exprs: x.1.3.map_or(
                     vec![x.1.1.clone()],
                     |y| [x.1.1].into_iter().chain([y.0].into_iter()).chain(y.1.into_iter()).collect(),
                 ),
-            },
-        },
+            }),
+        }),
     )(input)
 }
 
-fn array_ctor_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn array_ctor_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -810,16 +804,16 @@ fn array_ctor_term<'context: 'input, 'input>(
                 lex(lexer::op_code(context, "]")),
             ),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::ArrayCtor { iter_expr: x.1 },
-        },
+            kind: Rc::new(ast::TermKind::ArrayCtor { iter_expr: x.1 }),
+        }),
     )(input)
 }
 
-fn literal_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn literal_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             alt((
@@ -835,58 +829,58 @@ fn literal_term<'context: 'input, 'input>(
                 lex(lexer::verbatium_string_literal),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::Literal { literal: x.1 },
-        },
+            kind: Rc::new(ast::TermKind::Literal { literal: x.1 }),
+        }),
     )(input)
 }
 
-fn this_literal_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn this_literal_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::this_literal(context)),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::ThisLiteral { literal: x.1 },
-        }
+            kind: Rc::new(ast::TermKind::ThisLiteral { literal: x.1 }),
+        })
     )(input)
 }
 
-fn interpolated_string_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn interpolated_string_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::interpolated_string(context)),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::InterpolatedString { interpolated_string: x.1 },
-        },
+            kind: Rc::new(ast::TermKind::InterpolatedString { interpolated_string: x.1 }),
+        }),
     )(input)
 }
 
-fn eval_var_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn eval_var_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::ident(context)),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::EvalVar { ident: x.1 },
-        },
+            kind: Rc::new(ast::TermKind::EvalVar { ident: x.1 }),
+        }),
     )(input)
 }
 
-fn let_in_bind_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn let_in_bind_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -895,16 +889,16 @@ fn let_in_bind_term<'context: 'input, 'input>(
                 expr(context),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::LetInBind { var_bind: x.1.0, in_keyword: x.1.1, expr: x.1.2 },
-        },
+            kind: Rc::new(ast::TermKind::LetInBind { var_bind: x.1.0, in_keyword: x.1.1, expr: x.1.2 }),
+        }),
     )(input)
 }
 
-fn if_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn if_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -919,15 +913,15 @@ fn if_term<'context: 'input, 'input>(
                                 consumed(
                                     if_term(context),
                                 ),
-                                |x| ast::StatsBlock {
+                                |x| Rc::new(ast::StatsBlock {
                                     slice: x.0,
                                     stats: Vec::new(),
                                     ret: Some(Rc::new(ast::Expr {
                                         slice: x.0,
-                                        term: Rc::new(x.1),
+                                        term: x.1,
                                         ops: Vec::new(),
                                     })),
-                                },
+                                }),
                             ),
                             stats_block(context),
                         )),
@@ -935,16 +929,16 @@ fn if_term<'context: 'input, 'input>(
                 ),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::If { if_keyword: x.1.0, condition: x.1.1, if_part: x.1.2, else_part: x.1.3 },
-        },
+            kind: Rc::new(ast::TermKind::If { if_keyword: x.1.0, condition: x.1.1, if_part: x.1.2, else_part: x.1.3 }),
+        }),
     )(input)
 }
 
-fn while_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn while_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -953,16 +947,16 @@ fn while_term<'context: 'input, 'input>(
                 stats_block(context),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::While { while_keyword: x.1.0, condition: x.1.1, stats: x.1.2 },
-        },
+            kind: Rc::new(ast::TermKind::While { while_keyword: x.1.0, condition: x.1.1, stats: x.1.2 }),
+        }),
     )(input)
 }
 
-fn loop_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn loop_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -970,16 +964,16 @@ fn loop_term<'context: 'input, 'input>(
                 stats_block(context),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::Loop { loop_keyword: x.1.0, stats: x.1.1 },
-        },
+            kind: Rc::new(ast::TermKind::Loop { loop_keyword: x.1.0, stats: x.1.1 }),
+        }),
     )(input)
 }
 
-fn for_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn for_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -992,16 +986,16 @@ fn for_term<'context: 'input, 'input>(
                 stats_block(context),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::For { for_binds: x.1.0, stats: x.1.1 },
-        },
+            kind: Rc::new(ast::TermKind::For { for_binds: x.1.0, stats: x.1.1 }),
+        }),
     )(input)
 }
 
-fn closure_term<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::Term> {
+fn closure_term<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -1009,17 +1003,17 @@ fn closure_term<'context: 'input, 'input>(
                 expr(context),
             )),
         ),
-        |x| ast::Term {
+        |x| Rc::new(ast::Term {
             slice: x.0,
-            kind: ast::TermKind::Closure { var_decl: x.1.0, expr: x.1.1 },
-        },
+            kind: Rc::new(ast::TermKind::Closure { var_decl: x.1.0, expr: x.1.1 }),
+        }),
     )(input)
 }
 
 #[named]
-pub fn iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
+pub fn iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::IterExpr<'input>>> + 'context {
     |input: &'input str| alt((
         range_iter_expr(context),
         spread_iter_expr(context),
@@ -1029,9 +1023,9 @@ pub fn iter_expr<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn range_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
+fn range_iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::IterExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -1048,21 +1042,21 @@ fn range_iter_expr<'context: 'input, 'input>(
         ),
         |x|
             x.1.3.map_or(
-                ast::IterExpr {
+                Rc::new(ast::IterExpr {
                     slice: x.0,
-                    kind: ast::IterExprKind::Range { left: x.1.0.clone(), right: x.1.2.clone() },
-                },
-                |y| ast::IterExpr {
+                    kind: Rc::new(ast::IterExprKind::Range { left: x.1.0.clone(), right: x.1.2.clone() }),
+                }),
+                |y| Rc::new(ast::IterExpr {
                     slice: x.0,
-                    kind: ast::IterExprKind::SteppedRange { left: x.1.0, right: x.1.2, step: y },
-                },
+                    kind: Rc::new(ast::IterExprKind::SteppedRange { left: x.1.0, right: x.1.2, step: y }),
+                }),
             ),
     )(input)
 }
 
-fn spread_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
+fn spread_iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::IterExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             preceded(
@@ -1070,16 +1064,16 @@ fn spread_iter_expr<'context: 'input, 'input>(
                 expr(context),
             ),
         ),
-        |x| ast::IterExpr {
+        |x| Rc::new(ast::IterExpr {
             slice: x.0,
-            kind: ast::IterExprKind::Spread { expr: x.1 },
-        },
+            kind: Rc::new(ast::IterExprKind::Spread { expr: x.1 }),
+        }),
     )(input)
 }
 
-fn elements_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::IterExpr> {
+fn elements_iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::IterExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             terminated(
@@ -1087,17 +1081,17 @@ fn elements_iter_expr<'context: 'input, 'input>(
                 opt(lex(lexer::op_code(context, ","))),
             ),
         ),
-        |x| ast::IterExpr {
+        |x| Rc::new(ast::IterExpr {
             slice: x.0,
-            kind: ast::IterExprKind::Elements { exprs: x.1 },
-        },
+            kind: Rc::new(ast::IterExprKind::Elements { exprs: x.1 }),
+        }),
     )(input)
 }
 
 #[named]
-pub fn arg_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ArgExpr> {
+pub fn arg_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ArgExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -1107,20 +1101,20 @@ pub fn arg_expr<'context: 'input, 'input>(
                 expr(context),
             )),
         ),
-        |x| ast::ArgExpr {
+        |x| Rc::new(ast::ArgExpr {
             slice: x.0,
-            mut_attr: x.1.0.1.map(|y| ast::MutAttr { slice: x.1.0.0, attr: y }),
+            mut_attr: x.1.0.1.map(|y| Rc::new(ast::MutAttr { slice: x.1.0.0, attr: y })),
             expr: x.1.1,
-        },
+        }),
     )
     .context(function_name!().to_owned())
     .parse(input)
 }
 
 #[named]
-pub fn for_bind<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForBind> {
+pub fn for_bind<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ForBind<'input>>> + 'context {
     |input: &'input str| alt((
         let_for_bind(context),
         assign_for_bind(context),
@@ -1129,9 +1123,9 @@ pub fn for_bind<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn let_for_bind<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForBind> {
+fn let_for_bind<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ForBind<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -1141,16 +1135,16 @@ fn let_for_bind<'context: 'input, 'input>(
                 for_iter_expr(context),
             )),
         ),
-        |x| ast::ForBind {
+        |x| Rc::new(ast::ForBind {
             slice: x.0,
-            kind: ast::ForBindKind::Let { let_keyword: x.1.0, var_decl: x.1.1, for_iter_expr: x.1.3 },
-        },
+            kind: Rc::new(ast::ForBindKind::Let { let_keyword: x.1.0, var_decl: x.1.1, for_iter_expr: x.1.3 }),
+        }),
     )(input)
 }
 
-fn assign_for_bind<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForBind> {
+fn assign_for_bind<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ForBind<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             separated_pair(
@@ -1159,17 +1153,17 @@ fn assign_for_bind<'context: 'input, 'input>(
                 for_iter_expr(context),
             ),
         ),
-        |x| ast::ForBind {
+        |x| Rc::new(ast::ForBind {
             slice: x.0,
-            kind: ast::ForBindKind::Assign { left: x.1.0, for_iter_expr: x.1.1 },
-        },
+            kind: Rc::new(ast::ForBindKind::Assign { left: x.1.0, for_iter_expr: x.1.1 }),
+        }),
     )(input)
 }
 
 #[named]
-pub fn for_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForIterExpr> {
+pub fn for_iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ForIterExpr<'input>>> + 'context {
     |input: &'input str| alt((
         range_for_iter_expr(context),
         spread_for_iter_expr(context),
@@ -1178,9 +1172,9 @@ pub fn for_iter_expr<'context: 'input, 'input>(
     .parse(input)
 }
 
-fn range_for_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForIterExpr> {
+fn range_for_iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ForIterExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -1197,28 +1191,28 @@ fn range_for_iter_expr<'context: 'input, 'input>(
         ),
         |x|
             x.1.3.map_or(
-                ast::ForIterExpr {
+                Rc::new(ast::ForIterExpr {
                     slice: x.0,
-                    kind: ast::ForIterExprKind::Range { left: x.1.0.clone(), right: x.1.2.clone() },
-                },
-                |y| ast::ForIterExpr {
+                    kind: Rc::new(ast::ForIterExprKind::Range { left: x.1.0.clone(), right: x.1.2.clone() }),
+                }),
+                |y| Rc::new(ast::ForIterExpr {
                     slice: x.0,
-                    kind: ast::ForIterExprKind::SteppedRange { left: x.1.0, right: x.1.2, step: y },
-                },
+                    kind: Rc::new(ast::ForIterExprKind::SteppedRange { left: x.1.0, right: x.1.2, step: y }),
+                }),
             ),
     )(input)
 }
 
-fn spread_for_iter_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, ast::ForIterExpr> {
+fn spread_for_iter_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::ForIterExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             expr(context),
         ),
-        |x| ast::ForIterExpr {
+        |x| Rc::new(ast::ForIterExpr {
             slice: x.0,
-            kind: ast::ForIterExprKind::Spread { expr: x.1 },
-        },
+            kind: Rc::new(ast::ForIterExprKind::Spread { expr: x.1 }),
+        }),
     )(input)
 }

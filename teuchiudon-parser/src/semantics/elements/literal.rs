@@ -56,7 +56,11 @@ impl SemanticElement for LiteralKey {
 }
 
 impl Literal {
-    pub fn new(context: &Context, text: String, ty: Rc<Ty>) -> Result<Rc<Self>, ElementError> {
+    pub fn new<'input>(
+        context: &Context<'input>,
+        text: String,
+        ty: Rc<Ty>
+    ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.literal_store.next_id(),
             text,
@@ -67,61 +71,92 @@ impl Literal {
         Ok(value)
     }
 
-    pub fn new_unit(context: &Context) -> Result<Rc<Self>, ElementError> {
+    pub fn new_unit<'input>(
+        context: &Context<'input>
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "unit")?.new_or_get_applied_zero(context)?;
         Self::new(context, "()".to_owned(), ty)
     }
 
-    pub fn new_null(context: &Context) -> Result<Rc<Self>, ElementError> {
+    pub fn new_null<'input>(
+        context: &Context<'input>
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "nulltype")?.new_or_get_applied_zero(context)?;
         Self::new(context, "null".to_owned(), ty)
     }
 
-    pub fn new_bool(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_bool<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "bool")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_pure_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_pure_integer<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "int")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_dec_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_dec_integer<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_hex_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_hex_integer<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_bin_integer(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_bin_integer<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_real_number(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_real_number<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_real_number_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_character(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_character<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "char")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_regular_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_regular_string<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }
 
-    pub fn new_verbatium_string(context: &Context, text: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_verbatium_string<'input>(
+        context: &Context<'input>,
+        text: String
+    ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
         Self::new(context, text, ty)
     }

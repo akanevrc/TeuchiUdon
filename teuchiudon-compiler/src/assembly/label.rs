@@ -2,12 +2,17 @@ use std::hash::Hash;
 use teuchiudon_parser::semantics::elements::{
     label::{
         CodeLabel,
+        CodeLabelKind,
         DataLabel,
         DataLabelKind,
+        ExternLabel,
+        ExternLabelKind,
         TyLabel,
         TyLabelKind,
     },
+    ev::Ev,
     literal::Literal,
+    method::Method,
     qual::Qual,
     scope::Scope,
     ty::{
@@ -34,6 +39,11 @@ pub struct CodeName {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct TyName {
+    pub real_name: String,
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct ExternName {
     pub real_name: String,
 }
 
@@ -67,6 +77,14 @@ impl From<String> for TyName {
     }
 }
 
+impl From<String> for ExternName {
+    fn from(x: String) -> Self {
+        Self {
+            real_name: x,
+        }
+    }
+}
+
 impl EvalLabel<String> for DataName {
     fn to_name(&self) -> String {
         self.real_name.clone()
@@ -85,6 +103,12 @@ impl EvalLabel<String> for TyName {
     }
 }
 
+impl EvalLabel<String> for ExternName {
+    fn to_name(&self) -> String {
+        self.real_name.clone()
+    }
+}
+
 impl EvalLabel<Vec<DataName>> for DataLabel {
     fn to_name(&self) -> Vec<DataName> {
         match &self.kind {
@@ -97,7 +121,9 @@ impl EvalLabel<Vec<DataName>> for DataLabel {
 
 impl EvalLabel<CodeName> for CodeLabel {
     fn to_name(&self) -> CodeName {
-        CodeName::from("".to_owned())
+        match &self.kind {
+            CodeLabelKind::Ev(x) => x.to_name(),
+        }
     }
 }
 
@@ -110,9 +136,11 @@ impl EvalLabel<Vec<TyName>> for TyLabel {
     }
 }
 
-impl EvalLabel<DataName> for Literal {
-    fn to_name(&self) -> DataName {
-        DataName::from(format!("literal[{}]", self.id))
+impl EvalLabel<ExternName> for ExternLabel {
+    fn to_name(&self) -> ExternName {
+        match &self.kind {
+            ExternLabelKind::Method(x) => x.to_name(),
+        }
     }
 }
 
@@ -169,6 +197,24 @@ impl EvalLabel<Vec<TyElem>> for TyInstance {
                 })
                 .collect()
         }
+    }
+}
+
+impl EvalLabel<CodeName> for Ev {
+    fn to_name(&self) -> CodeName {
+        CodeName::from(self.real_name.clone())
+    }
+}
+
+impl EvalLabel<DataName> for Literal {
+    fn to_name(&self) -> DataName {
+        DataName::from(format!("literal[{}]", self.id))
+    }
+}
+
+impl EvalLabel<ExternName> for Method {
+    fn to_name(&self) -> ExternName {
+        ExternName::from(self.real_name.clone())
     }
 }
 

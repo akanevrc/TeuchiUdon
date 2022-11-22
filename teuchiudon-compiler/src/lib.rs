@@ -19,7 +19,7 @@ use self::{
 pub fn compile(input: &str, json: &str) -> Result<String, Vec<String>> {
     let parser_context = ParserContext::new_with_json(json.to_owned())?;
     let parsed = parse(&parser_context, input)?;
-    let target = analize(&parser_context, input, &parsed)?;
+    let target = analize(&parser_context, input, parsed)?;
     let compiler_context = CompilerContext::convert(&parser_context);
     let mut asm_container = AsmContainer::new();
     asm_container.push_data_part([generate_data_part(&compiler_context)].into_iter());

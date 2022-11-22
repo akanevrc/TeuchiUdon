@@ -1,0 +1,4 @@
+
+pub fn Start() {
+    UnityEngine::Debug::Log("Hello, TeuchiUdon!");
+};

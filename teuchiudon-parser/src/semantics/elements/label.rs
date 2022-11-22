@@ -1,6 +1,8 @@
 use std::rc::Rc;
 use super::{
+    ev::Ev,
     literal::Literal,
+    method::Method,
     ty::Ty,
     var::Var,
 };
@@ -20,11 +22,12 @@ pub enum DataLabelKind {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct CodeLabel {
-    kind: CodeLabelKind,
+    pub kind: CodeLabelKind,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum CodeLabelKind {
+    Ev(Rc<Ev>),
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -36,6 +39,14 @@ pub struct TyLabel {
 pub enum TyLabelKind {
     Ty(Rc<Ty>),
     Addr,
+}
+
+pub struct ExternLabel {
+    pub kind: ExternLabelKind,
+}
+
+pub enum ExternLabelKind {
+    Method(Rc<Method>),
 }
 
 impl DataLabel {
@@ -62,6 +73,14 @@ impl CodeLabel {
 
 impl TyLabel {
     pub fn new(kind: TyLabelKind) -> Self {
+        Self {
+            kind,
+        }
+    }
+}
+
+impl ExternLabel {
+    pub fn new(kind: ExternLabelKind) -> Self {
         Self {
             kind,
         }

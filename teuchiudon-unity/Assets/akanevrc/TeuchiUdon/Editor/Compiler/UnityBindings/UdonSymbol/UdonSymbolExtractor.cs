@@ -166,7 +166,8 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 if (!Evs.ContainsKey(method.name))
                 {
-                    var ev = new EvSymbol(method.name, method.param_tys, method.param_in_outs, method.real_name, method.param_real_names);
+                    var evName = GetEvName(method.real_name);
+                    var ev = new EvSymbol(method.name, method.param_tys, method.param_in_outs, evName, method.param_real_names);
                     Evs.Add(ev.name, ev);
                 }
                 return;
@@ -252,6 +253,11 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
         private string GetQualifiedName(IEnumerable<string> scopes, string name)
         {
             return string.Join("", scopes.Concat(new string[] { name }));
+        }
+
+        private string GetEvName(string name)
+        {
+            return $"_{char.ToLower(name[6])}{name.Substring(7)}";
         }
     }
 }

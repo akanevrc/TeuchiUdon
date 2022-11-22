@@ -74,8 +74,8 @@ impl SemanticElement for MethodKey {
 }
 
 impl Method {
-    pub fn new(
-        context: &Context,
+    pub fn new<'input>(
+        context: &Context<'input>,
         ty: Rc<Ty>,
         name: String,
         param_tys: Vec<Rc<Ty>>,

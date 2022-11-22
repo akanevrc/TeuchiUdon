@@ -60,7 +60,14 @@ impl SemanticElement for VarKey {
 }
 
 impl Var {
-    pub fn force_new(context: &Context, qual: Rc<Qual>, name: String, ty: Rc<Ty>, mut_attr: bool, is_system_var: bool) -> Result<Rc<Self>, ElementError> {
+    pub fn force_new<'input>(
+        context: &Context<'input>,
+        qual: Rc<Qual>,
+        name: String,
+        ty: Rc<Ty>,
+        mut_attr: bool,
+        is_system_var: bool
+    ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.var_store.next_id(),
             qual,
@@ -74,7 +81,11 @@ impl Var {
         Ok(value)
     }
 
-    pub fn get(context: &Context, qual: QualKey, name: String) -> Result<Rc<Self>, ElementError> {
+    pub fn get<'input>(
+        context: &Context<'input>,
+        qual: QualKey,
+        name: String
+    ) -> Result<Rc<Self>, ElementError> {
         VarKey::new(qual, name).get_value(context)
     }
 }

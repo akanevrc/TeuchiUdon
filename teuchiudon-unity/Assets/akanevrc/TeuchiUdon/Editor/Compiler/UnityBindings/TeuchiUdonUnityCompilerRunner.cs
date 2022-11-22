@@ -59,7 +59,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             try
             {
                 var json = UdonSymbolJsonConverter.ToJson(UdonSymbolExtractor.ExtractSymbols());
-                output = TeuchiUdonUnityCompiler.compile("let x: int = 123;", json);
+                output = TeuchiUdonUnityCompiler.compile(text, json);
 
                 var parsed = ParseOutput(output);
                 return parsed;

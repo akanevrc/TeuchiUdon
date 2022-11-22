@@ -4,94 +4,94 @@ use crate::lexer;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Target<'input> {
     pub slice: &'input str,
-    pub body: Option<Body<'input>>,
+    pub body: Option<Rc<Body<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Body<'input> {
     pub slice: &'input str,
-    pub top_stats: Vec<TopStat<'input>>,
+    pub top_stats: Vec<Rc<TopStat<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TopStat<'input> {
     pub slice: &'input str,
-    pub kind: TopStatKind<'input>,
+    pub kind: Rc<TopStatKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TopStatKind<'input> {
     VarBind {
-        access_attr: Option<AccessAttr<'input>>,
-        sync_attr: Option<SyncAttr<'input>>,
-        var_bind: VarBind<'input>,
+        access_attr: Option<Rc<AccessAttr<'input>>>,
+        sync_attr: Option<Rc<SyncAttr<'input>>>,
+        var_bind: Rc<VarBind<'input>>,
     },
     FnBind {
-        access_attr: Option<AccessAttr<'input>>,
-        fn_bind: FnBind<'input>,
+        access_attr: Option<Rc<AccessAttr<'input>>>,
+        fn_bind: Rc<FnBind<'input>>,
     },
     Stat {
-        stat: Stat<'input>,
+        stat: Rc<Stat<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AccessAttr<'input> {
     pub slice: &'input str,
-    pub attr: lexer::ast::Keyword<'input>,
+    pub attr: Rc<lexer::ast::Keyword<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SyncAttr<'input> {
     pub slice: &'input str,
-    pub attr: lexer::ast::Keyword<'input>,
+    pub attr: Rc<lexer::ast::Keyword<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct VarBind<'input> {
     pub slice: &'input str,
-    pub let_keyword: lexer::ast::Keyword<'input>,
-    pub var_decl: VarDecl<'input>,
+    pub let_keyword: Rc<lexer::ast::Keyword<'input>>,
+    pub var_decl: Rc<VarDecl<'input>>,
     pub expr: Rc<Expr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct VarDecl<'input> {
     pub slice: &'input str,
-    pub kind: VarDeclKind<'input>,
+    pub kind: Rc<VarDeclKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum VarDeclKind<'input> {
     SingleDecl {
-        mut_attr: Option<MutAttr<'input>>,
-        ident: lexer::ast::Ident<'input>,
+        mut_attr: Option<Rc<MutAttr<'input>>>,
+        ident: Rc<lexer::ast::Ident<'input>>,
         ty_expr: Option<Rc<TyExpr<'input>>>,
     },
     TupleDecl {
-        var_decls: Vec<VarDecl<'input>>,
+        var_decls: Vec<Rc<VarDecl<'input>>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MutAttr<'input> {
     pub slice: &'input str,
-    pub attr: lexer::ast::Keyword<'input>,
+    pub attr: Rc<lexer::ast::Keyword<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FnBind<'input> {
     pub slice: &'input str,
-    pub fn_keyword: lexer::ast::Keyword<'input>,
-    pub fn_decl: FnDecl<'input>,
-    pub stats_block: StatsBlock<'input>,
+    pub fn_keyword: Rc<lexer::ast::Keyword<'input>>,
+    pub fn_decl: Rc<FnDecl<'input>>,
+    pub stats_block: Rc<StatsBlock<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FnDecl<'input> {
     pub slice: &'input str,
-    pub ident: lexer::ast::Ident<'input>,
-    pub var_decl: VarDecl<'input>,
+    pub ident: Rc<lexer::ast::Ident<'input>>,
+    pub var_decl: Rc<VarDecl<'input>>,
     pub ty_expr: Option<Rc<TyExpr<'input>>>,
 }
 
@@ -99,19 +99,19 @@ pub struct FnDecl<'input> {
 pub struct TyExpr<'input> {
     pub slice: &'input str,
     pub ty_term: Rc<TyTerm<'input>>,
-    pub ty_ops: Vec<TyOp<'input>>,
+    pub ty_ops: Vec<Rc<TyOp<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TyOp<'input> {
     pub slice: &'input str,
-    pub kind: TyOpKind<'input>,
+    pub kind: Rc<TyOpKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TyOpKind<'input> {
     Access {
-        op_code: lexer::ast::OpCode<'input>,
+        op_code: Rc<lexer::ast::OpCode<'input>>,
         ty_term: Rc<TyTerm<'input>>,
     },
 }
@@ -119,46 +119,46 @@ pub enum TyOpKind<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct TyTerm<'input> {
     pub slice: &'input str,
-    pub kind: TyTermKind<'input>,
+    pub kind: Rc<TyTermKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TyTermKind<'input> {
     EvalTy {
-        ident: lexer::ast::Ident<'input>
+        ident: Rc<lexer::ast::Ident<'input>>
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct StatsBlock<'input> {
     pub slice: &'input str,
-    pub stats: Vec<Stat<'input>>,
+    pub stats: Vec<Rc<Stat<'input>>>,
     pub ret: Option<Rc<Expr<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Stat<'input> {
     pub slice: &'input str,
-    pub kind: StatKind<'input>,
+    pub kind: Rc<StatKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum StatKind<'input> {
     Return {
-        return_keyword: lexer::ast::Keyword<'input>,
+        return_keyword: Rc<lexer::ast::Keyword<'input>>,
         expr: Option<Rc<Expr<'input>>>,
     },
     Continue {
-        continue_keyword: lexer::ast::Keyword<'input>,
+        continue_keyword: Rc<lexer::ast::Keyword<'input>>,
     },
     Break {
-        break_keyword: lexer::ast::Keyword<'input>,
+        break_keyword: Rc<lexer::ast::Keyword<'input>>,
     },
     VarBind {
-        var_bind: VarBind<'input>,
+        var_bind: Rc<VarBind<'input>>,
     },
     FnBind {
-        fn_bind: FnBind<'input>,
+        fn_bind: Rc<FnBind<'input>>,
     },
     Expr {
         expr: Rc<Expr<'input>>,
@@ -169,27 +169,27 @@ pub enum StatKind<'input> {
 pub struct Expr<'input> {
     pub slice: &'input str,
     pub term: Rc<Term<'input>>,
-    pub ops: Vec<Op<'input>>,
+    pub ops: Vec<Rc<Op<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Op<'input> {
     pub slice: &'input str,
-    pub kind: OpKind<'input>,
+    pub kind: Rc<OpKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum OpKind<'input> {
     TyAccess {
-        op_code: lexer::ast::OpCode<'input>,
+        op_code: Rc<lexer::ast::OpCode<'input>>,
         term: Rc<Term<'input>>,
     },
     Access {
-        op_code: lexer::ast::OpCode<'input>,
+        op_code: Rc<lexer::ast::OpCode<'input>>,
         term: Rc<Term<'input>>,
     },
     EvalFn {
-        arg_exprs: Vec<ArgExpr<'input>>,
+        arg_exprs: Vec<Rc<ArgExpr<'input>>>,
     },
     EvalSpreadFn {
         expr: Rc<Expr<'input>>,
@@ -198,11 +198,11 @@ pub enum OpKind<'input> {
         expr: Rc<Expr<'input>>,
     },
     CastOp {
-        as_keyword: lexer::ast::Keyword<'input>,
+        as_keyword: Rc<lexer::ast::Keyword<'input>>,
         ty_expr: Rc<TyExpr<'input>>,
     },
     InfixOp {
-        op_code: lexer::ast::OpCode<'input>,
+        op_code: Rc<lexer::ast::OpCode<'input>>,
         term: Rc<Term<'input>>,
     },
     Assign {
@@ -213,17 +213,17 @@ pub enum OpKind<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Term<'input> {
     pub slice: &'input str,
-    pub kind: TermKind<'input>,
+    pub kind: Rc<TermKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TermKind<'input> {
     PrefixOp {
-        op_code: lexer::ast::OpCode<'input>,
+        op_code: Rc<lexer::ast::OpCode<'input>>,
         term: Rc<Term<'input>>,
     },
     Block {
-        stats: StatsBlock<'input>,
+        stats: Rc<StatsBlock<'input>>,
     },
     Paren {
         expr: Rc<Expr<'input>>,
@@ -232,46 +232,46 @@ pub enum TermKind<'input> {
         exprs: Vec<Rc<Expr<'input>>>,
     },
     ArrayCtor {
-        iter_expr: Option<IterExpr<'input>>,
+        iter_expr: Option<Rc<IterExpr<'input>>>,
     },
     Literal {
-        literal: lexer::ast::Literal<'input>,
+        literal: Rc<lexer::ast::Literal<'input>>,
     },
     ThisLiteral {
-        literal: lexer::ast::Literal<'input>,
+        literal: Rc<lexer::ast::Literal<'input>>,
     },
     InterpolatedString {
-        interpolated_string: lexer::ast::InterpolatedString<'input>,
+        interpolated_string: Rc<lexer::ast::InterpolatedString<'input>>,
     },
     EvalVar {
-        ident: lexer::ast::Ident<'input>,
+        ident: Rc<lexer::ast::Ident<'input>>,
     },
     LetInBind {
-        var_bind: VarBind<'input>,
-        in_keyword: lexer::ast::Keyword<'input>,
+        var_bind: Rc<VarBind<'input>>,
+        in_keyword: Rc<lexer::ast::Keyword<'input>>,
         expr: Rc<Expr<'input>>,
     },
     If {
-        if_keyword: lexer::ast::Keyword<'input>,
+        if_keyword: Rc<lexer::ast::Keyword<'input>>,
         condition: Rc<Expr<'input>>,
-        if_part: StatsBlock<'input>,
-        else_part: Option<(lexer::ast::Keyword<'input>, StatsBlock<'input>)>,
+        if_part: Rc<StatsBlock<'input>>,
+        else_part: Option<(Rc<lexer::ast::Keyword<'input>>, Rc<StatsBlock<'input>>)>,
     },
     While {
-        while_keyword: lexer::ast::Keyword<'input>,
+        while_keyword: Rc<lexer::ast::Keyword<'input>>,
         condition: Rc<Expr<'input>>,
-        stats: StatsBlock<'input>,
+        stats: Rc<StatsBlock<'input>>,
     },
     Loop {
-        loop_keyword: lexer::ast::Keyword<'input>,
-        stats: StatsBlock<'input>,
+        loop_keyword: Rc<lexer::ast::Keyword<'input>>,
+        stats: Rc<StatsBlock<'input>>,
     },
     For {
-        for_binds: Vec<(lexer::ast::Keyword<'input>, ForBind<'input>)>,
-        stats: StatsBlock<'input>,
+        for_binds: Vec<(Rc<lexer::ast::Keyword<'input>>, Rc<ForBind<'input>>)>,
+        stats: Rc<StatsBlock<'input>>,
     },
     Closure {
-        var_decl: VarDecl<'input>,
+        var_decl: Rc<VarDecl<'input>>,
         expr: Rc<Expr<'input>>,
     },
 }
@@ -279,7 +279,7 @@ pub enum TermKind<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct IterExpr<'input> {
     pub slice: &'input str,
-    pub kind: IterExprKind<'input>,
+    pub kind: Rc<IterExprKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -304,33 +304,33 @@ pub enum IterExprKind<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ArgExpr<'input> {
     pub slice: &'input str,
-    pub mut_attr: Option<MutAttr<'input>>,
+    pub mut_attr: Option<Rc<MutAttr<'input>>>,
     pub expr: Rc<Expr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ForBind<'input> {
     pub slice: &'input str,
-    pub kind: ForBindKind<'input>,
+    pub kind: Rc<ForBindKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ForBindKind<'input> {
     Let {
-        let_keyword: lexer::ast::Keyword<'input>,
-        var_decl: VarDecl<'input>,
-        for_iter_expr: ForIterExpr<'input>,
+        let_keyword: Rc<lexer::ast::Keyword<'input>>,
+        var_decl: Rc<VarDecl<'input>>,
+        for_iter_expr: Rc<ForIterExpr<'input>>,
     },
     Assign {
         left: Rc<Expr<'input>>,
-        for_iter_expr: ForIterExpr<'input>,
+        for_iter_expr: Rc<ForIterExpr<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ForIterExpr<'input> {
     pub slice: &'input str,
-    pub kind: ForIterExprKind<'input>,
+    pub kind: Rc<ForIterExprKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]

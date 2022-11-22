@@ -20,54 +20,86 @@ use super::{
 };
 
 impl Ty {
-    pub fn new_or_get_qual_from_key(context: &Context, key: QualKey) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_qual_from_key<'input>(
+        context: &Context<'input>,
+        key: QualKey
+    ) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("qual").get_value(context)?;
         let arg = key.get_value(context)?;
         Self::new_or_get(context, base, vec![TyArg::Qual(arg.to_key())])
     }
 
-    pub fn new_or_get_qual_from_names(context: &Context, quals: Vec<String>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_qual_from_names<'input>(
+        context: &Context<'input>,
+        quals: Vec<String>
+    ) -> Result<Rc<Self>, ElementError> {
         Self::new_or_get_qual_from_key(context, QualKey::new_quals(quals))
     }
 
-    pub fn new_or_get_type_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_type_from_key<'input>(
+        context: &Context<'input>,
+        key: TyLogicalKey
+    ) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("type").get_value(context)?;
         let arg = key.get_value(context)?;
         Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())])
     }
 
-    pub fn new_or_get_type(context: &Context, qual: QualKey, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_type<'input>(
+        context: &Context<'input>,
+        qual: QualKey,
+        name: String,
+        args: Vec<TyArg>
+    ) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("type").get_value(context)?;
         let arg = Self::get(context, qual, name, args)?;
         Self::new_or_get(context, base, vec![TyArg::Ty(arg.to_key())])
     }
 
-    pub fn new_or_get_type_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_type_from_name<'input>(
+        context: &Context<'input>,
+        name: &str
+    ) -> Result<Rc<Self>, ElementError> {
         Self::new_or_get_type(context, QualKey::top(), name.to_owned(), Vec::new())
     }
 
-    pub fn new_or_get_tuple_from_keys(context: &Context, keys: Vec<TyLogicalKey>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_tuple_from_keys<'input>(
+        context: &Context<'input>,
+        keys: Vec<TyLogicalKey>
+    ) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("tuple").get_value(context)?;
         let arg_tys = keys.iter().map(|x| Ok(x.get_value(context)?)).collect::<Result<Vec<_>, _>>()?;
         let args = arg_tys.into_iter().map(|x| TyArg::Ty(x.to_key())).collect();
         Self::new_or_get(context, base, args)
     }
 
-    pub fn get_array_from_key(context: &Context, key: TyLogicalKey) -> Result<Rc<Self>, ElementError> {
+    pub fn get_array_from_key<'input>(
+        context: &Context<'input>,
+        key: TyLogicalKey
+    ) -> Result<Rc<Self>, ElementError> {
         BaseTyKey::from_name("array").new_applied(vec![TyArg::Ty(key)]).get_value(context)
     }
 
-    pub fn get_array_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
+    pub fn get_array_from_name<'input>(
+        context: &Context<'input>,
+        name: &str
+    ) -> Result<Rc<Self>, ElementError> {
         Self::get_array_from_key(context, Ty::get_from_name(context, name)?.to_key())
     }
 
-    pub fn get_method_from_key(context: &Context, key: NamedMethodsKey) -> Result<Rc<Self>, ElementError> {
+    pub fn get_method_from_key<'input>(
+        context: &Context<'input>,
+        key: NamedMethodsKey
+    ) -> Result<Rc<Self>, ElementError> {
         let base = BaseTyKey::from_name("method").get_value(context)?;
         let args = key.get_value(context)?.methods.iter().map(|x| TyArg::Method(x.to_key())).collect();
         Self::new_or_get(context, base, args)
     }
 
-    pub fn tys_to_ty(context: &Context, tys: &Vec<Rc<Self>>) -> Result<Rc<Self>, ElementError> {
+    pub fn tys_to_ty<'input>(
+        context: &Context<'input>,
+        tys: &Vec<Rc<Self>>
+    ) -> Result<Rc<Self>, ElementError> {
         if tys.len() == 0 {
             Self::get_from_name(context, "unit")
         }
@@ -79,12 +111,34 @@ impl Ty {
         }
     }
 
-    pub fn logical_eq_with(self: &Rc<Self>, context: &Context, key: TyKey) -> bool {
+    pub fn ty_to_tys<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
+        if self.base_eq_with_name("tuple") {
+            self.args_as_tuple().iter()
+            .map(|x| x.get_value(context))
+            .collect::<Result<_, _>>()
+        }
+        else {
+            Ok(vec![self.clone()])
+        }
+    }
+
+    pub fn logical_eq_with<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        key: TyKey
+    ) -> bool {
         let ty = key.get_value(context);
         ty.is_ok() && self.logical_name == ty.unwrap().logical_name
     }
     
-    pub fn logical_eq_with_name(self: &Rc<Self>, context: &Context, name: &str) -> bool {
+    pub fn logical_eq_with_name<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        name: &str
+    ) -> bool {
         self.logical_eq_with(context, TyKey::from_name(name))
     }
 
@@ -209,7 +263,11 @@ impl Ty {
         }
     }
 
-    pub fn assignable_from(self: &Rc<Self>, context: &Context, ty: &Rc<Self>) -> bool {
+    pub fn assignable_from<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.assignable_from_unknown(context, ty) ||
         self.assignable_from_any(context, ty) ||
         self.assignable_from_never(context, ty) ||
@@ -223,24 +281,44 @@ impl Ty {
         self.assignable_from_dotnet_ty(context, ty)
     }
 
-    fn assignable_from_unknown(self: &Rc<Self>, _context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_unknown<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.base_eq_with_name("unknown") || ty.base_eq_with_name("unknown")
     }
 
-    fn assignable_from_any(self: &Rc<Self>, _context: &Context, _ty: &Rc<Self>) -> bool {
+    fn assignable_from_any<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        _ty: &Rc<Self>
+    ) -> bool {
         self.base_eq_with_name("any")
     }
 
-    fn assignable_from_never(self: &Rc<Self>, _context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_never<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         ty.base_eq_with_name("never")
     }
 
-    fn assignable_from_qual(self: &Rc<Self>, _context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_qual<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.base_eq_with_name("qual") && ty.base_eq_with_name("qual") &&
         self.arg_as_qual() == ty.arg_as_qual()
     }
 
-    fn assignable_from_type(self: &Rc<Self>, context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_type<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.base_eq_with_name("type") && ty.base_eq_with_name("type") && {
             let self_ty = self.arg_as_type().get_value(context);
             let ty_ty = ty.arg_as_type().get_value(context);
@@ -249,11 +327,19 @@ impl Ty {
         }
     }
 
-    fn assignable_from_unit(self: &Rc<Self>, _context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_unit<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.base_eq_with_name("unit") && ty.base_eq_with_name("unit")
     }
 
-    fn assignable_from_tuple(self: &Rc<Self>, context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_tuple<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.base_eq_with_name("tuple") && ty.base_eq_with_name("tuple") && {
             let self_tys =
                 self.args_as_tuple().iter()
@@ -273,19 +359,35 @@ impl Ty {
         }
     }
 
-    fn assignable_from_method(self: &Rc<Self>, _context: &Context, _ty: &Rc<Self>) -> bool {
+    fn assignable_from_method<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        _ty: &Rc<Self>
+    ) -> bool {
         false
     }
 
-    fn assignable_from_getter(self: &Rc<Self>, _context: &Context, _ty: &Rc<Self>) -> bool {
+    fn assignable_from_getter<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        _ty: &Rc<Self>
+    ) -> bool {
         false
     }
 
-    fn assignable_from_setter(self: &Rc<Self>, _context: &Context, _ty: &Rc<Self>) -> bool {
+    fn assignable_from_setter<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        _ty: &Rc<Self>
+    ) -> bool {
         false
     }
 
-    fn assignable_from_dotnet_ty(self: &Rc<Self>, _context: &Context, ty: &Rc<Self>) -> bool {
+    fn assignable_from_dotnet_ty<'input>(
+        self: &Rc<Self>,
+        _context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
         self.is_dotnet_ty() && ty.is_dotnet_ty() &&
         ty.parents.contains(&self.to_key())
     }
@@ -310,7 +412,10 @@ impl Ty {
         .all(|x| !self.base_eq_with_name(x))
     }
 
-    pub fn is_syncable(self: &Rc<Self>, context: &Context) -> bool {
+    pub fn is_syncable<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
         vec![
             "bool",
             "byte",
@@ -362,7 +467,10 @@ impl Ty {
         })
     }
 
-    pub fn is_linear_syncable(self: &Rc<Self>, context: &Context) -> bool {
+    pub fn is_linear_syncable<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
         vec![
             "byte",
             "sbyte",
@@ -384,7 +492,10 @@ impl Ty {
         .any(|x| self.logical_eq_with_name(context, x))
     }
 
-    pub fn is_smooth_syncable(self: &Rc<Self>, context: &Context) -> bool {
+    pub fn is_smooth_syncable<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
         vec![
             "byte",
             "sbyte",
@@ -404,7 +515,10 @@ impl Ty {
         .any(|x| self.logical_eq_with_name(context, x))
     }
 
-    pub fn is_signed_integer(self: &Rc<Self>, context: &Context) -> bool {
+    pub fn is_signed_integer<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
         vec![
             "sbyte",
             "short",
@@ -415,12 +529,19 @@ impl Ty {
         .any(|x| self.logical_eq_with_name(context, x))
     }
 
-    pub fn contains_unknown(self: &Rc<Self>, context: &Context) -> bool {
+    pub fn contains_unknown<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
         self.base_eq_with_name("unknown") ||
         self.args.iter().any(|x| if let TyArg::Ty(t) = x { t.get_value(context).is_ok() } else { false })
     }
 
-    pub fn infer(self: &Rc<Self>, context: &Context, ty: &Rc<Self>) -> Result<Rc<Self>, ElementError> {
+    pub fn infer<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> Result<Rc<Self>, ElementError> {
         if self.base_eq_with_name("unknown") {
             Ok(ty.clone())
         }
@@ -449,7 +570,11 @@ impl Ty {
         }
     }
 
-    pub fn most_compatible_method(self: &Rc<Self>, context: &Context, in_tys: Vec<TyLogicalKey>) -> Result<MethodKey, ElementError> {
+    pub fn most_compatible_method<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        in_tys: Vec<TyLogicalKey>
+    ) -> Result<MethodKey, ElementError> {
         if !self.base_eq_with_name("method") {
             panic!("Illegal state")
         }

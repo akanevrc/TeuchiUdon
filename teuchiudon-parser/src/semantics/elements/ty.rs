@@ -126,8 +126,8 @@ impl SemanticElement for TyKey {
     }
 }
 
-impl KeyElement<Ty> for TyKey {
-    fn get_value(&self, context: &Context) -> Result<Rc<Ty>, ElementError> {
+impl<'input> KeyElement<'input, Ty> for TyKey {
+    fn get_value(&self, context: &Context<'input>) -> Result<Rc<Ty>, ElementError> {
         context.ty_store.get(self)
     }
 }
@@ -150,8 +150,8 @@ impl SemanticElement for TyLogicalKey {
     }
 }
 
-impl KeyElement<Ty> for TyLogicalKey {
-    fn get_value(&self, context: &Context) -> Result<Rc<Ty>, ElementError> {
+impl<'input> KeyElement<'input, Ty> for TyLogicalKey {
+    fn get_value(&self, context: &Context<'input>) -> Result<Rc<Ty>, ElementError> {
         context.ty_logical_store.get(self)
     }
 }
@@ -175,8 +175,8 @@ impl SemanticElement for TyArg {
 }
 
 impl Ty {
-    pub fn new_strict(
-        context: &Context,
+    pub fn new_strict<'input>(
+        context: &Context<'input>,
         base: Rc<BaseTy>,
         args: Vec<TyArg>,
         logical_name: String,
@@ -198,7 +198,11 @@ impl Ty {
         Ok(value)
     }
 
-    pub fn new(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+    pub fn new<'input>(
+        context: &Context<'input>,
+        base: Rc<BaseTy>,
+        args: Vec<TyArg>
+    ) -> Result<Rc<Self>, ElementError> {
         Self::new_strict(
             context,
             base.clone(),
@@ -209,7 +213,11 @@ impl Ty {
         )
     }
 
-    pub fn new_or_get(context: &Context, base: Rc<BaseTy>, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get<'input>(
+        context: &Context<'input>,
+        base: Rc<BaseTy>,
+        args: Vec<TyArg>
+    ) -> Result<Rc<Self>, ElementError> {
         let instance = Self::instance(context, &base, &args)?;
         let value = Rc::new(Self {
             id: context.ty_store.next_id(),
@@ -255,19 +263,34 @@ impl Ty {
         }
     }
 
-    pub fn get(context: &Context, qual: QualKey, name: String, args: Vec<TyArg>) -> Result<Rc<Self>, ElementError> {
+    pub fn get<'input>(
+        context: &Context<'input>,
+        qual: QualKey,
+        name: String,
+        args: Vec<TyArg>
+    ) -> Result<Rc<Self>, ElementError> {
         TyKey::new(qual, name, args).get_value(context)
     }
 
-    pub fn get_from_name(context: &Context, name: &str) -> Result<Rc<Self>, ElementError> {
+    pub fn get_from_name<'input>(
+        context: &Context<'input>,
+        name: &str
+    ) -> Result<Rc<Self>, ElementError> {
         TyKey::from_name(name).get_value(context)
     }
 
-    pub fn get_from_logical_name(context: &Context, logical_name: String) -> Result<Rc<Self>, ElementError> {
+    pub fn get_from_logical_name<'input>(
+        context: &Context<'input>,
+        logical_name: String
+    ) -> Result<Rc<Self>, ElementError> {
         TyLogicalKey::new(logical_name).get_value(context)
     }
 
-    fn instance(context: &Context, base: &Rc<BaseTy>, args: &Vec<TyArg>) -> Result<Option<TyInstance>, ElementError> {
+    fn instance<'input>(
+        context: &Context<'input>,
+        base: &Rc<BaseTy>,
+        args: &Vec<TyArg>
+    ) -> Result<Option<TyInstance>, ElementError> {
         match base.logical_name.as_str() {
             "qual" |
             "type" |
@@ -302,7 +325,11 @@ impl Ty {
         }
     }
 
-    fn sub_instance(context: &Context, arg: &TyArg, elem_name: String) -> Result<Option<TyInstance>, ElementError> {
+    fn sub_instance<'input>(
+        context: &Context<'input>,
+        arg: &TyArg,
+        elem_name: String
+    ) -> Result<Option<TyInstance>, ElementError> {
         match arg {
             TyArg::Ty(x) =>
                 match &x.get_value(context)?.instance {

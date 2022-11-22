@@ -23,6 +23,7 @@ use crate::semantics::elements::{
         Ev,
         EvKey,
     },
+    ev_stats::EvStats,
     literal::{
         Literal,
         LiteralKey,
@@ -50,7 +51,7 @@ use crate::semantics::elements::{
     },
 };
 
-pub struct Context {
+pub struct Context<'input> {
     pub keyword: KeywordContext,
     pub op_code: OpCodeContext,
     pub semantic_op: SemanticOpContext,
@@ -65,9 +66,10 @@ pub struct Context {
     pub method_store: Store<MethodKey, Method>,
     pub named_methods_store: Store<NamedMethodsKey, NamedMethods>,
     pub var_store: Store<VarKey, Var>,
+    pub ev_stats_store: Store<EvKey, EvStats<'input>>,
 }
 
-impl Context {
+impl<'input> Context<'input> {
     pub fn new() -> Result<Self, Vec<String>> {
         let context = Self {
             keyword: KeywordContext::new(),
@@ -84,6 +86,7 @@ impl Context {
             method_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             named_methods_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
+            ev_stats_store: Store::new(|x| format!("Specified event `{}` not found", x.description())),
         };
         context.register_default_tys()?;
         Ok(context)

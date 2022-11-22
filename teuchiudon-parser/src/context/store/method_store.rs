@@ -8,7 +8,7 @@ use crate::semantics::elements::{
     },
 };
 
-impl Context {
+impl<'input> Context<'input> {
     pub fn register_named_methods(&self) -> Result<(), Vec<String>> {
         let kv =
             self.method_store.values()

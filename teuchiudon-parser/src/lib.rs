@@ -8,6 +8,7 @@ mod macroes;
 #[cfg(test)]
 mod test;
 
+use std::rc::Rc;
 use nom::Err;
 use nom_supreme::final_parser::final_parser;
 use self::{
@@ -22,19 +23,19 @@ use self::{
 
 pub type ParsedResult<'input, O> = Result<(&'input str, O), Err<ErrorTree<'input>>>;
 
-pub fn parse<'context: 'input, 'input>(
-    context: &'context Context,
+pub fn parse<'input: 'context, 'context>(
+    context: &'context Context<'input>,
     input: &'input str
-) -> Result<parser::ast::Target<'input>, Vec<String>> {
+) -> Result<Rc<parser::ast::Target<'input>>, Vec<String>> {
     final_parser(parser::target(context))(input)
     .map_err(|e| convert_parsed_error(input, e))
 }
 
-pub fn analize<'context: 'input, 'input>(
-    context: &'context Context,
+pub fn analize<'input: 'context, 'context>(
+    context: &'context Context<'input>,
     input: &'input str,
-    parsed: &'input parser::ast::Target<'input>
-) -> Result<semantics::ast::Target<'input>, Vec<String>> {
+    parsed: Rc<parser::ast::Target<'input>>
+) -> Result<Rc<semantics::ast::Target<'input>>, Vec<String>> {
     semantics::analyzer::target(context, parsed)
     .map_err(|e| convert_semantic_error(input, e))
 }

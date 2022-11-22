@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::lexer::ast::{
     Keyword,
     KeywordKind,
@@ -45,8 +46,8 @@ impl KeywordContext {
         }
     }
 
-    pub fn from_str<'context: 'input, 'input>(&'context self, name: &str, slice: &'input str) -> Option<Keyword<'input>> {
-        self.keywords.iter().find(|x| x.0 == name).map(|x| Keyword { slice, kind: x.1 })
+    pub fn from_str<'input>(&self, name: &str, slice: &'input str) -> Option<Rc<Keyword<'input>>> {
+        self.keywords.iter().find(|x| x.0 == name).map(|x| Rc::new(Keyword { slice, kind: x.1 }))
     }
 
     pub fn iter_keyword_str(&self) -> impl Iterator<Item = &str> {

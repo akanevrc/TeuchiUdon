@@ -37,71 +37,71 @@ fn test_ty_expr() {
     let ty_unknown = elements::ty::Ty::get_from_name(&context, "unknown").unwrap();
     let parsed = parser::ty_expr(&context)("T::U::V").unwrap().1;
     assert_eq!(
-        analyzer::ty_expr(&context, &parsed).ok(),
+        analyzer::ty_expr(&context, parsed.clone()).ok(),
         Some(Rc::new(ast::TyExpr {
-            parsed: Some(&parsed),
-            detail: ast::TyExprDetail::InfixOp {
+            parsed: Some(parsed.clone()),
+            detail: Rc::new(ast::TyExprDetail::InfixOp {
                 left: Rc::new(ast::TyExpr {
-                    parsed: Some(&parsed),
-                    detail: ast::TyExprDetail::InfixOp {
+                    parsed: Some(parsed.clone()),
+                    detail: Rc::new(ast::TyExprDetail::InfixOp {
                         left: Rc::new(ast::TyExpr {
-                            parsed: Some(&parsed),
-                            detail: ast::TyExprDetail::Term {
+                            parsed: Some(parsed.clone()),
+                            detail: Rc::new(ast::TyExprDetail::Term {
                                 term: Rc::new(ast::TyTerm {
-                                    parsed: Some(&parsed.ty_term),
-                                    detail: ast::TyTermDetail::EvalTy {
-                                        ident: ast::Ident {
-                                            parsed: Some(&lexer::ast::Ident { slice: "T" }),
+                                    parsed: Some(parsed.ty_term.clone()),
+                                    detail: Rc::new(ast::TyTermDetail::EvalTy {
+                                        ident: Rc::new(ast::Ident {
+                                            parsed: Some(Rc::new(lexer::ast::Ident { slice: "T" })),
                                             name: "T".to_owned(),
-                                        },
-                                    },
+                                        }),
+                                    }),
                                     ty: ty_t.clone(),
                                 }),
-                            },
+                            }),
                             ty: ty_t.clone(),
                         }),
                         op: ast::TyOp::Access,
                         right: Rc::new(ast::TyExpr {
-                            parsed: Some(&parsed),
-                            detail: ast::TyExprDetail::Term {
+                            parsed: Some(parsed.clone()),
+                            detail: Rc::new(ast::TyExprDetail::Term {
                                 term: Rc::new(ast::TyTerm {
-                                    parsed: match &parsed.ty_ops[0].kind {
-                                        parser::ast::TyOpKind::Access { op_code: _, ty_term } => Some(ty_term),
+                                    parsed: match parsed.ty_ops[0].kind.as_ref() {
+                                        parser::ast::TyOpKind::Access { op_code: _, ty_term } => Some(ty_term.clone()),
                                     },
-                                    detail: ast::TyTermDetail::EvalTy {
-                                        ident: ast::Ident {
-                                            parsed: Some(&lexer::ast::Ident { slice: "U" }),
+                                    detail: Rc::new(ast::TyTermDetail::EvalTy {
+                                        ident: Rc::new(ast::Ident {
+                                            parsed: Some(Rc::new(lexer::ast::Ident { slice: "U" })),
                                             name: "U".to_owned(),
-                                        },
-                                    },
+                                        }),
+                                    }),
                                     ty: ty_unknown.clone(),
                                 }),
-                            },
+                            }),
                             ty: ty_unknown.clone(),
                         }),
-                    },
+                    }),
                     ty: ty_u.clone(),
                 }),
                 op: ast::TyOp::Access,
                 right: Rc::new(ast::TyExpr {
-                    parsed: Some(&parsed),
-                    detail: ast::TyExprDetail::Term {
+                    parsed: Some(parsed.clone()),
+                    detail: Rc::new(ast::TyExprDetail::Term {
                         term: Rc::new(ast::TyTerm {
-                            parsed: match &parsed.ty_ops[1].kind {
-                                parser::ast::TyOpKind::Access { op_code: _, ty_term } => Some(ty_term),
+                            parsed: match parsed.ty_ops[1].kind.as_ref() {
+                                parser::ast::TyOpKind::Access { op_code: _, ty_term } => Some(ty_term.clone()),
                             },
-                            detail: ast::TyTermDetail::EvalTy {
-                                ident: ast::Ident {
-                                    parsed: Some(&lexer::ast::Ident { slice: "V" }),
+                            detail: Rc::new(ast::TyTermDetail::EvalTy {
+                                ident: Rc::new(ast::Ident {
+                                    parsed: Some(Rc::new(lexer::ast::Ident { slice: "V" })),
                                     name: "V".to_owned(),
-                                },
-                            },
+                                }),
+                            }),
                             ty: ty_unknown.clone(),
                         }),
-                    },
+                    }),
                     ty: ty_unknown.clone(),
                 }),
-            },
+            }),
             ty: ty_v.clone(),
         })),
     )

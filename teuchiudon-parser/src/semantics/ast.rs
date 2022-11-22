@@ -11,58 +11,59 @@ use super::{
 };
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Target<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::Target<'parsed>>,
-    pub body: Body<'parsed>,
+pub struct Target<'input> {
+    pub parsed: Option<Rc<parser::ast::Target<'input>>>,
+    pub body: Rc<Body<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Body<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::Body<'parsed>>,
-    pub top_stats: Vec<TopStat<'parsed>>,
+pub struct Body<'input> {
+    pub parsed: Option<Rc<parser::ast::Body<'input>>>,
+    pub top_stats: Vec<Rc<TopStat<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TopStat<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::TopStat<'parsed>>,
-    pub detail: TopStatDetail<'parsed>,
+pub struct TopStat<'input> {
+    pub parsed: Option<Rc<parser::ast::TopStat<'input>>>,
+    pub detail: Rc<TopStatDetail<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TopStatDetail<'parsed> {
+pub enum TopStatDetail<'input> {
     VarBind {
-        access_attr: AccessAttr<'parsed>,
-        sync_attr: SyncAttr<'parsed>,
-        var_bind: VarBind<'parsed>,
+        access_attr: Rc<AccessAttr<'input>>,
+        sync_attr: Rc<SyncAttr<'input>>,
+        var_bind: Rc<VarBind<'input>>,
     },
     FnBind {
-        access_attr: AccessAttr<'parsed>,
-        fn_bind: FnBind<'parsed>,
+        access_attr: Rc<AccessAttr<'input>>,
+        fn_bind: Rc<FnBind<'input>>,
+        ev: Option<(Rc<elements::ev::Ev>, Rc<elements::ev_stats::EvStats<'input>>)>,
     },
     Stat {
-        stat: Stat<'parsed>,
+        stat: Rc<Stat<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct AccessAttr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::AccessAttr<'parsed>>,
+pub struct AccessAttr<'input> {
+    pub parsed: Option<Rc<parser::ast::AccessAttr<'input>>>,
     pub detail: AccessAttrDetail,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum AccessAttrDetail {
     None,
     Pub,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SyncAttr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::SyncAttr<'parsed>>,
+pub struct SyncAttr<'input> {
+    pub parsed: Option<Rc<parser::ast::SyncAttr<'input>>>,
     pub detail: SyncAttrDetail,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SyncAttrDetail {
     None,
     Sync,
@@ -71,74 +72,76 @@ pub enum SyncAttrDetail {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct VarBind<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::VarBind<'parsed>>,
-    pub var_decl: VarDecl<'parsed>,
-    pub expr: Rc<Expr<'parsed>>,
+pub struct VarBind<'input> {
+    pub parsed: Option<Rc<parser::ast::VarBind<'input>>>,
+    pub var_decl: Rc<VarDecl<'input>>,
+    pub expr: Rc<Expr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct VarDecl<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::VarDecl<'parsed>>,
-    pub detail: VarDeclDetail<'parsed>,
+pub struct VarDecl<'input> {
+    pub parsed: Option<Rc<parser::ast::VarDecl<'input>>>,
+    pub detail: Rc<VarDeclDetail<'input>>,
+    pub ty: Rc<elements::ty::Ty>,
+    pub names: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum VarDeclDetail<'parsed> {
+pub enum VarDeclDetail<'input> {
     SingleDecl {
-        mut_attr: MutAttr<'parsed>,
-        ident: Ident<'parsed>,
-        ty_expr: Rc<TyExpr<'parsed>>,
+        mut_attr: Rc<MutAttr<'input>>,
+        ident: Rc<Ident<'input>>,
+        ty_expr: Rc<TyExpr<'input>>,
         var: Rc<elements::var::Var>,
     },
     TupleDecl {
-        var_decls: Vec<VarDecl<'parsed>>,
+        var_decls: Vec<Rc<VarDecl<'input>>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct MutAttr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::MutAttr<'parsed>>,
+pub struct MutAttr<'input> {
+    pub parsed: Option<Rc<parser::ast::MutAttr<'input>>>,
     pub detail: MutAttrDetail,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum MutAttrDetail {
     None,
     Mut,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FnBind<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::FnBind<'parsed>>,
-    pub fn_decl: FnDecl<'parsed>,
-    pub stats_block: StatsBlock<'parsed>,
+pub struct FnBind<'input> {
+    pub parsed: Option<Rc<parser::ast::FnBind<'input>>>,
+    pub fn_decl: Rc<FnDecl<'input>>,
+    pub stats_block: Rc<StatsBlock<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FnDecl<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::FnDecl<'parsed>>,
-    pub ident: Ident<'parsed>,
-    pub var_decl: VarDecl<'parsed>,
-    pub ty_expr: Rc<TyExpr<'parsed>>
+pub struct FnDecl<'input> {
+    pub parsed: Option<Rc<parser::ast::FnDecl<'input>>>,
+    pub ident: Rc<Ident<'input>>,
+    pub var_decl: Rc<VarDecl<'input>>,
+    pub ty_expr: Rc<TyExpr<'input>>
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TyExpr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::TyExpr<'parsed>>,
-    pub detail: TyExprDetail<'parsed>,
+pub struct TyExpr<'input> {
+    pub parsed: Option<Rc<parser::ast::TyExpr<'input>>>,
+    pub detail: Rc<TyExprDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TyExprDetail<'parsed> {
+pub enum TyExprDetail<'input> {
     Term {
-        term: Rc<TyTerm<'parsed>>,
+        term: Rc<TyTerm<'input>>,
     },
     InfixOp {
-        left: Rc<TyExpr<'parsed>>,
+        left: Rc<TyExpr<'input>>,
         op: TyOp,
-        right: Rc<TyExpr<'parsed>>,
+        right: Rc<TyExpr<'input>>,
     },
 }
 
@@ -148,67 +151,67 @@ pub enum TyOp {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TyTerm<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::TyTerm<'parsed>>,
-    pub detail: TyTermDetail<'parsed>,
+pub struct TyTerm<'input> {
+    pub parsed: Option<Rc<parser::ast::TyTerm<'input>>>,
+    pub detail: Rc<TyTermDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TyTermDetail<'parsed> {
+pub enum TyTermDetail<'input> {
     None,
     EvalTy {
-        ident: Ident<'parsed>,
+        ident: Rc<Ident<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct StatsBlock<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::StatsBlock<'parsed>>,
-    pub stats: Vec<Stat<'parsed>>,
-    pub ret: Rc<Expr<'parsed>>,
+pub struct StatsBlock<'input> {
+    pub parsed: Option<Rc<parser::ast::StatsBlock<'input>>>,
+    pub stats: Vec<Rc<Stat<'input>>>,
+    pub ret: Rc<Expr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Stat<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::Stat<'parsed>>,
-    pub detail: StatDetail<'parsed>,
+pub struct Stat<'input> {
+    pub parsed: Option<Rc<parser::ast::Stat<'input>>>,
+    pub detail: Rc<StatDetail<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum StatDetail<'parsed> {
+pub enum StatDetail<'input> {
     Return {
-        expr: Rc<Expr<'parsed>>,
+        expr: Rc<Expr<'input>>,
     },
     Continue,
     Break,
     VarBind {
-        var_bind: VarBind<'parsed>,
+        var_bind: Rc<VarBind<'input>>,
     },
     FnBind {
-        fn_bind: FnBind<'parsed>,
+        fn_bind: Rc<FnBind<'input>>,
     },
     Expr {
-        expr: Rc<Expr<'parsed>>,
+        expr: Rc<Expr<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Expr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::Expr<'parsed>>,
-    pub detail: ExprDetail<'parsed>,
+pub struct Expr<'input> {
+    pub parsed: Option<Rc<parser::ast::Expr<'input>>>,
+    pub detail: Rc<ExprDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ExprDetail<'parsed> {
+pub enum ExprDetail<'input> {
     Term {
-        term: Rc<Term<'parsed>>,
+        term: Rc<Term<'input>>,
     },
     InfixOp {
-        left: Rc<Expr<'parsed>>,
+        left: Rc<Expr<'input>>,
         op: Op,
-        right: Rc<Expr<'parsed>>,
+        right: Rc<Expr<'input>>,
     },
 }
 
@@ -246,78 +249,78 @@ pub enum Op {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Term<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::Term<'parsed>>,
-    pub detail: TermDetail<'parsed>,
+pub struct Term<'input> {
+    pub parsed: Option<Rc<parser::ast::Term<'input>>>,
+    pub detail: Rc<TermDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TermDetail<'parsed> {
+pub enum TermDetail<'input> {
     None,
     TyExpr {
-        ty_expr: Rc<TyExpr<'parsed>>,
+        ty_expr: Rc<TyExpr<'input>>,
     },
     ApplyFn {
-        args: Vec<ArgExpr<'parsed>>,
-        method: RefCell<Option<Rc<elements::method::Method>>>,
+        args: Vec<Rc<ArgExpr<'input>>>,
+        method: RefCell<Option<Rc<AsFn>>>,
     },
     ApplySpreadFn {
-        arg: Rc<Expr<'parsed>>,
+        arg: Rc<Expr<'input>>,
     },
     ApplyKey {
-        key: Rc<Expr<'parsed>>,
+        key: Rc<Expr<'input>>,
     },
     PrefixOp {
         op: PrefixOp,
-        term: Rc<Term<'parsed>>,
+        term: Rc<Term<'input>>,
     },
     Block {
-        stats: StatsBlock<'parsed>,
+        stats: Rc<StatsBlock<'input>>,
     },
     Paren {
-        expr: Rc<Expr<'parsed>>,
+        expr: Rc<Expr<'input>>,
     },
     Tuple {
-        exprs: Vec<Rc<Expr<'parsed>>>,
+        exprs: Vec<Rc<Expr<'input>>>,
     },
     ArrayCtor {
-        iter_expr: IterExpr<'parsed>,
+        iter_expr: Rc<IterExpr<'input>>,
     },
     Literal {
         literal: Rc<elements::literal::Literal>,
     },
     ThisLiteral,
     InterpolatedString {
-        interpolated_string: InterpolatedString<'parsed>,
+        interpolated_string: Rc<InterpolatedString<'input>>,
     },
     EvalVar {
-        ident: Ident<'parsed>,
+        ident: Rc<Ident<'input>>,
         var: RefCell<Option<Rc<elements::var::Var>>>,
     },
     LetInBind {
-        var_bind: VarBind<'parsed>,
-        expr: Rc<Expr<'parsed>>,
+        var_bind: Rc<VarBind<'input>>,
+        expr: Rc<Expr<'input>>,
     },
     If {
-        condition: Rc<Expr<'parsed>>,
-        if_part: StatsBlock<'parsed>,
-        else_part: Option<StatsBlock<'parsed>>,
+        condition: Rc<Expr<'input>>,
+        if_part: Rc<StatsBlock<'input>>,
+        else_part: Option<Rc<StatsBlock<'input>>>,
     },
     While {
-        condition: Rc<Expr<'parsed>>,
-        stats: StatsBlock<'parsed>,
+        condition: Rc<Expr<'input>>,
+        stats: Rc<StatsBlock<'input>>,
     },
     Loop {
-        stats: StatsBlock<'parsed>,
+        stats: Rc<StatsBlock<'input>>,
     },
     For {
-        for_binds: Vec<ForBind<'parsed>>,
-        stats: StatsBlock<'parsed>,
+        for_binds: Vec<Rc<ForBind<'input>>>,
+        stats: Rc<StatsBlock<'input>>,
     },
     Closure {
-        var_decl: VarDecl<'parsed>,
-        expr: Rc<Expr<'parsed>>,
+        var_decl: Rc<VarDecl<'input>>,
+        expr: Rc<Expr<'input>>,
     },
 }
 
@@ -330,89 +333,94 @@ pub enum PrefixOp {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct IterExpr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::IterExpr<'parsed>>,
-    pub detail: IterExprDetail<'parsed>,
+pub enum AsFn {
+    Method(Rc<elements::method::Method>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum IterExprDetail<'parsed> {
+pub struct IterExpr<'input> {
+    pub parsed: Option<Rc<parser::ast::IterExpr<'input>>>,
+    pub detail: Rc<IterExprDetail<'input>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum IterExprDetail<'input> {
     Empty,
     Range {
-        left: Rc<Expr<'parsed>>,
-        right: Rc<Expr<'parsed>>,
+        left: Rc<Expr<'input>>,
+        right: Rc<Expr<'input>>,
     },
     SteppedRange {
-        left: Rc<Expr<'parsed>>,
-        right: Rc<Expr<'parsed>>,
-        step: Rc<Expr<'parsed>>,
+        left: Rc<Expr<'input>>,
+        right: Rc<Expr<'input>>,
+        step: Rc<Expr<'input>>,
     },
     Spread {
-        expr: Rc<Expr<'parsed>>,
+        expr: Rc<Expr<'input>>,
     },
     Elements {
-        exprs: Vec<Rc<Expr<'parsed>>>,
+        exprs: Vec<Rc<Expr<'input>>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ArgExpr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::ArgExpr<'parsed>>,
-    pub mut_attr: MutAttr<'parsed>,
-    pub expr: Rc<Expr<'parsed>>,
+pub struct ArgExpr<'input> {
+    pub parsed: Option<Rc<parser::ast::ArgExpr<'input>>>,
+    pub mut_attr: Rc<MutAttr<'input>>,
+    pub expr: Rc<Expr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ForBind<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::ForBind<'parsed>>,
-    pub detail: ForBindDetail<'parsed>
+pub struct ForBind<'input> {
+    pub parsed: Option<Rc<parser::ast::ForBind<'input>>>,
+    pub detail: Rc<ForBindDetail<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ForBindDetail<'parsed> {
+pub enum ForBindDetail<'input> {
     Let {
-        var_decl: VarDecl<'parsed>,
-        for_iter_expr: ForIterExpr<'parsed>,
+        var_decl: Rc<VarDecl<'input>>,
+        for_iter_expr: Rc<ForIterExpr<'input>>,
     },
     Assign {
-        left: Rc<Expr<'parsed>>,
-        for_iter_expr: ForIterExpr<'parsed>,
+        left: Rc<Expr<'input>>,
+        for_iter_expr: Rc<ForIterExpr<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ForIterExpr<'parsed> {
-    pub parsed: Option<&'parsed parser::ast::ForIterExpr<'parsed>>,
-    pub detail: ForIterExprDetail<'parsed>,
+pub struct ForIterExpr<'input> {
+    pub parsed: Option<Rc<parser::ast::ForIterExpr<'input>>>,
+    pub detail: Rc<ForIterExprDetail<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ForIterExprDetail<'parsed> {
+pub enum ForIterExprDetail<'input> {
     Range {
-        left: Rc<Expr<'parsed>>,
-        right: Rc<Expr<'parsed>>,
+        left: Rc<Expr<'input>>,
+        right: Rc<Expr<'input>>,
     },
     SteppedRange {
-        left: Rc<Expr<'parsed>>,
-        right: Rc<Expr<'parsed>>,
-        step: Rc<Expr<'parsed>>,
+        left: Rc<Expr<'input>>,
+        right: Rc<Expr<'input>>,
+        step: Rc<Expr<'input>>,
     },
     Spread {
-        expr: Rc<Expr<'parsed>>,
+        expr: Rc<Expr<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Ident<'parsed> {
-    pub parsed: Option<&'parsed lexer::ast::Ident<'parsed>>,
+pub struct Ident<'input> {
+    pub parsed: Option<Rc<lexer::ast::Ident<'input>>>,
     pub name: String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct InterpolatedString<'parsed> {
-    pub parsed: Option<&'parsed lexer::ast::InterpolatedString<'parsed>>,
+pub struct InterpolatedString<'input> {
+    pub parsed: Option<Rc<lexer::ast::InterpolatedString<'input>>>,
     pub string_parts: Vec<String>,
-    pub exprs: Vec<Rc<Expr<'parsed>>>,
+    pub exprs: Vec<Rc<Expr<'input>>>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -421,14 +429,14 @@ pub enum Assoc {
     Right,
 }
 
-pub trait ExprTree<'parsed, SemanticOp, ParserExpr> {
-    fn priorities(context: &Context) -> &Vec<(Box<dyn Fn(&SemanticOp) -> bool>, Assoc)>;
+pub trait ExprTree<'input: 'context, 'context, SemanticOp, ParserExpr> {
+    fn priorities(context: &'context Context<'input>) -> &'context Vec<(Box<dyn Fn(&SemanticOp) -> bool>, Assoc)>;
 
     fn infix_op(
-        context: &Context,
-        parsed: &'parsed ParserExpr,
+        context: &'context Context<'input>,
+        parsed: Rc<ParserExpr>,
         left: Rc<Self>,
         op: SemanticOp,
         right: Rc<Self>,
-    ) -> Result<Rc<Self>, Vec<SemanticError<'parsed>>>;
+    ) -> Result<Rc<Self>, Vec<SemanticError<'input>>>;
 }

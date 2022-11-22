@@ -58,7 +58,10 @@ impl SemanticElement for NamedMethodsKey {
 }
 
 impl NamedMethods {
-    pub fn from_methods(context: &Context, methods: Vec<Rc<Method>>) -> Result<Rc<Self>, ElementError> {
+    pub fn from_methods<'input>(
+        context: &Context<'input>,
+        methods: Vec<Rc<Method>>
+    ) -> Result<Rc<Self>, ElementError> {
         if methods.len() == 0 {
             panic!("Illegal state");
         }

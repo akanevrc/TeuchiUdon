@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::lexer::ast::{
     OpCode,
     OpCodeKind,
@@ -56,8 +57,8 @@ impl OpCodeContext {
         }
     }
 
-    pub fn from_str<'context: 'input, 'input>(&'context self, name: &str, slice: &'input str) -> Option<OpCode<'input>> {
-        self.op_codes.iter().find(|x| x.0 == name).map(|x| OpCode { slice, kind: x.1 })
+    pub fn from_str<'input>(&self, name: &str, slice: &'input str) -> Option<Rc<OpCode<'input>>> {
+        self.op_codes.iter().find(|x| x.0 == name).map(|x| Rc::new(OpCode { slice, kind: x.1 }))
     }
 
     pub fn iter_op_code_str(&self) -> impl Iterator<Item = &str> {

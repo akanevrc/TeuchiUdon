@@ -8,6 +8,7 @@ use std::{
 use self::label::{
     CodeName,
     DataName,
+    ExternName,
     TyName,
 };
 
@@ -22,7 +23,7 @@ pub enum Instruction {
     Pop,
     JumpIfFalse(CodeAddr),
     Jump(CodeAddr),
-    Extern(String),
+    Extern(ExternName),
     Annotation,
     JumpIndirect(DataAddr),
     Copy,
@@ -56,6 +57,7 @@ pub enum AsmLiteral {
 pub enum DataAddr {
     Label(DataName),
     Indirect(CodeName, RefCell<Option<u32>>),
+    Literal(AsmLiteral),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -79,8 +81,8 @@ impl fmt::Display for Instruction {
                 write!(f, "JUMP_IF_FALSE, {}", addr.to_string()),
             Self::Jump(addr) =>
                 write!(f, "JUMP, {}", addr.to_string()),
-            Self::Extern(name) =>
-                write!(f, "EXTERN, \"{}\"", name),
+            Self::Extern(ext) =>
+                write!(f, "EXTERN, \"{}\"", ext.real_name),
             Self::Annotation =>
                 write!(f, "ANNOTATION"),
             Self::JumpIndirect(addr) =>
@@ -104,7 +106,7 @@ impl fmt::Display for Instruction {
             Self::ExportCode(code) =>
                 write!(f, ".export {}", code.real_name),
             Self::Label(code) =>
-                write!(f, "{}", code.real_name),
+                write!(f, "{}:", code.real_name),
             _ =>
                 fmt::Result::Err(fmt::Error),
         }
@@ -132,7 +134,7 @@ impl fmt::Display for AsmLiteral {
             Self::This =>
                 write!(f, "this"),
             Self::Address(addr) =>
-                write!(f, "0x{:#010X}", addr),
+                write!(f, "{:#010X}", addr),
             Self::Raw(raw) =>
                 write!(f, "{}", raw),
         }
@@ -146,6 +148,8 @@ impl fmt::Display for DataAddr {
                 write!(f, "{}", data.real_name),
             Self::Indirect(code, _) =>
                 write!(f, "indirect[{}]", code.real_name),
+            Self::Literal(literal) =>
+                write!(f, "{}", literal),
         }
     }
 }
@@ -156,7 +160,7 @@ impl fmt::Display for CodeAddr {
             Self::Label(code) =>
                 write!(f, "{}", code.real_name),
             Self::Number(addr) =>
-                write!(f, "0x{:#010X}", addr),
+                write!(f, "{:#010X}", addr),
         }
     }
 }

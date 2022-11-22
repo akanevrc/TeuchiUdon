@@ -66,7 +66,7 @@ struct EvSymbol {
     param_real_names: Vec<String>,
 }
 
-impl Context {
+impl<'input> Context<'input> {
     pub fn register_from_json(&self, json: String) -> Result<(), Vec<String>> {
         let Ok(symbols) = from_str::<UdonSymbols>(json.as_str())
         else {

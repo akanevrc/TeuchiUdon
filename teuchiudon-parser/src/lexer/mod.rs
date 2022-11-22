@@ -146,10 +146,10 @@ fn delimited_comment_char0(input: &str) -> ParsedResult<()> {
 
 #[named]
 #[inline]
-pub fn keyword<'context: 'input, 'input>(
-    context: &'context Context,
+pub fn keyword<'input: 'context, 'context>(
+    context: &'context Context<'input>,
     name: &'static str,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Keyword<'input>> {
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::Keyword<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         map_opt(terminated(tag(name), peek_code_delimit), |x| context.keyword.from_str(name, x))
         .context(format!("{}: {}", function_name!(), name))
@@ -158,9 +158,9 @@ pub fn keyword<'context: 'input, 'input>(
 }
 
 #[inline]
-fn is_not_keyword<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<()> {
+fn is_not_keyword<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<()> + 'context {
     move |input: &'input str|
         if context.keyword.iter_keyword_str()
             .all(|x| not(tuple((tag::<&str, &str, GenericErrorTree<&'input str, &'static str, String, Box<dyn Error + Send + Sync + 'static>>>(x), peek_code_delimit)))(input).is_ok())
@@ -174,10 +174,10 @@ fn is_not_keyword<'context: 'input, 'input>(
 
 #[named]
 #[inline]
-pub fn op_code<'context: 'input, 'input>(
-    context: &'context Context,
+pub fn op_code<'input: 'context, 'context>(
+    context: &'context Context<'input>,
     name: &'static str,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::OpCode> {
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::OpCode<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         preceded(
             is_not_op_code_substr(context, name),
@@ -188,10 +188,10 @@ pub fn op_code<'context: 'input, 'input>(
     )
 }
 
-fn is_not_op_code_substr<'context: 'input, 'input>(
-    context: &'context Context,
+fn is_not_op_code_substr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
     name: &'static str,
-) -> impl FnMut(&'input str) -> ParsedResult<()> {
+) -> impl FnMut(&'input str) -> ParsedResult<()> + 'context {
     move |input: &'input str|
         if context.op_code.iter_op_code_str()
             .filter(|&x| x.len() > name.len())
@@ -211,9 +211,9 @@ fn peek_code_delimit(input: &str) -> ParsedResult<()> {
 
 #[named]
 #[inline]
-pub fn ident<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Ident> {
+pub fn ident<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::Ident<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         map(
             recognize(
@@ -223,7 +223,7 @@ pub fn ident<'context: 'input, 'input>(
                     many0(ident_part_char),
                 )),
             ),
-            |x| ast::Ident { slice: x },
+            |x| Rc::new(ast::Ident { slice: x }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -244,9 +244,9 @@ fn ident_part_char(input: &str) -> ParsedResult<&str> {
 
 #[named]
 #[inline]
-pub fn unit_literal<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+pub fn unit_literal<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::Literal<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         map(
             consumed(
@@ -256,7 +256,7 @@ pub fn unit_literal<'context: 'input, 'input>(
                     unwrap_fn(op_code(context, ")")),
                 ),
             ),
-            |x| ast::Literal { slice: x.0, kind: ast::LiteralKind::Unit { left: x.1.0, right: x.1.1 } },
+            |x| Rc::new(ast::Literal { slice: x.0, kind: Rc::new(ast::LiteralKind::Unit { left: x.1.0, right: x.1.1 }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -265,13 +265,13 @@ pub fn unit_literal<'context: 'input, 'input>(
 
 #[named]
 #[inline]
-pub fn null_literal<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+pub fn null_literal<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::Literal<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         map(
             unwrap_fn(keyword(context, "null")),
-            |x| ast::Literal { slice: x.slice, kind: ast::LiteralKind::Null { keyword: x } },
+            |x| Rc::new(ast::Literal { slice: x.slice, kind: Rc::new(ast::LiteralKind::Null { keyword: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -280,13 +280,13 @@ pub fn null_literal<'context: 'input, 'input>(
 
 #[named]
 #[inline]
-pub fn bool_literal<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+pub fn bool_literal<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::Literal<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         map(
             alt((unwrap_fn(keyword(context, "true")), unwrap_fn(keyword(context, "false")))),
-            |x| ast::Literal { slice: x.slice, kind: ast::LiteralKind::Bool { keyword: x } },
+            |x| Rc::new(ast::Literal { slice: x.slice, kind: Rc::new(ast::LiteralKind::Bool { keyword: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -295,7 +295,7 @@ pub fn bool_literal<'context: 'input, 'input>(
 
 #[named]
 #[inline]
-pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn integer_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             consumed(
@@ -307,8 +307,8 @@ pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
                 )),
             ),
             |x| x.1.2.map_or(
-                ast::Literal { slice: x.0, kind: ast::LiteralKind::PureInteger { slice: x.0 } },
-                |_| ast::Literal { slice: x.0, kind: ast::LiteralKind::DecInteger { slice: x.0 } },
+                Rc::new(ast::Literal { slice: x.0, kind: Rc::new(ast::LiteralKind::PureInteger { slice: x.0 }) }),
+                |_| Rc::new(ast::Literal { slice: x.0, kind: Rc::new(ast::LiteralKind::DecInteger { slice: x.0 }) }),
             )
         )
         .context(function_name!().to_owned())
@@ -318,7 +318,7 @@ pub fn integer_literal(input: &str) -> LexedResult<ast::Literal> {
 
 #[named]
 #[inline]
-pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn hex_integer_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             recognize(
@@ -330,7 +330,7 @@ pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
                     peek_code_delimit,
                 )),
             ),
-            |x| ast::Literal { slice: x, kind: ast::LiteralKind::HexInteger { slice: x } }
+            |x| Rc::new(ast::Literal { slice: x, kind: Rc::new(ast::LiteralKind::HexInteger { slice: x }) })
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -339,7 +339,7 @@ pub fn hex_integer_literal(input: &str) -> LexedResult<ast::Literal> {
 
 #[named]
 #[inline]
-pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn bin_integer_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             recognize(
@@ -351,7 +351,7 @@ pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
                     peek_code_delimit,
                 )),
             ),
-            |x| ast::Literal { slice: x, kind: ast::LiteralKind::BinInteger { slice: x } }
+            |x| Rc::new(ast::Literal { slice: x, kind: Rc::new(ast::LiteralKind::BinInteger { slice: x }) })
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -360,7 +360,7 @@ pub fn bin_integer_literal(input: &str) -> LexedResult<ast::Literal> {
 
 #[named]
 #[inline]
-pub fn real_number_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn real_number_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             alt((
@@ -393,7 +393,7 @@ pub fn real_number_literal(input: &str) -> LexedResult<ast::Literal> {
                     )),
                 )
             )),
-            |x| ast::Literal { slice: x, kind: ast::LiteralKind::RealNumber { slice: x } },
+            |x| Rc::new(ast::Literal { slice: x, kind: Rc::new(ast::LiteralKind::RealNumber { slice: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -449,7 +449,7 @@ fn exponent_part(input: &str) -> ParsedResult<&str> {
 
 #[named]
 #[inline]
-pub fn character_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn character_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             delimited(
@@ -459,7 +459,7 @@ pub fn character_literal(input: &str) -> LexedResult<ast::Literal> {
                 ),
                 char('\''),
             ),
-            |x| ast::Literal { slice: x, kind: ast::LiteralKind::Character { slice: x } },
+            |x| Rc::new(ast::Literal { slice: x, kind: Rc::new(ast::LiteralKind::Character { slice: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -475,7 +475,7 @@ fn character_char(input: &str) -> ParsedResult<&str> {
 
 #[named]
 #[inline]
-pub fn regular_string_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn regular_string_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             delimited(
@@ -487,7 +487,7 @@ pub fn regular_string_literal(input: &str) -> LexedResult<ast::Literal> {
                 ),
                 char('"'),
             ),
-            |x| ast::Literal { slice: x, kind: ast::LiteralKind::RegularString { slice: x } },
+            |x| Rc::new(ast::Literal { slice: x, kind: Rc::new(ast::LiteralKind::RegularString { slice: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -503,7 +503,7 @@ fn regular_string_char(input: &str) -> ParsedResult<&str> {
 
 #[named]
 #[inline]
-pub fn verbatium_string_literal(input: &str) -> LexedResult<ast::Literal> {
+pub fn verbatium_string_literal<'input>(input: &'input str) -> LexedResult<Rc<ast::Literal<'input>>> {
     LexedResult(
         map(
             delimited(
@@ -515,7 +515,7 @@ pub fn verbatium_string_literal(input: &str) -> LexedResult<ast::Literal> {
                 ),
                 char('"'),
             ),
-            |x| ast::Literal { slice: x, kind: ast::LiteralKind::VerbatiumString { slice: x } },
+            |x| Rc::new(ast::Literal { slice: x, kind: Rc::new(ast::LiteralKind::VerbatiumString { slice: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -532,13 +532,13 @@ fn verbatium_string_char(input: &str) -> ParsedResult<&str> {
 
 #[named]
 #[inline]
-pub fn this_literal<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::Literal> {
+pub fn this_literal<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::Literal<'input>>> + 'context {
     move |input: &'input str| LexedResult(
         map(
             unwrap_fn(keyword(context, "this")),
-            |x| ast::Literal { slice: x.slice, kind: ast::LiteralKind::This { keyword: x } },
+            |x| Rc::new(ast::Literal { slice: x.slice, kind: Rc::new(ast::LiteralKind::This { keyword: x }) }),
         )
         .context(function_name!().to_owned())
         .parse(input)
@@ -578,9 +578,9 @@ fn escape_sequence(input: &str) -> ParsedResult<&str> {
 
 #[named]
 #[inline]
-pub fn interpolated_string<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> LexedResult<'input, ast::InterpolatedString> {
+pub fn interpolated_string<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> LexedResult<'input, Rc<ast::InterpolatedString<'input>>> + 'context {
     |input: &'input str| LexedResult(
         map(
             delimited(
@@ -600,11 +600,11 @@ pub fn interpolated_string<'context: 'input, 'input>(
             ),
             |x| {
                 let (e, s): (Vec<Rc<parser::ast::Expr>>, Vec<&str>) = x.1.1.into_iter().unzip();
-                ast::InterpolatedString {
+                Rc::new(ast::InterpolatedString {
                     slice: x.0,
                     string_parts: [x.1.0].into_iter().chain(s.into_iter()).collect(),
                     exprs: e,
-                }
+                })
             },
         )
         .context(function_name!().to_owned())
@@ -629,9 +629,9 @@ fn interpolated_string_part(input: &str) -> ParsedResult<&str> {
 }
 
 #[inline]
-fn interpolated_string_inside_expr<'context: 'input, 'input>(
-    context: &'context Context,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<parser::ast::Expr>> {
+fn interpolated_string_inside_expr<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<parser::ast::Expr<'input>>> + 'context {
     |input: &'input str| delimited(
         char('{'),
         parser::expr(context),

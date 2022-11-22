@@ -49,18 +49,23 @@ impl SemanticElement for QualKey {
     }
 }
 
-impl KeyElement<Qual> for QualKey {
-    fn get_value(&self, context: &Context) -> Result<Rc<Qual>, super::ElementError> {
+impl<'input> KeyElement<'input, Qual> for QualKey {
+    fn get_value(&self, context: &Context<'input>) -> Result<Rc<Qual>, ElementError> {
         context.qual_store.get(self)
     }
 }
 
 impl Qual {
-    pub fn top(context: &Context) -> Result<Rc<Self>, ElementError> {
+    pub fn top<'input>(
+        context: &Context<'input>
+    ) -> Result<Rc<Self>, ElementError> {
         Self::new_or_get(context, Vec::new())
     }
 
-    fn new_or_get_one(context: &Context, scopes: Vec<Scope>) -> Result<Rc<Self>, ElementError> {
+    fn new_or_get_one<'input>(
+        context: &Context<'input>,
+        scopes: Vec<Scope>
+    ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.qual_store.next_id(),
             scopes: scopes.clone(),
@@ -70,48 +75,79 @@ impl Qual {
         Ok(value)
     }
 
-    pub fn new_or_get(context: &Context, scopes: Vec<Scope>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get<'input>(
+        context: &Context<'input>,
+        scopes: Vec<Scope>
+    ) -> Result<Rc<Self>, ElementError> {
         for n in 1..scopes.len() {
             Self::new_or_get_one(context, scopes.clone().into_iter().take(n).collect())?;
         }
         Self::new_or_get_one(context, scopes)
     }
 
-    pub fn new_or_get_quals(context: &Context, quals: Vec<String>) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_quals<'input>(
+        context: &Context<'input>,
+        quals: Vec<String>
+    ) -> Result<Rc<Self>, ElementError> {
         Self::new_or_get(context, quals.into_iter().map(|x| Scope::Qual(x)).collect())
     }
 
-    pub fn new_or_get_pushed(&self, context: &Context, scope: Scope) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_pushed<'input>(
+        &self,
+        context: &Context<'input>,
+        scope: Scope
+    ) -> Result<Rc<Self>, ElementError> {
         let mut cloned = self.scopes.clone();
         cloned.push(scope);
         Self::new_or_get_one(context, cloned)
     }
 
-    pub fn new_or_get_pushed_qual(&self, context: &Context, qual: String) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_pushed_qual<'input>(
+        &self,
+        context: &Context<'input>,
+        qual: String
+    ) -> Result<Rc<Self>, ElementError> {
         self.new_or_get_pushed(context, Scope::Qual(qual))
     }
 
-    pub fn new_or_get_popped(&self, context: &Context) -> Result<Rc<Self>, ElementError> {
+    pub fn new_or_get_popped<'input>(
+        &self,
+        context: &Context<'input>
+    ) -> Result<Rc<Self>, ElementError> {
         let mut cloned = self.scopes.clone();
         cloned.pop();
         Self::new_or_get_one(context, cloned)
     }
 
-    pub fn get(context: &Context, scopes: Vec<Scope>) -> Result<Rc<Self>, ElementError> {
+    pub fn get<'input>(
+        context: &Context<'input>,
+        scopes: Vec<Scope>
+    ) -> Result<Rc<Self>, ElementError> {
         QualKey::new(scopes).get_value(context)
     }
 
-    pub fn get_pushed(&self, context: &Context, scope: Scope) -> Result<Rc<Self>, ElementError> {
+    pub fn get_pushed<'input>(
+        &self,
+        context: &Context<'input>,
+        scope: Scope
+    ) -> Result<Rc<Self>, ElementError> {
         let mut cloned = self.scopes.clone();
         cloned.push(scope);
         Self::get(context, cloned)
     }
 
-    pub fn get_pushed_qual(&self, context: &Context, qual: String) -> Result<Rc<Self>, ElementError> {
+    pub fn get_pushed_qual<'input>(
+        &self,
+        context: &Context<'input>,
+        qual: String
+    ) -> Result<Rc<Self>, ElementError> {
         self.get_pushed(context, Scope::Qual(qual))
     }
 
-    pub fn get_popped(&self, context: &Context) -> Result<Rc<Self>, ElementError> {
+    pub fn get_popped<'input>(
+        &self,
+        context: &Context<'input>
+    ) -> Result<Rc<Self>, ElementError> {
         let mut cloned = self.scopes.clone();
         cloned.pop();
         Self::get(context, cloned)

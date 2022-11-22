@@ -100,20 +100,20 @@ pub struct Ident<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Literal<'input> {
     pub slice: &'input str,
-    pub kind: LiteralKind<'input>,
+    pub kind: Rc<LiteralKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum LiteralKind<'input> {
     Unit {
-        left: OpCode<'input>,
-        right: OpCode<'input>,
+        left: Rc<OpCode<'input>>,
+        right: Rc<OpCode<'input>>,
     },
     Null {
-        keyword: Keyword<'input>,
+        keyword: Rc<Keyword<'input>>,
     },
     Bool {
-        keyword: Keyword<'input>,
+        keyword: Rc<Keyword<'input>>,
     },
     PureInteger {
         slice: &'input str,
@@ -140,7 +140,7 @@ pub enum LiteralKind<'input> {
         slice: &'input str,
     },
     This {
-        keyword: Keyword<'input>,
+        keyword: Rc<Keyword<'input>>,
     },
 }
 
