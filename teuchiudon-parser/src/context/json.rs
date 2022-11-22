@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use serde_json::from_str;
+use serde_json;
 use super::Context;
 use crate::semantics::elements::{
     ElementError,
@@ -68,7 +68,7 @@ struct EvSymbol {
 
 impl<'input> Context<'input> {
     pub fn register_from_json(&self, json: String) -> Result<(), Vec<String>> {
-        let Ok(symbols) = from_str::<UdonSymbols>(json.as_str())
+        let Ok(symbols) = serde_json::from_str::<UdonSymbols>(json.as_str())
         else {
             return Err(vec!["Udon symbols cannot be initialized".to_owned()]);
         };

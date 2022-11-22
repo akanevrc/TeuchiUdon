@@ -1,8 +1,11 @@
+pub mod json;
+
 use std::{
     collections::HashMap,
     rc::Rc,
 };
 use teuchiudon_parser::semantics::elements::{
+    element::ValueElement,
     ev::Ev,
     ev_stats::EvStats,
     label::{
@@ -17,6 +20,7 @@ use teuchiudon_parser::semantics::elements::{
     },
     literal::Literal,
     method::Method,
+    valued_var::ValuedVar,
     ty::Ty,
     var::Var,
 };
@@ -27,7 +31,8 @@ pub struct Context<'input> {
     pub literal_labels: HashMap<Rc<Literal>, Rc<DataLabel>>,
     pub method_labels: HashMap<Rc<Method>, Rc<ExternLabel>>,
     pub var_labels: HashMap<Rc<Var>, Rc<DataLabel>>,
-    pub ev_stats: HashMap<Rc<Ev>, Rc<EvStats<'input>>>
+    pub ev_stats: HashMap<Rc<Ev>, Rc<EvStats<'input>>>,
+    pub valued_vars: HashMap<Rc<Var>, Rc<ValuedVar>>,
 }
 
 impl<'input> Context<'input> {
@@ -56,6 +61,10 @@ impl<'input> Context<'input> {
             ev_stats:
                 context.ev_stats_store.values()
                 .map(|x| (Ev::get(context, x.name.clone()).unwrap(), x.clone()))
+                .collect(),
+            valued_vars:
+                context.valued_var_store.values()
+                .map(|x| (Var::get(context, x.qual.to_key(), x.name.clone()).unwrap(), x.clone()))
                 .collect(),
         }
     }

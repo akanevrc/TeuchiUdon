@@ -10,6 +10,7 @@ pub mod qual;
 pub mod scope;
 pub mod ty;
 pub mod ty_op;
+pub mod valued_var;
 pub mod var;
 
 use super::SemanticError;

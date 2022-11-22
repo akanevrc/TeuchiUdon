@@ -16,7 +16,16 @@ use self::{
     context::Context as CompilerContext,
 };
 
-pub fn compile(input: &str, json: &str) -> Result<String, Vec<String>> {
+pub fn compile(input: &str, json: &str) -> String {
+    match compile_result(input, json) {
+        Ok((context, output)) =>
+            context.output_to_json(output),
+        Err(errors) =>
+            CompilerContext::errors_to_json(errors),
+    }
+}
+
+fn compile_result<'input>(input: &'input str, json: &'input str) -> Result<(CompilerContext<'input>, String), Vec<String>> {
     let parser_context = ParserContext::new_with_json(json.to_owned())?;
     let parsed = parse(&parser_context, input)?;
     let target = analize(&parser_context, input, parsed)?;
@@ -25,5 +34,5 @@ pub fn compile(input: &str, json: &str) -> Result<String, Vec<String>> {
     asm_container.push_data_part([generate_data_part(&compiler_context)].into_iter());
     asm_container.push_code_part([generate_code_part(&compiler_context, &target)].into_iter());
     asm_container.prepare();
-    Ok(asm_container.to_string())
+    Ok((compiler_context, asm_container.to_string()))
 }

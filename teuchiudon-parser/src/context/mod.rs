@@ -45,6 +45,7 @@ use crate::semantics::elements::{
         TyKey,
         TyLogicalKey,
     },
+    valued_var::ValuedVar,
     var::{
         Var,
         VarKey,
@@ -67,6 +68,7 @@ pub struct Context<'input> {
     pub named_methods_store: Store<NamedMethodsKey, NamedMethods>,
     pub var_store: Store<VarKey, Var>,
     pub ev_stats_store: Store<EvKey, EvStats<'input>>,
+    pub valued_var_store: Store<VarKey, ValuedVar>,
 }
 
 impl<'input> Context<'input> {
@@ -87,6 +89,7 @@ impl<'input> Context<'input> {
             named_methods_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
             ev_stats_store: Store::new(|x| format!("Specified event `{}` not found", x.description())),
+            valued_var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };
         context.register_default_tys()?;
         Ok(context)

@@ -12,7 +12,7 @@ namespace akanevrc.TeuchiUdon.Editor
     public class TeuchiUdonProgramAsset : UdonAssemblyProgramAsset
     {
         [NonSerialized, OdinSerialize]
-        public Dictionary<string, (object value, Type type)> heapDefaultValues = new Dictionary<string, (object value, Type type)>();
+        public Dictionary<string, (Type type, object value)> heapDefaultValues = new Dictionary<string, (Type type, object value)>();
 
         [SerializeField, HideInInspector]
         private SerializationData serializationData;
@@ -20,10 +20,10 @@ namespace akanevrc.TeuchiUdon.Editor
         [SerializeField, HideInInspector]
         private bool showAssembly = true;
 
-        public void SetUdonAssembly(string assembly/*, IEnumerable<(string name, object value, Type type)> defaultValues*/)
+        public void SetUdonAssembly(string assembly, IEnumerable<(string name, Type type, object value)> defaultValues)
         {
             udonAssembly      = assembly;
-            //heapDefaultValues = defaultValues.ToDictionary(x => x.name, x => (x.value, x.type));
+            heapDefaultValues = defaultValues.ToDictionary(x => x.name, x => (x.type, x.value));
         }
 
         protected override void RefreshProgramImpl()
@@ -97,7 +97,7 @@ namespace akanevrc.TeuchiUdon.Editor
 
             if (!heapDefaultValues.ContainsKey(symbol)) return null;
 
-            var (val, t) = heapDefaultValues[symbol];
+            var (t, val) = heapDefaultValues[symbol];
             if (typeof(UnityEngine.Object).IsAssignableFrom(t))
             {
                 if (val != null && !t.IsInstanceOfType(val)) return null;
@@ -123,7 +123,7 @@ namespace akanevrc.TeuchiUdon.Editor
                 if (!symbolTable.HasAddressForSymbol(defaultValue.Key)) continue;
 
                 var symbolAddress = symbolTable.GetAddressFromSymbol(defaultValue.Key);
-                var (val, type) = defaultValue.Value;
+                var (type, val) = defaultValue.Value;
                 if (typeof(UnityEngine.Object).IsAssignableFrom(type))
                 {
                     if (val != null && !type.IsInstanceOfType(val))
