@@ -45,6 +45,9 @@ fn test_teuchi(#[case] path: &str) {
             if vm.logs.len() == 0 && matches!(test_case.expected, Expected::None) {
                 continue;
             }
+            else if vm.logs.len() == 0 {
+                panic!("In \"{}\": actual no logs, expected `{:?}`", test_case.path, test_case.expected);
+            }
             else if vm.logs.len() == 1 {
                 let Expected::Some(expected) = test_case.expected
                     else {
@@ -59,8 +62,11 @@ fn test_teuchi(#[case] path: &str) {
                 }
             }
             else {
-
+                panic!("In \"{}\": multiple logs exist", test_case.path);
             }
+        }
+        else if compiled.errors.len() == 0 && matches!(test_case.expected, Expected::Err) {
+            panic!("In \"{}\": actual compiled, expected compile error", test_case.path);
         }
         else {
             panic!("In \"{}\": actual compile error, expected `{:?}`", test_case.path, test_case.expected);
