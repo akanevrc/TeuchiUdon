@@ -1,0 +1,4 @@
+// hello
+fn Start() {
+    UnityEngine::Debug::Log("hello");
+};
