@@ -1,0 +1,50 @@
+{
+  "base_tys": [
+    {
+      "scopes": [
+        "UnityEngine"
+      ],
+      "name": "Debug",
+      "logical_name": "UnityEngineDebug"
+    }
+  ],
+  "tys": [
+    {
+      "scopes": [
+        "UnityEngine"
+      ],
+      "name": "Debug",
+      "real_name": "UnityEngineDebug",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "is_static": false,
+      "ty": "UnityEngineDebug",
+      "name": "Log",
+      "param_tys": [
+        "SystemObject"
+      ],
+      "param_in_outs": [
+        "IN"
+      ],
+      "real_name": "UnityEngineDebug.__Log__SystemObject__SystemVoid",
+      "param_real_names": [
+        "obj"
+      ]
+    }
+  ],
+  "evs": [
+    {
+      "name": "Start",
+      "param_tys": [],
+      "param_in_outs": [],
+      "real_name": "_start",
+      "param_real_names": []
+    }
+  ]
+}
