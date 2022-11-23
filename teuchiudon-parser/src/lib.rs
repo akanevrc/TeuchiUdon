@@ -6,7 +6,7 @@ mod error;
 mod macroes;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 use std::rc::Rc;
 use nom::Err;

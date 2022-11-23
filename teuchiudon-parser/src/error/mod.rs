@@ -90,7 +90,7 @@ where
         let ch = input_bytes[prev_offset..offset].iter().rev().position(|x| *x == b'\r' || *x == b'\n');
         current_line += line;
         current_char = ch.map_or(current_char + offset - prev_offset, |x| x + 1);
-        let line_slice = input[offset + 1 - current_char..].lines().next().unwrap();
+        let line_slice = input[offset + 1 - current_char..].lines().next().unwrap_or(&input[offset + 1 - current_char..]);
         line_char_slice.insert(ptr, (current_line, current_char, line_slice));
         prev_offset = offset;
     }

@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+  "teuchiudon-parser",
+  "teuchiudon-compiler",
+  "teuchiudon-bin",
+  "teuchiudon-lsp",
+  "teuchiudon-test",
+]

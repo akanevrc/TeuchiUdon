@@ -1,0 +1,11 @@
+[package]
+name = "teuchiudon-test"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+regex = "1.7.0"
+rstest = "0.15.0"
+serde = { version = "1.0.147", features = ["derive"] }
+serde_json = "1.0.88"
+teuchiudon-compiler = { version = "0.1.0", path = "../teuchiudon-compiler" }
