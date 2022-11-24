@@ -263,9 +263,7 @@ fn single_var_decl<'input: 'context, 'context>(
         Some(x) => self::ty_expr(context, x)?,
         None => hidden_unknown_ty_expr(context)?,
     };
-    let qual =
-        Qual::top(context)
-        .map_err(|x| x.convert(None))?;
+    let qual = Qual::top(context);
     let ty =
         ty_expr.ty.arg_as_type().get_value(context)
         .map_err(|x| x.convert(None))?;

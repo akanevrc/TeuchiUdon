@@ -86,7 +86,7 @@ impl<'input> Context<'input> {
 
     fn register_from_base_ty_symbols(&self, symbols: &Vec<BaseTySymbol>) -> Result<(), ElementError> {
         for sym in symbols {
-            let qual = Qual::new_or_get_quals(self, sym.scopes.clone())?;
+            let qual = Qual::new_or_get_quals(self, sym.scopes.clone());
             BaseTy::new(
                 self,
                 qual,

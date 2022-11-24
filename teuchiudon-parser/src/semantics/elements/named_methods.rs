@@ -80,7 +80,7 @@ impl NamedMethods {
         else {
             value.ty.clone()
         };
-        let pushed = ty.base.qual.new_or_get_pushed_qual(context, ty.base.name.clone())?;
+        let pushed = ty.base.qual.new_or_get_pushed_qual(context, ty.base.name.clone());
         let method_ty = Ty::get_method_from_key(context, key)?;
         Var::force_new(context, pushed, value.name.clone(), method_ty, false, false)?;
         Ok(value)
