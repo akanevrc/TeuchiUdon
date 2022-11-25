@@ -220,7 +220,7 @@ impl EvalLabel<ExternName> for Method {
 
 impl EvalLabel<Vec<DataName>> for Var {
     fn to_name(&self) -> Vec<DataName> {
-        match &self.ty.instance {
+        match &self.ty.borrow().instance {
             Some(instance) =>
                 instance.to_name().into_iter()
                 .map(|x| match x {

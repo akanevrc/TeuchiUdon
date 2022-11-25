@@ -53,7 +53,7 @@ impl DataLabel {
     pub fn new(kind: DataLabelKind) -> Self {
         let ty = Rc::new(match &kind {
             DataLabelKind::Literal(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
-            DataLabelKind::Var(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
+            DataLabelKind::Var(x) => TyLabel::new(TyLabelKind::Ty(x.ty.borrow().clone())),
             DataLabelKind::Indirect(_, _) => TyLabel::new(TyLabelKind::Addr),
         });
         Self {

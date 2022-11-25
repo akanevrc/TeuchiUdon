@@ -1130,12 +1130,7 @@ fn eval_var_term<'input: 'context, 'context>(
     let var =
         Var::get(context, QualKey::top(), ident.name.clone()).ok();
     let ty = match &var {
-        Some(x) =>
-            x.ty.clone(),
-        None =>
-            Ty::new_or_get_type(context, QualKey::top(), ident.name.clone(), Vec::new())
-            .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
-            .map_err(|e| e.convert(Some(node.slice)))?,
+            x.ty.borrow().clone(),
     };
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
@@ -1865,7 +1860,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
-                x.ty.clone()
+                x.ty.borrow().clone()
             },
             None =>
                 Ty::new_or_get_type(context, qual, ident.name.clone(), Vec::new())
@@ -1891,7 +1886,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
-                x.ty.clone()
+                x.ty.borrow().clone()
             },
             None =>
                 Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())

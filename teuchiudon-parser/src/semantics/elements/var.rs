@@ -1,4 +1,7 @@
-use std::rc::Rc;
+use std::{
+    cell::RefCell,
+    rc::Rc,
+};
 use crate::impl_key_value_elements;
 use crate::context::Context;
 use super::{
@@ -20,7 +23,7 @@ pub struct Var {
     pub id: usize,
     pub qual: Rc<Qual>,
     pub name: String,
-    pub ty: Rc<Ty>,
+    pub ty: RefCell<Rc<Ty>>,
     pub mut_attr: bool,
     pub is_system_var: bool,
 }
@@ -72,7 +75,7 @@ impl Var {
             id: context.var_store.next_id(),
             qual,
             name,
-            ty,
+            ty: RefCell::new(ty),
             mut_attr,
             is_system_var,
         });

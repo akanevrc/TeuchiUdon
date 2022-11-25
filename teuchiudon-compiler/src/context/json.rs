@@ -24,7 +24,7 @@ impl<'input> Context<'input> {
             .map(|(var, pub_var)|
                 DefaultValue {
                     name: var.name.clone(),
-                    ty: self.ty_labels[var.ty.as_ref()].to_name()[0].real_name.clone(),
+                    ty: self.ty_labels[var.ty.borrow().as_ref()].to_name()[0].real_name.clone(),
                     value: self.literal_labels[pub_var.literal.as_ref()].to_name()[0].real_name.clone(),
                 }
             )
