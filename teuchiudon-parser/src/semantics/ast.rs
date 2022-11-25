@@ -83,7 +83,7 @@ pub struct VarDecl<'input> {
     pub parsed: Option<Rc<parser::ast::VarDecl<'input>>>,
     pub detail: Rc<VarDeclDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
-    pub names: Vec<String>,
+    pub vars: Vec<Rc<elements::var::Var>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]

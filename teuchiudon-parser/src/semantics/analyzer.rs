@@ -116,7 +116,7 @@ fn fn_bind_top_stat<'input: 'context, 'context>(
             tys,
             vec![MethodParamInOut::In],
             fn_bind.fn_decl.ident.name.clone(),
-            fn_bind.fn_decl.var_decl.names.clone(),
+            fn_bind.fn_decl.var_decl.vars.iter().map(|x| x.name.clone()).collect(),
         );
     let ev_stats =
         EvStats::new(context, fn_bind.fn_decl.ident.name.clone(), fn_bind.stats_block.clone())
@@ -285,7 +285,7 @@ fn single_var_decl<'input: 'context, 'context>(
             var: var.clone(),
         }),
         ty,
-        names: vec![ident.name.clone()],
+        vars: vec![var],
     }))
 }
 
@@ -301,15 +301,15 @@ fn tuple_var_decl<'input: 'context, 'context>(
     let ty =
         Ty::new_or_get_tuple_from_keys(context, var_decls.iter().map(|x| x.ty.to_key()).collect())
         .map_err(|e| e.convert(None))?;
-    let names =
-        var_decls.iter().flat_map(|x| x.names.clone()).collect();
+    let vars =
+        var_decls.iter().flat_map(|x| x.vars.clone()).collect();
     Ok(Rc::new(ast::VarDecl {
         parsed: Some(node),
         detail: Rc::new(ast::VarDeclDetail::TupleDecl {
             var_decls,
         }),
         ty,
-        names,
+        vars,
     }))
 }
 
