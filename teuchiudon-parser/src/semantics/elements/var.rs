@@ -53,7 +53,7 @@ impl SemanticElement for VarKey {
     fn logical_name(&self) -> String {
         format!(
             "{}{}",
-            self.qual.qualify_logical_name("::"),
+            self.qual.qualify_logical_name(">"),
             self.name.logical_name()
         )
     }
