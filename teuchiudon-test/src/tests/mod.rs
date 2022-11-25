@@ -69,7 +69,8 @@ fn test_teuchi(#[case] path: &str) {
             panic!("In \"{}\": actual compiled, expected compile error", test_case.path);
         }
         else {
-            panic!("In \"{}\": actual compile error, expected `{:?}`", test_case.path, test_case.expected);
+            let errors = compiled.errors.join("\n");
+            panic!("In \"{}\": actual compile error, expected `{:?}`\n{}\n", test_case.path, test_case.expected, errors);
         }
     }
 }
