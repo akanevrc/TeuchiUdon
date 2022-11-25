@@ -1,5 +1,6 @@
 pub mod keyword;
 pub mod op_code;
+pub mod qual_stack;
 pub mod semantic_op;
 pub mod semantic_ty_op;
 pub mod store;
@@ -8,6 +9,7 @@ mod json;
 use self::{
     keyword::KeywordContext,
     op_code::OpCodeContext,
+    qual_stack::QualStack,
     semantic_op::SemanticOpContext,
     semantic_ty_op::SemanticTyOpContext,
     store::Store,
@@ -57,6 +59,7 @@ pub struct Context<'input> {
     pub op_code: OpCodeContext,
     pub semantic_op: SemanticOpContext,
     pub semantic_ty_op: SemanticTyOpContext,
+    pub qual_stack: QualStack,
     pub qual_store: Store<QualKey, Qual>,
     pub base_ty_store: Store<BaseTyKey, BaseTy>,
     pub base_ty_logical_store: Store<BaseTyLogicalKey, BaseTy>,
@@ -78,6 +81,7 @@ impl<'input> Context<'input> {
             op_code: OpCodeContext::new(),
             semantic_op: SemanticOpContext::new(),
             semantic_ty_op: SemanticTyOpContext::new(),
+            qual_stack: QualStack::new(),
             qual_store: Store::new(|x| format!("Specified qualifier `{}` not found", x.description())),
             base_ty_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
             base_ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
