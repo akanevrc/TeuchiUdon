@@ -263,7 +263,9 @@ fn single_var_decl<'input: 'context, 'context>(
         Some(x) => self::ty_expr(context, x)?,
         None => hidden_unknown_ty_expr(context)?,
     };
-    let qual = Qual::top(context);
+    let qual =
+        context.qual_stack.peek().get_value(context)
+        .map_err(|x| x.convert(None))?;
     let ty =
         ty_expr.ty.arg_as_type().get_value(context)
         .map_err(|x| x.convert(None))?;
@@ -345,7 +347,7 @@ pub fn fn_bind<'input: 'context, 'context>(
     node: Rc<parser::ast::FnBind<'input>>,
 ) -> Result<Rc<ast::FnBind<'input>>, Vec<SemanticError<'input>>> {
     let fn_decl = fn_decl(context, node.fn_decl.clone())?;
-    let stats_block = stats_block(context, node.stats_block.clone())?;
+    let stats_block = stats_block(context, node.stats_block.clone(), Scope::Fn(0))?; // TODO
     Ok(Rc::new(ast::FnBind {
         parsed: Some(node),
         fn_decl,
@@ -489,9 +491,10 @@ fn eval_ty_ty_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::TyTerm<'input>>, Vec<SemanticError<'input>>> {
     let ident = self::ident(context, ident)?;
     let ty =
-        Ty::new_or_get_type(context, QualKey::top(), ident.name.clone(), Vec::new())
-        .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
-        .map_err(|e| e.convert(Some(node.slice)))?;
+        context.qual_stack.find_ok(|qual|
+            Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+            .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
+        ).ok_or(vec![SemanticError::new(Some(node.slice), format!("Specified qualifier `{}` not found", ident.name))])?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: Rc::new(ast::TyTermDetail::EvalTy {
@@ -522,7 +525,9 @@ fn eval_ty_access_ty_term<'input: 'context, 'context>(
 pub fn stats_block<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::StatsBlock<'input>>,
+    scope: Scope,
 ) -> Result<Rc<ast::StatsBlock<'input>>, Vec<SemanticError<'input>>> {
+    context.qual_stack.push_scope(context, scope);
     let stats =
         node.stats.iter()
         .map(|x| stat(context, x.clone()))
@@ -531,6 +536,7 @@ pub fn stats_block<'input: 'context, 'context>(
         Some(x) => expr(context, x.clone())?,
         None => hidden_unit_expr(context)?,
     };
+    context.qual_stack.pop();
     Ok(Rc::new(ast::StatsBlock {
         parsed: Some(node),
         stats,
@@ -1014,7 +1020,8 @@ fn block_term<'input: 'context, 'context>(
     node: Rc<parser::ast::Term<'input>>,
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Block(context.block_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Block {
@@ -1128,15 +1135,23 @@ fn eval_var_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let ident = self::ident(context, ident)?;
     let var =
-        Var::get(context, QualKey::top(), ident.name.clone()).ok();
+        context.qual_stack.find_ok(|qual|
+            Var::get(context, qual, ident.name.clone())
+        ).ok_or(vec![SemanticError::new(Some(node.slice), format!("Specified variable `{}` not found", ident.name))]);
     let ty = match &var {
+        Ok(x) =>
             x.ty.borrow().clone(),
+        Err(e) =>
+            context.qual_stack.find_ok(|qual|
+                Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+                .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
+            ).ok_or(e.clone())?,
     };
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::EvalVar {
             ident,
-            var: RefCell::new(var),
+            var: RefCell::new(var.ok()),
         }),
         ty,
     }))
@@ -1167,8 +1182,11 @@ fn let_in_bind_term<'input: 'context, 'context>(
     var_bind: Rc<parser::ast::VarBind<'input>>,
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
+    let scope = Scope::Block(context.block_id_factory.next_id());
+    context.qual_stack.push_scope(context, scope);
     let var_bind = self::var_bind(context, var_bind)?;
     let expr = self::expr(context, expr)?;
+    context.qual_stack.pop();
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::LetInBind {
@@ -1187,9 +1205,13 @@ fn if_term<'input: 'context, 'context>(
     else_part: Option<(Rc<lexer::ast::Keyword<'input>>, Rc<parser::ast::StatsBlock<'input>>)>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let condition = expr(context, condition)?;
-    let if_part = stats_block(context, if_part)?;
+    let if_scope = Scope::Block(context.block_id_factory.next_id());
+    let if_part = stats_block(context, if_part, if_scope)?;
     let else_part = match else_part {
-        Some((_, stats)) => Some(stats_block(context, stats)?),
+        Some((_, stats)) => {
+            let else_scope = Scope::Block(context.block_id_factory.next_id());
+            Some(stats_block(context, stats, else_scope)?)
+        },
         None => None,
     };
     Ok(Rc::new(ast::Term {
@@ -1210,7 +1232,8 @@ fn while_term<'input: 'context, 'context>(
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let condition = expr(context, condition)?;
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Loop(context.loop_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::While {
@@ -1227,7 +1250,8 @@ fn loop_term<'input: 'context, 'context>(
     node: Rc<parser::ast::Term<'input>>,
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Loop(context.loop_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Loop {
@@ -1248,7 +1272,8 @@ fn for_term<'input: 'context, 'context>(
         for_binds.iter()
         .map(|x| for_bind(context, x.1.clone()))
         .collect::<Result<_, _>>()?;
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Loop(context.loop_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::For {
@@ -1863,8 +1888,8 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 x.ty.borrow().clone()
             },
             None =>
-                Ty::new_or_get_type(context, qual, ident.name.clone(), Vec::new())
-                .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+                Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+                .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
         Ok(Rc::new(ast::Expr {
@@ -1890,7 +1915,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
             },
             None =>
                 Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
-                .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+                .or(Ty::new_or_get_qual_from_key(context, qual.to_key().pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
         Ok(Rc::new(ast::Expr {
