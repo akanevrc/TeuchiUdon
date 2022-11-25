@@ -124,11 +124,27 @@ pub fn visit_stat<'input: 'context, 'context: 'parsed, 'parsed>(
     stat: &'parsed Rc<ast::Stat<'input>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
     match stat.detail.as_ref() {
+        ast::StatDetail::VarBind { var_bind } =>
+            visit_var_bind_stat(context, var_bind),
         ast::StatDetail::Expr { expr } =>
-            visit_expr(context, expr),
+            visit_expr_stat(context, expr),
         _ =>
             error("stat".to_owned())
     }
+}
+
+pub fn visit_var_bind_stat<'input: 'context, 'context: 'parsed, 'parsed>(
+    context: &'input Context<'input>,
+    var_bind: &'parsed Rc<ast::VarBind<'input>>,
+) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
+    visit_var_bind(context, var_bind)
+}
+
+pub fn visit_expr_stat<'input: 'context, 'context: 'parsed, 'parsed>(
+    context: &'input Context<'input>,
+    expr: &'parsed Rc<ast::Expr<'input>>,
+) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
+    visit_expr(context, expr)
 }
 
 pub fn visit_expr<'input: 'context, 'context: 'parsed, 'parsed>(
@@ -213,6 +229,8 @@ pub fn visit_term<'input: 'context, 'context: 'parsed, 'parsed>(
     term: &'parsed Rc<ast::Term<'input>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
     match term.detail.as_ref() {
+        ast::TermDetail::Block { stats } =>
+            visit_block_term(context, stats),
         ast::TermDetail::Literal { literal } =>
             visit_literal_term(context, literal),
         ast::TermDetail::EvalVar { ident: _, var } =>
@@ -220,6 +238,13 @@ pub fn visit_term<'input: 'context, 'context: 'parsed, 'parsed>(
         _ =>
             error("term".to_owned())
     }
+}
+
+fn visit_block_term<'input: 'context, 'context: 'parsed, 'parsed>(
+    context: &'input Context<'input>,
+    stats: &'parsed Rc<ast::StatsBlock>,
+) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
+    visit_stats_block(context, stats)
 }
 
 fn visit_literal_term<'input: 'context, 'context: 'parsed, 'parsed>(
