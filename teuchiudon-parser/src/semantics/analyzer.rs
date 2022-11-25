@@ -10,6 +10,7 @@ use super::{
     ast,
     SemanticError,
     elements::{
+        ElementError,
         element::{
             KeyElement,
             ValueElement,
@@ -18,10 +19,7 @@ use super::{
         ev_stats::EvStats,
         literal::Literal,
         method::MethodParamInOut,
-        qual::{
-            Qual,
-            QualKey,
-        },
+        scope::Scope,
         ty::Ty,
         var::Var,
     },
@@ -231,11 +229,44 @@ pub fn var_bind<'input: 'context, 'context>(
 ) -> Result<Rc<ast::VarBind<'input>>, Vec<SemanticError<'input>>> {
     let var_decl = var_decl(context, node.var_decl.clone())?;
     let expr = expr(context, node.expr.clone())?;
+    let mut vars = var_decl.vars.iter().cloned().collect();
+    infer(context, &mut vars, expr.ty.clone())
+        .map_err(|e| e.convert(Some(node.slice)))?;
     Ok(Rc::new(ast::VarBind {
         parsed: Some(node),
         var_decl,
         expr,
     }))
+}
+
+fn infer<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    vars: &mut VecDeque<Rc<Var>>,
+    ty: Rc<Ty>,
+) -> Result<(), ElementError> {
+    if vars.len() == 0 && ty.base_eq_with_name("unit") {
+        Ok(())
+    }
+    else if vars.len() == 1 && vars[0].ty.borrow().assignable_from(context, &ty) {
+        let v = vars.pop_front().unwrap();
+        let mut t = v.ty.borrow_mut();
+        *t = t.infer(context, &ty)?;
+        Ok(())
+    }
+    else if ty.base_eq_with_name("tuple") {
+        let ty_args = ty.args_as_tuple();
+        if vars.len() < ty_args.len() {
+            return Err(ElementError::new("Type inference not succeeded".to_owned()));
+        }
+        for t in ty_args {
+            let t = t.get_value(context)?;
+            infer(context, vars, t)?;
+        }
+        Ok(())
+    }
+    else {
+        Err(ElementError::new("Type inference not succeeded".to_owned()))
+    }
 }
 
 pub fn var_decl<'input: 'context, 'context>(
