@@ -428,7 +428,7 @@ fn hidden_unknown_ty_expr<'input: 'context, 'context>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: Rc::new(ast::TyTermDetail::None),
-        ty: Ty::get_from_name(context, "unknown")
+        ty: Ty::new_or_get_type_from_name(context, "unknown")
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
