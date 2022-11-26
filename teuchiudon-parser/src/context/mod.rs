@@ -5,6 +5,7 @@ pub mod qual_stack;
 pub mod semantic_op;
 pub mod semantic_ty_op;
 pub mod store;
+pub mod vec_store;
 mod json;
 
 use self::{
@@ -15,6 +16,7 @@ use self::{
     semantic_op::SemanticOpContext,
     semantic_ty_op::SemanticTyOpContext,
     store::Store,
+    vec_store::VecStore,
 };
 use crate::semantics::elements::{
     base_ty::{
@@ -44,6 +46,7 @@ use crate::semantics::elements::{
         Qual,
         QualKey,
     },
+    top_stat::TopStat,
     ty::{
         Ty,
         TyKey,
@@ -75,6 +78,7 @@ pub struct Context<'input> {
     pub method_store: Store<MethodKey, Method>,
     pub named_methods_store: Store<NamedMethodsKey, NamedMethods>,
     pub var_store: Store<VarKey, Var>,
+    pub top_stat_store: VecStore<TopStat<'input>>,
     pub ev_stats_store: Store<EvKey, EvStats<'input>>,
     pub valued_var_store: Store<VarKey, ValuedVar>,
 }
@@ -100,6 +104,7 @@ impl<'input> Context<'input> {
             method_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             named_methods_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
+            top_stat_store: VecStore::new(),
             ev_stats_store: Store::new(|x| format!("Specified event `{}` not found", x.description())),
             valued_var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };

@@ -36,20 +36,33 @@ pub fn generate_code_part<'input: 'context, 'context: 'parsed, 'parsed>(
     context: &'input Context<'input>,
     _target: &'parsed Rc<ast::Target<'input>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
-    //visit_body(context, &target.body)
     Box::new(
-        context.ev_stats.iter()
-        .flat_map(|(ev, ev_stats)|
-            routine::decl_ev(ev_label(context, ev), visit_stats_block(context, &ev_stats.stats))
+        if context.ev_stats.iter().find(|(ev, _)| ev.real_name == "_start").is_none() {
+            let top_stats =
+                Box::new(
+                    context.top_stats.iter().flat_map(|x| visit_top_stat(context, &x.stat))
+                );
+            routine::decl_start_ev(CodeLabel::from_name("_start"), top_stats, empty())
+        }
+        else {
+            empty()
+        }
+        .chain(
+            context.ev_stats.iter()
+            .flat_map(|(ev, ev_stats)|
+                if ev.real_name == "_start" {
+                    let top_stats =
+                        Box::new(
+                            context.top_stats.iter().flat_map(|x| visit_top_stat(context, &x.stat))
+                        );
+                    routine::decl_start_ev(ev_label(context, ev), top_stats, visit_stats_block(context, &ev_stats.stats))
+                }
+                else {
+                    routine::decl_ev(ev_label(context, ev), visit_stats_block(context, &ev_stats.stats))
+                }
+            )
         )
     )
-}
-
-pub fn visit_body<'input: 'context, 'context: 'parsed, 'parsed>(
-    context: &'input Context<'input>,
-    body: &'parsed Rc<ast::Body<'input>>,
-) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
-    Box::new(body.top_stats.iter().flat_map(|x| visit_top_stat(context, x)))
 }
 
 pub fn visit_top_stat<'input: 'context, 'context: 'parsed, 'parsed>(
@@ -57,6 +70,8 @@ pub fn visit_top_stat<'input: 'context, 'context: 'parsed, 'parsed>(
     top_stat: &'parsed Rc<ast::TopStat<'input>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'parsed> {
     match top_stat.detail.as_ref() {
+        ast::TopStatDetail::None =>
+            empty(),
         ast::TopStatDetail::VarBind { access_attr, sync_attr, var_bind } =>
             visit_var_bind_top_stat(context, access_attr, sync_attr, var_bind),
         ast::TopStatDetail::FnBind { access_attr, fn_bind, ev: _ } =>
@@ -217,7 +232,10 @@ fn visit_eval_fn_op<'input: 'context, 'context: 'parsed, 'parsed>(
         };
     let ast::AsFn::Method(method) = as_fn.as_ref();
 
-    let args = args.iter().flat_map(|x| visit_expr(context, &x.expr));
+    let args: Box<dyn Iterator<Item = Instruction>> =
+        Box::new(
+            args.iter().flat_map(|x| visit_expr(context, &x.expr))
+        );
     Box::new(
         visit_expr(context, left)
         .chain(routine::call_method(args, method_label(context, method)))

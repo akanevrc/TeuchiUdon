@@ -30,6 +30,7 @@ pub struct TopStat<'input> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TopStatDetail<'input> {
+    None,
     VarBind {
         access_attr: Rc<AccessAttr<'input>>,
         sync_attr: Rc<SyncAttr<'input>>,

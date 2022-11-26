@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use serde::Serialize;
 use serde_json;
 use super::Context;
@@ -18,14 +19,14 @@ struct DefaultValue {
 }
 
 impl<'input> Context<'input> {
-    pub fn output_to_json(&self, output: String) -> String {
+    pub fn output_to_json(&self, output: String, used_data: HashSet<String>) -> String {
         let default_values =
             self.valued_vars.iter()
             .map(|(var, pub_var)|
                 DefaultValue {
-                    name: var.name.clone(),
+                    name: var.to_name()[0].real_name.clone(),
                     ty: self.ty_labels[var.ty.borrow().as_ref()].to_name()[0].real_name.clone(),
-                    value: self.literal_labels[pub_var.literal.as_ref()].to_name()[0].real_name.clone(),
+                    value: pub_var.literal.text.clone(),
                 }
             )
             .chain(
@@ -38,6 +39,7 @@ impl<'input> Context<'input> {
                     }
                 )
             )
+            .filter(|x| used_data.contains(&x.name))
             .collect();
         let compiled = Compiled {
             output,

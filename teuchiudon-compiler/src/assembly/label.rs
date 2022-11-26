@@ -123,6 +123,7 @@ impl EvalLabel<CodeName> for CodeLabel {
     fn to_name(&self) -> CodeName {
         match &self.kind {
             CodeLabelKind::Ev(x) => x.to_name(),
+            CodeLabelKind::Text(x) => CodeName::from(x.clone()),
         }
     }
 }
@@ -180,8 +181,10 @@ impl EvalLabel<Vec<TyElem>> for TyInstance {
         match self {
             TyInstance::Unit =>
                 Vec::new(),
-            TyInstance::Single { elem_name, ty_name } =>
-                vec![TyElem::Single { elem: DataName::from(elem_name.clone().unwrap_or(String::new())), ty: TyName::from(ty_name.clone()) }],
+            TyInstance::Single { elem_name: None, ty_name } =>
+                vec![TyElem::This { ty: TyName::from(ty_name.clone()) }],
+            TyInstance::Single { elem_name: Some(elem_name), ty_name } =>
+                vec![TyElem::Single { elem: DataName::from(elem_name.clone()), ty: TyName::from(ty_name.clone()) }],
             TyInstance::Tuple { elem_name, instances } =>
                 instances.iter()
                 .flat_map(|x| x.to_name().into_iter())

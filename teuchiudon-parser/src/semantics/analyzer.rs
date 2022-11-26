@@ -20,6 +20,7 @@ use super::{
         literal::Literal,
         method::MethodParamInOut,
         scope::Scope,
+        top_stat::TopStat,
         ty::Ty,
         valued_var::ValuedVar,
         var::Var,
@@ -89,7 +90,16 @@ fn var_bind_top_stat<'input: 'context, 'context>(
     let var_bind = self::var_bind(context, var_bind)?;
     match access_attr.detail {
         ast::AccessAttrDetail::None => {
-            ()
+            let top_stat = Rc::new(ast::TopStat {
+                parsed: Some(node),
+                detail: Rc::new(ast::TopStatDetail::VarBind {
+                    access_attr,
+                    sync_attr,
+                    var_bind,
+                }),
+            });
+            TopStat::new(context, top_stat.clone());
+            Ok(top_stat)
         },
         ast::AccessAttrDetail::Pub => {
             if var_bind.vars.len() != 1 {
@@ -106,16 +116,12 @@ fn var_bind_top_stat<'input: 'context, 'context>(
             let var = &var_bind.vars[0];
             ValuedVar::new(context, var.qual.clone(), var.name.clone(), var.ty.borrow().clone(), literal.clone())
                 .map_err(|e| e.convert(None))?;
+            Ok(Rc::new(ast::TopStat {
+                parsed: Some(node),
+                detail: Rc::new(ast::TopStatDetail::None),
+            }))
         },
     }
-    Ok(Rc::new(ast::TopStat {
-        parsed: Some(node),
-        detail: Rc::new(ast::TopStatDetail::VarBind {
-            access_attr,
-            sync_attr,
-            var_bind,
-        }),
-    }))
 }
 
 fn fn_bind_top_stat<'input: 'context, 'context>(
@@ -157,12 +163,14 @@ fn stat_top_stat<'input: 'context, 'context>(
     stat: Rc<parser::ast::Stat<'input>>,
 ) -> Result<Rc<ast::TopStat<'input>>, Vec<SemanticError<'input>>> {
     let stat = self::stat(context, stat)?;
-    Ok(Rc::new(ast::TopStat {
+    let top_stat = Rc::new(ast::TopStat {
         parsed: Some(node),
         detail: Rc::new(ast::TopStatDetail::Stat {
             stat,
         }),
-    }))
+    });
+    TopStat::new(context, top_stat.clone());
+    Ok(top_stat)
 }
 
 pub fn access_attr<'input: 'context, 'context>(

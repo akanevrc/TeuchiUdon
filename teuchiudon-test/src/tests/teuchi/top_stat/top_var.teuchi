@@ -1,0 +1,5 @@
+// ok
+let str = "ok";
+pub fn Start() {
+    UnityEngine::Debug::Log(str);
+};

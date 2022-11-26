@@ -123,6 +123,10 @@ impl AsmContainer {
             data_byte += ins.byte_size();
         }
     }
+
+    pub fn used_data(self) -> HashSet<String> {
+        self.used_data.into_iter().map(|x| x.real_name).collect()
+    }
 }
 
 impl fmt::Display for AsmContainer {

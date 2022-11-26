@@ -8,6 +8,7 @@ pub mod method;
 pub mod named_methods;
 pub mod qual;
 pub mod scope;
+pub mod top_stat;
 pub mod ty;
 pub mod ty_op;
 pub mod valued_var;
