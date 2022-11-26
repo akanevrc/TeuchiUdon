@@ -26,6 +26,7 @@ enum Expected {
 #[rstest]
 #[case::general("./src/tests/teuchi/general")]
 #[case::scope("./src/tests/teuchi/scope")]
+#[case::top_stat("./src/tests/teuchi/top_stat")]
 fn test_teuchi(#[case] path: &str) {
     let v = Vec::new();
     let test_cases = find_teuchi(v, Path::new(path));

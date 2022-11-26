@@ -21,6 +21,7 @@ use super::{
         method::MethodParamInOut,
         scope::Scope,
         ty::Ty,
+        valued_var::ValuedVar,
         var::Var,
     },
 };
@@ -86,6 +87,27 @@ fn var_bind_top_stat<'input: 'context, 'context>(
     let access_attr = self::access_attr(context, access_attr)?;
     let sync_attr = self::sync_attr(context, sync_attr)?;
     let var_bind = self::var_bind(context, var_bind)?;
+    match access_attr.detail {
+        ast::AccessAttrDetail::None => {
+            ()
+        },
+        ast::AccessAttrDetail::Pub => {
+            if var_bind.vars.len() != 1 {
+                return Err(vec![SemanticError::new(Some(node.slice), "Public variable must not be tuple".to_owned())]);
+            }
+            let ast::ExprDetail::Term { term } = var_bind.expr.detail.as_ref()
+                else {
+                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
+                };
+            let ast::TermDetail::Literal { literal } = term.detail.as_ref()
+                else {
+                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
+                };
+            let var = &var_bind.vars[0];
+            ValuedVar::new(context, var.qual.clone(), var.name.clone(), var.ty.borrow().clone(), literal.clone())
+                .map_err(|e| e.convert(None))?;
+        },
+    }
     Ok(Rc::new(ast::TopStat {
         parsed: Some(node),
         detail: Rc::new(ast::TopStatDetail::VarBind {
@@ -234,8 +256,9 @@ pub fn var_bind<'input: 'context, 'context>(
         .map_err(|e| e.convert(Some(node.slice)))?;
     Ok(Rc::new(ast::VarBind {
         parsed: Some(node),
-        var_decl,
+        var_decl: var_decl.clone(),
         expr,
+        vars: var_decl.vars.iter().cloned().collect(),
     }))
 }
 

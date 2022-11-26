@@ -76,6 +76,7 @@ pub struct VarBind<'input> {
     pub parsed: Option<Rc<parser::ast::VarBind<'input>>>,
     pub var_decl: Rc<VarDecl<'input>>,
     pub expr: Rc<Expr<'input>>,
+    pub vars: Vec<Rc<elements::var::Var>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
