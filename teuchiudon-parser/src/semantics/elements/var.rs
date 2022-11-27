@@ -25,7 +25,7 @@ pub struct Var {
     pub name: String,
     pub ty: RefCell<Rc<Ty>>,
     pub mut_attr: bool,
-    pub is_system_var: bool,
+    pub actual_name: RefCell<Option<Vec<String>>>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -69,7 +69,7 @@ impl Var {
         name: String,
         ty: Rc<Ty>,
         mut_attr: bool,
-        is_system_var: bool
+        actual_name: Option<Vec<String>>
     ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
             id: context.var_store.next_id(),
@@ -77,7 +77,7 @@ impl Var {
             name,
             ty: RefCell::new(ty),
             mut_attr,
-            is_system_var,
+            actual_name: RefCell::new(actual_name),
         });
         let key = value.to_key();
         context.var_store.force_add(key, value.clone());

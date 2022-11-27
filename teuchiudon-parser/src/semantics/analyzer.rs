@@ -337,7 +337,7 @@ fn single_var_decl<'input: 'context, 'context>(
         ident.name.clone(),
         ty.clone(),
         matches!(mut_attr.detail, ast::MutAttrDetail::Mut),
-        false,
+        None,
     )
     .map_err(|e| e.convert(ident.parsed.clone().map(|x| x.slice)))?;
     Ok(Rc::new(ast::VarDecl {

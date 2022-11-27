@@ -223,18 +223,25 @@ impl EvalLabel<ExternName> for Method {
 
 impl EvalLabel<Vec<DataName>> for Var {
     fn to_name(&self) -> Vec<DataName> {
-        match &self.ty.borrow().instance {
-            Some(instance) =>
-                instance.to_name().into_iter()
-                .map(|x| match x {
-                    TyElem::This { ty: _ } =>
-                        DataName::from(format!("var[{}{}[{}]]", self.qual.to_name(), self.name, self.id)),
-                    TyElem::Single { elem, ty: _ } =>
-                        DataName::from(format!("var[{}{}[{}]][{}]", self.qual.to_name(), self.name, self.id, elem.real_name)),
-                })
+        match self.actual_name.borrow().as_ref() {
+            Some(names) =>
+                names.iter()
+                .map(|x| DataName::from(x.clone()))
                 .collect(),
             None =>
-                panic!("Illegal state"),
+                match &self.ty.borrow().instance {
+                    Some(instance) =>
+                        instance.to_name().into_iter()
+                        .map(|x| match x {
+                            TyElem::This { ty: _ } =>
+                                DataName::from(format!("var[{}{}[{}]]", self.qual.to_name(), self.name, self.id)),
+                            TyElem::Single { elem, ty: _ } =>
+                                DataName::from(format!("var[{}{}[{}]][{}]", self.qual.to_name(), self.name, self.id, elem.real_name)),
+                        })
+                        .collect(),
+                    None =>
+                        panic!("Illegal state"),
+                },
         }
     }
 }
