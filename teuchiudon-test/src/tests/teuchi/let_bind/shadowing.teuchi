@@ -1,0 +1,6 @@
+// ok
+let ok = "ok";
+pub fn Start() {
+    UnityEngine::Debug::Log(ok);
+};
+let ok = "ng";

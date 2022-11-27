@@ -25,6 +25,7 @@ enum Expected {
 
 #[rstest]
 #[case::general("./src/tests/teuchi/general")]
+#[case::top_stat("./src/tests/teuchi/let_bind")]
 #[case::scope("./src/tests/teuchi/scope")]
 #[case::top_stat("./src/tests/teuchi/top_stat")]
 fn test_teuchi(#[case] path: &str) {
@@ -41,34 +42,34 @@ fn test_teuchi(#[case] path: &str) {
             continue;
         }
         else if compiled.errors.len() == 0 && !matches!(test_case.expected, Expected::Err) {
-            let mut vm = VM::new(compiled.output, compiled.default_values);
+            let mut vm = VM::new(compiled.output.clone(), compiled.default_values);
             vm.run("_start");
 
             if vm.logs.len() == 0 && matches!(test_case.expected, Expected::None) {
                 continue;
             }
             else if vm.logs.len() == 0 {
-                panic!("In \"{}\": actual no logs, expected `{:?}`", test_case.path, test_case.expected);
+                panic!("In \"{}\": actual no logs, expected `{:?}`\n{}", test_case.path, test_case.expected, compiled.output);
             }
             else if vm.logs.len() == 1 {
                 let Expected::Some(expected) = test_case.expected
                     else {
-                        panic!("In \"{}\": actual `{}`, expected `{:?}`", test_case.path, vm.logs[0], test_case.expected);
+                        panic!("In \"{}\": actual `{}`, expected `{:?}`\n{}", test_case.path, vm.logs[0], test_case.expected, compiled.output);
                     };
 
                 if vm.logs[0] == expected {
                     continue;
                 }
                 else {
-                    panic!("In \"{}\": actual `{}`, expected `{:?}`", test_case.path, vm.logs[0], expected);
+                    panic!("In \"{}\": actual `{}`, expected `{:?}`\n{}", test_case.path, vm.logs[0], expected, compiled.output);
                 }
             }
             else {
-                panic!("In \"{}\": multiple logs exist", test_case.path);
+                panic!("In \"{}\": multiple logs exist\n{}", test_case.path, compiled.output);
             }
         }
         else if compiled.errors.len() == 0 && matches!(test_case.expected, Expected::Err) {
-            panic!("In \"{}\": actual compiled, expected compile error", test_case.path);
+            panic!("In \"{}\": actual compiled, expected compile error\n{}", test_case.path, compiled.output);
         }
         else {
             let errors = compiled.errors.join("\n");

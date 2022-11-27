@@ -228,9 +228,9 @@ impl EvalLabel<Vec<DataName>> for Var {
                 instance.to_name().into_iter()
                 .map(|x| match x {
                     TyElem::This { ty: _ } =>
-                        DataName::from(format!("var[{}{}]", self.qual.to_name(), self.name)),
+                        DataName::from(format!("var[{}{}[{}]]", self.qual.to_name(), self.name, self.id)),
                     TyElem::Single { elem, ty: _ } =>
-                        DataName::from(format!("var[{}{}][{}]", self.qual.to_name(), self.name, elem.real_name)),
+                        DataName::from(format!("var[{}{}[{}]][{}]", self.qual.to_name(), self.name, self.id, elem.real_name)),
                 })
                 .collect(),
             None =>
