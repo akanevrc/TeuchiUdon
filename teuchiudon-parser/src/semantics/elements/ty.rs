@@ -14,6 +14,7 @@ use super::{
         SemanticElement,
         ValueElement,
     },
+    fn_stats::FnKey,
     method::MethodKey,
     qual::QualKey,
 };
@@ -44,6 +45,7 @@ pub struct TyLogicalKey {
 pub enum TyArg {
     Qual(QualKey),
     Ty(TyLogicalKey),
+    Fn(FnKey),
     Method(MethodKey),
 }
 
@@ -161,6 +163,7 @@ impl SemanticElement for TyArg {
         match self {
             Self::Qual(x) => x.description(),
             Self::Ty(x) => x.description(),
+            Self::Fn(x) => x.description(),
             Self::Method(x) => x.description(),
         }
     }
@@ -169,6 +172,7 @@ impl SemanticElement for TyArg {
         match self {
             Self::Qual(x) => x.logical_name(),
             Self::Ty(x) => x.logical_name(),
+            Self::Fn(x) => x.logical_name(),
             Self::Method(x) => x.logical_name(),
         }
     }

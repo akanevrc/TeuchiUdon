@@ -30,6 +30,14 @@ use crate::semantics::elements::{
         EvKey,
     },
     ev_stats::EvStats,
+    eval_fn::{
+        EvalFn,
+        EvalFnKey,
+    },
+    fn_stats::{
+        FnKey,
+        FnStats,
+    },
     literal::{
         Literal,
         LiteralKey,
@@ -80,6 +88,8 @@ pub struct Context<'input> {
     pub var_store: Store<VarKey, Var>,
     pub top_stat_store: VecStore<TopStat<'input>>,
     pub ev_stats_store: Store<EvKey, EvStats<'input>>,
+    pub fn_stats_store: Store<FnKey, FnStats<'input>>,
+    pub eval_fn_store: Store<EvalFnKey, EvalFn<'input>>,
     pub valued_var_store: Store<VarKey, ValuedVar>,
 }
 
@@ -106,6 +116,8 @@ impl<'input> Context<'input> {
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
             top_stat_store: VecStore::new(),
             ev_stats_store: Store::new(|x| format!("Specified event `{}` not found", x.description())),
+            fn_stats_store: Store::new(|x| format!("Specified function `{}` not found", x.description())),
+            eval_fn_store: Store::new(|x| format!("Specified function evaluation `{}` not found", x.description())),
             valued_var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };
         context.register_default_tys()?;

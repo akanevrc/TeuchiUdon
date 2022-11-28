@@ -40,15 +40,13 @@ impl AsmContainer {
         }
     }
 
-    pub fn push_data_part(&mut self, insss: impl Iterator<Item = impl Iterator<Item = Instruction>>) {
-        for inss in insss {
-            for ins in inss {
-                self.data_part.push(ins);
-            }
+    pub fn push_data_part(&mut self, inss: Vec<Instruction>) {
+        for ins in inss {
+            self.data_part.push(ins);
         }
     }
 
-    pub fn push_code_part(&mut self, insss: impl Iterator<Item = impl Iterator<Item = Instruction>>) {
+    pub fn push_code_part(&mut self, insss: Vec<Vec<Instruction>>) {
         let mut code_exists = false;
         for inss in insss {
             if code_exists {

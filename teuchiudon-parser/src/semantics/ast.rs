@@ -118,6 +118,7 @@ pub struct FnBind<'input> {
     pub parsed: Option<Rc<parser::ast::FnBind<'input>>>,
     pub fn_decl: Rc<FnDecl<'input>>,
     pub stats_block: Rc<StatsBlock<'input>>,
+    pub fn_stats: Rc<elements::fn_stats::FnStats<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -203,6 +204,7 @@ pub struct Expr<'input> {
     pub parsed: Option<Rc<parser::ast::Expr<'input>>>,
     pub detail: Rc<ExprDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
+    pub data: RefCell<Option<Vec<Rc<elements::label::DataLabel>>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -255,6 +257,7 @@ pub struct Term<'input> {
     pub parsed: Option<Rc<parser::ast::Term<'input>>>,
     pub detail: Rc<TermDetail<'input>>,
     pub ty: Rc<elements::ty::Ty>,
+    pub data: RefCell<Option<Vec<Rc<elements::label::DataLabel>>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -265,7 +268,7 @@ pub enum TermDetail<'input> {
     },
     ApplyFn {
         args: Vec<Rc<ArgExpr<'input>>>,
-        method: RefCell<Option<Rc<AsFn>>>,
+        as_fn: RefCell<Option<Rc<AsFn<'input>>>>,
     },
     ApplySpreadFn {
         arg: Rc<Expr<'input>>,
@@ -335,7 +338,8 @@ pub enum PrefixOp {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum AsFn {
+pub enum AsFn<'input> {
+    Fn(Rc<elements::eval_fn::EvalFn<'input>>),
     Method(Rc<elements::method::Method>),
 }
 

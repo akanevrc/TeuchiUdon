@@ -224,10 +224,8 @@ impl EvalLabel<ExternName> for Method {
 impl EvalLabel<Vec<DataName>> for Var {
     fn to_name(&self) -> Vec<DataName> {
         match self.actual_name.borrow().as_ref() {
-            Some(names) =>
-                names.iter()
-                .map(|x| DataName::from(x.clone()))
-                .collect(),
+            Some(x) =>
+                x.to_name(),
             None =>
                 match &self.ty.borrow().instance {
                     Some(instance) =>

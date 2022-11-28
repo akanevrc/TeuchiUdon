@@ -8,6 +8,7 @@ use super::{
         SemanticElement,
         ValueElement,
     },
+    fn_stats::FnKey,
     method::MethodKey,
     named_methods::NamedMethodsKey,
     qual::QualKey,
@@ -85,6 +86,15 @@ impl Ty {
         name: &str
     ) -> Result<Rc<Self>, ElementError> {
         Self::get_array_from_key(context, Ty::get_from_name(context, name)?.to_key())
+    }
+
+    pub fn new_or_get_function_from_key<'input>(
+        context: &Context<'input>,
+        key: FnKey,
+    ) -> Result<Rc<Self>, ElementError> {
+        let base = BaseTyKey::from_name("function").get_value(context)?;
+        let arg = key.get_value(context)?;
+        Self::new_or_get(context, base, vec![TyArg::Fn(arg.to_key())])
     }
 
     pub fn get_method_from_key<'input>(
@@ -213,6 +223,23 @@ impl Ty {
         }
     }
 
+    pub fn arg_as_function(self: &Rc<Self>) -> FnKey {
+        if !self.base_eq_with_name("function") {
+            panic!("Illegal state")
+        }
+        if self.args.len() == 1 {
+            match &self.args[0] {
+                TyArg::Fn(x) =>
+                    x.clone(),
+                _ =>
+                    panic!("Illegal state"),
+            }
+        }
+        else {
+            panic!("Illegal state")
+        }
+    }
+
     pub fn args_as_method(self: &Rc<Self>) -> Vec<MethodKey> {
         if !self.base_eq_with_name("method") {
             panic!("Illegal state")
@@ -275,6 +302,7 @@ impl Ty {
         self.assignable_from_type(context, ty) ||
         self.assignable_from_unit(context, ty) ||
         self.assignable_from_tuple(context, ty) ||
+        self.assignable_from_function(context, ty) ||
         self.assignable_from_method(context, ty) ||
         self.assignable_from_getter(context, ty) ||
         self.assignable_from_setter(context, ty) ||
@@ -356,6 +384,19 @@ impl Ty {
                 self_tys.iter().zip(ty_tys.iter())
                 .all(|(s, t)| s.assignable_from(context, t))
             }
+        }
+    }
+
+    fn assignable_from_function<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>,
+        ty: &Rc<Self>
+    ) -> bool {
+        self.base_eq_with_name("function") && ty.base_eq_with_name("function") && {
+            let self_fn = self.arg_as_function().get_value(context);
+            let ty_fn = ty.arg_as_function().get_value(context);
+            self_fn.is_ok() && ty_fn.is_ok() &&
+            self_fn.unwrap() == ty_fn.unwrap()
         }
     }
 
