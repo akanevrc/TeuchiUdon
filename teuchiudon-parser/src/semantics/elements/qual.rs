@@ -58,29 +58,29 @@ impl<'input> KeyElement<'input, Qual> for QualKey {
 impl Qual {
     pub fn top<'input>(
         context: &Context<'input>
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         Self::new_or_get(context, Vec::new())
     }
 
     fn new_or_get_one<'input>(
         context: &Context<'input>,
         scopes: Vec<Scope>
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         let value = Rc::new(Self {
             id: context.qual_store.next_id(),
             scopes: scopes.clone(),
         });
         let key = value.to_key();
         context.qual_store.add(key.clone(), value.clone()).ok();
-        Ok(value)
+        value
     }
 
     pub fn new_or_get<'input>(
         context: &Context<'input>,
         scopes: Vec<Scope>
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         for n in 1..scopes.len() {
-            Self::new_or_get_one(context, scopes.clone().into_iter().take(n).collect())?;
+            Self::new_or_get_one(context, scopes.clone().into_iter().take(n).collect());
         }
         Self::new_or_get_one(context, scopes)
     }
@@ -88,7 +88,7 @@ impl Qual {
     pub fn new_or_get_quals<'input>(
         context: &Context<'input>,
         quals: Vec<String>
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         Self::new_or_get(context, quals.into_iter().map(|x| Scope::Qual(x)).collect())
     }
 
@@ -96,7 +96,7 @@ impl Qual {
         &self,
         context: &Context<'input>,
         scope: Scope
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         let mut cloned = self.scopes.clone();
         cloned.push(scope);
         Self::new_or_get_one(context, cloned)
@@ -106,14 +106,14 @@ impl Qual {
         &self,
         context: &Context<'input>,
         qual: String
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         self.new_or_get_pushed(context, Scope::Qual(qual))
     }
 
     pub fn new_or_get_popped<'input>(
         &self,
         context: &Context<'input>
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         let mut cloned = self.scopes.clone();
         cloned.pop();
         Self::new_or_get_one(context, cloned)

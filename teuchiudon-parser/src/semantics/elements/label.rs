@@ -28,6 +28,7 @@ pub struct CodeLabel {
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum CodeLabelKind {
     Ev(Rc<Ev>),
+    Text(String),
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -50,39 +51,45 @@ pub enum ExternLabelKind {
 }
 
 impl DataLabel {
-    pub fn new(kind: DataLabelKind) -> Self {
-        let ty = Rc::new(match &kind {
+    pub fn new(kind: DataLabelKind) -> Rc<Self> {
+        let ty = match &kind {
             DataLabelKind::Literal(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
-            DataLabelKind::Var(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
+            DataLabelKind::Var(x) => TyLabel::new(TyLabelKind::Ty(x.ty.borrow().clone())),
             DataLabelKind::Indirect(_, _) => TyLabel::new(TyLabelKind::Addr),
-        });
-        Self {
+        };
+        Rc::new(Self {
             ty,
             kind,
-        }
+        })
     }
 }
 
 impl CodeLabel {
-    pub fn new(kind: CodeLabelKind) -> Self {
-        Self {
+    pub fn new(kind: CodeLabelKind) -> Rc<Self> {
+        Rc::new(Self {
             kind,
-        }
+        })
+    }
+
+    pub fn from_name(name: &str) -> Rc<Self> {
+        Rc::new(Self {
+            kind: CodeLabelKind::Text(name.to_owned()),
+        })
     }
 }
 
 impl TyLabel {
-    pub fn new(kind: TyLabelKind) -> Self {
-        Self {
+    pub fn new(kind: TyLabelKind) -> Rc<Self> {
+        Rc::new(Self {
             kind,
-        }
+        })
     }
 }
 
 impl ExternLabel {
-    pub fn new(kind: ExternLabelKind) -> Self {
-        Self {
+    pub fn new(kind: ExternLabelKind) -> Rc<Self> {
+        Rc::new(Self {
             kind,
-        }
+        })
     }
 }

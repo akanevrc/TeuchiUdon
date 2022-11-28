@@ -17,8 +17,8 @@ use crate::semantics::{
 #[test]
 fn test_ty_expr() {
     let context = Context::new().unwrap();
-    let qual_t = Qual::new_or_get_quals(&context, vec!["T".to_owned()]).unwrap();
-    let qual_u = Qual::new_or_get_quals(&context, vec!["T".to_owned(), "U".to_owned()]).unwrap();
+    let qual_t = Qual::new_or_get_quals(&context, vec!["T".to_owned()]);
+    let qual_u = Qual::new_or_get_quals(&context, vec!["T".to_owned(), "U".to_owned()]);
     let ty_t = Ty::new_or_get_qual_from_key(&context, qual_t.to_key()).unwrap();
     let ty_u = Ty::new_or_get_qual_from_key(&context, qual_u.to_key()).unwrap();
     let ty_v = Ty::new_or_get_type_from_key(

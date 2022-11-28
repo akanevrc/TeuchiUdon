@@ -123,6 +123,7 @@ impl EvalLabel<CodeName> for CodeLabel {
     fn to_name(&self) -> CodeName {
         match &self.kind {
             CodeLabelKind::Ev(x) => x.to_name(),
+            CodeLabelKind::Text(x) => CodeName::from(x.clone()),
         }
     }
 }
@@ -180,8 +181,10 @@ impl EvalLabel<Vec<TyElem>> for TyInstance {
         match self {
             TyInstance::Unit =>
                 Vec::new(),
-            TyInstance::Single { elem_name, ty_name } =>
-                vec![TyElem::Single { elem: DataName::from(elem_name.clone().unwrap_or(String::new())), ty: TyName::from(ty_name.clone()) }],
+            TyInstance::Single { elem_name: None, ty_name } =>
+                vec![TyElem::This { ty: TyName::from(ty_name.clone()) }],
+            TyInstance::Single { elem_name: Some(elem_name), ty_name } =>
+                vec![TyElem::Single { elem: DataName::from(elem_name.clone()), ty: TyName::from(ty_name.clone()) }],
             TyInstance::Tuple { elem_name, instances } =>
                 instances.iter()
                 .flat_map(|x| x.to_name().into_iter())
@@ -220,18 +223,23 @@ impl EvalLabel<ExternName> for Method {
 
 impl EvalLabel<Vec<DataName>> for Var {
     fn to_name(&self) -> Vec<DataName> {
-        match &self.ty.instance {
-            Some(instance) =>
-                instance.to_name().into_iter()
-                .map(|x| match x {
-                    TyElem::This { ty: _ } =>
-                        DataName::from(format!("var[{}{}]", self.qual.to_name(), self.name)),
-                    TyElem::Single { elem, ty: _ } =>
-                        DataName::from(format!("var[{}{}][{}]", self.qual.to_name(), self.name, elem.real_name)),
-                })
-                .collect(),
+        match self.actual_name.borrow().as_ref() {
+            Some(x) =>
+                x.to_name(),
             None =>
-                panic!("Illegal state"),
+                match &self.ty.borrow().instance {
+                    Some(instance) =>
+                        instance.to_name().into_iter()
+                        .map(|x| match x {
+                            TyElem::This { ty: _ } =>
+                                DataName::from(format!("var[{}{}[{}]]", self.qual.to_name(), self.name, self.id)),
+                            TyElem::Single { elem, ty: _ } =>
+                                DataName::from(format!("var[{}{}[{}]][{}]", self.qual.to_name(), self.name, self.id, elem.real_name)),
+                        })
+                        .collect(),
+                    None =>
+                        panic!("Illegal state"),
+                },
         }
     }
 }

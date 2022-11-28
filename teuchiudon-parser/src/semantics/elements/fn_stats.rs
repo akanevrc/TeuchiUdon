@@ -1,9 +1,7 @@
-use std::{
-    cell::RefCell,
-    rc::Rc,
-};
+use std::rc::Rc;
 use crate::impl_key_value_elements;
 use crate::context::Context;
+use crate::semantics::ast;
 use super::{
     ElementError,
     element::{
@@ -11,41 +9,41 @@ use super::{
         SemanticElement,
         ValueElement,
     },
-    label::DataLabel,
     qual::{
         Qual,
         QualKey,
     },
     ty::Ty,
+    var::Var,
 };
 
 #[derive(Clone, Debug)]
-pub struct Var {
+pub struct FnStats<'input> {
     pub id: usize,
     pub qual: Rc<Qual>,
     pub name: String,
-    pub ty: RefCell<Rc<Ty>>,
-    pub mut_attr: bool,
-    pub actual_name: RefCell<Option<Rc<DataLabel>>>,
+    pub ty: Rc<Ty>,
+    pub vars: Vec<Rc<Var>>,
+    pub stats: Rc<ast::StatsBlock<'input>>,
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct VarKey {
+pub struct FnKey {
     pub qual: QualKey,
     pub name: String,
 }
 
 impl_key_value_elements!(
-    VarKey,
-    Var,
-    VarKey {
+    FnKey,
+    FnStats<'input>,
+    FnKey {
         qual: self.qual.to_key(),
         name: self.name.clone()
     },
-    var_store
+    fn_stats_store
 );
 
-impl SemanticElement for VarKey {
+impl SemanticElement for FnKey {
     fn description(&self) -> String {
         format!(
             "{}{}",
@@ -63,38 +61,46 @@ impl SemanticElement for VarKey {
     }
 }
 
-impl Var {
-    pub fn force_new<'input>(
+impl<'input> FnStats<'input> {
+    pub fn new_or_get(
         context: &Context<'input>,
         qual: Rc<Qual>,
         name: String,
         ty: Rc<Ty>,
-        mut_attr: bool,
-        actual_name: Option<Rc<DataLabel>>
-    ) -> Rc<Self> {
+        vars: Vec<Rc<Var>>,
+        stats: Rc<ast::StatsBlock<'input>>,
+    ) -> Result<Rc<Self>, ElementError> {
         let value = Rc::new(Self {
-            id: context.var_store.next_id(),
-            qual,
-            name,
-            ty: RefCell::new(ty),
-            mut_attr,
-            actual_name: RefCell::new(actual_name),
+            id: context.fn_stats_store.next_id(),
+            qual: qual.clone(),
+            name: name.clone(),
+            ty,
+            vars,
+            stats,
         });
+
         let key = value.to_key();
-        context.var_store.force_add(key, value.clone());
-        value
+        match key.clone().get_value(context) {
+            Ok(x) => return Ok(x),
+            Err(_) => (),
+        }
+        context.fn_stats_store.add(key.clone(), value.clone()).unwrap();
+
+        let fn_ty = Ty::new_or_get_function_from_key(context, key)?;
+        Var::force_new(context, qual, name, fn_ty, false, None);
+        Ok(value)
     }
 
-    pub fn get<'input>(
+    pub fn get(
         context: &Context<'input>,
         qual: QualKey,
-        name: String
+        name: String,
     ) -> Result<Rc<Self>, ElementError> {
-        VarKey::new(qual, name).get_value(context)
+        FnKey::new(qual, name).get_value(context)
     }
 }
 
-impl VarKey {
+impl FnKey {
     pub fn new(qual: QualKey, name: String) -> Self {
         Self {
             qual,

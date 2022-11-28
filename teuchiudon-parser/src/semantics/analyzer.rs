@@ -10,19 +10,25 @@ use super::{
     ast,
     SemanticError,
     elements::{
+        ElementError,
         element::{
             KeyElement,
             ValueElement,
         },
         ev::Ev,
         ev_stats::EvStats,
+        eval_fn::EvalFn,
+        fn_stats::FnStats,
+        label::{
+            DataLabel,
+            DataLabelKind,
+        },
         literal::Literal,
         method::MethodParamInOut,
-        qual::{
-            Qual,
-            QualKey,
-        },
+        scope::Scope,
+        top_stat::TopStat,
         ty::Ty,
+        valued_var::ValuedVar,
         var::Var,
     },
 };
@@ -88,14 +94,40 @@ fn var_bind_top_stat<'input: 'context, 'context>(
     let access_attr = self::access_attr(context, access_attr)?;
     let sync_attr = self::sync_attr(context, sync_attr)?;
     let var_bind = self::var_bind(context, var_bind)?;
-    Ok(Rc::new(ast::TopStat {
-        parsed: Some(node),
-        detail: Rc::new(ast::TopStatDetail::VarBind {
-            access_attr,
-            sync_attr,
-            var_bind,
-        }),
-    }))
+    match access_attr.detail {
+        ast::AccessAttrDetail::None => {
+            let top_stat = Rc::new(ast::TopStat {
+                parsed: Some(node),
+                detail: Rc::new(ast::TopStatDetail::VarBind {
+                    access_attr,
+                    sync_attr,
+                    var_bind,
+                }),
+            });
+            TopStat::new(context, top_stat.clone());
+            Ok(top_stat)
+        },
+        ast::AccessAttrDetail::Pub => {
+            if var_bind.vars.len() != 1 {
+                return Err(vec![SemanticError::new(Some(node.slice), "Public variable must not be tuple".to_owned())]);
+            }
+            let ast::ExprDetail::Term { term } = var_bind.expr.detail.as_ref()
+                else {
+                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
+                };
+            let ast::TermDetail::Literal { literal } = term.detail.as_ref()
+                else {
+                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
+                };
+            let var = &var_bind.vars[0];
+            ValuedVar::new(context, var.qual.clone(), var.name.clone(), var.ty.borrow().clone(), literal.clone())
+                .map_err(|e| e.convert(None))?;
+            Ok(Rc::new(ast::TopStat {
+                parsed: Some(node),
+                detail: Rc::new(ast::TopStatDetail::None),
+            }))
+        },
+    }
 }
 
 fn fn_bind_top_stat<'input: 'context, 'context>(
@@ -106,29 +138,43 @@ fn fn_bind_top_stat<'input: 'context, 'context>(
 ) -> Result<Rc<ast::TopStat<'input>>, Vec<SemanticError<'input>>> {
     let access_attr = self::access_attr(context, access_attr)?;
     let fn_bind = self::fn_bind(context, fn_bind)?;
-    let tys =
-        fn_bind.fn_decl.var_decl.ty.ty_to_tys(context)
-        .map_err(|e| e.convert(None))?;
-    let ev =
-        Ev::new_or_get(
-            context,
-            fn_bind.fn_decl.ident.name.clone(),
-            tys,
-            vec![MethodParamInOut::In],
-            fn_bind.fn_decl.ident.name.clone(),
-            fn_bind.fn_decl.var_decl.names.clone(),
-        );
-    let ev_stats =
-        EvStats::new(context, fn_bind.fn_decl.ident.name.clone(), fn_bind.stats_block.clone())
-        .map_err(|e| e.convert(fn_bind.fn_decl.ident.parsed.clone().map(|x| x.slice)))?;
-    Ok(Rc::new(ast::TopStat {
-        parsed: Some(node),
-        detail: Rc::new(ast::TopStatDetail::FnBind {
-            access_attr,
-            fn_bind,
-            ev: Some((ev, ev_stats)),
-        }),
-    }))
+    match access_attr.detail {
+        ast::AccessAttrDetail::None => {
+            Ok(Rc::new(ast::TopStat {
+                parsed: Some(node),
+                detail: Rc::new(ast::TopStatDetail::FnBind {
+                    access_attr,
+                    fn_bind,
+                    ev: None,
+                }),
+            }))
+        },
+        ast::AccessAttrDetail::Pub => {
+            let tys =
+                fn_bind.fn_decl.var_decl.ty.ty_to_tys(context)
+                .map_err(|e| e.convert(None))?;
+            let ev =
+                Ev::new_or_get(
+                    context,
+                    fn_bind.fn_decl.ident.name.clone(),
+                    tys,
+                    vec![MethodParamInOut::In],
+                    fn_bind.fn_decl.ident.name.clone(),
+                    fn_bind.fn_decl.var_decl.vars.iter().map(|x| x.name.clone()).collect(),
+                );
+            let ev_stats =
+                EvStats::new(context, fn_bind.fn_decl.ident.name.clone(), fn_bind.stats_block.clone())
+                .map_err(|e| e.convert(fn_bind.fn_decl.ident.parsed.clone().map(|x| x.slice)))?;
+            Ok(Rc::new(ast::TopStat {
+                parsed: Some(node),
+                detail: Rc::new(ast::TopStatDetail::FnBind {
+                    access_attr,
+                    fn_bind,
+                    ev: Some((ev, ev_stats)),
+                }),
+            }))
+        },
+    }
 }
 
 fn stat_top_stat<'input: 'context, 'context>(
@@ -137,12 +183,14 @@ fn stat_top_stat<'input: 'context, 'context>(
     stat: Rc<parser::ast::Stat<'input>>,
 ) -> Result<Rc<ast::TopStat<'input>>, Vec<SemanticError<'input>>> {
     let stat = self::stat(context, stat)?;
-    Ok(Rc::new(ast::TopStat {
+    let top_stat = Rc::new(ast::TopStat {
         parsed: Some(node),
         detail: Rc::new(ast::TopStatDetail::Stat {
             stat,
         }),
-    }))
+    });
+    TopStat::new(context, top_stat.clone());
+    Ok(top_stat)
 }
 
 pub fn access_attr<'input: 'context, 'context>(
@@ -231,11 +279,45 @@ pub fn var_bind<'input: 'context, 'context>(
 ) -> Result<Rc<ast::VarBind<'input>>, Vec<SemanticError<'input>>> {
     let var_decl = var_decl(context, node.var_decl.clone())?;
     let expr = expr(context, node.expr.clone())?;
+    let mut vars = var_decl.vars.iter().cloned().collect();
+    infer(context, &mut vars, expr.ty.clone())
+        .map_err(|e| e.convert(Some(node.slice)))?;
     Ok(Rc::new(ast::VarBind {
         parsed: Some(node),
-        var_decl,
+        var_decl: var_decl.clone(),
         expr,
+        vars: var_decl.vars.iter().cloned().collect(),
     }))
+}
+
+fn infer<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    vars: &mut VecDeque<Rc<Var>>,
+    ty: Rc<Ty>,
+) -> Result<(), ElementError> {
+    if vars.len() == 0 && ty.base_eq_with_name("unit") {
+        Ok(())
+    }
+    else if vars.len() == 1 && vars[0].ty.borrow().assignable_from(context, &ty) {
+        let v = vars.pop_front().unwrap();
+        let mut t = v.ty.borrow_mut();
+        *t = t.infer(context, &ty)?;
+        Ok(())
+    }
+    else if ty.base_eq_with_name("tuple") {
+        let ty_args = ty.args_as_tuple();
+        if vars.len() < ty_args.len() {
+            return Err(ElementError::new("Type inference not succeeded".to_owned()));
+        }
+        for t in ty_args {
+            let t = t.get_value(context)?;
+            infer(context, vars, t)?;
+        }
+        Ok(())
+    }
+    else {
+        Err(ElementError::new("Type inference not succeeded".to_owned()))
+    }
 }
 
 pub fn var_decl<'input: 'context, 'context>(
@@ -264,7 +346,7 @@ fn single_var_decl<'input: 'context, 'context>(
         None => hidden_unknown_ty_expr(context)?,
     };
     let qual =
-        Qual::top(context)
+        context.qual_stack.peek().get_value(context)
         .map_err(|x| x.convert(None))?;
     let ty =
         ty_expr.ty.arg_as_type().get_value(context)
@@ -275,9 +357,8 @@ fn single_var_decl<'input: 'context, 'context>(
         ident.name.clone(),
         ty.clone(),
         matches!(mut_attr.detail, ast::MutAttrDetail::Mut),
-        false,
-    )
-    .map_err(|e| e.convert(ident.parsed.clone().map(|x| x.slice)))?;
+        None,
+    );
     Ok(Rc::new(ast::VarDecl {
         parsed: Some(node),
         detail: Rc::new(ast::VarDeclDetail::SingleDecl {
@@ -287,7 +368,7 @@ fn single_var_decl<'input: 'context, 'context>(
             var: var.clone(),
         }),
         ty,
-        names: vec![ident.name.clone()],
+        vars: vec![var],
     }))
 }
 
@@ -303,15 +384,15 @@ fn tuple_var_decl<'input: 'context, 'context>(
     let ty =
         Ty::new_or_get_tuple_from_keys(context, var_decls.iter().map(|x| x.ty.to_key()).collect())
         .map_err(|e| e.convert(None))?;
-    let names =
-        var_decls.iter().flat_map(|x| x.names.clone()).collect();
+    let vars =
+        var_decls.iter().flat_map(|x| x.vars.clone()).collect();
     Ok(Rc::new(ast::VarDecl {
         parsed: Some(node),
         detail: Rc::new(ast::VarDeclDetail::TupleDecl {
             var_decls,
         }),
         ty,
-        names,
+        vars,
     }))
 }
 
@@ -347,11 +428,28 @@ pub fn fn_bind<'input: 'context, 'context>(
     node: Rc<parser::ast::FnBind<'input>>,
 ) -> Result<Rc<ast::FnBind<'input>>, Vec<SemanticError<'input>>> {
     let fn_decl = fn_decl(context, node.fn_decl.clone())?;
-    let stats_block = stats_block(context, node.stats_block.clone())?;
+    if fn_decl.var_decl.ty.args_as_tuple().len() != fn_decl.var_decl.vars.len() {
+        return Err(vec![SemanticError::new(fn_decl.var_decl.parsed.clone().map(|x| x.slice), "Function arguments cannot be tuple".to_owned())]);
+    }
+    let qual =
+        context.qual_stack.peek().get_value(context)
+        .map_err(|e| e.convert(None))?;
+    let stats_block = stats_block(context, node.stats_block.clone(), Scope::Fn(context.fn_stats_store.next_id()))?;
+    let fn_stats =
+        FnStats::new_or_get(
+            context,
+            qual,
+            fn_decl.ident.name.clone(),
+            fn_decl.ty_expr.ty.clone(),
+            fn_decl.var_decl.vars.clone(),
+            stats_block.clone(),
+        )
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::FnBind {
         parsed: Some(node),
         fn_decl,
         stats_block,
+        fn_stats,
     }))
 }
 
@@ -428,7 +526,7 @@ fn hidden_unknown_ty_expr<'input: 'context, 'context>(
     let term = Rc::new(ast::TyTerm {
         parsed: None,
         detail: Rc::new(ast::TyTermDetail::None),
-        ty: Ty::get_from_name(context, "unknown")
+        ty: Ty::new_or_get_type_from_name(context, "unknown")
             .map_err(|e| e.convert(None))?,
     });
     Ok(Rc::new(ast::TyExpr {
@@ -491,9 +589,10 @@ fn eval_ty_ty_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::TyTerm<'input>>, Vec<SemanticError<'input>>> {
     let ident = self::ident(context, ident)?;
     let ty =
-        Ty::new_or_get_type(context, QualKey::top(), ident.name.clone(), Vec::new())
-        .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
-        .map_err(|e| e.convert(Some(node.slice)))?;
+        context.qual_stack.find_ok(|qual|
+            Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+            .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
+        ).ok_or(vec![SemanticError::new(Some(node.slice), format!("Specified qualifier `{}` not found", ident.name))])?;
     Ok(Rc::new(ast::TyTerm {
         parsed: Some(node),
         detail: Rc::new(ast::TyTermDetail::EvalTy {
@@ -524,7 +623,9 @@ fn eval_ty_access_ty_term<'input: 'context, 'context>(
 pub fn stats_block<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::StatsBlock<'input>>,
+    scope: Scope,
 ) -> Result<Rc<ast::StatsBlock<'input>>, Vec<SemanticError<'input>>> {
+    context.qual_stack.push_scope(context, scope);
     let stats =
         node.stats.iter()
         .map(|x| stat(context, x.clone()))
@@ -533,6 +634,7 @@ pub fn stats_block<'input: 'context, 'context>(
         Some(x) => expr(context, x.clone())?,
         None => hidden_unit_expr(context)?,
     };
+    context.qual_stack.pop();
     Ok(Rc::new(ast::StatsBlock {
         parsed: Some(node),
         stats,
@@ -659,6 +761,7 @@ fn construct_expr_tree<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     }));
     for parser_op in &node.ops {
         let (op, expr) = match parser_op.kind.as_ref() {
@@ -698,6 +801,7 @@ fn ty_access_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -716,6 +820,7 @@ fn access_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -733,6 +838,7 @@ fn eval_fn_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -750,6 +856,7 @@ fn eval_spread_fn_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -767,6 +874,7 @@ fn eval_key_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -784,6 +892,7 @@ fn cast_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -802,6 +911,7 @@ fn infix_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -819,6 +929,7 @@ fn assign_op_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: term.data.clone(),
     });
     Ok((op, expr))
 }
@@ -831,6 +942,7 @@ fn hidden_unit_expr<'input: 'context, 'context>(
         detail: Rc::new(ast::TermDetail::None),
         ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
+        data: RefCell::new(None),
     });
     Ok(Rc::new(ast::Expr {
         parsed: None,
@@ -838,6 +950,7 @@ fn hidden_unit_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: RefCell::new(None),
     }))
 }
 
@@ -1008,6 +1121,7 @@ fn prefix_op_term<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        data: RefCell::new(None), // TODO
     }))
 }
 
@@ -1016,13 +1130,15 @@ fn block_term<'input: 'context, 'context>(
     node: Rc<parser::ast::Term<'input>>,
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Block(context.block_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Block {
             stats: stats.clone(),
         }),
         ty: stats.ret.ty.clone(),
+        data: stats.ret.data.clone(),
     }))
 }
 
@@ -1038,6 +1154,7 @@ fn paren_term<'input: 'context, 'context>(
             expr: expr.clone(),
         }),
         ty: expr.ty.clone(),
+        data: expr.data.clone(),
     }))
 }
 
@@ -1049,7 +1166,13 @@ fn tuple_term<'input: 'context, 'context>(
     let exprs =
         exprs.iter()
         .map(|x| expr(context, x.clone()))
-        .collect::<Result<_, _>>()?;
+        .collect::<Result<Vec<_>, _>>()?;
+    let data =
+        exprs.iter()
+        .filter_map(|x| x.data.borrow().clone())
+        .flat_map(|x| x.into_iter())
+        .collect::<Vec<_>>();
+    let data = if data.len() == 0 { None } else { Some(data) };
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Tuple {
@@ -1057,6 +1180,7 @@ fn tuple_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "tuple")
             .map_err(|e| e.convert(None))?, // TODO
+        data: RefCell::new(data),
     }))
 }
 
@@ -1076,6 +1200,7 @@ fn array_ctor_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "array")
             .map_err(|e| e.convert(None))?, // TODO
+        data: RefCell::new(None), // TODO
     }))
 }
 
@@ -1085,12 +1210,14 @@ fn literal_term<'input: 'context, 'context>(
     literal: Rc<lexer::ast::Literal<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let literal = self::literal(context, literal)?;
+    let data = Some(vec![DataLabel::new(DataLabelKind::Literal(literal.clone()))]);
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Literal {
             literal: literal.clone(),
         }),
         ty: literal.ty.clone(),
+        data: RefCell::new(data),
     }))
 }
 
@@ -1103,7 +1230,8 @@ fn this_literal_term<'input: 'context, 'context>(
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::ThisLiteral),
         ty: Ty::get_from_name(context, "udon")
-            .map_err(|e| e.convert(None))?,
+            .map_err(|e| e.convert(None))?, // TODO
+        data: RefCell::new(None), // TODO
     }))
 }
 
@@ -1119,7 +1247,8 @@ fn interpolated_string_term<'input: 'context, 'context>(
             interpolated_string,
         }),
         ty: Ty::get_from_name(context, "string")
-            .map_err(|e| e.convert(None))?,
+            .map_err(|e| e.convert(None))?, // TODO
+        data: RefCell::new(None), // TODO
     }))
 }
 
@@ -1130,22 +1259,27 @@ fn eval_var_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let ident = self::ident(context, ident)?;
     let var =
-        Var::get(context, QualKey::top(), ident.name.clone()).ok();
+        context.qual_stack.find_ok(|qual|
+            Var::get(context, qual, ident.name.clone())
+        ).ok_or(vec![SemanticError::new(Some(node.slice), format!("Specified variable `{}` not found", ident.name))]);
     let ty = match &var {
-        Some(x) =>
-            x.ty.clone(),
-        None =>
-            Ty::new_or_get_type(context, QualKey::top(), ident.name.clone(), Vec::new())
-            .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
-            .map_err(|e| e.convert(Some(node.slice)))?,
+        Ok(x) =>
+            x.ty.borrow().clone(),
+        Err(e) =>
+            context.qual_stack.find_ok(|qual|
+                Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+                .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
+            ).ok_or(e.clone())?,
     };
+    let data = var.clone().map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]).ok();
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::EvalVar {
             ident,
-            var: RefCell::new(var),
+            var: RefCell::new(var.ok()),
         }),
         ty,
+        data: RefCell::new(data),
     }))
 }
 
@@ -1165,6 +1299,7 @@ fn eval_var_ty_access_term<'input: 'context, 'context>(
             var: RefCell::new(None),
         }),
         ty,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1174,8 +1309,11 @@ fn let_in_bind_term<'input: 'context, 'context>(
     var_bind: Rc<parser::ast::VarBind<'input>>,
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
+    let scope = Scope::Block(context.block_id_factory.next_id());
+    context.qual_stack.push_scope(context, scope);
     let var_bind = self::var_bind(context, var_bind)?;
     let expr = self::expr(context, expr)?;
+    context.qual_stack.pop();
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::LetInBind {
@@ -1183,6 +1321,7 @@ fn let_in_bind_term<'input: 'context, 'context>(
             expr: expr.clone(),
         }),
         ty: expr.ty.clone(),
+        data: expr.data.clone(),
     }))
 }
 
@@ -1194,9 +1333,13 @@ fn if_term<'input: 'context, 'context>(
     else_part: Option<(Rc<lexer::ast::Keyword<'input>>, Rc<parser::ast::StatsBlock<'input>>)>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let condition = expr(context, condition)?;
-    let if_part = stats_block(context, if_part)?;
+    let if_scope = Scope::Block(context.block_id_factory.next_id());
+    let if_part = stats_block(context, if_part, if_scope)?;
     let else_part = match else_part {
-        Some((_, stats)) => Some(stats_block(context, stats)?),
+        Some((_, stats)) => {
+            let else_scope = Scope::Block(context.block_id_factory.next_id());
+            Some(stats_block(context, stats, else_scope)?)
+        },
         None => None,
     };
     Ok(Rc::new(ast::Term {
@@ -1207,6 +1350,7 @@ fn if_term<'input: 'context, 'context>(
             else_part,
         }),
         ty: if_part.ret.ty.clone(), // TODO
+        data: if_part.ret.data.clone(), // TODO
     }))
 }
 
@@ -1217,7 +1361,8 @@ fn while_term<'input: 'context, 'context>(
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let condition = expr(context, condition)?;
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Loop(context.loop_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::While {
@@ -1226,6 +1371,7 @@ fn while_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1234,7 +1380,8 @@ fn loop_term<'input: 'context, 'context>(
     node: Rc<parser::ast::Term<'input>>,
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Loop(context.loop_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Loop {
@@ -1242,6 +1389,7 @@ fn loop_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1255,7 +1403,8 @@ fn for_term<'input: 'context, 'context>(
         for_binds.iter()
         .map(|x| for_bind(context, x.1.clone()))
         .collect::<Result<_, _>>()?;
-    let stats = stats_block(context, stats)?;
+    let scope = Scope::Loop(context.loop_id_factory.next_id());
+    let stats = stats_block(context, stats, scope)?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::For {
@@ -1264,6 +1413,7 @@ fn for_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1283,6 +1433,7 @@ fn closure_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "closure")
             .map_err(|e| e.convert(None))?, // TODO
+        data: RefCell::new(None),
     }))
 }
 
@@ -1298,6 +1449,7 @@ fn ty_expr_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "type")
             .map_err(|e| e.convert(None))?, // TODO
+        data: RefCell::new(None),
     }))
 }
 
@@ -1316,9 +1468,10 @@ fn apply_fn_term<'input: 'context, 'context>(
         parsed: None,
         detail: Rc::new(ast::TermDetail::ApplyFn {
             args,
-            method: RefCell::new(None),
+            as_fn: RefCell::new(None),
         }),
         ty,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1334,6 +1487,7 @@ fn apply_spread_fn_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1349,6 +1503,7 @@ fn apply_key_term<'input: 'context, 'context>(
         }),
         ty: Ty::get_from_name(context, "unit")
             .map_err(|e| e.convert(None))?,
+        data: RefCell::new(None),
     }))
 }
 
@@ -1867,13 +2022,15 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
-                x.ty.clone()
+                x.ty.borrow().clone()
             },
             None =>
-                Ty::new_or_get_type(context, qual, ident.name.clone(), Vec::new())
-                .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+                Ty::new_or_get_type(context, qual.clone(), ident.name.clone(), Vec::new())
+                .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
+        let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
+        right.data.replace(data);
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: Rc::new(ast::ExprDetail::InfixOp {
@@ -1882,6 +2039,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty,
+            data: right.data.clone(),
         }))
     }
     else if left.ty.base_eq_with_name("type") {
@@ -1893,13 +2051,15 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
-                x.ty.clone()
+                x.ty.borrow().clone()
             },
             None =>
                 Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
-                .or(Ty::new_or_get_qual_from_key(context, QualKey::top().pushed_qual(ident.name.clone())))
+                .or(Ty::new_or_get_qual_from_key(context, qual.to_key().pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
+        let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
+        right.data.replace(data);
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: Rc::new(ast::ExprDetail::InfixOp {
@@ -1908,6 +2068,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty,
+            data: right.data.clone(),
         }))
     }
     else {
@@ -1926,12 +2087,35 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         else {
             return Err(vec![SemanticError::new(None, "Right side of `eval fn` is not a term".to_owned())]);
         };
-    let ast::TermDetail::ApplyFn { args, method } = term.detail.as_ref()
+    let ast::TermDetail::ApplyFn { args, as_fn } = term.detail.as_ref()
         else {
             return Err(vec![SemanticError::new(None, "Right side of `eval fn` cannot apply".to_owned())]);
         };
 
-    if left.ty.base_eq_with_name("method") {
+    if left.ty.base_eq_with_name("function") {
+        let key = left.ty.arg_as_function();
+        let fn_stats = key.get_value(context)
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let data =
+            args.iter()
+            .filter_map(|x| x.expr.data.borrow().clone())
+            .flat_map(|x| x.into_iter())
+            .collect::<Vec<_>>();
+        let eval_fn = EvalFn::new_or_get(context, fn_stats.clone(), data);
+        as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
+        right.data.replace(fn_stats.stats.ret.data.borrow().clone());
+        Ok(Rc::new(ast::Expr {
+            parsed: Some(parsed),
+            detail: Rc::new(ast::ExprDetail::InfixOp {
+                left: left.clone(),
+                op,
+                right: right.clone(),
+            }),
+            ty: fn_stats.ty.clone(),
+            data: right.data.clone(),
+        }))
+    }
+    else if left.ty.base_eq_with_name("method") {
         let in_tys = args.iter().map(|x| x.expr.ty.to_key()).collect();
         let key = left.ty.most_compatible_method(context, in_tys)
             .map_err(|e| e.convert(Some(parsed.slice)))?;
@@ -1939,7 +2123,8 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .map_err(|e| e.convert(None))?;
         let ty = Ty::tys_to_ty(context, &m.out_tys)
             .map_err(|e| e.convert(None))?;
-        method.replace(Some(Rc::new(ast::AsFn::Method(m))));
+        as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
+        right.data.replace(None); // TODO
         Ok(Rc::new(ast::Expr {
             parsed: Some(parsed),
             detail: Rc::new(ast::ExprDetail::InfixOp {
@@ -1948,6 +2133,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty,
+            data: RefCell::new(None), // TODO
         }))
     }
     else {

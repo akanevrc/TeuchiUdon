@@ -58,7 +58,7 @@ impl<'input> Context<'input> {
             ("vrcurl", "VRCSDKBaseVRCUrl", Some("VRCSDKBaseVRCUrl"), true, vec!["SystemObject"]),
             ("udon", "VRCUdonUdonBehaviour", Some("VRCUdonUdonBehaviour"), true, vec!["SystemObject", "UnityEngineObject", "UnityEngineComponent", "VRCUdonCommonInterfacesIUdonEventReceiver"]),
         ];
-        let top = Qual::top(self)?;
+        let top = Qual::top(self);
         for (name, logical_name, real_name, is_ty, parents) in ty_names {
             let base = BaseTy::new(
                 self,

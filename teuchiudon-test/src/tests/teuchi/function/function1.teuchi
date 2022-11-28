@@ -1,0 +1,8 @@
+// ok
+fn F(x: string) {
+    UnityEngine::Debug::Log(x);
+};
+
+pub fn Start() {
+    F("ok");
+};

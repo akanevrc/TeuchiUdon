@@ -1,0 +1,5 @@
+// ok
+pub let x = "ok";
+pub fn Start() {
+    UnityEngine::Debug::Log(x);
+};
