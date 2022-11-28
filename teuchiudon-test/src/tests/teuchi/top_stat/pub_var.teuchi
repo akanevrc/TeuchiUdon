@@ -1,5 +1,5 @@
 // ok
-pub let str = "ok";
+pub let x = "ok";
 pub fn Start() {
-    UnityEngine::Debug::Log(str);
+    UnityEngine::Debug::Log(x);
 };

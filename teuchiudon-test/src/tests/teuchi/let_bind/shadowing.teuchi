@@ -1,6 +1,6 @@
 // ok
-let ok = "ok";
+let x = "ok";
 pub fn Start() {
-    UnityEngine::Debug::Log(ok);
+    UnityEngine::Debug::Log(x);
 };
-let ok = "ng";
+let x = "ng";
