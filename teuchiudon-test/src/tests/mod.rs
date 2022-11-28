@@ -24,8 +24,9 @@ enum Expected {
 }
 
 #[rstest]
+#[case::function("./src/tests/teuchi/function")]
 #[case::general("./src/tests/teuchi/general")]
-#[case::top_stat("./src/tests/teuchi/let_bind")]
+#[case::let_bind("./src/tests/teuchi/let_bind")]
 #[case::scope("./src/tests/teuchi/scope")]
 #[case::top_stat("./src/tests/teuchi/top_stat")]
 fn test_teuchi(#[case] path: &str) {
