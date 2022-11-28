@@ -1,4 +1,4 @@
 // hello
-fn Start() {
+pub fn Start() {
     UnityEngine::Debug::Log("hello");
 };
