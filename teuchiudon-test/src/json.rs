@@ -1,14 +1,14 @@
 use serde::Deserialize;
 use serde_json;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Compiled {
     pub output: String,
     pub errors: Vec<String>,
     pub default_values: Vec<DefaultValue>,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct DefaultValue {
     pub name: String,
     pub ty: String,

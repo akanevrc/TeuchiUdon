@@ -1,4 +1,3 @@
-mod json;
 mod vm;
 
 use std::{
@@ -7,6 +6,7 @@ use std::{
 };
 use rstest::rstest;
 use teuchiudon_compiler::compile;
+use crate::json;
 use self::vm::VM;
 
 #[derive(Debug)]

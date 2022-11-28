@@ -3,7 +3,7 @@ name = "teuchiudon-test"
 version = "0.1.0"
 edition = "2021"
 
-[dev-dependencies]
+[dependencies]
 regex = "1.7.0"
 rstest = "0.15.0"
 serde = { version = "1.0.147", features = ["derive"] }
