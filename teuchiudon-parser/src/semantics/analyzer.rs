@@ -1168,6 +1168,10 @@ fn tuple_term<'input: 'context, 'context>(
         exprs.iter()
         .map(|x| expr(context, x.clone()))
         .collect::<Result<Vec<_>, _>>()?;
+    let ty_keys = exprs.iter().map(|x| x.ty.to_key()).collect();
+    let ty =
+        Ty::new_or_get_tuple_from_keys(context, ty_keys)
+        .map_err(|e| e.convert(None))?;
     let data =
         exprs.iter()
         .filter_map(|x| x.data.borrow().clone())
@@ -1179,8 +1183,7 @@ fn tuple_term<'input: 'context, 'context>(
         detail: Rc::new(ast::TermDetail::Tuple {
             exprs,
         }),
-        ty: Ty::get_from_name(context, "tuple")
-            .map_err(|e| e.convert(None))?, // TODO
+        ty,
         data: RefCell::new(data),
     }))
 }
@@ -1248,13 +1251,15 @@ fn interpolated_string_term<'input: 'context, 'context>(
     interpolated_string: Rc<lexer::ast::InterpolatedString<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let interpolated_string = self::interpolated_string(context, interpolated_string)?;
+    let ty =
+        Ty::get_from_name(context, "string")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::InterpolatedString {
             interpolated_string,
         }),
-        ty: Ty::get_from_name(context, "string")
-            .map_err(|e| e.convert(None))?, // TODO
+        ty,
         data: RefCell::new(None), // TODO
     }))
 }
@@ -1370,14 +1375,16 @@ fn while_term<'input: 'context, 'context>(
     let condition = expr(context, condition)?;
     let scope = Scope::Loop(context.loop_id_factory.next_id());
     let stats = stats_block(context, stats, scope)?;
+    let ty =
+        Ty::get_from_name(context, "unit")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::While {
             condition,
             stats,
         }),
-        ty: Ty::get_from_name(context, "unit")
-            .map_err(|e| e.convert(None))?,
+        ty,
         data: RefCell::new(None),
     }))
 }
@@ -1389,13 +1396,15 @@ fn loop_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let scope = Scope::Loop(context.loop_id_factory.next_id());
     let stats = stats_block(context, stats, scope)?;
+    let ty =
+        Ty::get_from_name(context, "unit")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Loop {
             stats,
         }),
-        ty: Ty::get_from_name(context, "unit")
-            .map_err(|e| e.convert(None))?,
+        ty,
         data: RefCell::new(None),
     }))
 }
@@ -1412,14 +1421,16 @@ fn for_term<'input: 'context, 'context>(
         .collect::<Result<_, _>>()?;
     let scope = Scope::Loop(context.loop_id_factory.next_id());
     let stats = stats_block(context, stats, scope)?;
+    let ty =
+        Ty::get_from_name(context, "unit")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::For {
             for_binds,
             stats,
         }),
-        ty: Ty::get_from_name(context, "unit")
-            .map_err(|e| e.convert(None))?,
+        ty,
         data: RefCell::new(None),
     }))
 }
@@ -1448,14 +1459,13 @@ fn ty_expr_term<'input: 'context, 'context>(
     context: &'context Context<'input>,
     ty_expr: Rc<parser::ast::TyExpr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
-    let te = self::ty_expr(context, ty_expr)?;
+    let ty_expr = self::ty_expr(context, ty_expr)?;
     Ok(Rc::new(ast::Term {
         parsed: None,
         detail: Rc::new(ast::TermDetail::TyExpr {
-            ty_expr: te,
+            ty_expr: ty_expr.clone(),
         }),
-        ty: Ty::get_from_name(context, "type")
-            .map_err(|e| e.convert(None))?, // TODO
+        ty: ty_expr.ty.clone(),
         data: RefCell::new(None),
     }))
 }
@@ -1469,7 +1479,7 @@ fn apply_fn_term<'input: 'context, 'context>(
         .map(|x| arg_expr(context, x.clone()))
         .collect::<Result<_, _>>()?;
     let ty =
-        Ty::get_from_name(context, "unit")
+        Ty::get_from_name(context, "never")
         .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: None,
@@ -1487,13 +1497,15 @@ fn apply_spread_fn_term<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let arg = self::expr(context, expr)?;
+    let ty =
+        Ty::get_from_name(context, "never")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: None,
         detail: Rc::new(ast::TermDetail::ApplySpreadFn {
             arg,
         }),
-        ty: Ty::get_from_name(context, "unit")
-            .map_err(|e| e.convert(None))?,
+        ty,
         data: RefCell::new(None),
     }))
 }
@@ -1503,13 +1515,15 @@ fn apply_key_term<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let key = self::expr(context, expr)?;
+    let ty =
+        Ty::get_from_name(context, "never")
+        .map_err(|e| e.convert(None))?;
     Ok(Rc::new(ast::Term {
         parsed: None,
         detail: Rc::new(ast::TermDetail::ApplyKey {
             key,
         }),
-        ty: Ty::get_from_name(context, "unit")
-            .map_err(|e| e.convert(None))?,
+        ty,
         data: RefCell::new(None),
     }))
 }
