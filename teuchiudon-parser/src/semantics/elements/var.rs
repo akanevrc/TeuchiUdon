@@ -29,7 +29,7 @@ pub struct Var {
     pub actual_name: RefCell<Option<Rc<DataLabel>>>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct VarKey {
     pub qual: QualKey,
     pub name: String,

@@ -8,13 +8,13 @@ use super::{
     var::Var,
 };
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct DataLabel {
     pub ty: Rc<TyLabel>,
     pub kind: DataLabelKind,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum DataLabelKind {
     Literal(Rc<Literal>),
     ThisLiteral(Rc<ThisLiteral>),
@@ -22,32 +22,34 @@ pub enum DataLabelKind {
     Indirect(Rc<CodeLabel>, u32),
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CodeLabel {
     pub kind: CodeLabelKind,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum CodeLabelKind {
     Ev(Rc<Ev>),
     Text(String),
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct TyLabel {
     pub kind: TyLabelKind,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum TyLabelKind {
     Ty(Rc<Ty>),
     Addr,
 }
 
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ExternLabel {
     pub kind: ExternLabelKind,
 }
 
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ExternLabelKind {
     Method(Rc<Method>),
 }

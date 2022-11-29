@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     hash::{
         Hash,
         Hasher,
@@ -32,13 +33,13 @@ pub struct BaseTy {
     pub logical_name: String,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct BaseTyKey {
     pub qual: QualKey,
     pub name: String,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct BaseTyLogicalKey {
     pub logical_name: String,
 }
@@ -50,6 +51,18 @@ impl PartialEq for BaseTy {
 }
 
 impl Eq for BaseTy {}
+
+impl PartialOrd for BaseTy {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.id.partial_cmp(&other.id)
+    }
+}
+
+impl Ord for BaseTy {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
+    }
+}
 
 impl Hash for BaseTy {
     fn hash<H: Hasher>(&self, state: &mut H) {

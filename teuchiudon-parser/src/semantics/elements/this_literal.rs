@@ -19,7 +19,7 @@ pub struct ThisLiteral {
     pub ty: Rc<Ty>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ThisLiteralKey {
     pub ty: TyLogicalKey,
 }

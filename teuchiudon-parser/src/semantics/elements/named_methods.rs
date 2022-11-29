@@ -23,7 +23,7 @@ pub struct NamedMethods {
     pub name: String,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct NamedMethodsKey {
     pub ty: TyKey,
     pub name: String,

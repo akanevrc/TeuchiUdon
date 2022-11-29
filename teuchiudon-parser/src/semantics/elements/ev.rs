@@ -21,7 +21,7 @@ pub struct Ev {
     pub in_real_names: Vec<String>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct EvKey {
     pub name: String,
 }

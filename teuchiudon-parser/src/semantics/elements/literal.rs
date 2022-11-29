@@ -22,7 +22,7 @@ pub struct Literal {
     pub ty: Rc<Ty>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct LiteralKey {
     pub text: String,
     pub ty: TyLogicalKey,

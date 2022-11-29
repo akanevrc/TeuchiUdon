@@ -28,14 +28,14 @@ pub struct Method {
     pub out_real_names: Vec<String>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum MethodParamInOut {
     In,
     InOut,
     Out,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct MethodKey {
     pub ty: TyKey,
     pub name: String,

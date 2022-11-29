@@ -20,7 +20,7 @@ pub struct EvalFn<'input> {
     pub data: Vec<Rc<DataLabel>>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct EvalFnKey {
     pub fn_key: FnKey,
     pub data: Vec<Rc<DataLabel>>,

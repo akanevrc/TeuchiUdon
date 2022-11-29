@@ -10,13 +10,13 @@ use super::{
     scope::Scope,
 };
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Qual {
     pub id: usize,
     pub scopes: Vec<Scope>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct QualKey {
     pub scopes: Vec<Scope>,
 }

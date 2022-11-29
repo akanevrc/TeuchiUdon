@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     hash::{
         Hash,
         Hasher,
@@ -29,19 +30,19 @@ pub struct Ty {
     pub parents: Vec<TyLogicalKey>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct TyKey {
     pub qual: QualKey,
     pub name: String,
     pub args: Vec<TyArg>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct TyLogicalKey {
     pub logical_name: String,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum TyArg {
     Qual(QualKey),
     Ty(TyLogicalKey),
@@ -49,7 +50,7 @@ pub enum TyArg {
     Method(MethodKey),
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum TyInstance {
     Unit,
     Single { elem_name: Option<String>, ty_name: String },
@@ -63,6 +64,18 @@ impl PartialEq for Ty {
 }
 
 impl Eq for Ty {}
+
+impl PartialOrd for Ty {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.id.partial_cmp(&other.id)
+    }
+}
+
+impl Ord for Ty {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
+    }
+}
 
 impl Hash for Ty {
     fn hash<H: Hasher>(&self, state: &mut H) {

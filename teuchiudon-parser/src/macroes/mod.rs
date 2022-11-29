@@ -15,6 +15,18 @@ macro_rules! impl_key_value_elements {
 
         impl$(<$($value_lifetime),+>)? Eq for $value_ty$(<$($value_lifetime),+>)? {}
 
+        impl$(<$($value_lifetime),+>)? PartialOrd for $value_ty$(<$($value_lifetime),+>)? {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                self.id.partial_cmp(&other.id)
+            }
+        }
+
+        impl$(<$($value_lifetime),+>)? Ord for $value_ty$(<$($value_lifetime),+>)? {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.id.cmp(&other.id)
+            }
+        }
+
         impl$(<$($value_lifetime),+>)? std::hash::Hash for $value_ty$(<$($value_lifetime),+>)? {
             fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
                 self.id.hash(state);

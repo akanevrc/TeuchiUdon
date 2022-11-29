@@ -1,6 +1,6 @@
 use super::element::SemanticElement;
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Scope {
     Block(usize),
     Loop(usize),

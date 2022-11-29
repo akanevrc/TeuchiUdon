@@ -27,7 +27,7 @@ pub struct FnStats<'input> {
     pub stats: Rc<ast::StatsBlock<'input>>,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FnKey {
     pub qual: QualKey,
     pub name: String,
