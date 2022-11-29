@@ -26,6 +26,7 @@ use super::{
         literal::Literal,
         method::MethodParamInOut,
         scope::Scope,
+        this_literal::ThisLiteral,
         top_stat::TopStat,
         ty::Ty,
         valued_var::ValuedVar,
@@ -1226,12 +1227,18 @@ fn this_literal_term<'input: 'context, 'context>(
     node: Rc<parser::ast::Term<'input>>,
     _literal: Rc<lexer::ast::Literal<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
+    let ty =
+        Ty::get_from_name(context, "gameobject")
+        .map_err(|e| e.convert(None))?;
+    let literal = ThisLiteral::new_or_get(context, ty.clone());
+    let data = Some(vec![DataLabel::new(DataLabelKind::ThisLiteral(literal.clone()))]);
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
-        detail: Rc::new(ast::TermDetail::ThisLiteral),
-        ty: Ty::get_from_name(context, "udon")
-            .map_err(|e| e.convert(None))?, // TODO
-        data: RefCell::new(None), // TODO
+        detail: Rc::new(ast::TermDetail::ThisLiteral {
+            literal,
+        }),
+        ty,
+        data: RefCell::new(data),
     }))
 }
 

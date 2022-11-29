@@ -54,6 +54,10 @@ use crate::semantics::elements::{
         Qual,
         QualKey,
     },
+    this_literal::{
+        ThisLiteral,
+        ThisLiteralKey,
+    },
     top_stat::TopStat,
     ty::{
         Ty,
@@ -83,6 +87,7 @@ pub struct Context<'input> {
     pub ty_logical_store: Store<TyLogicalKey, Ty>,
     pub ev_store: Store<EvKey, Ev>,
     pub literal_store: Store<LiteralKey, Literal>,
+    pub this_literal_store: Store<ThisLiteralKey, ThisLiteral>,
     pub method_store: Store<MethodKey, Method>,
     pub named_methods_store: Store<NamedMethodsKey, NamedMethods>,
     pub var_store: Store<VarKey, Var>,
@@ -111,6 +116,7 @@ impl<'input> Context<'input> {
             ty_logical_store: Store::new(|x| format!("Specified type `{}` not found", x.description())),
             ev_store: Store::new(|x| format!("Specified event `{}` not found", x.description())),
             literal_store: Store::new(|x| format!("Specified literal `{}` not found", x.description())),
+            this_literal_store: Store::new(|x| format!("Specified literal `{}` not found", x.description())),
             method_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             named_methods_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),

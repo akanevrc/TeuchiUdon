@@ -3,6 +3,7 @@ use super::{
     ev::Ev,
     literal::Literal,
     method::Method,
+    this_literal::ThisLiteral,
     ty::Ty,
     var::Var,
 };
@@ -16,6 +17,7 @@ pub struct DataLabel {
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum DataLabelKind {
     Literal(Rc<Literal>),
+    ThisLiteral(Rc<ThisLiteral>),
     Var(Rc<Var>),
     Indirect(Rc<CodeLabel>, u32),
 }
@@ -54,6 +56,7 @@ impl DataLabel {
     pub fn new(kind: DataLabelKind) -> Rc<Self> {
         let ty = match &kind {
             DataLabelKind::Literal(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
+            DataLabelKind::ThisLiteral(x) => TyLabel::new(TyLabelKind::Ty(x.ty.clone())),
             DataLabelKind::Var(x) => TyLabel::new(TyLabelKind::Ty(x.ty.borrow().clone())),
             DataLabelKind::Indirect(_, _) => TyLabel::new(TyLabelKind::Addr),
         };

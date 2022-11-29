@@ -295,7 +295,9 @@ pub enum TermDetail<'input> {
     Literal {
         literal: Rc<elements::literal::Literal>,
     },
-    ThisLiteral,
+    ThisLiteral {
+        literal: Rc<elements::this_literal::ThisLiteral>,
+    },
     InterpolatedString {
         interpolated_string: Rc<InterpolatedString<'input>>,
     },

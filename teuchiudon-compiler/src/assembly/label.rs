@@ -15,6 +15,7 @@ use teuchiudon_parser::semantics::elements::{
     method::Method,
     qual::Qual,
     scope::Scope,
+    this_literal::ThisLiteral,
     ty::{
         Ty,
         TyInstance,
@@ -113,6 +114,7 @@ impl EvalLabel<Vec<DataName>> for DataLabel {
     fn to_name(&self) -> Vec<DataName> {
         match &self.kind {
             DataLabelKind::Literal(x) => vec![x.to_name()],
+            DataLabelKind::ThisLiteral(x) => vec![x.to_name()],
             DataLabelKind::Var(x) => x.to_name(),
             DataLabelKind::Indirect(x, _) => vec![x.to_name().to_indirect()],
         }
@@ -212,6 +214,12 @@ impl EvalLabel<CodeName> for Ev {
 impl EvalLabel<DataName> for Literal {
     fn to_name(&self) -> DataName {
         DataName::from(format!("literal[{}]", self.id))
+    }
+}
+
+impl EvalLabel<DataName> for ThisLiteral {
+    fn to_name(&self) -> DataName {
+        DataName::from(format!("literal[this[{}]]", self.id))
     }
 }
 

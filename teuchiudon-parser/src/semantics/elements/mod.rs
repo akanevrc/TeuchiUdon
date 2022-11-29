@@ -10,6 +10,7 @@ pub mod method;
 pub mod named_methods;
 pub mod qual;
 pub mod scope;
+pub mod this_literal;
 pub mod top_stat;
 pub mod ty;
 pub mod ty_op;
