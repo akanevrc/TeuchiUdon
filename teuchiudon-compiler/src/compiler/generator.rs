@@ -123,7 +123,10 @@ pub fn visit_stats_block<'input: 'context, 'context>(
     context: &'context Context<'input>,
     stats_block: Rc<ast::StatsBlock<'input>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
-    Box::new(stats_block.stats.clone().into_iter().flat_map(|x| visit_stat(context, x.clone())))
+    Box::new(
+        stats_block.stats.clone().into_iter().flat_map(|x| visit_stat(context, x.clone()))
+        .chain(visit_expr(context, stats_block.ret.clone()))
+    )
 }
 
 pub fn visit_stat<'input: 'context, 'context>(
@@ -247,6 +250,8 @@ pub fn visit_term<'input: 'context, 'context>(
     term: Rc<ast::Term<'input>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     match term.detail.as_ref() {
+        ast::TermDetail::None =>
+            empty(),
         ast::TermDetail::Block { stats } =>
             visit_block_term(context, stats.clone()),
         ast::TermDetail::Literal { literal } =>
@@ -254,7 +259,8 @@ pub fn visit_term<'input: 'context, 'context>(
         ast::TermDetail::EvalVar { ident: _, var } =>
             visit_eval_var_term(context, var),
         _ =>
-            error("term".to_owned())
+        {println!("{:?}", term.clone());
+            error("term".to_owned())}
     }
 }
 

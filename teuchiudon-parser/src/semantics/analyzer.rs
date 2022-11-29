@@ -2132,7 +2132,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                 op,
                 right: right.clone(),
             }),
-            ty: fn_stats.ty.clone(),
+            ty: fn_stats.stats.ret.ty.clone(),
             data: right.data.clone(),
         }))
     }
