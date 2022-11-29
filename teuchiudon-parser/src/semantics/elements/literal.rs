@@ -5,6 +5,7 @@ use super::{
     ElementError,
     base_ty::BaseTy,
     element::{
+        KeyElement,
         SemanticElement,
         ValueElement,
     },
@@ -56,109 +57,115 @@ impl SemanticElement for LiteralKey {
 }
 
 impl Literal {
-    pub fn new<'input>(
+    pub fn new_or_get<'input>(
         context: &Context<'input>,
         text: String,
         ty: Rc<Ty>
-    ) -> Result<Rc<Self>, ElementError> {
+    ) -> Rc<Self> {
         let value = Rc::new(Self {
             id: context.literal_store.next_id(),
             text,
             ty,
         });
+
         let key = value.to_key();
-        context.literal_store.add(key, value.clone())?;
-        Ok(value)
+        match key.clone().get_value(context) {
+            Ok(x) => return x,
+            Err(_) => (),
+        }
+
+        context.literal_store.add(key, value.clone()).unwrap();
+        value
     }
 
-    pub fn new_unit<'input>(
+    pub fn new_or_get_unit<'input>(
         context: &Context<'input>
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "unit")?.new_or_get_applied_zero(context)?;
-        Self::new(context, "()".to_owned(), ty)
+        Ok(Self::new_or_get(context, "()".to_owned(), ty))
     }
 
-    pub fn new_null<'input>(
+    pub fn new_or_get_null<'input>(
         context: &Context<'input>
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "nulltype")?.new_or_get_applied_zero(context)?;
-        Self::new(context, "null".to_owned(), ty)
+        Ok(Self::new_or_get(context, "null".to_owned(), ty))
     }
 
-    pub fn new_bool<'input>(
+    pub fn new_or_get_bool<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "bool")?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_pure_integer<'input>(
+    pub fn new_or_get_pure_integer<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "int")?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_dec_integer<'input>(
+    pub fn new_or_get_dec_integer<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_hex_integer<'input>(
+    pub fn new_or_get_hex_integer<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_bin_integer<'input>(
+    pub fn new_or_get_bin_integer<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_real_number<'input>(
+    pub fn new_or_get_real_number<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_real_number_text(text);
         let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_character<'input>(
+    pub fn new_or_get_character<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "char")?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_regular_string<'input>(
+    pub fn new_or_get_regular_string<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
-    pub fn new_verbatium_string<'input>(
+    pub fn new_or_get_verbatium_string<'input>(
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
-        Self::new(context, text, ty)
+        Ok(Self::new_or_get(context, text, ty))
     }
 
     fn trim_integer_text(text: String) -> (String, &'static str) {

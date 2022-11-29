@@ -1762,37 +1762,37 @@ pub fn literal<'input: 'context, 'context>(
 ) -> Result<Rc<Literal>, Vec<SemanticError<'input>>> {
     match node.kind.as_ref() {
         lexer::ast::LiteralKind::Unit { left, right: _ } =>
-            Literal::new_unit(context)
+            Literal::new_or_get_unit(context)
             .map_err(|e| e.convert(Some(left.slice))),
         lexer::ast::LiteralKind::Null { keyword } =>
-            Literal::new_null(context)
+            Literal::new_or_get_null(context)
             .map_err(|e| e.convert(Some(keyword.slice))),
         lexer::ast::LiteralKind::Bool { keyword } =>
-            Literal::new_bool(context, (*keyword.slice).to_owned())
+            Literal::new_or_get_bool(context, (*keyword.slice).to_owned())
             .map_err(|e| e.convert(Some(keyword.slice))),
         lexer::ast::LiteralKind::PureInteger { slice } =>
-            Literal::new_pure_integer(context, (*slice).to_owned())
+            Literal::new_or_get_pure_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::DecInteger { slice } =>
-            Literal::new_dec_integer(context, (*slice).to_owned())
+            Literal::new_or_get_dec_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::HexInteger { slice } =>
-            Literal::new_hex_integer(context, (*slice).to_owned())
+            Literal::new_or_get_hex_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::BinInteger { slice } =>
-            Literal::new_bin_integer(context, (*slice).to_owned())
+            Literal::new_or_get_bin_integer(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::RealNumber { slice } =>
-            Literal::new_real_number(context, (*slice).to_owned())
+            Literal::new_or_get_real_number(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::Character { slice } =>
-            Literal::new_character(context, (*slice).to_owned())
+            Literal::new_or_get_character(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::RegularString { slice } =>
-            Literal::new_regular_string(context, (*slice).to_owned())
+            Literal::new_or_get_regular_string(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         lexer::ast::LiteralKind::VerbatiumString { slice } =>
-            Literal::new_verbatium_string(context, (*slice).to_owned())
+            Literal::new_or_get_verbatium_string(context, (*slice).to_owned())
             .map_err(|e| e.convert(Some(slice))),
         _ =>
             panic!("Illegal state"),
