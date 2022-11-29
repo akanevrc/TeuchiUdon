@@ -25,7 +25,8 @@ pub struct Var {
     pub qual: Rc<Qual>,
     pub name: String,
     pub ty: RefCell<Rc<Ty>>,
-    pub mut_attr: bool,
+    pub is_mut: bool,
+    pub is_tmp: bool,
     pub actual_name: RefCell<Option<Rc<DataLabel>>>,
 }
 
@@ -69,7 +70,7 @@ impl Var {
         qual: Rc<Qual>,
         name: String,
         ty: Rc<Ty>,
-        mut_attr: bool,
+        is_mut: bool,
         actual_name: Option<Rc<DataLabel>>
     ) -> Rc<Self> {
         let value = Rc::new(Self {
@@ -77,11 +78,31 @@ impl Var {
             qual,
             name,
             ty: RefCell::new(ty),
-            mut_attr,
+            is_mut,
+            is_tmp: false,
             actual_name: RefCell::new(actual_name),
         });
         let key = value.to_key();
         context.var_store.force_add(key, value.clone());
+        value
+    }
+
+    pub fn new_tmp<'input>(
+        context: &Context<'input>,
+        ty: Rc<Ty>,
+    ) -> Rc<Self> {
+        let id = context.var_store.next_id();
+        let value = Rc::new(Self {
+            id,
+            qual: Qual::top(context),
+            name: format!("tmp[{}]", id),
+            ty: RefCell::new(ty),
+            is_mut: false,
+            is_tmp: true,
+            actual_name: RefCell::new(None),
+        });
+        let key = value.to_key();
+        context.var_store.add(key, value.clone()).unwrap();
         value
     }
 
