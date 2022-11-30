@@ -1,5 +1,5 @@
-pub(super) mod method_store;
-pub(super) mod ty_store;
+pub mod method_store;
+pub mod ty_store;
 
 use std::{
     cell::RefCell,

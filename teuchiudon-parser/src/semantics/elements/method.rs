@@ -4,6 +4,7 @@ use crate::context::Context;
 use super::{
     ElementError,
     element::{
+        KeyElement,
         SemanticElement,
         ValueElement,
     },
@@ -40,6 +41,11 @@ pub struct MethodKey {
     pub ty: TyKey,
     pub name: String,
     pub in_tys: Vec<TyKey>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum OpMethodKey {
+    Op,
 }
 
 impl_key_value_elements!(
@@ -113,5 +119,29 @@ impl Method {
         ios: impl Iterator<Item = &'a MethodParamInOut> + 'a
     ) -> impl Iterator<Item = T> + 'a {
         iter.zip(ios).filter_map(|(x, io)| (*io == MethodParamInOut::Out).then_some(x.clone()))
+    }
+
+    pub fn get(
+        context: &Context,
+        ty: TyKey,
+        name: String,
+        in_tys: Vec<TyKey>,
+    ) -> Result<Rc<Self>, ElementError>
+    {
+        MethodKey::new(ty, name, in_tys).get_value(context)
+    }
+}
+
+impl MethodKey {
+    pub fn new(
+        ty: TyKey,
+        name: String,
+        in_tys: Vec<TyKey>,
+    ) -> Self {
+        Self {
+            ty,
+            name,
+            in_tys,
+        }
     }
 }

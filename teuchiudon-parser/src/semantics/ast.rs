@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    collections::HashMap,
     rc::Rc,
 };
 use crate::context::Context;
@@ -7,7 +8,21 @@ use crate::lexer;
 use crate::parser;
 use super::{
     SemanticError,
-    elements,
+    elements::{
+        ev::Ev,
+        ev_stats::EvStats,
+        eval_fn::EvalFn,
+        fn_stats::FnStats,
+        label::DataLabel,
+        literal::Literal,
+        method::{
+            Method,
+            OpMethodKey,
+        },
+        this_literal::ThisLiteral,
+        ty::Ty,
+        var::Var,
+    },
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -39,7 +54,7 @@ pub enum TopStatDetail<'input> {
     FnBind {
         access_attr: Rc<AccessAttr<'input>>,
         fn_bind: Rc<FnBind<'input>>,
-        ev: Option<(Rc<elements::ev::Ev>, Rc<elements::ev_stats::EvStats<'input>>)>,
+        ev: Option<(Rc<Ev>, Rc<EvStats<'input>>)>,
     },
     Stat {
         stat: Rc<Stat<'input>>,
@@ -77,15 +92,15 @@ pub struct VarBind<'input> {
     pub parsed: Option<Rc<parser::ast::VarBind<'input>>>,
     pub var_decl: Rc<VarDecl<'input>>,
     pub expr: Rc<Expr<'input>>,
-    pub vars: Vec<Rc<elements::var::Var>>,
+    pub vars: Vec<Rc<Var>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct VarDecl<'input> {
     pub parsed: Option<Rc<parser::ast::VarDecl<'input>>>,
     pub detail: Rc<VarDeclDetail<'input>>,
-    pub ty: Rc<elements::ty::Ty>,
-    pub vars: Vec<Rc<elements::var::Var>>,
+    pub ty: Rc<Ty>,
+    pub vars: Vec<Rc<Var>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -94,7 +109,7 @@ pub enum VarDeclDetail<'input> {
         mut_attr: Rc<MutAttr<'input>>,
         ident: Rc<Ident<'input>>,
         ty_expr: Rc<TyExpr<'input>>,
-        var: Rc<elements::var::Var>,
+        var: Rc<Var>,
     },
     TupleDecl {
         var_decls: Vec<Rc<VarDecl<'input>>>,
@@ -118,7 +133,7 @@ pub struct FnBind<'input> {
     pub parsed: Option<Rc<parser::ast::FnBind<'input>>>,
     pub fn_decl: Rc<FnDecl<'input>>,
     pub stats_block: Rc<StatsBlock<'input>>,
-    pub fn_stats: Rc<elements::fn_stats::FnStats<'input>>,
+    pub fn_stats: Rc<FnStats<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -133,7 +148,7 @@ pub struct FnDecl<'input> {
 pub struct TyExpr<'input> {
     pub parsed: Option<Rc<parser::ast::TyExpr<'input>>>,
     pub detail: Rc<TyExprDetail<'input>>,
-    pub ty: Rc<elements::ty::Ty>,
+    pub ty: Rc<Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -157,7 +172,7 @@ pub enum TyOp {
 pub struct TyTerm<'input> {
     pub parsed: Option<Rc<parser::ast::TyTerm<'input>>>,
     pub detail: Rc<TyTermDetail<'input>>,
-    pub ty: Rc<elements::ty::Ty>,
+    pub ty: Rc<Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -203,8 +218,10 @@ pub enum StatDetail<'input> {
 pub struct Expr<'input> {
     pub parsed: Option<Rc<parser::ast::Expr<'input>>>,
     pub detail: Rc<ExprDetail<'input>>,
-    pub ty: Rc<elements::ty::Ty>,
-    pub data: RefCell<Option<Vec<Rc<elements::label::DataLabel>>>>,
+    pub ty: Rc<Ty>,
+    pub tmp_vars: Vec<Rc<Var>>,
+    pub op_methods: HashMap<OpMethodKey, Rc<Method>>,
+    pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -256,8 +273,8 @@ pub enum Op {
 pub struct Term<'input> {
     pub parsed: Option<Rc<parser::ast::Term<'input>>>,
     pub detail: Rc<TermDetail<'input>>,
-    pub ty: Rc<elements::ty::Ty>,
-    pub data: RefCell<Option<Vec<Rc<elements::label::DataLabel>>>>,
+    pub ty: Rc<Ty>,
+    pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -279,6 +296,8 @@ pub enum TermDetail<'input> {
     PrefixOp {
         op: PrefixOp,
         term: Rc<Term<'input>>,
+        tmp_vars: Vec<Rc<Var>>,
+        op_methods: HashMap<OpMethodKey, Rc<Method>>,
     },
     Block {
         stats: Rc<StatsBlock<'input>>,
@@ -293,17 +312,17 @@ pub enum TermDetail<'input> {
         iter_expr: Rc<IterExpr<'input>>,
     },
     Literal {
-        literal: Rc<elements::literal::Literal>,
+        literal: Rc<Literal>,
     },
     ThisLiteral {
-        literal: Rc<elements::this_literal::ThisLiteral>,
+        literal: Rc<ThisLiteral>,
     },
     InterpolatedString {
         interpolated_string: Rc<InterpolatedString<'input>>,
     },
     EvalVar {
         ident: Rc<Ident<'input>>,
-        var: RefCell<Option<Rc<elements::var::Var>>>,
+        var: RefCell<Option<Rc<Var>>>,
     },
     LetInBind {
         var_bind: Rc<VarBind<'input>>,
@@ -341,8 +360,8 @@ pub enum PrefixOp {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum AsFn<'input> {
-    Fn(Rc<elements::eval_fn::EvalFn<'input>>),
-    Method(Rc<elements::method::Method>),
+    Fn(Rc<EvalFn<'input>>),
+    Method(Rc<Method>),
 }
 
 #[derive(Clone, Debug, PartialEq)]

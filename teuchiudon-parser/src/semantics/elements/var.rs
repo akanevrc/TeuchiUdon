@@ -95,7 +95,7 @@ impl Var {
         let value = Rc::new(Self {
             id,
             qual: Qual::top(context),
-            name: format!("tmp[{}]", id),
+            name: "_tmp".to_owned(),
             ty: RefCell::new(ty),
             is_mut: false,
             is_tmp: true,

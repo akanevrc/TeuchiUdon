@@ -140,13 +140,23 @@ pub fn eval_method() -> Box<dyn Iterator<Item = Instruction>> {
     ].into_iter())
 }
 
-pub fn call_method<'a>(args: Box<dyn Iterator<Item = Instruction> + 'a>, ext: Rc<ExternLabel>) -> Box<dyn Iterator<Item = Instruction> + 'a> {
+pub fn call_method<'a>(
+    args: Box<dyn Iterator<Item = Instruction> + 'a>,
+    out_vars: Vec<Rc<DataLabel>>,
+    ext: Rc<ExternLabel>,
+) -> Box<dyn Iterator<Item = Instruction> + 'a> {
     Box::new(
         args
+        .chain(
+            out_vars.clone().into_iter().flat_map(|x| get(x))
+        )
         .chain([
             Instruction::Extern(ext.to_name())
         ]
         .into_iter())
+        .chain(
+            out_vars.into_iter().flat_map(|x| get(x))
+        )
     )
 }
 

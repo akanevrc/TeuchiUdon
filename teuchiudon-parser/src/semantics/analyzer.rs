@@ -1,6 +1,9 @@
 use std::{
     cell::RefCell,
-    collections::VecDeque,
+    collections::{
+        HashMap,
+        VecDeque,
+    },
     rc::Rc,
 };
 use crate::context::Context;
@@ -24,7 +27,11 @@ use super::{
             DataLabelKind,
         },
         literal::Literal,
-        method::MethodParamInOut,
+        method::{
+            Method,
+            MethodParamInOut,
+            OpMethodKey,
+        },
         scope::Scope,
         this_literal::ThisLiteral,
         top_stat::TopStat,
@@ -756,12 +763,16 @@ fn construct_expr_tree<'input: 'context, 'context>(
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
     let term = self::term(context, node.term.clone())?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     exprs.push_back(Rc::new(ast::Expr {
         parsed: Some(node.clone()),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     }));
     for parser_op in &node.ops {
@@ -796,12 +807,16 @@ fn ty_access_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = ty_access_op(context)?;
     let term = self::ty_access_term(context, term)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -815,12 +830,16 @@ fn access_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = access_op(context, op_code)?;
     let term = self::term(context, term)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -833,12 +852,16 @@ fn eval_fn_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = eval_fn_op(context)?;
     let term = apply_fn_term(context, arg_exprs)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -851,12 +874,16 @@ fn eval_spread_fn_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = eval_spread_fn_op(context)?;
     let term = apply_spread_fn_term(context, expr)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -869,12 +896,16 @@ fn eval_key_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = eval_key_op(context)?;
     let term = apply_key_term(context, expr)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -887,12 +918,16 @@ fn cast_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = cast_op(context)?;
     let term = ty_expr_term(context, ty_expr)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -906,12 +941,16 @@ fn infix_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = infix_op(context, op_code)?;
     let term = self::term(context, term)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -924,12 +963,16 @@ fn assign_op_expr<'input: 'context, 'context>(
 ) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
     let op = assign_op(context)?;
     let term = self::term(context, term)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     let expr = Rc::new(ast::Expr {
         parsed: Some(node),
         detail: Rc::new(ast::ExprDetail::Term {
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars,
+        op_methods,
         data: term.data.clone(),
     });
     Ok((op, expr))
@@ -951,8 +994,36 @@ fn hidden_unit_expr<'input: 'context, 'context>(
             term: term.clone(),
         }),
         ty: term.ty.clone(),
+        tmp_vars: Vec::new(),
+        op_methods: HashMap::new(),
         data: RefCell::new(None),
     }))
+}
+
+fn term_tmp_vars<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    term: Rc<ast::Term<'input>>,
+) -> Result<Vec<Rc<Var>>, Vec<SemanticError<'input>>> {
+    match term.detail.as_ref() {
+        ast::TermDetail::PrefixOp { op, term, tmp_vars: _, op_methods: _ } =>
+            context.get_prefix_op_tmp_vars(&op, term.ty.clone())
+            .map_err(|e| e.convert(term.parsed.clone().map(|x| x.slice))),
+        _ =>
+            Ok(Vec::new()),
+    }
+}
+
+fn term_op_methods<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    term: Rc<ast::Term<'input>>,
+) -> Result<HashMap<OpMethodKey, Rc<Method>>, Vec<SemanticError<'input>>> {
+    match term.detail.as_ref() {
+        ast::TermDetail::PrefixOp { op, term, tmp_vars: _, op_methods: _ } =>
+            context.get_prefix_op_methods(&op, term.ty.clone())
+            .map_err(|e| e.convert(term.parsed.clone().map(|x| x.slice))),
+        _ =>
+            Ok(HashMap::new()),
+    }
 }
 
 pub fn ty_access_op<'input: 'context, 'context>(
@@ -1115,11 +1186,15 @@ fn prefix_op_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let op = prefix_op(context, op_code)?;
     let term = self::term(context, term)?;
+    let tmp_vars = term_tmp_vars(context, term.clone())?;
+    let op_methods = term_op_methods(context, term.clone())?;
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::PrefixOp {
             op,
             term: term.clone(),
+            tmp_vars,
+            op_methods,
         }),
         ty: term.ty.clone(),
         data: RefCell::new(None), // TODO
@@ -2050,6 +2125,12 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 .or(Ty::new_or_get_qual_from_key(context, qual.pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
+        let tmp_vars =
+            context.get_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let op_methods =
+            context.get_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::Expr {
@@ -2060,6 +2141,8 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty,
+            tmp_vars,
+            op_methods,
             data: right.data.clone(),
         }))
     }
@@ -2079,6 +2162,12 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 .or(Ty::new_or_get_qual_from_key(context, qual.to_key().pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
+        let tmp_vars =
+            context.get_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let op_methods =
+            context.get_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::Expr {
@@ -2089,6 +2178,8 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty,
+            tmp_vars,
+            op_methods,
             data: right.data.clone(),
         }))
     }
@@ -2123,6 +2214,12 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .flat_map(|x| x.into_iter())
             .collect::<Vec<_>>();
         let eval_fn = EvalFn::new_or_get(context, fn_stats.clone(), data);
+        let tmp_vars =
+            context.get_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let op_methods =
+            context.get_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
         right.data.replace(fn_stats.stats.ret.data.borrow().clone());
         Ok(Rc::new(ast::Expr {
@@ -2133,6 +2230,8 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty: fn_stats.stats.ret.ty.clone(),
+            tmp_vars,
+            op_methods,
             data: right.data.clone(),
         }))
     }
@@ -2144,6 +2243,12 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .map_err(|e| e.convert(None))?;
         let ty = Ty::tys_to_ty(context, &m.out_tys)
             .map_err(|e| e.convert(None))?;
+        let tmp_vars =
+            context.get_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let op_methods =
+            context.get_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
         right.data.replace(None); // TODO
         Ok(Rc::new(ast::Expr {
@@ -2154,6 +2259,8 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                 right: right.clone(),
             }),
             ty,
+            tmp_vars,
+            op_methods,
             data: RefCell::new(None), // TODO
         }))
     }
