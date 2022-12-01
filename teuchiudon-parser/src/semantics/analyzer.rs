@@ -287,6 +287,7 @@ pub fn var_bind<'input: 'context, 'context>(
 ) -> Result<Rc<ast::VarBind<'input>>, Vec<SemanticError<'input>>> {
     let var_decl = var_decl(context, node.var_decl.clone())?;
     let expr = expr(context, node.expr.clone())?;
+    let expr = expr.release(context);
     let mut vars = var_decl.vars.iter().cloned().collect();
     infer(context, &mut vars, expr.ty.clone())
         .map_err(|e| e.convert(Some(node.slice)))?;
@@ -741,6 +742,7 @@ fn expr_stat<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Stat<'input>>, Vec<SemanticError<'input>>> {
     let expr = self::expr(context, expr)?;
+    let expr = expr.release(context);
     Ok(Rc::new(ast::Stat {
         parsed: Some(node),
         detail: Rc::new(ast::StatDetail::Expr {
@@ -752,29 +754,31 @@ fn expr_stat<'input: 'context, 'context>(
 pub fn expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
-) -> Result<Rc<ast::Expr<'input>>, Vec<SemanticError<'input>>> {
+) -> Result<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>> {
     construct_expr_tree(context, node)
 }
 
 fn construct_expr_tree<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
-) -> Result<Rc<ast::Expr<'input>>, Vec<SemanticError<'input>>> {
+) -> Result<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>> {
     let mut exprs = VecDeque::new();
     let mut ops = VecDeque::new();
     let term = self::term(context, node.term.clone())?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    exprs.push_back(Rc::new(ast::Expr {
-        parsed: Some(node.clone()),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    }));
+    exprs.push_back(Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node.clone()),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    )));
     for parser_op in &node.ops {
         let (op, expr) = match parser_op.kind.as_ref() {
             parser::ast::OpKind::TyAccess { op_code: _, term } =>
@@ -804,21 +808,23 @@ fn ty_access_op_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
     term: Rc<parser::ast::Term<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = ty_access_op(context)?;
     let term = self::ty_access_term(context, term)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -827,21 +833,23 @@ fn access_op_expr<'input: 'context, 'context>(
     node: Rc<parser::ast::Expr<'input>>,
     op_code: Rc<lexer::ast::OpCode<'input>>,
     term: Rc<parser::ast::Term<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = access_op(context, op_code)?;
     let term = self::term(context, term)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -849,21 +857,23 @@ fn eval_fn_op_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
     arg_exprs: &Vec<Rc<parser::ast::ArgExpr<'input>>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = eval_fn_op(context)?;
     let term = apply_fn_term(context, arg_exprs)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -871,21 +881,23 @@ fn eval_spread_fn_op_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
     expr: Rc<parser::ast::Expr<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = eval_spread_fn_op(context)?;
     let term = apply_spread_fn_term(context, expr)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -893,21 +905,23 @@ fn eval_key_op_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
     expr: Rc<parser::ast::Expr<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = eval_key_op(context)?;
     let term = apply_key_term(context, expr)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -915,21 +929,23 @@ fn cast_op_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
     ty_expr: Rc<parser::ast::TyExpr<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = cast_op(context)?;
     let term = ty_expr_term(context, ty_expr)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -938,21 +954,23 @@ fn infix_op_expr<'input: 'context, 'context>(
     node: Rc<parser::ast::Expr<'input>>,
     op_code: Rc<lexer::ast::OpCode<'input>>,
     term: Rc<parser::ast::Term<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = infix_op(context, op_code)?;
     let term = self::term(context, term)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
@@ -960,27 +978,29 @@ fn assign_op_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Expr<'input>>,
     term: Rc<parser::ast::Term<'input>>,
-) -> Result<(ast::Op, Rc<ast::Expr<'input>>), Vec<SemanticError<'input>>> {
+) -> Result<(ast::Op, Rc<ast::RetainedExpr<'input>>), Vec<SemanticError<'input>>> {
     let op = assign_op(context)?;
     let term = self::term(context, term)?;
     let tmp_vars = term_tmp_vars(context, term.clone())?;
     let op_methods = term_op_methods(context, term.clone())?;
-    let expr = Rc::new(ast::Expr {
-        parsed: Some(node),
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars,
-        op_methods,
-        data: term.data.clone(),
-    });
+    let expr = Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(node),
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars,
+            op_methods,
+            data: term.data.clone(),
+        })
+    ));
     Ok((op, expr))
 }
 
 fn hidden_unit_expr<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> Result<Rc<ast::Expr<'input>>, Vec<SemanticError<'input>>> {
+) -> Result<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>> {
     let term = Rc::new(ast::Term {
         parsed: None,
         detail: Rc::new(ast::TermDetail::None),
@@ -988,16 +1008,18 @@ fn hidden_unit_expr<'input: 'context, 'context>(
             .map_err(|e| e.convert(None))?,
         data: RefCell::new(None),
     });
-    Ok(Rc::new(ast::Expr {
-        parsed: None,
-        detail: Rc::new(ast::ExprDetail::Term {
-            term: term.clone(),
-        }),
-        ty: term.ty.clone(),
-        tmp_vars: Vec::new(),
-        op_methods: HashMap::new(),
-        data: RefCell::new(None),
-    }))
+    Ok(Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: None,
+            detail: Rc::new(ast::ExprDetail::Term {
+                term: term.clone(),
+            }),
+            ty: term.ty.clone(),
+            tmp_vars: Vec::new(),
+            op_methods: HashMap::new(),
+            data: RefCell::new(None),
+        })
+    )))
 }
 
 fn term_tmp_vars<'input: 'context, 'context>(
@@ -1208,13 +1230,14 @@ fn block_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let scope = Scope::Block(context.block_id_factory.next_id());
     let stats = stats_block(context, stats, scope)?;
+    let ret = stats.ret.release(context);
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Block {
             stats: stats.clone(),
         }),
-        ty: stats.ret.ty.clone(),
-        data: stats.ret.data.clone(),
+        ty: ret.ty.clone(),
+        data: ret.data.clone(),
     }))
 }
 
@@ -1224,6 +1247,7 @@ fn paren_term<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let expr = self::expr(context, expr)?;
+    let expr = expr.release(context);
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Paren {
@@ -1243,6 +1267,7 @@ fn tuple_term<'input: 'context, 'context>(
         exprs.iter()
         .map(|x| expr(context, x.clone()))
         .collect::<Result<Vec<_>, _>>()?;
+    let exprs = exprs.into_iter().map(|x| x.release(context)).collect::<Vec<_>>();
     let ty_keys = exprs.iter().map(|x| x.ty.to_key()).collect();
     let ty =
         Ty::new_or_get_tuple_from_keys(context, ty_keys)
@@ -1400,6 +1425,7 @@ fn let_in_bind_term<'input: 'context, 'context>(
     context.qual_stack.push_scope(context, scope);
     let var_bind = self::var_bind(context, var_bind)?;
     let expr = self::expr(context, expr)?;
+    let expr = expr.release(context);
     context.qual_stack.pop();
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
@@ -1420,6 +1446,7 @@ fn if_term<'input: 'context, 'context>(
     else_part: Option<(Rc<lexer::ast::Keyword<'input>>, Rc<parser::ast::StatsBlock<'input>>)>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let condition = expr(context, condition)?;
+    let condition = condition.release(context);
     let if_scope = Scope::Block(context.block_id_factory.next_id());
     let if_part = stats_block(context, if_part, if_scope)?;
     let else_part = match else_part {
@@ -1429,6 +1456,7 @@ fn if_term<'input: 'context, 'context>(
         },
         None => None,
     };
+    let ret = if_part.ret.release(context); // TODO
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::If {
@@ -1436,8 +1464,8 @@ fn if_term<'input: 'context, 'context>(
             if_part: if_part.clone(),
             else_part,
         }),
-        ty: if_part.ret.ty.clone(), // TODO
-        data: if_part.ret.data.clone(), // TODO
+        ty: ret.ty.clone(), // TODO
+        data: ret.data.clone(), // TODO
     }))
 }
 
@@ -1448,6 +1476,7 @@ fn while_term<'input: 'context, 'context>(
     stats: Rc<parser::ast::StatsBlock<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let condition = expr(context, condition)?;
+    let condition = condition.release(context);
     let scope = Scope::Loop(context.loop_id_factory.next_id());
     let stats = stats_block(context, stats, scope)?;
     let ty =
@@ -1518,6 +1547,7 @@ fn closure_term<'input: 'context, 'context>(
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let var_decl = self::var_decl(context, var_decl)?;
     let expr = self::expr(context, expr)?;
+    let expr = expr.release(context);
     Ok(Rc::new(ast::Term {
         parsed: Some(node),
         detail: Rc::new(ast::TermDetail::Closure {
@@ -1572,6 +1602,7 @@ fn apply_spread_fn_term<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let arg = self::expr(context, expr)?;
+    let arg = arg.release(context);
     let ty =
         Ty::get_from_name(context, "never")
         .map_err(|e| e.convert(None))?;
@@ -1590,6 +1621,7 @@ fn apply_key_term<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::Term<'input>>, Vec<SemanticError<'input>>> {
     let key = self::expr(context, expr)?;
+    let key = key.release(context);
     let ty =
         Ty::get_from_name(context, "never")
         .map_err(|e| e.convert(None))?;
@@ -1651,6 +1683,8 @@ fn range_iter_expr<'input: 'context, 'context>(
 ) -> Result<Rc<ast::IterExpr<'input>>, Vec<SemanticError<'input>>> {
     let left = expr(context, left)?;
     let right = expr(context, right)?;
+    let left = left.release(context);
+    let right = right.release(context);
     Ok(Rc::new(ast::IterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::IterExprDetail::Range {
@@ -1670,6 +1704,9 @@ fn stepped_range_iter_expr<'input: 'context, 'context>(
     let left = expr(context, left)?;
     let right = expr(context, right)?;
     let step = expr(context, step)?;
+    let left = left.release(context);
+    let right = right.release(context);
+    let step = step.release(context);
     Ok(Rc::new(ast::IterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::IterExprDetail::SteppedRange {
@@ -1686,6 +1723,7 @@ fn spread_iter_expr<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::IterExpr<'input>>, Vec<SemanticError<'input>>> {
     let expr = self::expr(context, expr)?;
+    let expr = expr.release(context);
     Ok(Rc::new(ast::IterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::IterExprDetail::Spread {
@@ -1702,7 +1740,8 @@ fn elements_iter_expr<'input: 'context, 'context>(
     let exprs =
         exprs.iter()
         .map(|x| expr(context, x.clone()))
-        .collect::<Result<_, _>>()?;
+        .collect::<Result<Vec<_>, _>>()?;
+    let exprs = exprs.into_iter().map(|x| x.release(context)).collect();
     Ok(Rc::new(ast::IterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::IterExprDetail::Elements {
@@ -1761,6 +1800,7 @@ fn assign_for_bind<'input: 'context, 'context>(
 ) -> Result<Rc<ast::ForBind<'input>>, Vec<SemanticError<'input>>> {
     let left = self::expr(context, left)?;
     let for_iter_expr = self::for_iter_expr(context, for_iter_expr)?;
+    let left = left.release(context);
     Ok(Rc::new(ast::ForBind {
         parsed: Some(node),
         detail: Rc::new(ast::ForBindDetail::Assign {
@@ -1792,6 +1832,8 @@ fn range_for_iter_expr<'input: 'context, 'context>(
 ) -> Result<Rc<ast::ForIterExpr<'input>>, Vec<SemanticError<'input>>> {
     let left = expr(context, left)?;
     let right = expr(context, right)?;
+    let left = left.release(context);
+    let right = right.release(context);
     Ok(Rc::new(ast::ForIterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::ForIterExprDetail::Range {
@@ -1811,6 +1853,9 @@ fn stepped_range_for_iter_expr<'input: 'context, 'context>(
     let left = expr(context, left)?;
     let right = expr(context, right)?;
     let step = expr(context, step)?;
+    let left = left.release(context);
+    let right = right.release(context);
+    let step = step.release(context);
     Ok(Rc::new(ast::ForIterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::ForIterExprDetail::SteppedRange {
@@ -1827,6 +1872,7 @@ fn spread_for_iter_expr<'input: 'context, 'context>(
     expr: Rc<parser::ast::Expr<'input>>,
 ) -> Result<Rc<ast::ForIterExpr<'input>>, Vec<SemanticError<'input>>> {
     let expr = self::expr(context, expr)?;
+    let expr = expr.release(context);
     Ok(Rc::new(ast::ForIterExpr {
         parsed: Some(node),
         detail: Rc::new(ast::ForIterExprDetail::Spread {
@@ -1894,14 +1940,11 @@ pub fn interpolated_string<'input: 'context, 'context>(
     node: Rc<lexer::ast::InterpolatedString<'input>>,
 ) -> Result<Rc<ast::InterpolatedString<'input>>, Vec<SemanticError<'input>>> {
     let string_parts = node.string_parts.iter().map(|x| (*x).to_owned()).collect();
-    let mut exprs = Vec::new();
-    for x in &node.exprs {
-        exprs.push(expr(context, x.clone())?);
-    }
     let exprs =
         node.exprs.iter()
         .map(|x| expr(context, x.clone()))
-        .collect::<Result<_, _>>()?;
+        .collect::<Result<Vec<_>, _>>()?;
+    let exprs = exprs.into_iter().map(|x| x.release(context)).collect();
     Ok(Rc::new(ast::InterpolatedString {
         parsed: Some(node),
         string_parts,
@@ -2072,7 +2115,7 @@ fn access_ty_infix_op<'input: 'context, 'context>(
 }
 
 impl<'input: 'context, 'context>
-    ast::ExprTree<'input, 'context, ast::Op, parser::ast::Expr<'input>> for ast::Expr<'input>
+    ast::ExprTree<'input, 'context, ast::Op, parser::ast::Expr<'input>> for ast::RetainedExpr<'input>
 {
     fn priorities(context: &'context Context<'input>) -> &'context Vec<(Box<dyn Fn(&ast::Op) -> bool>, ast::Assoc)> {
         &context.semantic_op.priorities
@@ -2099,10 +2142,12 @@ impl<'input: 'context, 'context>
 fn ty_access_infix_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
     parsed: Rc<parser::ast::Expr<'input>>,
-    left: Rc<ast::Expr<'input>>,
+    left: Rc<ast::RetainedExpr<'input>>,
     op: ast::Op,
-    right: Rc<ast::Expr<'input>>,
-) -> Result<Rc<ast::Expr<'input>>, Vec<SemanticError<'input>>> {
+    right: Rc<ast::RetainedExpr<'input>>,
+) -> Result<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>> {
+    let left = left.release(context);
+    let right = right.release(context);
     let ast::ExprDetail::Term { term } = right.detail.as_ref()
         else {
             return Err(vec![SemanticError::new(None, "Right side of `::` is not a term".to_owned())]);
@@ -2133,18 +2178,20 @@ fn ty_access_infix_op<'input: 'context, 'context>(
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
-        Ok(Rc::new(ast::Expr {
-            parsed: Some(parsed),
-            detail: Rc::new(ast::ExprDetail::InfixOp {
-                left: left.clone(),
-                op,
-                right: right.clone(),
-            }),
-            ty,
-            tmp_vars,
-            op_methods,
-            data: right.data.clone(),
-        }))
+        Ok(Rc::new(ast::RetainedExpr::new(
+            Rc::new(ast::Expr {
+                parsed: Some(parsed),
+                detail: Rc::new(ast::ExprDetail::InfixOp {
+                    left: left.clone(),
+                    op,
+                    right: right.clone(),
+                }),
+                ty,
+                tmp_vars,
+                op_methods,
+                data: right.data.clone(),
+            })
+        )))
     }
     else if left.ty.base_eq_with_name("type") {
         let parent = left.ty.arg_as_type().get_value(context)
@@ -2170,18 +2217,20 @@ fn ty_access_infix_op<'input: 'context, 'context>(
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
-        Ok(Rc::new(ast::Expr {
-            parsed: Some(parsed),
-            detail: Rc::new(ast::ExprDetail::InfixOp {
-                left: left.clone(),
-                op,
-                right: right.clone(),
-            }),
-            ty,
-            tmp_vars,
-            op_methods,
-            data: right.data.clone(),
-        }))
+        Ok(Rc::new(ast::RetainedExpr::new(
+            Rc::new(ast::Expr {
+                parsed: Some(parsed),
+                detail: Rc::new(ast::ExprDetail::InfixOp {
+                    left: left.clone(),
+                    op,
+                    right: right.clone(),
+                }),
+                ty,
+                tmp_vars,
+                op_methods,
+                data: right.data.clone(),
+            })
+        )))
     }
     else {
         Err(vec![SemanticError::new(None, "Left side of `::` is not a qualifier or a type".to_owned())])
@@ -2191,10 +2240,12 @@ fn ty_access_infix_op<'input: 'context, 'context>(
 fn eval_fn_infix_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
     parsed: Rc<parser::ast::Expr<'input>>,
-    left: Rc<ast::Expr<'input>>,
+    left: Rc<ast::RetainedExpr<'input>>,
     op: ast::Op,
-    right: Rc<ast::Expr<'input>>,
-) -> Result<Rc<ast::Expr<'input>>, Vec<SemanticError<'input>>> {
+    right: Rc<ast::RetainedExpr<'input>>,
+) -> Result<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>> {
+    let left = left.release(context);
+    let right = right.release(context);
     let ast::ExprDetail::Term { term } = right.detail.as_ref()
         else {
             return Err(vec![SemanticError::new(None, "Right side of `eval fn` is not a term".to_owned())]);
@@ -2203,14 +2254,16 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         else {
             return Err(vec![SemanticError::new(None, "Right side of `eval fn` cannot apply".to_owned())]);
         };
+    let args = args.iter().map(|x| x.expr.release(context)).collect::<Vec<_>>();
 
     if left.ty.base_eq_with_name("function") {
         let key = left.ty.arg_as_function();
         let fn_stats = key.get_value(context)
             .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let ret = fn_stats.stats.ret.release(context); // TODO
         let data =
             args.iter()
-            .filter_map(|x| x.expr.data.borrow().clone())
+            .filter_map(|x| x.data.borrow().clone())
             .flat_map(|x| x.into_iter())
             .collect::<Vec<_>>();
         let eval_fn = EvalFn::new_or_get(context, fn_stats.clone(), data);
@@ -2221,22 +2274,24 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             context.get_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
-        right.data.replace(fn_stats.stats.ret.data.borrow().clone());
-        Ok(Rc::new(ast::Expr {
-            parsed: Some(parsed),
-            detail: Rc::new(ast::ExprDetail::InfixOp {
-                left: left.clone(),
-                op,
-                right: right.clone(),
-            }),
-            ty: fn_stats.stats.ret.ty.clone(),
-            tmp_vars,
-            op_methods,
-            data: right.data.clone(),
-        }))
+        right.data.replace(ret.data.borrow().clone());
+        Ok(Rc::new(ast::RetainedExpr::new(
+            Rc::new(ast::Expr {
+                parsed: Some(parsed),
+                detail: Rc::new(ast::ExprDetail::InfixOp {
+                    left: left.clone(),
+                    op,
+                    right: right.clone(),
+                }),
+                ty: ret.ty.clone(),
+                tmp_vars,
+                op_methods,
+                data: right.data.clone(),
+            })
+        )))
     }
     else if left.ty.base_eq_with_name("method") {
-        let in_tys = args.iter().map(|x| x.expr.ty.to_key()).collect();
+        let in_tys = args.iter().map(|x| x.ty.to_key()).collect();
         let key = left.ty.most_compatible_method(context, in_tys)
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let m = key.get_value(context)
@@ -2251,18 +2306,20 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
         right.data.replace(None); // TODO
-        Ok(Rc::new(ast::Expr {
-            parsed: Some(parsed),
-            detail: Rc::new(ast::ExprDetail::InfixOp {
-                left: left.clone(),
-                op,
-                right: right.clone(),
-            }),
-            ty,
-            tmp_vars,
-            op_methods,
-            data: RefCell::new(None), // TODO
-        }))
+        Ok(Rc::new(ast::RetainedExpr::new(
+            Rc::new(ast::Expr {
+                parsed: Some(parsed),
+                detail: Rc::new(ast::ExprDetail::InfixOp {
+                    left: left.clone(),
+                    op,
+                    right: right.clone(),
+                }),
+                ty,
+                tmp_vars,
+                op_methods,
+                data: RefCell::new(None), // TODO
+            })
+        )))
     }
     else {
         return Err(vec![SemanticError::new(None, "Left side of `eval fn` is not a function or a method".to_owned())]);

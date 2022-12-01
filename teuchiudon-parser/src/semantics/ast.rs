@@ -187,7 +187,7 @@ pub enum TyTermDetail<'input> {
 pub struct StatsBlock<'input> {
     pub parsed: Option<Rc<parser::ast::StatsBlock<'input>>>,
     pub stats: Vec<Rc<Stat<'input>>>,
-    pub ret: Rc<Expr<'input>>,
+    pub ret: Rc<RetainedExpr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -199,7 +199,7 @@ pub struct Stat<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub enum StatDetail<'input> {
     Return {
-        expr: Rc<Expr<'input>>,
+        expr: Rc<RetainedExpr<'input>>,
     },
     Continue,
     Break,
@@ -394,7 +394,7 @@ pub enum IterExprDetail<'input> {
 pub struct ArgExpr<'input> {
     pub parsed: Option<Rc<parser::ast::ArgExpr<'input>>>,
     pub mut_attr: Rc<MutAttr<'input>>,
-    pub expr: Rc<Expr<'input>>,
+    pub expr: Rc<RetainedExpr<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -466,4 +466,28 @@ pub trait ExprTree<'input: 'context, 'context, SemanticOp, ParserExpr> {
         op: SemanticOp,
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'input>>>;
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct RetainedExpr<'input> {
+    expr: Rc<Expr<'input>>,
+}
+
+impl<'input> RetainedExpr<'input> {
+    pub fn new(expr: Rc<Expr<'input>>) -> Self {
+        Self {
+            expr,
+        }
+    }
+
+    pub fn release(&self, context: &Context) -> Rc<Expr<'input>> {
+        for v in &self.expr.tmp_vars {
+            context.release_tmp_var(v.clone());
+        }
+        self.expr.clone()
+    }
+
+    pub fn get_expr(&self) -> Rc<Expr<'input>> {
+        self.expr.clone()
+    }
 }

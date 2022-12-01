@@ -129,7 +129,7 @@ pub fn visit_stats_block<'input: 'context, 'context>(
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     Box::new(
         stats_block.stats.clone().into_iter().flat_map(|x| visit_stat(context, x.clone()))
-        .chain(visit_expr(context, stats_block.ret.clone()))
+        .chain(visit_expr(context, stats_block.ret.get_expr()))
     )
 }
 
@@ -236,7 +236,7 @@ fn visit_eval_fn_op<'input: 'context, 'context>(
             ast::AsFn::Method(m) => {
                 let args =
                     Box::new(
-                        args.clone().into_iter().flat_map(|x| visit_expr(context, x.expr.clone()))
+                        args.clone().into_iter().flat_map(|x| visit_expr(context, x.expr.get_expr()))
                     );
                 Box::new(
                     visit_expr(context, left)
