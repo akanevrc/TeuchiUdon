@@ -102,7 +102,7 @@ impl Var {
             actual_name: RefCell::new(None),
         });
         let key = value.to_key();
-        context.var_store.add(key, value.clone()).unwrap();
+        context.var_store.force_add(key, value.clone());
         value
     }
 
