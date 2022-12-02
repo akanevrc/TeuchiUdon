@@ -1,0 +1,8 @@
+// 100,-,-,-
+fn F(x: int) -> int {
+    -{
+      -x
+    }
+};
+
+UnityEngine::Debug::Log(-F(100));

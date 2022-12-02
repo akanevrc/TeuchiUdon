@@ -1,6 +1,7 @@
 use std::{
     cell::RefCell,
     collections::HashMap,
+    fmt::Debug,
     rc::Rc,
 };
 use crate::context::Context;
@@ -153,8 +154,8 @@ pub struct TyExpr<'input> {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TyExprDetail<'input> {
-    Term {
-        term: Rc<TyTerm<'input>>,
+    Factor {
+        factor: Rc<TyFactor<'input>>,
     },
     InfixOp {
         left: Rc<TyExpr<'input>>,
@@ -169,14 +170,14 @@ pub enum TyOp {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TyTerm<'input> {
-    pub parsed: Option<Rc<parser::ast::TyTerm<'input>>>,
-    pub detail: Rc<TyTermDetail<'input>>,
+pub struct TyFactor<'input> {
+    pub parsed: Option<Rc<parser::ast::TyFactor<'input>>>,
+    pub detail: Rc<TyFactorDetail<'input>>,
     pub ty: Rc<Ty>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TyTermDetail<'input> {
+pub enum TyFactorDetail<'input> {
     None,
     EvalTy {
         ident: Rc<Ident<'input>>,
@@ -229,21 +230,27 @@ pub enum ExprDetail<'input> {
     Term {
         term: Rc<Term<'input>>,
     },
+    PrefixOp {
+        op: TermPrefixOp,
+        expr: Rc<Expr<'input>>,
+    },
     InfixOp {
         left: Rc<Expr<'input>>,
-        op: Op,
+        op: TermInfixOp,
         right: Rc<Expr<'input>>,
     },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Op {
-    TyAccess,
-    Access,
-    CoalescingAccess,
-    EvalFn,
-    EvalSpreadFn,
-    EvalKey,
+pub enum TermPrefixOp {
+    Plus,
+    Minus,
+    Bang,
+    Tilde,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum TermInfixOp {
     CastOp,
     Mul,
     Div,
@@ -274,11 +281,43 @@ pub struct Term<'input> {
     pub parsed: Option<Rc<parser::ast::Term<'input>>>,
     pub detail: Rc<TermDetail<'input>>,
     pub ty: Rc<Ty>,
+    pub tmp_vars: Vec<Rc<Var>>,
+    pub op_methods: HashMap<OpMethodKey, Rc<Method>>,
     pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TermDetail<'input> {
+    Factor {
+        factor: Rc<Factor<'input>>,
+    },
+    InfixOp {
+        left: Rc<Term<'input>>,
+        op: FactorInfixOp,
+        right: Rc<Term<'input>>,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum FactorInfixOp {
+    TyAccess,
+    Access,
+    CoalescingAccess,
+    EvalFn,
+    EvalSpreadFn,
+    EvalKey,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Factor<'input> {
+    pub parsed: Option<Rc<parser::ast::Factor<'input>>>,
+    pub detail: Rc<FactorDetail<'input>>,
+    pub ty: Rc<Ty>,
+    pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FactorDetail<'input> {
     None,
     TyExpr {
         ty_expr: Rc<TyExpr<'input>>,
@@ -292,12 +331,6 @@ pub enum TermDetail<'input> {
     },
     ApplyKey {
         key: Rc<Expr<'input>>,
-    },
-    PrefixOp {
-        op: PrefixOp,
-        term: Rc<Term<'input>>,
-        tmp_vars: Vec<Rc<Var>>,
-        op_methods: HashMap<OpMethodKey, Rc<Method>>,
     },
     Block {
         stats: Rc<StatsBlock<'input>>,
@@ -348,14 +381,6 @@ pub enum TermDetail<'input> {
         var_decl: Rc<VarDecl<'input>>,
         expr: Rc<Expr<'input>>,
     },
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum PrefixOp {
-    Plus,
-    Minus,
-    Bang,
-    Tilde,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -456,14 +481,14 @@ pub enum Assoc {
     Right,
 }
 
-pub trait ExprTree<'input: 'context, 'context, SemanticOp, ParserExpr> {
+pub trait ExprTree<'input: 'context, 'context, SemanticOp: Debug, ParserExpr>: Debug {
     fn priorities(context: &'context Context<'input>) -> &'context Vec<(Box<dyn Fn(&SemanticOp) -> bool>, Assoc)>;
 
     fn infix_op(
         context: &'context Context<'input>,
         parsed: Rc<ParserExpr>,
         left: Rc<Self>,
-        op: SemanticOp,
+        op: &SemanticOp,
         right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'input>>>;
 }
@@ -487,7 +512,32 @@ impl<'input> RetainedExpr<'input> {
         self.expr.clone()
     }
 
-    pub fn get_expr(&self) -> Rc<Expr<'input>> {
+    pub fn get(&self) -> Rc<Expr<'input>> {
         self.expr.clone()
     }
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct RetainedTerm<'input> {
+    term: Rc<Term<'input>>,
+}
+
+impl<'input> RetainedTerm<'input> {
+    pub fn new(term: Rc<Term<'input>>) -> Self {
+        Self {
+            term,
+        }
+    }
+
+    pub fn release(&self, context: &Context) -> Rc<Term<'input>> {
+        for v in &self.term.tmp_vars {
+            context.release_tmp_var(v.clone());
+        }
+        self.term.clone()
+    }
+
+    pub fn get(&self) -> Rc<Term<'input>> {
+        self.term.clone()
+    }
+}
+

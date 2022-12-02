@@ -70,24 +70,31 @@ impl<'input> Context<'input> {
         heap.push(Reverse(var.clone()))
     }
 
-    pub fn get_prefix_op_tmp_vars(&self, op: &ast::PrefixOp, ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
+    pub fn get_term_prefix_op_tmp_vars(&self, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
         match op {
-            ast::PrefixOp::Plus =>
+            ast::TermPrefixOp::Plus =>
                 Ok(Vec::new()),
-            ast::PrefixOp::Minus =>
+            ast::TermPrefixOp::Minus =>
                 Ok(vec![self.retain_tmp_var(ty.to_key())?]),
-            ast::PrefixOp::Bang =>
+            ast::TermPrefixOp::Bang =>
                 Ok(vec![self.retain_tmp_var(ty.to_key())?]),
-            ast::PrefixOp::Tilde =>
+            ast::TermPrefixOp::Tilde =>
                 Ok(vec![self.retain_tmp_var(ty.to_key())?]),
         }
     }
 
-    pub fn get_infix_op_tmp_vars(&self, op: &ast::Op, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
+    pub fn get_term_infix_op_tmp_vars(&self, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
         match op {
-            ast::Op::TyAccess =>
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    pub fn get_factor_infix_op_tmp_vars(&self, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
+        match op {
+            ast::FactorInfixOp::TyAccess =>
                 Ok(Vec::new()),
-            ast::Op::EvalFn =>
+            ast::FactorInfixOp::EvalFn =>
                 Ok(Vec::new()),
             _ =>
                 panic!("Not implemented"),

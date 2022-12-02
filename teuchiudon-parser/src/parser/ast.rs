@@ -98,7 +98,7 @@ pub struct FnDecl<'input> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct TyExpr<'input> {
     pub slice: &'input str,
-    pub ty_term: Rc<TyTerm<'input>>,
+    pub ty_factor: Rc<TyFactor<'input>>,
     pub ty_ops: Vec<Rc<TyOp<'input>>>,
 }
 
@@ -112,18 +112,18 @@ pub struct TyOp<'input> {
 pub enum TyOpKind<'input> {
     Access {
         op_code: Rc<lexer::ast::OpCode<'input>>,
-        ty_term: Rc<TyTerm<'input>>,
+        ty_factor: Rc<TyFactor<'input>>,
     },
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct TyTerm<'input> {
+pub struct TyFactor<'input> {
     pub slice: &'input str,
-    pub kind: Rc<TyTermKind<'input>>,
+    pub kind: Rc<TyFactorKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TyTermKind<'input> {
+pub enum TyFactorKind<'input> {
     EvalTy {
         ident: Rc<lexer::ast::Ident<'input>>
     },
@@ -169,34 +169,25 @@ pub enum StatKind<'input> {
 pub struct Expr<'input> {
     pub slice: &'input str,
     pub term: Rc<Term<'input>>,
-    pub ops: Vec<Rc<Op<'input>>>,
+    pub term_ops: Vec<Rc<TermOp<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Op<'input> {
+pub struct Term<'input> {
     pub slice: &'input str,
-    pub kind: Rc<OpKind<'input>>,
+    pub prefix_ops: Vec<Rc<lexer::ast::OpCode<'input>>>,
+    pub factor: Rc<Factor<'input>>,
+    pub factor_ops: Vec<Rc<FactorOp<'input>>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum OpKind<'input> {
-    TyAccess {
-        op_code: Rc<lexer::ast::OpCode<'input>>,
-        term: Rc<Term<'input>>,
-    },
-    Access {
-        op_code: Rc<lexer::ast::OpCode<'input>>,
-        term: Rc<Term<'input>>,
-    },
-    EvalFn {
-        arg_exprs: Vec<Rc<ArgExpr<'input>>>,
-    },
-    EvalSpreadFn {
-        expr: Rc<Expr<'input>>,
-    },
-    EvalKey {
-        expr: Rc<Expr<'input>>,
-    },
+pub struct TermOp<'input> {
+    pub slice: &'input str,
+    pub kind: Rc<TermOpKind<'input>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum TermOpKind<'input> {
     CastOp {
         as_keyword: Rc<lexer::ast::Keyword<'input>>,
         ty_expr: Rc<TyExpr<'input>>,
@@ -211,17 +202,40 @@ pub enum OpKind<'input> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Term<'input> {
+pub struct Factor<'input> {
     pub slice: &'input str,
-    pub kind: Rc<TermKind<'input>>,
+    pub kind: Rc<FactorKind<'input>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum TermKind<'input> {
-    PrefixOp {
+pub struct FactorOp<'input> {
+    pub slice: &'input str,
+    pub kind: Rc<FactorOpKind<'input>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FactorOpKind<'input> {
+    TyAccess {
         op_code: Rc<lexer::ast::OpCode<'input>>,
-        term: Rc<Term<'input>>,
+        factor: Rc<Factor<'input>>,
     },
+    Access {
+        op_code: Rc<lexer::ast::OpCode<'input>>,
+        factor: Rc<Factor<'input>>,
+    },
+    EvalFn {
+        arg_exprs: Vec<Rc<ArgExpr<'input>>>,
+    },
+    EvalSpreadFn {
+        expr: Rc<Expr<'input>>,
+    },
+    EvalKey {
+        expr: Rc<Expr<'input>>,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum FactorKind<'input> {
     Block {
         stats: Rc<StatsBlock<'input>>,
     },

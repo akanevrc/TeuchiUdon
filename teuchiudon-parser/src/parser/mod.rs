@@ -25,9 +25,8 @@ use nom::{
     }
 };
 use nom_supreme::ParserExt;
-
 use super::ParsedResult;
-use crate::{context::Context, parser::ast::TyTermKind};
+use crate::context::Context;
 use crate::lexer::{
     self,
     lex,
@@ -296,11 +295,11 @@ pub fn ty_expr<'input: 'context, 'context>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyExpr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
-            tuple((ty_term(context), many0(ty_op(context)))),
+            tuple((ty_factor(context), many0(ty_op(context)))),
         ),
         |x| Rc::new(ast::TyExpr {
             slice: x.0,
-            ty_term: x.1.0,
+            ty_factor: x.1.0,
             ty_ops: x.1.1
         })
     )
@@ -326,40 +325,40 @@ fn access_ty_op<'input: 'context, 'context>(
         consumed(
             tuple((
                 lex(lexer::op_code(context, "::")),
-                ty_term(context),
+                ty_factor(context),
             )),
         ),
         |x| Rc::new(ast::TyOp {
             slice: x.0,
             kind: Rc::new(ast::TyOpKind::Access {
                 op_code: x.1.0,
-                ty_term: x.1.1,
+                ty_factor: x.1.1,
             }),
         }),
     )(input)
 }
 
 #[named]
-pub fn ty_term<'input: 'context, 'context>(
+pub fn ty_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyTerm<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyFactor<'input>>> + 'context {
     |input: &'input str| alt((
-        eval_ty_ty_term(context),
+        eval_ty_ty_factor(context),
     ))
     .context(function_name!().to_owned())
     .parse(input)
 }
 
-fn eval_ty_ty_term<'input: 'context, 'context>(
+fn eval_ty_ty_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyTerm<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TyFactor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::ident(context)),
         ),
-        |x| Rc::new(ast::TyTerm {
+        |x| Rc::new(ast::TyFactor {
             slice: x.0,
-            kind: Rc::new(TyTermKind::EvalTy { ident: x.1 }),
+            kind: Rc::new(ast::TyFactorKind::EvalTy { ident: x.1 }),
         }),
     )(input)
 }
@@ -477,12 +476,15 @@ pub fn expr<'input: 'context, 'context>(
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Expr<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
-            tuple((term(context), many0(op(context)))),
+            tuple((
+                term(context),
+                many0(term_op(context)),
+            )),
         ),
         |x| Rc::new(ast::Expr {
             slice: x.0,
             term: x.1.0,
-            ops: x.1.1,
+            term_ops: x.1.1,
         }),
     )
     .context(function_name!().to_owned())
@@ -490,15 +492,10 @@ pub fn expr<'input: 'context, 'context>(
 }
 
 #[named]
-pub fn op<'input: 'context, 'context>(
+pub fn term_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TermOp<'input>>> + 'context {
     |input: &'input str| alt((
-        ty_access_op(context),
-        access_op(context),
-        eval_fn_op(context),
-        eval_spread_fn_op(context),
-        eval_key_op(context),
         cast_op(context),
         infix_op(context),
         assign_op(context),
@@ -507,103 +504,9 @@ pub fn op<'input: 'context, 'context>(
     .parse(input)
 }
 
-fn ty_access_op<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
-    |input: &'input str| map(
-        consumed(
-            tuple((
-                lex(lexer::op_code(context, "::")),
-                term(context),
-            )),
-        ),
-        |x| Rc::new(ast::Op {
-            slice: x.0,
-            kind: Rc::new(ast::OpKind::TyAccess { op_code: x.1.0, term: x.1.1 }),
-        }),
-    )(input)
-}
-
-fn access_op<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
-    |input: &'input str| map(
-        consumed(
-            tuple((
-                alt((lex(lexer::op_code(context, ".")), lex(lexer::op_code(context, "?.")))),
-                term(context),
-            )),
-        ),
-        |x| Rc::new(ast::Op {
-            slice: x.0,
-            kind: Rc::new(ast::OpKind::Access { op_code: x.1.0, term: x.1.1 }),
-        }),
-    )(input)
-}
-
-fn eval_fn_op<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
-    |input: &'input str| map(
-        consumed(
-            delimited(
-                lex(lexer::op_code(context, "(")),
-                opt(
-                    terminated(
-                        separated_list1(lex(lexer::op_code(context, ",")), arg_expr(context)),
-                        opt(lex(lexer::op_code(context, ","))),
-                    ),
-                ),
-                lex(lexer::op_code(context, ")")),
-            ),
-        ),
-        |x| Rc::new(ast::Op {
-            slice: x.0,
-            kind: Rc::new(ast::OpKind::EvalFn { arg_exprs: x.1.unwrap_or(Vec::new()) }),
-        }),
-    )(input)
-}
-
-fn eval_spread_fn_op<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
-    |input: &'input str| map(
-        consumed(
-            tuple((
-                lex(lexer::op_code(context, "(")),
-                lex(lexer::op_code(context, "...")),
-                expr(context),
-                lex(lexer::op_code(context, ")")),
-            )),
-        ),
-        |x| Rc::new(ast::Op {
-            slice: x.0,
-            kind: Rc::new(ast::OpKind::EvalSpreadFn { expr: x.1.2 }),
-        }),
-    )(input)
-}
-
-fn eval_key_op<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
-    |input: &'input str| map(
-        consumed(
-            delimited(
-                lex(lexer::op_code(context, "[")),
-                expr(context),
-                lex(lexer::op_code(context, "]")),
-            ),
-        ),
-        |x| Rc::new(ast::Op {
-            slice: x.0,
-            kind: Rc::new(ast::OpKind::EvalKey { expr: x.1 }),
-        })
-    )(input)
-}
-
 fn cast_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TermOp<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -611,16 +514,16 @@ fn cast_op<'input: 'context, 'context>(
                 ty_expr(context),
             )),
         ),
-        |x| Rc::new(ast::Op {
+        |x| Rc::new(ast::TermOp {
             slice: x.0,
-            kind: Rc::new(ast::OpKind::CastOp { as_keyword: x.1.0, ty_expr: x.1.1 }),
+            kind: Rc::new(ast::TermOpKind::CastOp { as_keyword: x.1.0, ty_expr: x.1.1 }),
         }),
     )(input)
 }
 
 fn infix_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TermOp<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -654,16 +557,16 @@ fn infix_op<'input: 'context, 'context>(
                 term(context),
             )),
         ),
-        |x| Rc::new(ast::Op {
+        |x| Rc::new(ast::TermOp {
             slice: x.0,
-            kind: Rc::new(ast::OpKind::InfixOp { op_code: x.1.0, term: x.1.1 }),
+            kind: Rc::new(ast::TermOpKind::InfixOp { op_code: x.1.0, term: x.1.1 }),
         }),
     )(input)
 }
 
 fn assign_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Op<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::TermOp<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -671,9 +574,9 @@ fn assign_op<'input: 'context, 'context>(
                 term(context),
             )),
         ),
-        |x| Rc::new(ast::Op {
+        |x| Rc::new(ast::TermOp {
             slice: x.0,
-            kind: Rc::new(ast::OpKind::Assign { term: x.1.1 }),
+            kind: Rc::new(ast::TermOpKind::Assign { term: x.1.1 }),
         })
     )(input)
 }
@@ -682,66 +585,182 @@ fn assign_op<'input: 'context, 'context>(
 pub fn term<'input: 'context, 'context>(
     context: &'context Context<'input>,
 ) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+    |input: &'input str| map(
+        consumed(
+            tuple((
+                many0(
+                    alt((
+                        lex(lexer::op_code(context, "+")),
+                        lex(lexer::op_code(context, "-")),
+                        lex(lexer::op_code(context, "!")),
+                        lex(lexer::op_code(context, "~")),
+                    )),
+                ),
+                factor(context),
+                many0(factor_op(context)),
+            )),
+        ),
+        |x| Rc::new(ast::Term {
+            slice: x.0,
+            prefix_ops: x.1.0,
+            factor: x.1.1,
+            factor_ops: x.1.2,
+        }),
+    )
+    .context(function_name!().to_owned())
+    .parse(input)
+}
+
+#[named]
+pub fn factor_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FactorOp<'input>>> + 'context {
     |input: &'input str| alt((
-        prefix_op_term(context),
-        block_term(context),
-        paren_term(context),
-        tuple_term(context),
-        array_ctor_term(context),
-        literal_term(context),
-        this_literal_term(context),
-        interpolated_string_term(context),
-        eval_var_term(context),
-        let_in_bind_term(context),
-        if_term(context),
-        while_term(context),
-        loop_term(context),
-        for_term(context),
-        closure_term(context),
+        ty_access_op(context),
+        access_op(context),
+        eval_fn_op(context),
+        eval_spread_fn_op(context),
+        eval_key_op(context),
     ))
     .context(function_name!().to_owned())
     .parse(input)
 }
 
-fn prefix_op_term<'input: 'context, 'context>(
+fn ty_access_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FactorOp<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
-                alt((
-                    lex(lexer::op_code(context, "+")),
-                    lex(lexer::op_code(context, "-")),
-                    lex(lexer::op_code(context, "!")),
-                    lex(lexer::op_code(context, "~")),
-                )),
-                term(context),
+                lex(lexer::op_code(context, "::")),
+                factor(context),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::FactorOp {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::PrefixOp { op_code: x.1.0, term: x.1.1 }),
-        })
-    )(input)
-}
-
-fn block_term<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
-    |input: &'input str| map(
-        consumed(
-            stats_block(context),
-        ),
-        |x| Rc::new(ast::Term {
-            slice: x.0,
-            kind: Rc::new(ast::TermKind::Block { stats: x.1 }),
+            kind: Rc::new(ast::FactorOpKind::TyAccess { op_code: x.1.0, factor: x.1.1 }),
         }),
     )(input)
 }
 
-fn paren_term<'input: 'context, 'context>(
+fn access_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FactorOp<'input>>> + 'context {
+    |input: &'input str| map(
+        consumed(
+            tuple((
+                alt((lex(lexer::op_code(context, ".")), lex(lexer::op_code(context, "?.")))),
+                factor(context),
+            )),
+        ),
+        |x| Rc::new(ast::FactorOp {
+            slice: x.0,
+            kind: Rc::new(ast::FactorOpKind::Access { op_code: x.1.0, factor: x.1.1 }),
+        }),
+    )(input)
+}
+
+fn eval_fn_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FactorOp<'input>>> + 'context {
+    |input: &'input str| map(
+        consumed(
+            delimited(
+                lex(lexer::op_code(context, "(")),
+                opt(
+                    terminated(
+                        separated_list1(lex(lexer::op_code(context, ",")), arg_expr(context)),
+                        opt(lex(lexer::op_code(context, ","))),
+                    ),
+                ),
+                lex(lexer::op_code(context, ")")),
+            ),
+        ),
+        |x| Rc::new(ast::FactorOp {
+            slice: x.0,
+            kind: Rc::new(ast::FactorOpKind::EvalFn { arg_exprs: x.1.unwrap_or(Vec::new()) }),
+        }),
+    )(input)
+}
+
+fn eval_spread_fn_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FactorOp<'input>>> + 'context {
+    |input: &'input str| map(
+        consumed(
+            tuple((
+                lex(lexer::op_code(context, "(")),
+                lex(lexer::op_code(context, "...")),
+                expr(context),
+                lex(lexer::op_code(context, ")")),
+            )),
+        ),
+        |x| Rc::new(ast::FactorOp {
+            slice: x.0,
+            kind: Rc::new(ast::FactorOpKind::EvalSpreadFn { expr: x.1.2 }),
+        }),
+    )(input)
+}
+
+fn eval_key_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::FactorOp<'input>>> + 'context {
+    |input: &'input str| map(
+        consumed(
+            delimited(
+                lex(lexer::op_code(context, "[")),
+                expr(context),
+                lex(lexer::op_code(context, "]")),
+            ),
+        ),
+        |x| Rc::new(ast::FactorOp {
+            slice: x.0,
+            kind: Rc::new(ast::FactorOpKind::EvalKey { expr: x.1 }),
+        })
+    )(input)
+}
+
+#[named]
+pub fn factor<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
+    |input: &'input str| alt((
+        block_factor(context),
+        paren_factor(context),
+        tuple_factor(context),
+        array_ctor_factor(context),
+        literal_factor(context),
+        this_literal_factor(context),
+        interpolated_string_factor(context),
+        eval_var_factor(context),
+        let_in_bind_factor(context),
+        if_factor(context),
+        while_factor(context),
+        loop_factor(context),
+        for_factor(context),
+        closure_factor(context),
+    ))
+    .context(function_name!().to_owned())
+    .parse(input)
+}
+
+fn block_factor<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
+    |input: &'input str| map(
+        consumed(
+            stats_block(context),
+        ),
+        |x| Rc::new(ast::Factor {
+            slice: x.0,
+            kind: Rc::new(ast::FactorKind::Block { stats: x.1 }),
+        }),
+    )(input)
+}
+
+fn paren_factor<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -750,16 +769,16 @@ fn paren_term<'input: 'context, 'context>(
                 lex(lexer::op_code(context, ")")),
             ),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::Paren { expr: x.1 }),
+            kind: Rc::new(ast::FactorKind::Paren { expr: x.1 }),
         }),
     )(input)
 }
 
-fn tuple_term<'input: 'context, 'context>(
+fn tuple_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
         tuple((
@@ -781,9 +800,9 @@ fn tuple_term<'input: 'context, 'context>(
                 lex(lexer::op_code(context, ")")),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::Tuple {
+            kind: Rc::new(ast::FactorKind::Tuple {
                 exprs: x.1.3.map_or(
                     vec![x.1.1.clone()],
                     |y| [x.1.1].into_iter().chain([y.0].into_iter()).chain(y.1.into_iter()).collect(),
@@ -793,9 +812,9 @@ fn tuple_term<'input: 'context, 'context>(
     )(input)
 }
 
-fn array_ctor_term<'input: 'context, 'context>(
+fn array_ctor_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             delimited(
@@ -804,16 +823,16 @@ fn array_ctor_term<'input: 'context, 'context>(
                 lex(lexer::op_code(context, "]")),
             ),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::ArrayCtor { iter_expr: x.1 }),
+            kind: Rc::new(ast::FactorKind::ArrayCtor { iter_expr: x.1 }),
         }),
     )(input)
 }
 
-fn literal_term<'input: 'context, 'context>(
+fn literal_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             alt((
@@ -829,58 +848,58 @@ fn literal_term<'input: 'context, 'context>(
                 lex(lexer::verbatium_string_literal),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::Literal { literal: x.1 }),
+            kind: Rc::new(ast::FactorKind::Literal { literal: x.1 }),
         }),
     )(input)
 }
 
-fn this_literal_term<'input: 'context, 'context>(
+fn this_literal_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::this_literal(context)),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::ThisLiteral { literal: x.1 }),
+            kind: Rc::new(ast::FactorKind::ThisLiteral { literal: x.1 }),
         })
     )(input)
 }
 
-fn interpolated_string_term<'input: 'context, 'context>(
+fn interpolated_string_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::interpolated_string(context)),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::InterpolatedString { interpolated_string: x.1 }),
+            kind: Rc::new(ast::FactorKind::InterpolatedString { interpolated_string: x.1 }),
         }),
     )(input)
 }
 
-fn eval_var_term<'input: 'context, 'context>(
+fn eval_var_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             lex(lexer::ident(context)),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::EvalVar { ident: x.1 }),
+            kind: Rc::new(ast::FactorKind::EvalVar { ident: x.1 }),
         }),
     )(input)
 }
 
-fn let_in_bind_term<'input: 'context, 'context>(
+fn let_in_bind_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -889,16 +908,16 @@ fn let_in_bind_term<'input: 'context, 'context>(
                 expr(context),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::LetInBind { var_bind: x.1.0, in_keyword: x.1.1, expr: x.1.2 }),
+            kind: Rc::new(ast::FactorKind::LetInBind { var_bind: x.1.0, in_keyword: x.1.1, expr: x.1.2 }),
         }),
     )(input)
 }
 
-fn if_term<'input: 'context, 'context>(
+fn if_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -911,15 +930,20 @@ fn if_term<'input: 'context, 'context>(
                         alt((
                             map(
                                 consumed(
-                                    if_term(context),
+                                    if_factor(context),
                                 ),
                                 |x| Rc::new(ast::StatsBlock {
                                     slice: x.0,
                                     stats: Vec::new(),
                                     ret: Some(Rc::new(ast::Expr {
                                         slice: x.0,
-                                        term: x.1,
-                                        ops: Vec::new(),
+                                        term: Rc::new(ast::Term {
+                                            slice: x.1.slice,
+                                            prefix_ops: Vec::new(),
+                                            factor: x.1,
+                                            factor_ops: Vec::new(),
+                                        }),
+                                        term_ops: Vec::new(),
                                     })),
                                 }),
                             ),
@@ -929,16 +953,16 @@ fn if_term<'input: 'context, 'context>(
                 ),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::If { if_keyword: x.1.0, condition: x.1.1, if_part: x.1.2, else_part: x.1.3 }),
+            kind: Rc::new(ast::FactorKind::If { if_keyword: x.1.0, condition: x.1.1, if_part: x.1.2, else_part: x.1.3 }),
         }),
     )(input)
 }
 
-fn while_term<'input: 'context, 'context>(
+fn while_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -947,16 +971,16 @@ fn while_term<'input: 'context, 'context>(
                 stats_block(context),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::While { while_keyword: x.1.0, condition: x.1.1, stats: x.1.2 }),
+            kind: Rc::new(ast::FactorKind::While { while_keyword: x.1.0, condition: x.1.1, stats: x.1.2 }),
         }),
     )(input)
 }
 
-fn loop_term<'input: 'context, 'context>(
+fn loop_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -964,16 +988,16 @@ fn loop_term<'input: 'context, 'context>(
                 stats_block(context),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::Loop { loop_keyword: x.1.0, stats: x.1.1 }),
+            kind: Rc::new(ast::FactorKind::Loop { loop_keyword: x.1.0, stats: x.1.1 }),
         }),
     )(input)
 }
 
-fn for_term<'input: 'context, 'context>(
+fn for_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -986,16 +1010,16 @@ fn for_term<'input: 'context, 'context>(
                 stats_block(context),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::For { for_binds: x.1.0, stats: x.1.1 }),
+            kind: Rc::new(ast::FactorKind::For { for_binds: x.1.0, stats: x.1.1 }),
         }),
     )(input)
 }
 
-fn closure_term<'input: 'context, 'context>(
+fn closure_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
-) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Term<'input>>> + 'context {
+) -> impl FnMut(&'input str) -> ParsedResult<'input, Rc<ast::Factor<'input>>> + 'context {
     |input: &'input str| map(
         consumed(
             tuple((
@@ -1003,9 +1027,9 @@ fn closure_term<'input: 'context, 'context>(
                 expr(context),
             )),
         ),
-        |x| Rc::new(ast::Term {
+        |x| Rc::new(ast::Factor {
             slice: x.0,
-            kind: Rc::new(ast::TermKind::Closure { var_decl: x.1.0, expr: x.1.1 }),
+            kind: Rc::new(ast::FactorKind::Closure { var_decl: x.1.0, expr: x.1.1 }),
         }),
     )(input)
 }

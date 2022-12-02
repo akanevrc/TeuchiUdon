@@ -33,24 +33,31 @@ impl<'input> Context<'input> {
         Ok(())
     }
 
-    pub fn get_prefix_op_methods(&self, op: &ast::PrefixOp, ty: Rc<Ty>) -> Result<HashMap<OpMethodKey, Rc<Method>>, ElementError> {
+    pub fn get_term_prefix_op_methods(&self, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<HashMap<OpMethodKey, Rc<Method>>, ElementError> {
         match op {
-            ast::PrefixOp::Plus =>
+            ast::TermPrefixOp::Plus =>
                 Ok(HashMap::new()),
-            ast::PrefixOp::Minus =>
+            ast::TermPrefixOp::Minus =>
                 Ok(vec![(OpMethodKey::Op, self.get_method(ty, "op_UnaryMinus")?)].into_iter().collect()),
-            ast::PrefixOp::Bang =>
+            ast::TermPrefixOp::Bang =>
                 Ok(vec![(OpMethodKey::Op, self.get_method(ty, "op_UnaryNegation")?)].into_iter().collect()),
-            ast::PrefixOp::Tilde =>
+            ast::TermPrefixOp::Tilde =>
                 Ok(vec![(OpMethodKey::Op, self.get_method(ty, "op_LogicalXor")?)].into_iter().collect()),
         }
     }
 
-    pub fn get_infix_op_methods(&self, op: &ast::Op, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<OpMethodKey, Rc<Method>>, ElementError> {
+    pub fn get_term_infix_op_methods(&self, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<OpMethodKey, Rc<Method>>, ElementError> {
         match op {
-            ast::Op::TyAccess =>
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    pub fn get_factor_infix_op_methods(&self, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<OpMethodKey, Rc<Method>>, ElementError> {
+        match op {
+            ast::FactorInfixOp::TyAccess =>
                 Ok(HashMap::new()),
-            ast::Op::EvalFn =>
+            ast::FactorInfixOp::EvalFn =>
                 Ok(HashMap::new()),
             _ =>
                 panic!("Not implemented"),
