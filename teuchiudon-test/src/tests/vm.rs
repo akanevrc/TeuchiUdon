@@ -251,7 +251,7 @@ impl VM {
             "SystemInt32.__op_UnaryMinus__SystemInt32__SystemInt32" => {
                 let out_var = self.stack.pop().unwrap();
                 let in_var = self.stack.pop().unwrap();
-                *self.var_values.get_mut(&out_var).unwrap() = format!("{}{}{}", self.var_values.get(&in_var).unwrap(), Self::VALUE_DELIMITER, "-")
+                *self.var_values.get_mut(&out_var).unwrap() = format!("{}{}{}", self.var_values.get(&in_var).unwrap(), Self::VALUE_DELIMITER, "'-")
             }
             "UnityEngineDebug.__Log__SystemObject__SystemVoid" => {
                 let var = self.stack.pop().unwrap();
