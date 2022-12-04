@@ -5,9 +5,6 @@ pub mod semantics;
 mod error;
 mod macroes;
 
-#[cfg(test)]
-mod tests;
-
 use std::rc::Rc;
 use nom::Err;
 use nom_supreme::final_parser::final_parser;
