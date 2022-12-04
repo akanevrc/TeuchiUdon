@@ -31,7 +31,6 @@ use super::{
         method::{
             Method,
             MethodParamInOut,
-            OpMethodKey,
         },
         scope::Scope,
         this_literal::ThisLiteral,
@@ -872,7 +871,7 @@ fn term_op_methods<'input: 'context, 'context>(
     node: Rc<parser::ast::Expr<'input>>,
     op: &ast::TermPrefixOp,
     ty: Rc<Ty>,
-) -> Result<HashMap<OpMethodKey, Rc<Method>>, Vec<SemanticError<'input>>> {
+) -> Result<HashMap<&'static str, Rc<Method>>, Vec<SemanticError<'input>>> {
     context.get_term_prefix_op_methods(op, ty)
     .map_err(|e| e.convert(Some(node.slice)))
 }

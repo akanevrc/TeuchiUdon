@@ -43,11 +43,6 @@ pub struct MethodKey {
     pub in_tys: Vec<TyKey>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum OpMethodKey {
-    Op,
-}
-
 impl_key_value_elements!(
     MethodKey,
     Method,

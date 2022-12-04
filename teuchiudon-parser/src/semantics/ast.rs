@@ -16,10 +16,7 @@ use super::{
         fn_stats::FnStats,
         label::DataLabel,
         literal::Literal,
-        method::{
-            Method,
-            OpMethodKey,
-        },
+        method::Method,
         this_literal::ThisLiteral,
         ty::Ty,
         var::Var,
@@ -221,7 +218,7 @@ pub struct Expr<'input> {
     pub detail: Rc<ExprDetail<'input>>,
     pub ty: Rc<Ty>,
     pub tmp_vars: Vec<Rc<Var>>,
-    pub op_methods: HashMap<OpMethodKey, Rc<Method>>,
+    pub op_methods: HashMap<&'static str, Rc<Method>>,
     pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 
@@ -282,7 +279,7 @@ pub struct Term<'input> {
     pub detail: Rc<TermDetail<'input>>,
     pub ty: Rc<Ty>,
     pub tmp_vars: Vec<Rc<Var>>,
-    pub op_methods: HashMap<OpMethodKey, Rc<Method>>,
+    pub op_methods: HashMap<&'static str, Rc<Method>>,
     pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 

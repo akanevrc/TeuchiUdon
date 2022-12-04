@@ -13,10 +13,7 @@ use teuchiudon_parser::semantics::{
             ExternLabel,
         },
         literal::Literal,
-        method::{
-            Method,
-            OpMethodKey
-        },
+        method::Method,
         var::Var,
     },
 };
@@ -180,7 +177,7 @@ fn visit_term_prefix_op<'input: 'context, 'context>(
     op: &ast::TermPrefixOp,
     expr: Rc<ast::Expr<'input>>,
     tmp_vars: Vec<Rc<Var>>,
-    op_methods: HashMap<OpMethodKey, Rc<Method>>,
+    op_methods: HashMap<&'static str, Rc<Method>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     match op {
         ast::TermPrefixOp::Plus =>
@@ -188,7 +185,7 @@ fn visit_term_prefix_op<'input: 'context, 'context>(
         ast::TermPrefixOp::Minus => {
             let args = visit_expr(context, expr);
             let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
-            let method = context.method_labels[&op_methods[&OpMethodKey::Op]].clone();
+            let method = context.method_labels[&op_methods["op"]].clone();
             routine::call_method(args, out_vars, method)
         },
         ast::TermPrefixOp::Bang =>
