@@ -8,20 +8,14 @@ use std::{
     rc::Rc,
 };
 use crate::context::Context;
-use crate::semantics::{
-    ast,
-    elements::{
-        ElementError,
-        element::{
-            KeyElement,
-            ValueElement,
-        },
-        ty::{
-            Ty,
-            TyLogicalKey,
-        },
-        var::Var,
+use crate::semantics::elements::{
+    ElementError,
+    element::{
+        KeyElement,
+        ValueElement,
     },
+    ty::TyLogicalKey,
+    var::Var,
 };
 
 pub struct TmpVarPool {
@@ -68,36 +62,5 @@ impl<'input> Context<'input> {
             }
         };
         heap.push(Reverse(var.clone()))
-    }
-
-    pub fn get_term_prefix_op_tmp_vars(&self, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
-        match op {
-            ast::TermPrefixOp::Plus =>
-                Ok(Vec::new()),
-            ast::TermPrefixOp::Minus =>
-                Ok(vec![self.retain_tmp_var(ty.to_key())?]),
-            ast::TermPrefixOp::Bang =>
-                Ok(vec![self.retain_tmp_var(ty.to_key())?]),
-            ast::TermPrefixOp::Tilde =>
-                Ok(vec![self.retain_tmp_var(ty.to_key())?]),
-        }
-    }
-
-    pub fn get_term_infix_op_tmp_vars(&self, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
-        match op {
-            _ =>
-                panic!("Not implemented"),
-        }
-    }
-
-    pub fn get_factor_infix_op_tmp_vars(&self, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Var>>, ElementError> {
-        match op {
-            ast::FactorInfixOp::TyAccess =>
-                Ok(Vec::new()),
-            ast::FactorInfixOp::EvalFn =>
-                Ok(Vec::new()),
-            _ =>
-                panic!("Not implemented"),
-        }
     }
 }

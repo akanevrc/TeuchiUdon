@@ -862,7 +862,7 @@ fn term_tmp_vars<'input: 'context, 'context>(
     op: &ast::TermPrefixOp,
     ty: Rc<Ty>,
 ) -> Result<Vec<Rc<Var>>, Vec<SemanticError<'input>>> {
-    context.get_term_prefix_op_tmp_vars(op, ty)
+    Var::retain_term_prefix_op_tmp_vars(context, op, ty)
     .map_err(|e| e.convert(Some(node.slice)))
 }
 
@@ -872,7 +872,7 @@ fn term_op_methods<'input: 'context, 'context>(
     op: &ast::TermPrefixOp,
     ty: Rc<Ty>,
 ) -> Result<HashMap<&'static str, Rc<Method>>, Vec<SemanticError<'input>>> {
-    context.get_term_prefix_op_methods(op, ty)
+    Method::get_term_prefix_op_methods(context, op, ty)
     .map_err(|e| e.convert(Some(node.slice)))
 }
 
@@ -2144,10 +2144,10 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
         let tmp_vars =
-            context.get_factor_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let op_methods =
-            context.get_factor_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
@@ -2183,10 +2183,10 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
         let tmp_vars =
-            context.get_factor_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let op_methods =
-            context.get_factor_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
@@ -2241,10 +2241,10 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .collect::<Vec<_>>();
         let eval_fn = EvalFn::new_or_get(context, fn_stats.clone(), data);
         let tmp_vars =
-            context.get_factor_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let op_methods =
-            context.get_factor_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
         right.data.replace(ret.data.borrow().clone());
@@ -2272,10 +2272,10 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         let ty = Ty::tys_to_ty(context, &m.out_tys)
             .map_err(|e| e.convert(None))?;
         let tmp_vars =
-            context.get_factor_infix_op_tmp_vars(&op, left.ty.clone(), right.ty.clone())
+            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let op_methods =
-            context.get_factor_infix_op_methods(&op, left.ty.clone(), right.ty.clone())
+            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
         right.data.replace(None); // TODO

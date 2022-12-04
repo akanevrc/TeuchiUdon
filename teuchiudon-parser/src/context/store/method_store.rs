@@ -1,20 +1,10 @@
-use std::{
-    collections::HashMap,
-    rc::Rc,
-};
 use itertools::Itertools;
 use crate::context::Context;
-use crate::semantics::elements::ElementError;
-use crate::semantics::{
-    ast,
-    elements::{
-        element::ValueElement,
-        method::Method,
-        named_methods::{
-            NamedMethods,
-            NamedMethodsKey,
-        },
-        ty::Ty,
+use crate::semantics::elements::{
+    element::ValueElement,
+    named_methods::{
+        NamedMethods,
+        NamedMethodsKey,
     },
 };
 
@@ -28,42 +18,5 @@ impl<'input> Context<'input> {
                 .map_err(|x| vec![x.message])?;
         }
         Ok(())
-    }
-
-    pub fn get_term_prefix_op_methods(&self, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Method>>, ElementError> {
-        match op {
-            ast::TermPrefixOp::Plus =>
-                Ok(HashMap::new()),
-            ast::TermPrefixOp::Minus =>
-                Ok(vec![("op", self.get_method(ty, "op_UnaryMinus")?)].into_iter().collect()),
-            ast::TermPrefixOp::Bang =>
-                Ok(vec![("op", self.get_method(ty, "op_UnaryNegation")?)].into_iter().collect()),
-            ast::TermPrefixOp::Tilde =>
-                Ok(vec![("op", self.get_method(ty, "op_LogicalXor")?)].into_iter().collect()),
-        }
-    }
-
-    pub fn get_term_infix_op_methods(&self, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Method>>, ElementError> {
-        match op {
-            _ =>
-                panic!("Not implemented"),
-        }
-    }
-
-    pub fn get_factor_infix_op_methods(&self, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Method>>, ElementError> {
-        match op {
-            ast::FactorInfixOp::TyAccess =>
-                Ok(HashMap::new()),
-            ast::FactorInfixOp::EvalFn =>
-                Ok(HashMap::new()),
-            _ =>
-                panic!("Not implemented"),
-        }
-    }
-
-    fn get_method(&self, ty: Rc<Ty>, name: &str) -> Result<Rc<Method>, ElementError> {
-        let key = ty.to_key();
-        let type_key = Ty::new_or_get_type_from_key(self, ty.to_key())?.to_key();
-        Method::get(self, type_key, name.to_owned(), vec![key])
     }
 }

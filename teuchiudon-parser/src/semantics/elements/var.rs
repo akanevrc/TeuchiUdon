@@ -4,6 +4,7 @@ use std::{
 };
 use crate::impl_key_value_elements;
 use crate::context::Context;
+use crate::semantics::ast;
 use super::{
     ElementError,
     element::{
@@ -112,6 +113,37 @@ impl Var {
         name: String
     ) -> Result<Rc<Self>, ElementError> {
         VarKey::new(qual, name).get_value(context)
+    }
+
+    pub fn retain_term_prefix_op_tmp_vars(context: &Context, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<Vec<Rc<Self>>, ElementError> {
+        match op {
+            ast::TermPrefixOp::Plus =>
+                Ok(Vec::new()),
+            ast::TermPrefixOp::Minus =>
+                Ok(vec![context.retain_tmp_var(ty.to_key())?]),
+            ast::TermPrefixOp::Bang =>
+                Ok(vec![context.retain_tmp_var(ty.to_key())?]),
+            ast::TermPrefixOp::Tilde =>
+                Ok(vec![context.retain_tmp_var(ty.to_key())?]),
+        }
+    }
+
+    pub fn retain_term_infix_op_tmp_vars(_context: &Context, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Self>>, ElementError> {
+        match op {
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    pub fn retain_factor_infix_op_tmp_vars(_context: &Context, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Self>>, ElementError> {
+        match op {
+            ast::FactorInfixOp::TyAccess =>
+                Ok(Vec::new()),
+            ast::FactorInfixOp::EvalFn =>
+                Ok(Vec::new()),
+            _ =>
+                panic!("Not implemented"),
+        }
     }
 }
 

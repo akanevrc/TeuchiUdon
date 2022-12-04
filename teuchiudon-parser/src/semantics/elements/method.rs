@@ -1,6 +1,10 @@
-use std::rc::Rc;
+use std::{
+    collections::HashMap,
+    rc::Rc,
+};
 use crate::impl_key_value_elements;
 use crate::context::Context;
+use crate::semantics::ast;
 use super::{
     ElementError,
     element::{
@@ -124,6 +128,43 @@ impl Method {
     ) -> Result<Rc<Self>, ElementError>
     {
         MethodKey::new(ty, name, in_tys).get_value(context)
+    }
+
+    pub fn get_term_prefix_op_methods(context: &Context, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+        match op {
+            ast::TermPrefixOp::Plus =>
+                Ok(HashMap::new()),
+            ast::TermPrefixOp::Minus =>
+                Ok(vec![("op", Self::get_op_method(context, ty, "op_UnaryMinus")?)].into_iter().collect()),
+            ast::TermPrefixOp::Bang =>
+                Ok(vec![("op", Self::get_op_method(context, ty, "op_UnaryNegation")?)].into_iter().collect()),
+            ast::TermPrefixOp::Tilde =>
+                Ok(vec![("op", Self::get_op_method(context, ty, "op_LogicalXor")?)].into_iter().collect()),
+        }
+    }
+
+    pub fn get_term_infix_op_methods(_context: &Context, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+        match op {
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    pub fn get_factor_infix_op_methods(_context: &Context, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+        match op {
+            ast::FactorInfixOp::TyAccess =>
+                Ok(HashMap::new()),
+            ast::FactorInfixOp::EvalFn =>
+                Ok(HashMap::new()),
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    fn get_op_method(context: &Context, ty: Rc<Ty>, name: &str) -> Result<Rc<Self>, ElementError> {
+        let key = ty.to_key();
+        let type_key = Ty::new_or_get_type_from_key(context, ty.to_key())?.to_key();
+        Method::get(context, type_key, name.to_owned(), vec![key])
     }
 }
 
