@@ -19,7 +19,7 @@ pub struct VM {
 }
 
 impl VM {
-    const INSTRUCTION_LIMIT: i32 = 1000000;
+    const INSTRUCTION_LIMIT: i32 = 10000;
     const VALUE_DELIMITER: char = ',';
 
     pub fn new(asm: String, default_values: Vec<DefaultValue>) -> Self {
