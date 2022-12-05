@@ -1,6 +1,5 @@
 use std::{
     cell::RefCell,
-    collections::HashMap,
     fmt::Debug,
     rc::Rc,
 };
@@ -17,6 +16,7 @@ use super::{
         label::DataLabel,
         literal::Literal,
         method::Method,
+        operation::Operation,
         this_literal::ThisLiteral,
         ty::Ty,
         var::Var,
@@ -161,7 +161,7 @@ pub enum TyExprDetail<'input> {
     },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum TyOp {
     Access,
 }
@@ -218,7 +218,6 @@ pub struct Expr<'input> {
     pub detail: Rc<ExprDetail<'input>>,
     pub ty: Rc<Ty>,
     pub tmp_vars: Vec<Rc<Var>>,
-    pub op_methods: HashMap<&'static str, Rc<Method>>,
     pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 
@@ -230,15 +229,17 @@ pub enum ExprDetail<'input> {
     PrefixOp {
         op: TermPrefixOp,
         expr: Rc<Expr<'input>>,
+        operation: Rc<Operation>,
     },
     InfixOp {
         left: Rc<Expr<'input>>,
         op: TermInfixOp,
         right: Rc<Expr<'input>>,
+        operation: Rc<Operation>,
     },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum TermPrefixOp {
     Plus,
     Minus,
@@ -246,7 +247,7 @@ pub enum TermPrefixOp {
     Tilde,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum TermInfixOp {
     CastOp,
     Mul,
@@ -279,7 +280,6 @@ pub struct Term<'input> {
     pub detail: Rc<TermDetail<'input>>,
     pub ty: Rc<Ty>,
     pub tmp_vars: Vec<Rc<Var>>,
-    pub op_methods: HashMap<&'static str, Rc<Method>>,
     pub data: RefCell<Option<Vec<Rc<DataLabel>>>>,
 }
 
@@ -292,10 +292,11 @@ pub enum TermDetail<'input> {
         left: Rc<Term<'input>>,
         op: FactorInfixOp,
         right: Rc<Term<'input>>,
+        operation: Rc<Operation>,
     },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum FactorInfixOp {
     TyAccess,
     Access,

@@ -115,7 +115,11 @@ impl Var {
         VarKey::new(qual, name).get_value(context)
     }
 
-    pub fn retain_term_prefix_op_tmp_vars(context: &Context, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<Vec<Rc<Self>>, ElementError> {
+    pub fn retain_term_prefix_op_tmp_vars<'input>(
+        context: &Context<'input>,
+        op: &ast::TermPrefixOp,
+        ty: Rc<Ty>
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
         match op {
             ast::TermPrefixOp::Plus =>
                 Ok(Vec::new()),
@@ -128,14 +132,24 @@ impl Var {
         }
     }
 
-    pub fn retain_term_infix_op_tmp_vars(_context: &Context, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Self>>, ElementError> {
+    pub fn retain_term_infix_op_tmp_vars<'input>(
+        _context: &Context,
+        op: &ast::TermInfixOp,
+        _left_ty: Rc<Ty>,
+        _right_ty: Rc<Ty>
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
         match op {
             _ =>
                 panic!("Not implemented"),
         }
     }
 
-    pub fn retain_factor_infix_op_tmp_vars(_context: &Context, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<Vec<Rc<Self>>, ElementError> {
+    pub fn retain_factor_infix_op_tmp_vars<'input>(
+        _context: &Context,
+        op: &ast::FactorInfixOp,
+        _left_ty: Rc<Ty>,
+        _right_ty: Rc<Ty>
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
         match op {
             ast::FactorInfixOp::TyAccess =>
                 Ok(Vec::new()),

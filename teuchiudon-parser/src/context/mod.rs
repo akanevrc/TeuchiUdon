@@ -52,6 +52,10 @@ use crate::semantics::elements::{
         NamedMethods,
         NamedMethodsKey,
     },
+    operation::{
+        Operation,
+        OperationKey,
+    },
     qual::{
         Qual,
         QualKey,
@@ -92,6 +96,7 @@ pub struct Context<'input> {
     pub this_literal_store: Store<ThisLiteralKey, ThisLiteral>,
     pub method_store: Store<MethodKey, Method>,
     pub named_methods_store: Store<NamedMethodsKey, NamedMethods>,
+    pub operation_store: Store<OperationKey, Operation>,
     pub var_store: Store<VarKey, Var>,
     pub tmp_var_pool: TmpVarPool,
     pub top_stat_store: VecStore<TopStat<'input>>,
@@ -122,6 +127,7 @@ impl<'input> Context<'input> {
             this_literal_store: Store::new(|x| format!("Specified literal `{}` not found", x.description())),
             method_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
             named_methods_store: Store::new(|x| format!("Specified method `{}` not found", x.description())),
+            operation_store: Store::new(|x| format!("Specified operation `{}` not found", x.description())),
             var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
             tmp_var_pool: TmpVarPool::new(),
             top_stat_store: VecStore::new(),

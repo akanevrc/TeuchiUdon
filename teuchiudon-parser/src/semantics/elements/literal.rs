@@ -1,6 +1,10 @@
-use std::rc::Rc;
+use std::{
+    collections::HashMap,
+    rc::Rc,
+};
 use crate::impl_key_value_elements;
 use crate::context::Context;
+use crate::semantics::ast;
 use super::{
     ElementError,
     base_ty::BaseTy,
@@ -198,5 +202,62 @@ impl Literal {
 
     fn formatted_number(text: String) -> String {
         text.to_uppercase().replace("_", "")
+    }
+
+    pub fn new_or_get_term_prefix_op_literals<'input>(
+        context: &Context<'input>,
+        op: &ast::TermPrefixOp,
+        ty: Rc<Ty>
+    ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+        match op {
+            ast::TermPrefixOp::Tilde =>
+                Ok(vec![("mask", Self::new_or_get_mask(context, ty)?)].into_iter().collect()),
+            _ =>
+                Ok(HashMap::new()),
+        }
+    }
+
+    pub fn get_term_infix_op_literals<'input>(
+        _context: &Context<'input>,
+        op: &ast::TermInfixOp,
+        _left_ty: Rc<Ty>,
+        _right_ty: Rc<Ty>
+    ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+        match op {
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    pub fn get_factor_infix_op_literals<'input>(
+        _context: &Context<'input>,
+        op: &ast::FactorInfixOp,
+        _left_ty: Rc<Ty>,
+        _right_ty: Rc<Ty>
+    ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+        match op {
+            ast::FactorInfixOp::TyAccess =>
+                Ok(HashMap::new()),
+            ast::FactorInfixOp::EvalFn =>
+                Ok(HashMap::new()),
+            _ =>
+                panic!("Not implemented"),
+        }
+    }
+
+    fn new_or_get_mask(context: &Context, ty: Rc<Ty>) -> Result<Rc<Self>, ElementError> {
+        let text = match ty.logical_name.as_str() {
+            "SystemBoolean" => "true",
+            "SystemByte" => "0xFF",
+            "SystemSByte" => "0xFF",
+            "SystemInt16" => "0xFFFF",
+            "SystemUInt16" => "0xFFFF",
+            "SystemInt32" => "0xFFFFFFFF",
+            "SystemUInt32" => "0xFFFFFFFF",
+            "SystemInt64" => "0xFFFFFFFFFFFFFFFF",
+            "SystemUInt64" => "0xFFFFFFFFFFFFFFFF",
+            _ => return Err(ElementError::new("Type `{}` is not compatible with this operation".to_owned()))
+        };
+        Ok(Self::new_or_get(context, text.to_owned(), ty))
     }
 }

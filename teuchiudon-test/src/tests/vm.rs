@@ -249,10 +249,11 @@ impl VM {
     fn call_method(&mut self, symbol: &str) {
         match symbol {
             "SystemInt32.__op_UnaryMinus__SystemInt32__SystemInt32" => {
-                let out_var = self.stack.pop().unwrap();
-                let in_var = self.stack.pop().unwrap();
-                *self.var_values.get_mut(&out_var).unwrap() = format!("{}{}{}", self.var_values.get(&in_var).unwrap(), Self::VALUE_DELIMITER, "'-")
-            }
+                self.one_arg_method("'-")
+            },
+            "SystemInt32.__op_LogicalXor__SystemInt32__SystemInt32" => {
+                self.two_arg_method("~")
+            },
             "UnityEngineDebug.__Log__SystemObject__SystemVoid" => {
                 let var = self.stack.pop().unwrap();
                 let value = &self.var_values[&var];
@@ -260,6 +261,33 @@ impl VM {
             },
             _ => ()
         }
+    }
+
+    fn one_arg_method(&mut self, op: &str) {
+        let out_var = self.stack.pop().unwrap();
+        let in_var = self.stack.pop().unwrap();
+        *self.var_values.get_mut(&out_var).unwrap() =
+            format!(
+                "{}{}{}",
+                self.var_values.get(&in_var).unwrap(),
+                Self::VALUE_DELIMITER,
+                op
+            )
+    }
+
+    fn two_arg_method(&mut self, op: &str) {
+        let out_var = self.stack.pop().unwrap();
+        let in_var2 = self.stack.pop().unwrap();
+        let in_var1 = self.stack.pop().unwrap();
+        *self.var_values.get_mut(&out_var).unwrap() =
+            format!(
+                "{}{}{}{}{}",
+                self.var_values.get(&in_var1).unwrap(),
+                Self::VALUE_DELIMITER,
+                self.var_values.get(&in_var2).unwrap(),
+                Self::VALUE_DELIMITER,
+                op
+            )
     }
 
     fn get_addr(&self, label: &str) -> u32 {

@@ -1,9 +1,6 @@
 use std::{
     cell::RefCell,
-    collections::{
-        HashMap,
-        VecDeque,
-    },
+    collections::VecDeque,
     fmt::Debug,
     rc::Rc,
 };
@@ -11,7 +8,7 @@ use crate::context::Context;
 use crate::lexer;
 use crate::parser;
 use super::{
-    ast::{self, RetainedExpr},
+    ast,
     SemanticError,
     elements::{
         ElementError,
@@ -31,6 +28,10 @@ use super::{
         method::{
             Method,
             MethodParamInOut,
+        },
+        operation::{
+            Operation,
+            OperationKind
         },
         scope::Scope,
         this_literal::ThisLiteral,
@@ -779,7 +780,6 @@ fn hidden_unit_expr<'input: 'context, 'context>(
         detail: Rc::new(ast::TermDetail::Factor { factor }),
         ty,
         tmp_vars: Vec::new(),
-        op_methods: HashMap::new(),
         data: RefCell::new(None),
     });
     Ok(Rc::new(ast::RetainedExpr::new(
@@ -790,7 +790,6 @@ fn hidden_unit_expr<'input: 'context, 'context>(
             }),
             ty: term.ty.clone(),
             tmp_vars: Vec::new(),
-            op_methods: HashMap::new(),
             data: RefCell::new(None),
         })
     )))
@@ -825,55 +824,42 @@ fn construct_expr_tree<'input: 'context, 'context>(
 
     let exprs = terms.into_iter().map(|(prefix_ops, term)| {
         let term = term.release(context);
-        let mut expr = Rc::new(RetainedExpr::new(
+        let mut expr = Rc::new(ast::RetainedExpr::new(
             Rc::new(ast::Expr {
                 parsed: Some(node.clone()),
                 detail: Rc::new(ast::ExprDetail::Term { term: term.clone() }),
                 ty: term.ty.clone(),
                 tmp_vars: Vec::new(),
-                op_methods: HashMap::new(),
                 data: term.data.clone(),
             })
         ));
         for op in prefix_ops.iter().rev() {
-            let tmp_vars = term_tmp_vars(context, node.clone(), op, term.ty.clone())?;
-            let op_methods = term_op_methods(context, node.clone(), op, term.ty.clone())?;
-            expr = Rc::new(RetainedExpr::new(
+            let tmp_vars =
+                Var::retain_term_prefix_op_tmp_vars(context, op, term.ty.clone())
+                .map_err(|e| e.convert(Some(node.slice)))?;
+            let op_methods =
+                Method::get_term_prefix_op_methods(context, op, term.ty.clone())
+                .map_err(|e| e.convert(Some(node.slice)))?;
+            let op_literals =
+                Literal::new_or_get_term_prefix_op_literals(context, op, term.ty.clone())
+                .map_err(|e| e.convert(Some(node.slice)))?;
+            let op_kind = OperationKind::TermPrefixOp(op.clone());
+            let operation = Operation::new_or_get(context, term.ty.clone(), op_kind, op_methods, op_literals);
+            expr = Rc::new(ast::RetainedExpr::new(
                 Rc::new(ast::Expr {
                     parsed: Some(node.clone()),
-                    detail: Rc::new(ast::ExprDetail::PrefixOp { op: op.clone(), expr: expr.release(context) }),
+                    detail: Rc::new(ast::ExprDetail::PrefixOp { op: op.clone(), expr: expr.release(context), operation }),
                     ty: term.ty.clone(),
                     tmp_vars,
-                    op_methods,
                     data: term.data.clone(),
                 })
             ));
         }
-        Ok::<Rc<RetainedExpr<'input>>, Vec<SemanticError<'input>>>(expr)
+        Ok::<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>>(expr)
     })
     .collect::<Result<Vec<_>, _>>()?;
 
     expr_tree(context, node, VecDeque::from(exprs), ops)
-}
-
-fn term_tmp_vars<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-    node: Rc<parser::ast::Expr<'input>>,
-    op: &ast::TermPrefixOp,
-    ty: Rc<Ty>,
-) -> Result<Vec<Rc<Var>>, Vec<SemanticError<'input>>> {
-    Var::retain_term_prefix_op_tmp_vars(context, op, ty)
-    .map_err(|e| e.convert(Some(node.slice)))
-}
-
-fn term_op_methods<'input: 'context, 'context>(
-    context: &'context Context<'input>,
-    node: Rc<parser::ast::Expr<'input>>,
-    op: &ast::TermPrefixOp,
-    ty: Rc<Ty>,
-) -> Result<HashMap<&'static str, Rc<Method>>, Vec<SemanticError<'input>>> {
-    Method::get_term_prefix_op_methods(context, op, ty)
-    .map_err(|e| e.convert(Some(node.slice)))
 }
 
 fn cast_op_term<'input: 'context, 'context>(
@@ -888,7 +874,6 @@ fn cast_op_term<'input: 'context, 'context>(
         detail: Rc::new(ast::TermDetail::Factor { factor: factor.clone() }),
         ty: factor.ty.clone(),
         tmp_vars: Vec::new(),
-        op_methods: HashMap::new(),
         data: factor.data.clone(),
     })));
     Ok((infix_op, Vec::new(), term))
@@ -1046,7 +1031,6 @@ fn construct_term_tree<'input: 'context, 'context>(
                 detail: Rc::new(ast::TermDetail::Factor { factor: factor.clone() }),
                 ty: factor.ty.clone(),
                 tmp_vars: Vec::new(),
-                op_methods: HashMap::new(),
                 data: factor.data.clone(),
             }),
         ))
@@ -2146,9 +2130,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let op_methods =
-            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
-            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2158,10 +2140,10 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                     left: left.clone(),
                     op: op.clone(),
                     right: right.clone(),
+                    operation,
                 }),
                 ty,
                 tmp_vars,
-                op_methods,
                 data: right.data.clone(),
             })
         )))
@@ -2185,9 +2167,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let op_methods =
-            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
-            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2197,10 +2177,10 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                     left: left.clone(),
                     op: op.clone(),
                     right: right.clone(),
+                    operation,
                 }),
                 ty,
                 tmp_vars,
-                op_methods,
                 data: right.data.clone(),
             })
         )))
@@ -2243,9 +2223,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let op_methods =
-            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
-            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
         right.data.replace(ret.data.borrow().clone());
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2255,10 +2233,10 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                     left: left.clone(),
                     op: op.clone(),
                     right: right.clone(),
+                    operation,
                 }),
                 ty: ret.ty.clone(),
                 tmp_vars,
-                op_methods,
                 data: right.data.clone(),
             })
         )))
@@ -2274,9 +2252,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let op_methods =
-            Method::get_factor_infix_op_methods(context, &op, left.ty.clone(), right.ty.clone())
-            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
         right.data.replace(None); // TODO
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2286,10 +2262,10 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                     left: left.clone(),
                     op: op.clone(),
                     right: right.clone(),
+                    operation,
                 }),
                 ty,
                 tmp_vars,
-                op_methods,
                 data: RefCell::new(None), // TODO
             })
         )))
@@ -2297,4 +2273,21 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
     else {
         return Err(vec![SemanticError::new(None, "Left side of `eval fn` is not a function or a method".to_owned())]);
     }
+}
+
+fn factor_infix_op<'input>(
+    context: &Context<'input>,
+    parsed: Rc<parser::ast::Term<'input>>,
+    op: &ast::FactorInfixOp,
+    left_ty: Rc<Ty>,
+    right_ty: Rc<Ty>,
+) -> Result<Rc<Operation>, Vec<SemanticError<'input>>> {
+    let op_methods =
+        Method::get_factor_infix_op_methods(context, &op, left_ty.clone(), right_ty.clone())
+        .map_err(|e| e.convert(Some(parsed.slice)))?;
+    let op_literals =
+        Literal::get_factor_infix_op_literals(context, &op, left_ty.clone(), right_ty.clone())
+        .map_err(|e| e.convert(Some(parsed.slice)))?;
+    let op_kind = OperationKind::FactorInfixOp(op.clone());
+    Ok(Operation::new_or_get(context, left_ty, op_kind, op_methods, op_literals))
 }

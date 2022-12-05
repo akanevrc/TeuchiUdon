@@ -130,7 +130,11 @@ impl Method {
         MethodKey::new(ty, name, in_tys).get_value(context)
     }
 
-    pub fn get_term_prefix_op_methods(context: &Context, op: &ast::TermPrefixOp, ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+    pub fn get_term_prefix_op_methods<'input>(
+        context: &Context<'input>,
+        op: &ast::TermPrefixOp,
+        ty: Rc<Ty>
+    ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
         match op {
             ast::TermPrefixOp::Plus =>
                 Ok(HashMap::new()),
@@ -143,14 +147,24 @@ impl Method {
         }
     }
 
-    pub fn get_term_infix_op_methods(_context: &Context, op: &ast::TermInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+    pub fn get_term_infix_op_methods<'input>(
+        _context: &Context<'input>,
+        op: &ast::TermInfixOp,
+        _left_ty: Rc<Ty>,
+        _right_ty: Rc<Ty>
+    ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
         match op {
             _ =>
                 panic!("Not implemented"),
         }
     }
 
-    pub fn get_factor_infix_op_methods(_context: &Context, op: &ast::FactorInfixOp, _left_ty: Rc<Ty>, _right_ty: Rc<Ty>) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
+    pub fn get_factor_infix_op_methods<'input>(
+        _context: &Context<'input>,
+        op: &ast::FactorInfixOp,
+        _left_ty: Rc<Ty>,
+        _right_ty: Rc<Ty>
+    ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
         match op {
             ast::FactorInfixOp::TyAccess =>
                 Ok(HashMap::new()),

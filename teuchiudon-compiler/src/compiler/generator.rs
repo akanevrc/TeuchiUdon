@@ -1,6 +1,5 @@
 use std::{
     cell::RefCell,
-    collections::HashMap,
     rc::Rc,
 };
 use teuchiudon_parser::semantics::{
@@ -14,6 +13,7 @@ use teuchiudon_parser::semantics::{
         },
         literal::Literal,
         method::Method,
+        operation::Operation,
         var::Var,
     },
 };
@@ -165,8 +165,8 @@ pub fn visit_expr<'input: 'context, 'context>(
     match expr.detail.as_ref() {
         ast::ExprDetail::Term { term } =>
             visit_term(context, term.clone()),
-        ast::ExprDetail::PrefixOp { op, expr: sub_expr } =>
-            visit_term_prefix_op(context, op, sub_expr.clone(), expr.tmp_vars.clone(), expr.op_methods.clone()),
+        ast::ExprDetail::PrefixOp { op, expr: sub_expr, operation } =>
+            visit_term_prefix_op(context, op, sub_expr.clone(), expr.tmp_vars.clone(), operation.clone()),
         _ =>
             error("expr".to_owned()),
     }
@@ -177,7 +177,7 @@ fn visit_term_prefix_op<'input: 'context, 'context>(
     op: &ast::TermPrefixOp,
     expr: Rc<ast::Expr<'input>>,
     tmp_vars: Vec<Rc<Var>>,
-    op_methods: HashMap<&'static str, Rc<Method>>,
+    operation: Rc<Operation>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     match op {
         ast::TermPrefixOp::Plus =>
@@ -185,13 +185,18 @@ fn visit_term_prefix_op<'input: 'context, 'context>(
         ast::TermPrefixOp::Minus => {
             let args = visit_expr(context, expr);
             let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
-            let method = context.method_labels[&op_methods["op"]].clone();
+            let method = context.method_labels[&operation.op_methods["op"]].clone();
             routine::call_method(args, out_vars, method)
         },
         ast::TermPrefixOp::Bang =>
             visit_expr(context, expr),
-        ast::TermPrefixOp::Tilde =>
-            visit_expr(context, expr),
+        ast::TermPrefixOp::Tilde => {
+            let literal = context.literal_labels[&operation.op_literals["mask"]].clone();
+            let args = Box::new(visit_expr(context, expr).chain(routine::get(literal)));
+            let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
+            let method = context.method_labels[&operation.op_methods["op"]].clone();
+            routine::call_method(args, out_vars, method)
+        },
     }
 }
 
@@ -202,8 +207,8 @@ pub fn visit_term<'input: 'context, 'context>(
     match term.detail.as_ref() {
         ast::TermDetail::Factor { factor } =>
             visit_factor(context, factor.clone()),
-        ast::TermDetail::InfixOp { left, op, right } =>
-            visit_factor_infix_op(context, left.clone(), op, right.clone())
+        ast::TermDetail::InfixOp { left, op, right, operation } =>
+            visit_factor_infix_op(context, left.clone(), op, right.clone(), operation.clone())
     }
 }
 
@@ -212,6 +217,7 @@ pub fn visit_factor_infix_op<'input: 'context, 'context>(
     left: Rc<ast::Term<'input>>,
     op: &ast::FactorInfixOp,
     right: Rc<ast::Term<'input>>,
+    _operation: Rc<Operation>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     match op {
         ast::FactorInfixOp::TyAccess =>

@@ -8,6 +8,7 @@ pub mod label;
 pub mod literal;
 pub mod method;
 pub mod named_methods;
+pub mod operation;
 pub mod qual;
 pub mod scope;
 pub mod this_literal;
