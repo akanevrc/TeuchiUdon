@@ -539,3 +539,47 @@ impl<'input> RetainedTerm<'input> {
     }
 }
 
+pub fn expr_to_literal(context: &Context, expr: Rc<Expr>) -> Option<Rc<Literal>> {
+    expr_to_literal_rec(context, expr, String::new())
+}
+
+fn expr_to_literal_rec(context: &Context, expr: Rc<Expr>, mut prefix: String) -> Option<Rc<Literal>> {
+    match expr.detail.as_ref() {
+        ExprDetail::Term { term } =>
+            match term.detail.as_ref() {
+                TermDetail::Factor { factor } =>
+                    match factor.detail.as_ref() {
+                        FactorDetail::Paren { expr } =>
+                            expr_to_literal_rec(context, expr.clone(), prefix),
+                        FactorDetail::Literal { literal } => {
+                            if
+                                literal.ty.is_boolean(context) && prefix.chars().all(|x| x == '!' || x == '~') ||
+                                literal.ty.is_signed_integer(context) && prefix.chars().all(|x| x == '+' || x == '-' || x == '~') ||
+                                literal.ty.is_integer(context) && prefix.chars().all(|x| x == '+' || x == '~') ||
+                                literal.ty.is_signed_number(context) && prefix.chars().all(|x| x == '+' || x == '-') ||
+                                literal.ty.is_text(context) && prefix.is_empty()
+                            {
+                                let text = format!("{}{}", prefix, literal.text);
+                                Some(Literal::new_or_get(context, text, literal.ty.clone()))
+                            }
+                            else {
+                                None
+                            }
+                        },
+                        _ => None,
+                    },
+                _ => None,
+            },
+        ExprDetail::PrefixOp { op, expr, operation: _ } => {
+            let op_ch = match op {
+                TermPrefixOp::Plus => '+',
+                TermPrefixOp::Minus => '-',
+                TermPrefixOp::Bang => '!',
+                TermPrefixOp::Tilde => '~',
+            };
+            prefix.insert(0, op_ch);
+            expr_to_literal_rec(context, expr.clone(), prefix)
+        },
+        _ => None,
+    }
+}

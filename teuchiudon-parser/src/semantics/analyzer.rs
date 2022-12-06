@@ -120,20 +120,12 @@ fn var_bind_top_stat<'input: 'context, 'context>(
             if var_bind.vars.len() != 1 {
                 return Err(vec![SemanticError::new(Some(node.slice), "Public variable must not be tuple".to_owned())]);
             }
-            let ast::ExprDetail::Term { term } = var_bind.expr.detail.as_ref()
-                else {
-                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
-                };
-            let ast::TermDetail::Factor { factor } = term.detail.as_ref()
-                else {
-                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
-                };
-            let ast::FactorDetail::Literal { literal } = factor.detail.as_ref()
-                else {
-                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
-                };
             let var = &var_bind.vars[0];
-            ValuedVar::new(context, var.qual.clone(), var.name.clone(), var.ty.borrow().clone(), literal.clone())
+            let Some(literal) = ast::expr_to_literal(context, var_bind.expr.clone())
+                else {
+                    return Err(vec![SemanticError::new(Some(node.slice), "Public variable should be assigned from a literal".to_owned())]);
+                };
+            ValuedVar::new(context, var.qual.clone(), var.name.clone(), var.ty.borrow().clone(), literal)
                 .map_err(|e| e.convert(None))?;
             Ok(Rc::new(ast::TopStat {
                 parsed: Some(node),

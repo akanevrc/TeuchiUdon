@@ -556,6 +556,35 @@ impl Ty {
         .any(|x| self.logical_eq_with_name(context, x))
     }
 
+    pub fn is_boolean<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
+        vec![
+            "bool",
+        ]
+        .iter()
+        .any(|x| self.logical_eq_with_name(context, x))
+    }
+
+    pub fn is_integer<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
+        vec![
+            "byte",
+            "sbyte",
+            "short",
+            "ushort",
+            "int",
+            "uint",
+            "long",
+            "ulong",
+        ]
+        .iter()
+        .any(|x| self.logical_eq_with_name(context, x))
+    }
+
     pub fn is_signed_integer<'input>(
         self: &Rc<Self>,
         context: &Context<'input>
@@ -565,6 +594,56 @@ impl Ty {
             "short",
             "int",
             "long",
+        ]
+        .iter()
+        .any(|x| self.logical_eq_with_name(context, x))
+    }
+
+    pub fn is_signed_number<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
+        vec![
+            "sbyte",
+            "short",
+            "int",
+            "long",
+            "float",
+            "double",
+            "decimal",
+        ]
+        .iter()
+        .any(|x| self.logical_eq_with_name(context, x))
+    }
+
+    pub fn is_number<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
+        vec![
+            "byte",
+            "sbyte",
+            "short",
+            "ushort",
+            "int",
+            "uint",
+            "long",
+            "ulong",
+            "float",
+            "double",
+            "decimal",
+        ]
+        .iter()
+        .any(|x| self.logical_eq_with_name(context, x))
+    }
+
+    pub fn is_text<'input>(
+        self: &Rc<Self>,
+        context: &Context<'input>
+    ) -> bool {
+        vec![
+            "char",
+            "string",
         ]
         .iter()
         .any(|x| self.logical_eq_with_name(context, x))
