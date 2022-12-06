@@ -27,8 +27,21 @@ use super::routine;
 pub fn generate_data_part<'input>(
     context: &Context<'input>
 ) -> Vec<Instruction> {
-    context.var_labels.values().flat_map(|x| routine::decl_data(x.clone(), AsmLiteral::Null))
-    .chain(context.literal_labels.values().flat_map(|x| routine::decl_data(x.clone(), AsmLiteral::Null)))
+    context.valued_vars.keys().flat_map(|x| {
+        let v = &context.var_labels[x];
+        routine::export_data(v.clone())
+        .chain(routine::decl_data(v.clone(), AsmLiteral::Null))
+    })
+    .chain(
+        context.var_labels.iter()
+        .filter(|(k, _)| !context.valued_vars.contains_key(*k))
+        .flat_map(|(_, v)| {
+            routine::decl_data(v.clone(), AsmLiteral::Null)
+        }
+    ))
+    .chain(context.literal_labels.values().flat_map(|x|
+        routine::decl_data(x.clone(), AsmLiteral::Null)
+    ))
     .collect()
 }
 
@@ -333,11 +346,11 @@ fn visit_eval_var_factor<'input: 'context, 'context>(
     }
 }
 
-fn error(message: String) -> Box<dyn Iterator<Item = Instruction>> {
+fn error<'context>(message: String) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     Box::new(routine::comment(format!("Error detected: `{}`", message)))
 }
 
-fn empty() -> Box<dyn Iterator<Item = Instruction>> {
+fn empty<'context>() -> Box<dyn Iterator<Item = Instruction> + 'context> {
     Box::new([].into_iter())
 }
 

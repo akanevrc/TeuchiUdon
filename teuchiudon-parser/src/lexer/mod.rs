@@ -509,9 +509,7 @@ pub fn verbatium_string_literal<'input>(input: &'input str) -> LexedResult<Rc<as
             delimited(
                 tag("@\""),
                 recognize(
-                    many0(
-                        alt((escape_sequence, verbatium_string_char)),
-                    ),
+                    many0(verbatium_string_char),
                 ),
                 char('"'),
             ),

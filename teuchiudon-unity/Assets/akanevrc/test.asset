@@ -14,9 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serializedUdonProgramAsset: {fileID: 11400000, guid: 01171fc83ab10c74c928619d958b70e9,
     type: 2}
-  udonAssembly: ".data_start\r\n    literal[0]: %SystemString, null\r\n.data_end\r\n\r\n.code_start\r\n   
-    .export _start\r\n    _start:\r\n        PUSH, literal[0]\r\n        EXTERN,
-    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
+  udonAssembly: ".data_start\r\n    .export var[ul[19049]]\r\n    var[ul[19049]]:
+    %SystemUInt64, null\r\n    .export var[rs[19053]]\r\n    var[rs[19053]]: %SystemString,
+    null\r\n    .export var[i[19046]]\r\n    var[i[19046]]: %SystemInt32, null\r\n   
+    .export var[vs[19054]]\r\n    var[vs[19054]]: %SystemString, null\r\n    .export
+    var[l[19048]]\r\n    var[l[19048]]: %SystemInt64, null\r\n    .export var[f[19050]]\r\n   
+    var[f[19050]]: %SystemSingle, null\r\n    .export var[d[19051]]\r\n    var[d[19051]]:
+    %SystemDouble, null\r\n    .export var[ui[19047]]\r\n    var[ui[19047]]: %SystemUInt32,
+    null\r\n    .export var[m[19052]]\r\n    var[m[19052]]: %SystemDecimal, null\r\n.data_end\r\n\r\n.code_start\r\n   
+    .export _start\r\n    _start:\r\n        PUSH, var[i[19046]]\r\n        EXTERN,
+    \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH, var[ui[19047]]\r\n       
+    EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n        PUSH,
+    var[l[19048]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    PUSH, var[ul[19049]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    PUSH, var[f[19050]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    PUSH, var[d[19051]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    PUSH, var[m[19052]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    PUSH, var[rs[19053]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    PUSH, var[vs[19054]]\r\n        EXTERN, \"UnityEngineDebug.__Log__SystemObject__SystemVoid\"\r\n       
+    JUMP, 0xFFFFFFFC\r\n.code_end\r\n"
   assemblyError: 
   serializationData:
     SerializedFormat: 2
@@ -40,13 +56,13 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 1
+      Data: 9
     - Name: 
       Entry: 7
       Data: 
     - Name: $k
       Entry: 1
-      Data: literal[0]
+      Data: var[ul[19049]]
     - Name: $v
       Entry: 7
       Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
@@ -56,16 +72,282 @@ MonoBehaviour:
       Data: 2|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
+      Data: System.UInt64, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 3|System.UInt64, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 100
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[rs[19053]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 4|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
       Data: System.String, mscorlib
     - Name: 
       Entry: 8
       Data: 
     - Name: Item2
       Entry: 7
-      Data: 3|System.String, mscorlib
+      Data: 5|System.String, mscorlib
     - Name: 
       Entry: 1
-      Data: Hello, TeuchiUdon!
+      Data: ok\
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[i[19046]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 6|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Int32, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 7|System.Int32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 255
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[vs[19054]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 9
+      Data: 4
+    - Name: Item2
+      Entry: 7
+      Data: 8|System.String, mscorlib
+    - Name: 
+      Entry: 1
+      Data: ok\
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[l[19048]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 9|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Int64, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 10|System.Int64, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 100
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[f[19050]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 11|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Single, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 12|System.Single, mscorlib
+    - Name: 
+      Entry: 4
+      Data: 100.1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[d[19051]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 13|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Double, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 14|System.Double, mscorlib
+    - Name: 
+      Entry: 4
+      Data: 100.1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[ui[19047]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 15|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.UInt32, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 16|System.UInt32, mscorlib
+    - Name: 
+      Entry: 3
+      Data: 15
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 1
+      Data: var[m[19052]]
+    - Name: $v
+      Entry: 7
+      Data: System.ValueTuple`2[[System.Type, mscorlib],[System.Object, mscorlib]],
+        mscorlib
+    - Name: Item1
+      Entry: 7
+      Data: 17|System.RuntimeType, mscorlib
+    - Name: 
+      Entry: 1
+      Data: System.Decimal, mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: Item2
+      Entry: 7
+      Data: 18|System.Decimal, mscorlib
+    - Name: 
+      Entry: 4
+      Data: 100.1
     - Name: 
       Entry: 8
       Data: 

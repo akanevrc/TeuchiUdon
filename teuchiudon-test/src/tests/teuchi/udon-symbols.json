@@ -2,6 +2,97 @@
   "base_tys": [
     {
       "scopes": [
+        "System"
+      ],
+      "name": "Byte",
+      "logical_name": "SystemByte"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "SByte",
+      "logical_name": "SystemSByte"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Int16",
+      "logical_name": "SystemInt16"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "UInt16",
+      "logical_name": "SystemUInt16"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Int32",
+      "logical_name": "SystemInt32"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "UInt32",
+      "logical_name": "SystemUInt32"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Int64",
+      "logical_name": "SystemInt64"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "UInt64",
+      "logical_name": "SystemUInt64"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Single",
+      "logical_name": "SystemSingle"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Double",
+      "logical_name": "SystemDouble"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Decimal",
+      "logical_name": "SystemDecimal"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Char",
+      "logical_name": "SystemChar"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "String",
+      "logical_name": "SystemString"
+    },
+    {
+      "scopes": [
         "UnityEngine"
       ],
       "name": "Debug",
@@ -9,6 +100,149 @@
     }
   ],
   "tys": [
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Byte",
+      "real_name": "SystemByte",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "SByte",
+      "real_name": "SystemSByte",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Int16",
+      "real_name": "SystemInt16",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "UInt16",
+      "real_name": "SystemUInt16",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Int32",
+      "real_name": "SystemInt32",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "UInt32",
+      "real_name": "SystemUInt32",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Int64",
+      "real_name": "SystemInt64",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "UInt64",
+      "real_name": "SystemUInt64",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Single",
+      "real_name": "SystemSingle",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Double",
+      "real_name": "SystemDouble",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Decimal",
+      "real_name": "SystemDecimal",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Char",
+      "real_name": "SystemChar",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "String",
+      "real_name": "SystemString",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
     {
       "scopes": [
         "UnityEngine"

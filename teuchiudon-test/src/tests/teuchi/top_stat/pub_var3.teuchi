@@ -1,0 +1,13 @@
+// "ok"
+pub let i: int = 0xFF;
+pub let ui: uint = 0b1111U;
+pub let l: long = 100L;
+pub let ul: ulong = 100UL;
+pub let f: float = 100.1;
+pub let d: double = 100.1D;
+pub let m: decimal = 100.1M;
+pub let c: char = 'a';
+pub let rs: string = "ok//";
+pub let vs: string = @"ok/";
+
+UnityEngine::Debug::Log("ok");

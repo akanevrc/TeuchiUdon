@@ -161,6 +161,7 @@ impl Literal {
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
+        let text = format!("\"{}\"", text);
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -169,17 +170,22 @@ impl Literal {
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
+        let text = format!("@\"{}\"", text);
         Ok(Self::new_or_get(context, text, ty))
     }
 
     fn trim_integer_text(text: String) -> (String, &'static str) {
         let text = Self::formatted_number(text);
         match &text.chars().collect::<Vec<_>>()[..] {
-            [.., x, y] if *x == 'L' && *y == 'U' || *x == 'U' && *y == 'L' =>
-                (text[0..text.len() - 2].to_owned(), "ulong"),
-            [.., x] if *x == 'L' =>
+            [.., x, y]
+                if
+                    x.to_uppercase().to_string().as_str() == "L" && y.to_uppercase().to_string().as_str() == "U" ||
+                    x.to_uppercase().to_string().as_str() == "U" && y.to_uppercase().to_string().as_str() == "L"
+                =>
+                    (text[0..text.len() - 2].to_owned(), "ulong"),
+            [.., x] if x.to_uppercase().to_string().as_str() == "L" =>
                 (text[0..text.len() - 1].to_owned(), "long"),
-            [.., x] if *x == 'U' =>
+            [.., x] if x.to_uppercase().to_string().as_str() == "U" =>
                 (text[0..text.len() - 1].to_owned(), "uint"),
             _ =>
                 (text, "int"),
@@ -189,11 +195,11 @@ impl Literal {
     fn trim_real_number_text(text: String) -> (String, &'static str) {
         let text = Self::formatted_number(text);
         match &text.chars().collect::<Vec<_>>()[..] {
-            [.., x] if *x == 'F' =>
+            [.., x] if x.to_uppercase().to_string().as_str() == "F" =>
                 (text[0..text.len() - 1].to_owned(), "float"),
-            [.., x] if *x == 'D' =>
+            [.., x] if x.to_uppercase().to_string().as_str() == "D" =>
                 (text[0..text.len() - 1].to_owned(), "double"),
-            [.., x] if *x == 'M' =>
+            [.., x] if x.to_uppercase().to_string().as_str() == "M" =>
                 (text[0..text.len() - 1].to_owned(), "decimal"),
             _ =>
                 (text, "float"),
@@ -201,7 +207,7 @@ impl Literal {
     }
 
     fn formatted_number(text: String) -> String {
-        text.to_uppercase().replace("_", "")
+        text.replace("_", "")
     }
 
     pub fn new_or_get_term_prefix_op_literals<'input>(

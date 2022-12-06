@@ -430,7 +430,7 @@ impl Ty {
         ty: &Rc<Self>
     ) -> bool {
         self.is_dotnet_ty() && ty.is_dotnet_ty() &&
-        ty.parents.contains(&self.to_key())
+        (self == ty || ty.parents.contains(&self.to_key()))
     }
 
     pub fn is_dotnet_ty(self: &Rc<Self>) -> bool {

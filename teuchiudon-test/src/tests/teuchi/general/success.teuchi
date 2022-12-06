@@ -1,4 +1,4 @@
-// hello
+// "hello"
 pub fn Start() {
     UnityEngine::Debug::Log("hello");
 };

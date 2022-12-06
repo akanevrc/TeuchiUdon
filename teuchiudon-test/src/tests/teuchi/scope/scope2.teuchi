@@ -1,4 +1,4 @@
-// ok
+// "ok"
 pub fn Start() {
     let x = "ok";
     {

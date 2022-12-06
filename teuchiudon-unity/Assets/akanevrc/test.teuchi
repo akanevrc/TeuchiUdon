@@ -1,4 +1,19 @@
+pub let i: int = 0xFF;
+pub let ui: uint = 0b1111U;
+pub let l: long = 100L;
+pub let ul: ulong = 100UL;
+pub let f: float = 100.1;
+pub let d: double = 100.1D;
+pub let m: decimal = 100.1M;
+pub let rs: string = "ok\\";
+pub let vs: string = @"ok\";
 
-pub fn Start() {
-    UnityEngine::Debug::Log("Hello, TeuchiUdon!");
-};
+UnityEngine::Debug::Log(i);
+UnityEngine::Debug::Log(ui);
+UnityEngine::Debug::Log(l);
+UnityEngine::Debug::Log(ul);
+UnityEngine::Debug::Log(f);
+UnityEngine::Debug::Log(d);
+UnityEngine::Debug::Log(m);
+UnityEngine::Debug::Log(rs);
+UnityEngine::Debug::Log(vs);

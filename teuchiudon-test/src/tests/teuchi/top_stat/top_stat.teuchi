@@ -1,2 +1,2 @@
-// ok
+// "ok"
 UnityEngine::Debug::Log("ok");

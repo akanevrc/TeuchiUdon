@@ -60,23 +60,24 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
 
         private static (string output, string[] errors, (string name, Type type, object value)[] defaultValues) CompileFromText(string text)
         {
-            var output = (string)null;
+            var ptr = IntPtr.Zero;
             try
             {
                 var json = UdonSymbolJsonConverter.ToJson(UdonSymbolExtractor.ExtractSymbols());
-                output = TeuchiUdonUnityCompiler.compile(text, json);
-
-                var parsed = ParseOutput(output);
+                ptr = TeuchiUdonUnityCompiler.compile(text, json);
+                var parsed = ParseOutput(ptr);
                 return parsed;
             }
             finally
             {
-                if (output != null) TeuchiUdonUnityCompiler.free_str(output);
+                if (ptr != IntPtr.Zero) TeuchiUdonUnityCompiler.free_str(ptr);
             }
         }
 
-        private static (string output, string[] errors, (string name, Type type, object value)[] defaultValues) ParseOutput(string output)
+        private static (string output, string[] errors, (string name, Type type, object value)[] defaultValues) ParseOutput(IntPtr ptr)
         {
+            var output = TeuchiUdonUnityCompiler.PtrToStringUTF8(ptr);
+
             if (output.Length > 0 && output[0] == '!')
             {
                 return ("", new string[] { output.Substring(1) }, new (string name, Type type, object value)[0]);
@@ -85,7 +86,7 @@ namespace akanevrc.TeuchiUdon.Editor.Compiler
             {
                 var compiled = CompiledResultJsonConverter.FromJson(output);
                 var defaultValues = compiled.default_values.Select(x => {
-                    var (ty, value) = TypeConverter.Convert(x.ty, x.value);
+                    var (ty, value) = TypeConverter.ConvertLiteral(x.ty, x.value);
                     return (x.name, ty, value);
                 }).ToArray();
                 return (compiled.output, compiled.errors, defaultValues);

@@ -1,4 +1,4 @@
-// ok
+// "ok"
 fn F(x: string) {
     UnityEngine::Debug::Log(x);
 };
