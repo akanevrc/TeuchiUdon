@@ -7,6 +7,7 @@ use std::{
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
+use super::elements::element::SemanticElement;
 use super::{
     ast,
     SemanticError,
@@ -313,7 +314,7 @@ fn infer<'input: 'context, 'context>(
     else if ty.base_eq_with_name("tuple") {
         let ty_args = ty.args_as_tuple();
         if vars.len() < ty_args.len() {
-            return Err(ElementError::new("Type inference not succeeded".to_owned()));
+            return Err(ElementError::new(format!("Variable cannot be bound with type `{}`", ty.description())));
         }
         for t in ty_args {
             let t = t.get_value(context)?;
@@ -322,7 +323,7 @@ fn infer<'input: 'context, 'context>(
         Ok(())
     }
     else {
-        Err(ElementError::new("Type inference not succeeded".to_owned()))
+        Err(ElementError::new(format!("Variable cannot be bound with type `{}`", ty.description())))
     }
 }
 
