@@ -248,49 +248,56 @@ impl VM {
 
     fn call_method(&mut self, symbol: &str) {
         match symbol {
-            "SystemInt32.__op_UnaryMinus__SystemInt32__SystemInt32" => {
-                self.one_arg_method("'-")
-            },
-            "SystemBoolean.__op_UnaryNegation__SystemBoolean__SystemBoolean" => {
-                self.one_arg_method("!")
-            },
-            "SystemInt32.__op_LogicalXor__SystemInt32__SystemInt32" => {
-                self.two_arg_method("^")
-            },
+            "SystemInt32.__op_UnaryMinus__SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("'-")),
+            "SystemBoolean.__op_UnaryNegation__SystemBoolean__SystemBoolean" =>
+                self.call_method_from_symbol(symbol, Some("!")),
+            "SystemInt32.__op_LogicalXor__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("^")),
             "UnityEngineDebug.__Log__SystemObject__SystemVoid" => {
                 let var = self.stack.pop().unwrap();
                 let value = &self.var_values[&var];
                 self.logs.push(value.to_owned());
             },
-            _ => ()
+            _ =>
+                self.call_method_from_symbol(symbol, None),
         }
     }
 
-    fn one_arg_method(&mut self, op: &str) {
-        let out_var = self.stack.pop().unwrap();
-        let in_var = self.stack.pop().unwrap();
-        *self.var_values.get_mut(&out_var).unwrap() =
-            format!(
-                "{}{}{}",
-                self.var_values.get(&in_var).unwrap(),
-                Self::VALUE_DELIMITER,
-                op
-            )
-    }
+    fn call_method_from_symbol(&mut self, symbol: &str, alias_name: Option<&str>) {
+        let splitted = symbol.split("__").collect::<Vec<_>>();
+        let name = splitted[1];
+        let (args, ret) = if splitted.len() == 3 {
+            (Vec::new(), splitted[2])
+        }
+        else {
+            (splitted[2].split("_").collect::<Vec<_>>(), splitted[3])
+        };
+        
 
-    fn two_arg_method(&mut self, op: &str) {
-        let out_var = self.stack.pop().unwrap();
-        let in_var2 = self.stack.pop().unwrap();
-        let in_var1 = self.stack.pop().unwrap();
-        *self.var_values.get_mut(&out_var).unwrap() =
-            format!(
-                "{}{}{}{}{}",
-                self.var_values.get(&in_var1).unwrap(),
-                Self::VALUE_DELIMITER,
-                self.var_values.get(&in_var2).unwrap(),
-                Self::VALUE_DELIMITER,
-                op
-            )
+        let out_var = if ret == "SystemVoid" { None } else { Some(self.stack.pop().unwrap()) };
+        let in_vars = (0..args.len()).map(|_| self.stack.pop().unwrap()).collect::<Vec<_>>();
+
+        if let Some(out_var) = out_var {
+            if in_vars.len() == 0 {
+                *self.var_values.get_mut(&out_var).unwrap() = alias_name.unwrap_or(name).to_owned();
+            }
+            else {
+                let joined =
+                    in_vars.iter()
+                    .rev()
+                    .map(|x| self.var_values.get(x).unwrap().clone())
+                    .collect::<Vec<_>>()
+                    .join(Self::VALUE_DELIMITER.to_string().as_str());
+                *self.var_values.get_mut(&out_var).unwrap() =
+                    format!(
+                        "{}{}{}",
+                        joined,
+                        Self::VALUE_DELIMITER,
+                        alias_name.unwrap_or(name)
+                    );
+            }
+        }
     }
 
     fn get_addr(&self, label: &str) -> u32 {
