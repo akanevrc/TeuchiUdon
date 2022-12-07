@@ -10,12 +10,12 @@ use super::{
 };
 
 pub trait HasContextIter<'input: 'error, 'error> {
-    type ContextIter: Iterator<Item = (&'input str, &'error String)>;
+    type ContextIter: Iterator<Item = (Option<&'input str>, &'error String)>;
     fn context_iter(&'error self) -> Self::ContextIter;
 }
 
 impl<'input: 'error, 'error> HasContextIter<'input, 'error> for ErrorTree<'input> {
-    type ContextIter = IntoIter<(&'input str, &'error String)>;
+    type ContextIter = IntoIter<(Option<&'input str>, &'error String)>;
 
     fn context_iter(&'error self) -> Self::ContextIter {
         ErrorTreeIter::new(self)
@@ -24,7 +24,7 @@ impl<'input: 'error, 'error> HasContextIter<'input, 'error> for ErrorTree<'input
         )
         .flat_map(|x| x)
         .filter_map(|x|
-            if let StackContext::Context(s) = &x.1 { Some((x.0, s)) } else { None }
+            if let StackContext::Context(s) = &x.1 { Some((Some(x.0), s)) } else { None }
         )
         .collect::<Vec<_>>()
         .into_iter()
@@ -32,11 +32,11 @@ impl<'input: 'error, 'error> HasContextIter<'input, 'error> for ErrorTree<'input
 }
 
 impl<'input: 'error, 'error> HasContextIter<'input, 'error> for Vec<SemanticError<'input>> {
-    type ContextIter = IntoIter<(&'input str, &'error String)>;
+    type ContextIter = IntoIter<(Option<&'input str>, &'error String)>;
 
     fn context_iter(&'error self) -> Self::ContextIter {
         self.iter()
-        .map(|x| (x.slice.unwrap_or(""), &x.message))
+        .map(|x| (x.slice, &x.message))
         .collect::<Vec<_>>()
         .into_iter()
     }

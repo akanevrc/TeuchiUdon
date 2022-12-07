@@ -4,9 +4,9 @@ pub(crate) mod semantic_error;
 
 use std::{
     collections::HashMap,
-    cmp::min,
+    cmp,
     error::Error,
-    iter::repeat,
+    iter,
 };
 use itertools::Itertools;
 use nom_supreme::error::{
@@ -61,13 +61,13 @@ impl<'input: 'error, 'error> Iterator for ErrorTreeIter<'input, 'error> {
 pub fn line_infoes<'input: 'error, 'error, E>(
     input: &'input str,
     e: &'error E,
-) -> Vec<(usize, usize, &'input str, &'input str, &'error String)>
+) -> Vec<(usize, usize, &'input str, Option<&'input str>, &'error String)>
 where
     E: HasContextIter<'input, 'error>,
 {
     let sorted = e.context_iter()
         .map(|x| x.0)
-        .sorted_by(|x, y| x.as_ptr().cmp(&y.as_ptr()));
+        .sorted_by(|x, y| option_str_ptr(*x).cmp(&option_str_ptr(*y)));
     let filtered = filter_slices(sorted);
     let input_ptr = input.as_ptr() as usize;
     let input_bytes = input.as_bytes();
@@ -76,12 +76,10 @@ where
     let mut line_char_slice = HashMap::<usize, (usize, usize, &str)>::new();
     let mut prev_offset = 1usize;
     for s in filtered {
-        let ptr = s.as_ptr() as usize;
-        let trimmed = s.trim().as_ptr() as usize;
-        let offset = trimmed - input_ptr;
+        let ptr = option_str_ptr(s);
+        let offset = s.map_or(0, |x| x.trim().as_ptr() as usize - input_ptr);
         if offset == 0 {
-            let line_slice = input.lines().next().unwrap_or("");
-            line_char_slice.insert(ptr, (1, 1, line_slice));
+            line_char_slice.insert(ptr, (1, 1, ""));
             continue;
         }
         let iter_1 = input_bytes[prev_offset - 1..offset - 1].iter();
@@ -98,10 +96,10 @@ where
     .collect::<Vec<_>>()
     .into_iter()
     .rev()
-    .unique_by(|(s, context)| (s.as_ptr(), s.len(), *context))
+    .unique_by(|(s, context)| (option_str_ptr(*s), option_str_len(*s), *context))
     .rev()
     .filter_map(|(s, context)| {
-        let ptr = s.as_ptr() as usize;
+        let ptr = option_str_ptr(s);
         if let Some((l, c, ls)) = line_char_slice.get(&ptr) {
             Some((*l, *c, *ls, s, context))
         }
@@ -112,17 +110,17 @@ where
 }
 
 fn filter_slices<'input>(
-    iter: impl Iterator<Item = &'input str>
-) -> Vec<&'input str> {
-    let mut v = Vec::<&str>::new();
-    let mut v_keep = Vec::<bool>::new();
+    iter: impl Iterator<Item = Option<&'input str>>
+) -> Vec<Option<&'input str>> {
+    let mut v = Vec::<Option<&str>>::new();
+    let mut v_keep = Vec::new();
     for slice in iter {
-        let slice_head = slice.as_ptr() as usize;
-        let slice_tail = slice_head + slice.len();
+        let slice_head = option_str_ptr(slice);
+        let slice_tail = slice_head + option_str_len(slice);
         let mut slice_keep = true;
         for (i, &s) in v.iter().enumerate() {
-            let s_head = s.as_ptr() as usize;
-            let s_tail = s_head + s.len();
+            let s_head = option_str_ptr(s);
+            let s_tail = s_head + option_str_len(s);
             if s_head <= slice_head && slice_tail <= s_tail {
                 v_keep[i] = false;
             }
@@ -135,11 +133,19 @@ fn filter_slices<'input>(
             .filter_map(|(s, k)| if *k { Some(*s) } else { None })
             .collect();
         if slice_keep { v.push(slice); }
-        v_keep = repeat(true).take(v.len()).collect();
+        v_keep = iter::repeat(true).take(v.len()).collect();
     }
     v
 }
 
-fn char_caret(ch: usize, line_slice: &str, slice: &str) -> String {
-    format!("{}{}", " ".repeat(ch - 1), "^".repeat(min(line_slice.len() + 1 - ch, slice.len())))
+fn char_caret(ch: usize, line_slice: &str, slice: Option<&str>) -> String {
+    format!("{}{}", " ".repeat(ch - 1), "^".repeat(cmp::min(line_slice.len() + 1 - ch, option_str_len(slice))))
+}
+
+fn option_str_ptr(s: Option<&str>) -> usize {
+    s.map_or(0, |x| x.as_ptr() as usize)
+}
+
+fn option_str_len(s: Option<&str>) -> usize {
+    s.map_or(0, |x| x.len() as usize)
 }
