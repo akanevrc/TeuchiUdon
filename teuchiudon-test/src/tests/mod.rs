@@ -26,6 +26,7 @@ enum Expected {
 #[rstest]
 #[case::function("./src/tests/teuchi/function")]
 #[case::general("./src/tests/teuchi/general")]
+#[case::infix_op("./src/tests/teuchi/infix_op")]
 #[case::let_bind("./src/tests/teuchi/let_bind")]
 #[case::literal("./src/tests/teuchi/literal")]
 #[case::prefix_op("./src/tests/teuchi/prefix_op")]

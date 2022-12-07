@@ -302,13 +302,45 @@
         "IN",
         "OUT"
       ],
-      "real_name": "SystemInt32.__op_LogicalXor__SystemInt32__SystemInt32",
+      "real_name": "SystemInt32.__op_LogicalXor__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemByte",
+      "name": "get_MaxValue",
+      "param_tys": [
+        "SystemByte"
+      ],
+      "param_in_outs": [
+        "OUT"
+      ],
+      "real_name": "SystemByte.__get_MaxValue__SystemByte",
       "param_real_names": [
         "x"
       ]
     },
     {
       "is_static": false,
+      "ty": "SystemString",
+      "name": "get_Length",
+      "param_tys": [
+        "SystemString",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__get_Length__SystemString__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
       "ty": "UnityEngineDebug",
       "name": "Log",
       "param_tys": [

@@ -1,0 +1,3 @@
+// get_MaxValue
+let x = System::Byte::get_MaxValue();
+UnityEngine::Debug::Log(x);

@@ -1,0 +1,6 @@
+// "hello",get_Length
+fn F() {
+    "hello"
+};
+let x = F().get_Length();
+UnityEngine::Debug::Log(x);
