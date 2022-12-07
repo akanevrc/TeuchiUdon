@@ -251,8 +251,11 @@ impl VM {
             "SystemInt32.__op_UnaryMinus__SystemInt32__SystemInt32" => {
                 self.one_arg_method("'-")
             },
+            "SystemBoolean.__op_UnaryNegation__SystemBoolean__SystemBoolean" => {
+                self.one_arg_method("!")
+            },
             "SystemInt32.__op_LogicalXor__SystemInt32__SystemInt32" => {
-                self.two_arg_method("~")
+                self.two_arg_method("^")
             },
             "UnityEngineDebug.__Log__SystemObject__SystemVoid" => {
                 let var = self.stack.pop().unwrap();

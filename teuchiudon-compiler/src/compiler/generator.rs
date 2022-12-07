@@ -195,14 +195,13 @@ fn visit_term_prefix_op<'input: 'context, 'context>(
     match op {
         ast::TermPrefixOp::Plus =>
             visit_expr(context, expr),
-        ast::TermPrefixOp::Minus => {
+        ast::TermPrefixOp::Minus |
+        ast::TermPrefixOp::Bang => {
             let args = visit_expr(context, expr);
             let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
             let method = context.method_labels[&operation.op_methods["op"]].clone();
             routine::call_method(args, out_vars, method)
         },
-        ast::TermPrefixOp::Bang =>
-            visit_expr(context, expr),
         ast::TermPrefixOp::Tilde => {
             let literal = context.literal_labels[&operation.op_literals["mask"]].clone();
             let args = Box::new(visit_expr(context, expr).chain(routine::get(literal)));

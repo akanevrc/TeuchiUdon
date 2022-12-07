@@ -275,6 +275,23 @@
     },
     {
       "is_static": true,
+      "ty": "SystemBoolean",
+      "name": "op_UnaryNegation",
+      "param_tys": [
+        "SystemBoolean",
+        "SystemBoolean"
+      ],
+      "param_in_outs": [
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemBoolean.__op_UnaryNegation__SystemBoolean__SystemBoolean",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
       "ty": "SystemInt32",
       "name": "op_LogicalXor",
       "param_tys": [

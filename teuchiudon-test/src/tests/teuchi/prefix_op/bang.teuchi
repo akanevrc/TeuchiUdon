@@ -1,0 +1,3 @@
+// false,!
+let x = !false;
+UnityEngine::Debug::Log(x);
