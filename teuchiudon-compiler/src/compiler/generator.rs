@@ -220,7 +220,7 @@ pub fn visit_term<'input: 'context, 'context>(
         ast::TermDetail::Factor { factor } =>
             visit_factor(context, factor.clone()),
         ast::TermDetail::InfixOp { left, op, right, operation } =>
-            visit_factor_infix_op(context, left.clone(), op, right.clone(), operation.clone())
+            visit_factor_infix_op(context, left.clone(), op, right.clone(), term.tmp_vars.clone(), operation.clone())
     }
 }
 
@@ -229,13 +229,16 @@ pub fn visit_factor_infix_op<'input: 'context, 'context>(
     left: Rc<ast::Term<'input>>,
     op: &ast::FactorInfixOp,
     right: Rc<ast::Term<'input>>,
+    tmp_vars: Vec<Rc<Var>>,
     _operation: Rc<Operation>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     match op {
         ast::FactorInfixOp::TyAccess =>
             visit_ty_access_op(context, left, right),
+        ast::FactorInfixOp::Access =>
+            visit_access_op(context, left, right),
         ast::FactorInfixOp::EvalFn =>
-            visit_eval_fn_op(context, left, right),
+            visit_eval_fn_op(context, left, right, tmp_vars),
         _ =>
             error("infix_op".to_owned()),
     }
@@ -263,10 +266,36 @@ fn visit_ty_access_op<'input: 'context, 'context>(
     Box::new(routine::get(var_label(context, var.clone())))
 }
 
+fn visit_access_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    left: Rc<ast::Term<'input>>,
+    right: Rc<ast::Term<'input>>,
+) -> Box<dyn Iterator<Item = Instruction> + 'context> {
+    let ast::TermDetail::Factor { factor } = right.detail.as_ref()
+        else {
+            return error("access_op".to_owned());
+        };
+    let ast::FactorDetail::EvalVar { ident: _, var } = factor.detail.as_ref()
+        else {
+            return error("access_op".to_owned());
+        };
+    let var = var.borrow();
+    let Some(var) = var.as_ref()
+        else {
+            return error("access_op".to_owned());
+        };
+
+    Box::new(
+        visit_term(context, left)
+        .chain(routine::get(var_label(context, var.clone())))
+    )
+}
+
 fn visit_eval_fn_op<'input: 'context, 'context>(
     context: &'context Context<'input>,
     left: Rc<ast::Term<'input>>,
     right: Rc<ast::Term<'input>>,
+    tmp_vars: Vec<Rc<Var>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     let ast::TermDetail::Factor { factor } = right.detail.as_ref()
         else {
@@ -290,9 +319,10 @@ fn visit_eval_fn_op<'input: 'context, 'context>(
                     Box::new(
                         args.clone().into_iter().flat_map(|x| visit_expr(context, x.expr.get()))
                     );
+                let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
                 Box::new(
                     visit_term(context, left)
-                    .chain(routine::call_method(args, Vec::new(), method_label(context, m.clone())))
+                    .chain(routine::call_method(args, out_vars, method_label(context, m.clone())))
                 )
             },
         }

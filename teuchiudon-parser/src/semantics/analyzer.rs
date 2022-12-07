@@ -1050,7 +1050,7 @@ fn access_op_factor<'input: 'context, 'context>(
     factor: Rc<parser::ast::Factor<'input>>,
 ) -> Result<(ast::FactorInfixOp, Rc<ast::Factor<'input>>), Vec<SemanticError<'input>>> {
     let op = access_op(context, op_code)?;
-    let factor = self::factor(context, factor)?;
+    let factor = self::access_factor(context, factor)?;
     Ok((op, factor))
 }
 
@@ -1167,6 +1167,18 @@ fn ty_access_factor<'input: 'context, 'context>(
             eval_var_ty_access_factor(context, node.clone(), ident.clone()),
         _ =>
             Err(vec![SemanticError::new(Some(node.slice), "Illegal use of type access op `::`".to_owned())])
+    }
+}
+
+fn access_factor<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    node: Rc<parser::ast::Factor<'input>>,
+) -> Result<Rc<ast::Factor<'input>>, Vec<SemanticError<'input>>> {
+    match node.kind.as_ref() {
+        parser::ast::FactorKind::EvalVar { ident } =>
+            eval_var_access_factor(context, node.clone(), ident.clone()),
+        _ =>
+            Err(vec![SemanticError::new(Some(node.slice), "Illegal use of access op `.`".to_owned())])
     }
 }
 
@@ -1343,6 +1355,26 @@ fn eval_var_factor<'input: 'context, 'context>(
 }
 
 fn eval_var_ty_access_factor<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    node: Rc<parser::ast::Factor<'input>>,
+    ident: Rc<lexer::ast::Ident<'input>>,
+) -> Result<Rc<ast::Factor<'input>>, Vec<SemanticError<'input>>> {
+    let ident = self::ident(context, ident)?;
+    let ty =
+        Ty::get_from_name(context, "unknown")
+        .map_err(|e| e.convert(None))?;
+    Ok(Rc::new(ast::Factor {
+        parsed: Some(node),
+        detail: Rc::new(ast::FactorDetail::EvalVar {
+            ident,
+            var: RefCell::new(None),
+        }),
+        ty,
+        data: RefCell::new(None),
+    }))
+}
+
+fn eval_var_access_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
     node: Rc<parser::ast::Factor<'input>>,
     ident: Rc<lexer::ast::Ident<'input>>,
@@ -2081,6 +2113,8 @@ impl<'input: 'context, 'context>
         match op {
             ast::FactorInfixOp::TyAccess =>
                 ty_access_infix_op(context, parsed, left, op, right),
+            ast::FactorInfixOp::Access =>
+                access_infix_op(context, parsed, left, op, right),
             ast::FactorInfixOp::EvalFn =>
                 eval_fn_infix_op(context, parsed, left, op, right),
             _ =>
@@ -2137,7 +2171,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 }),
                 ty,
                 tmp_vars,
-                data: right.data.clone(),
+                data: RefCell::new(None), // TODO
             })
         )))
     }
@@ -2174,12 +2208,68 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 }),
                 ty,
                 tmp_vars,
-                data: right.data.clone(),
+                data: RefCell::new(None), // TODO
             })
         )))
     }
     else {
         Err(vec![SemanticError::new(None, "Left side of `::` is not a qualifier or a type".to_owned())])
+    }
+}
+
+fn access_infix_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    parsed: Rc<parser::ast::Term<'input>>,
+    left: Rc<ast::RetainedTerm<'input>>,
+    op: &ast::FactorInfixOp,
+    right: Rc<ast::RetainedTerm<'input>>,
+) -> Result<Rc<ast::RetainedTerm<'input>>, Vec<SemanticError<'input>>> {
+    let left = left.release(context);
+    let right = right.release(context);
+    let ast::TermDetail::Factor { factor } = right.detail.as_ref()
+        else {
+            return Err(vec![SemanticError::new(None, "Right side of `.` is not a term".to_owned())]);
+        };
+    let ast::FactorDetail::EvalVar { ident, var } = factor.detail.as_ref()
+        else {
+            return Err(vec![SemanticError::new(None, "Right side of `.` cannot be evaluated".to_owned())]);
+        };
+
+    if left.ty.is_dotnet_ty() {
+        let qual = left.ty.base.qual.get_pushed_qual(context, left.ty.base.name.clone())
+            .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
+        let v = Var::get(context, qual.to_key(), ident.name.clone()).ok();
+        let ty = match &v {
+            Some(x) => {
+                var.replace(Some(x.clone()));
+                x.ty.borrow().clone()
+            },
+            None =>
+                return Err(vec![SemanticError::new(None, "Right side of `.` cannot be evaluated as the element".to_owned())])
+        };
+        let tmp_vars =
+            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+        let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
+        right.data.replace(data);
+        Ok(Rc::new(ast::RetainedTerm::new(
+            Rc::new(ast::Term {
+                parsed: Some(parsed),
+                detail: Rc::new(ast::TermDetail::InfixOp {
+                    left: left.clone(),
+                    op: op.clone(),
+                    right: right.clone(),
+                    operation,
+                }),
+                ty,
+                tmp_vars,
+                data: RefCell::new(None), // TODO
+            })
+        )))
+    }
+    else {
+        return Err(vec![SemanticError::new(None, "Left side of `.` cannot be accessed to the element".to_owned())]);
     }
 }
 
@@ -2213,12 +2303,9 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .flat_map(|x| x.into_iter())
             .collect::<Vec<_>>();
         let eval_fn = EvalFn::new_or_get(context, fn_stats.clone(), data);
-        let tmp_vars =
-            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
-            .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let tmp_vars = Vec::new();
         let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
-        right.data.replace(ret.data.borrow().clone());
         Ok(Rc::new(ast::RetainedTerm::new(
             Rc::new(ast::Term {
                 parsed: Some(parsed),
@@ -2230,7 +2317,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                 }),
                 ty: ret.ty.clone(),
                 tmp_vars,
-                data: right.data.clone(),
+                data: ret.data.clone(),
             })
         )))
     }
@@ -2243,11 +2330,10 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         let ty = Ty::tys_to_ty(context, &m.out_tys)
             .map_err(|e| e.convert(None))?;
         let tmp_vars =
-            Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
+            Var::retain_method_tmp_vars(context, m.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
-        right.data.replace(None); // TODO
         Ok(Rc::new(ast::RetainedTerm::new(
             Rc::new(ast::Term {
                 parsed: Some(parsed),

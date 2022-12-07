@@ -702,7 +702,14 @@ impl Ty {
         let args = self.args_as_method();
         let methods =
             args.iter()
-            .filter(|x| x.in_tys.len() == in_tys.len())
+            .filter(|x|
+                if x.ty.name == "type" {
+                    x.in_tys.len() == in_tys.len()
+                }
+                else {
+                    x.in_tys.len() - 1 == in_tys.len()
+                }
+            )
             .collect::<Vec<_>>();
         if methods.len() == 0 {
             return Err(ElementError::new("No compatible methods found".to_owned()));
@@ -713,7 +720,8 @@ impl Ty {
         for method in methods {
             let mut compatible = true;
             let mut just_count = 0;
-            for (m, i) in method.in_tys.iter().zip(in_tys.iter()) {
+            let skip_count = if method.ty.name == "type" { 0 } else { 1 };
+            for (m, i) in method.in_tys.iter().skip(skip_count).zip(in_tys.iter()) {
                 let m = m.get_value(context)?;
                 let i = i.get_value(context)?;
                 if !m.assignable_from(context, &i) {

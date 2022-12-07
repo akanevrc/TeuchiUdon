@@ -13,6 +13,7 @@ use super::{
         ValueElement,
     },
     label::DataLabel,
+    method::Method,
     qual::{
         Qual,
         QualKey,
@@ -123,10 +124,8 @@ impl Var {
         match op {
             ast::TermPrefixOp::Plus =>
                 Ok(Vec::new()),
-            ast::TermPrefixOp::Minus =>
-                Ok(vec![context.retain_tmp_var(ty.to_key())?]),
-            ast::TermPrefixOp::Bang =>
-                Ok(vec![context.retain_tmp_var(ty.to_key())?]),
+            ast::TermPrefixOp::Minus |
+            ast::TermPrefixOp::Bang |
             ast::TermPrefixOp::Tilde =>
                 Ok(vec![context.retain_tmp_var(ty.to_key())?]),
         }
@@ -151,13 +150,21 @@ impl Var {
         _right_ty: Rc<Ty>
     ) -> Result<Vec<Rc<Self>>, ElementError> {
         match op {
-            ast::FactorInfixOp::TyAccess =>
+            ast::FactorInfixOp::TyAccess |
+            ast::FactorInfixOp::Access =>
                 Ok(Vec::new()),
             ast::FactorInfixOp::EvalFn =>
-                Ok(Vec::new()),
+                panic!("Illegal state"),
             _ =>
                 panic!("Not implemented"),
         }
+    }
+
+    pub fn retain_method_tmp_vars(
+        context: &Context,
+        method: Rc<Method>,
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
+        method.out_tys.iter().map(|x| context.retain_tmp_var(x.to_key())).collect()
     }
 }
 

@@ -242,8 +242,8 @@ impl Literal {
         _right_ty: Rc<Ty>
     ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
         match op {
-            ast::FactorInfixOp::TyAccess =>
-                Ok(HashMap::new()),
+            ast::FactorInfixOp::TyAccess |
+            ast::FactorInfixOp::Access |
             ast::FactorInfixOp::EvalFn =>
                 Ok(HashMap::new()),
             _ =>
