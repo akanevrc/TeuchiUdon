@@ -31,10 +31,7 @@ impl SemanticOpContext {
             ],
             factor_priorities: vec![
                 (Box::new(|op_code: &FactorInfixOp| *op_code == FactorInfixOp::TyAccess), Assoc::Left),
-                (Box::new(|op_code: &FactorInfixOp| *op_code == FactorInfixOp::Access || *op_code == FactorInfixOp::CoalescingAccess), Assoc::Left),
-                (Box::new(|op_code: &FactorInfixOp| *op_code == FactorInfixOp::EvalFn), Assoc::Left),
-                (Box::new(|op_code: &FactorInfixOp| *op_code == FactorInfixOp::EvalSpreadFn), Assoc::Left),
-                (Box::new(|op_code: &FactorInfixOp| *op_code == FactorInfixOp::EvalKey), Assoc::Left),
+                (Box::new(|op_code: &FactorInfixOp| *op_code == FactorInfixOp::Access || *op_code == FactorInfixOp::CoalescingAccess || *op_code == FactorInfixOp::EvalFn || *op_code == FactorInfixOp::EvalSpreadFn || *op_code == FactorInfixOp::EvalKey), Assoc::Left),
             ],
         }
     }
