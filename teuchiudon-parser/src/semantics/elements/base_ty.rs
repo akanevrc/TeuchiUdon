@@ -153,7 +153,7 @@ impl BaseTy {
         let key = value.to_key();
         let logical_key = value.to_key();
         context.base_ty_store.add(key, value.clone())?;
-        context.base_ty_logical_store.add(logical_key, value.clone()).ok();
+        context.base_ty_logical_store.force_add(logical_key, value.clone());
         Ok(value)
     }
 

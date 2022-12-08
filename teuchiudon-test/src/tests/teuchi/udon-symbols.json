@@ -4,6 +4,20 @@
       "scopes": [
         "System"
       ],
+      "name": "Object",
+      "logical_name": "SystemObject"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Boolean",
+      "logical_name": "SystemBoolean"
+    },
+    {
+      "scopes": [
+        "System"
+      ],
       "name": "Byte",
       "logical_name": "SystemByte"
     },
@@ -100,6 +114,26 @@
     }
   ],
   "tys": [
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Object",
+      "real_name": "SystemObject",
+      "args": [],
+      "parents": []
+    },
+    {
+      "scopes": [
+        "System"
+      ],
+      "name": "Boolean",
+      "real_name": "SystemBoolean",
+      "args": [],
+      "parents": [
+        "SystemObject"
+      ]
+    },
     {
       "scopes": [
         "System"
@@ -257,6 +291,23 @@
   ],
   "methods": [
     {
+      "is_static": false,
+      "ty": "SystemObject",
+      "name": "ToString",
+      "param_tys": [
+        "SystemObject",
+        "SystemString"
+      ],
+      "param_in_outs": [
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemObject.__ToString__SystemObject__SystemString",
+      "param_real_names": [
+        "instance"
+      ]
+    },
+    {
       "is_static": true,
       "ty": "SystemInt32",
       "name": "op_UnaryMinus",
@@ -333,7 +384,7 @@
         "IN",
         "OUT"
       ],
-      "real_name": "SystemInt32.__get_Length__SystemString__SystemInt32",
+      "real_name": "SystemString.__get_Length__SystemString__SystemInt32",
       "param_real_names": [
         "instance"
       ]

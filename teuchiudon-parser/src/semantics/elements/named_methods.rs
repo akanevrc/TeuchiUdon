@@ -8,6 +8,7 @@ use super::{
         SemanticElement,
         ValueElement, KeyElement,
     },
+    qual::Qual,
     ty::{
         Ty,
         TyKey,
@@ -80,7 +81,7 @@ impl NamedMethods {
         else {
             value.ty.clone()
         };
-        let pushed = ty.base.qual.new_or_get_pushed_qual(context, ty.base.name.clone());
+        let pushed = Qual::new_or_get_from_ty(context, ty);
         let method_ty = Ty::get_method_from_key(context, key)?;
         Var::force_new(context, pushed, value.name.clone(), method_ty, false, None);
         Ok(value)

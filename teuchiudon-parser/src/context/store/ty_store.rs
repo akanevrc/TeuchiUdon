@@ -12,11 +12,7 @@ use crate::semantics::elements::{
 
 impl<'input> Context<'input> {
     pub fn register_default_tys(&self) -> Result<(), Vec<String>> {
-        self.register_default_tys_core().map_err(|e| vec![e.message])
-    }
-
-    fn register_default_tys_core(&self) -> Result<(), ElementError> {
-        let ty_names = vec![
+        self.register_tys(vec![
             ("qual", "qual", None, false, Vec::new()),
             ("type", "type", None, false, Vec::new()),
             ("unit", "unit", None, true, Vec::new()),
@@ -31,6 +27,12 @@ impl<'input> Context<'input> {
             ("unknown", "unknown", None, true, Vec::new()),
             ("any", "any", None, true, Vec::new()),
             ("never", "never", None, true, Vec::new()),
+        ])
+        .map_err(|e| vec![e.message])
+    }
+
+    pub fn register_alias_tys(&self) -> Result<(), Vec<String>> {
+        self.register_tys(vec![
             ("nulltype", "nulltype", Some("SystemObject"), true, Vec::new()),
             ("object", "SystemObject", Some("SystemObject"), true, Vec::new()),
             ("bool", "SystemBoolean", Some("SystemBoolean"), true, vec!["SystemObject"]),
@@ -57,7 +59,11 @@ impl<'input> Context<'input> {
             ("color32", "UnityEngineColor32", Some("UnityEngineColor32"), true, vec!["SystemObject"]),
             ("vrcurl", "VRCSDKBaseVRCUrl", Some("VRCSDKBaseVRCUrl"), true, vec!["SystemObject"]),
             ("udon", "VRCUdonUdonBehaviour", Some("VRCUdonUdonBehaviour"), true, vec!["SystemObject", "UnityEngineObject", "UnityEngineComponent", "VRCUdonCommonInterfacesIUdonEventReceiver"]),
-        ];
+        ])
+        .map_err(|e| vec![e.message])
+    }
+
+    fn register_tys(&self, ty_names: Vec<(&str, &str, Option<&str>, bool, Vec<&str>)>) -> Result<(), ElementError> {
         let top = Qual::top(self);
         for (name, logical_name, real_name, is_ty, parents) in ty_names {
             let base = BaseTy::new(

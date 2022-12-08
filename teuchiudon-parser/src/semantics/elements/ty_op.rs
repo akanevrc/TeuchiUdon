@@ -693,23 +693,19 @@ impl Ty {
     pub fn most_compatible_method<'input>(
         self: &Rc<Self>,
         context: &Context<'input>,
-        in_tys: Vec<TyLogicalKey>
+        instance: Option<TyLogicalKey>,
+        in_tys: Vec<TyLogicalKey>,
     ) -> Result<MethodKey, ElementError> {
         if !self.base_eq_with_name("method") {
             panic!("Illegal state")
         }
 
+        let in_tys = instance.into_iter().chain(in_tys.into_iter()).collect::<Vec<_>>();
+
         let args = self.args_as_method();
         let methods =
             args.iter()
-            .filter(|x|
-                if x.ty.name == "type" {
-                    x.in_tys.len() == in_tys.len()
-                }
-                else {
-                    x.in_tys.len() - 1 == in_tys.len()
-                }
-            )
+            .filter(|x| x.in_tys.len() == in_tys.len())
             .collect::<Vec<_>>();
         if methods.len() == 0 {
             return Err(ElementError::new("No compatible methods found".to_owned()));
@@ -720,8 +716,7 @@ impl Ty {
         for method in methods {
             let mut compatible = true;
             let mut just_count = 0;
-            let skip_count = if method.ty.name == "type" { 0 } else { 1 };
-            for (m, i) in method.in_tys.iter().skip(skip_count).zip(in_tys.iter()) {
+            for (m, i) in method.in_tys.iter().zip(in_tys.iter()) {
                 let m = m.get_value(context)?;
                 let i = i.get_value(context)?;
                 if !m.assignable_from(context, &i) {

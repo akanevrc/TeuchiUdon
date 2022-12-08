@@ -1,0 +1,3 @@
+// "hello",ToString,get_Length
+let x = "hello".ToString().get_Length();
+UnityEngine::Debug::Log(x);

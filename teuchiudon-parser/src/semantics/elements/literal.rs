@@ -7,7 +7,6 @@ use crate::context::Context;
 use crate::semantics::ast;
 use super::{
     ElementError,
-    base_ty::BaseTy,
     element::{
         KeyElement,
         SemanticElement,
@@ -85,14 +84,14 @@ impl Literal {
     pub fn new_or_get_unit<'input>(
         context: &Context<'input>
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "unit")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "unit")?;
         Ok(Self::new_or_get(context, "()".to_owned(), ty))
     }
 
     pub fn new_or_get_null<'input>(
         context: &Context<'input>
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "nulltype")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "nulltype")?;
         Ok(Self::new_or_get(context, "null".to_owned(), ty))
     }
 
@@ -100,7 +99,7 @@ impl Literal {
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "bool")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "bool")?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -108,7 +107,7 @@ impl Literal {
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "int")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "int")?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -117,7 +116,7 @@ impl Literal {
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, ty_name)?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -126,7 +125,7 @@ impl Literal {
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, ty_name)?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -135,7 +134,7 @@ impl Literal {
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_integer_text(text);
-        let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, ty_name)?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -144,7 +143,7 @@ impl Literal {
         text: String
     ) -> Result<Rc<Self>, ElementError> {
         let (text, ty_name) = Self::trim_real_number_text(text);
-        let ty = BaseTy::get_from_name(context, ty_name)?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, ty_name)?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -152,7 +151,7 @@ impl Literal {
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "char")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "char")?;
         Ok(Self::new_or_get(context, text, ty))
     }
 
@@ -160,7 +159,7 @@ impl Literal {
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "string")?;
         let text = format!("\"{}\"", text);
         Ok(Self::new_or_get(context, text, ty))
     }
@@ -169,7 +168,7 @@ impl Literal {
         context: &Context<'input>,
         text: String
     ) -> Result<Rc<Self>, ElementError> {
-        let ty = BaseTy::get_from_name(context, "string")?.new_or_get_applied_zero(context)?;
+        let ty = Ty::get_from_name(context, "string")?;
         let text = format!("@\"{}\"", text);
         Ok(Self::new_or_get(context, text, ty))
     }

@@ -219,7 +219,7 @@ pub fn visit_term<'input: 'context, 'context>(
     match term.detail.as_ref() {
         ast::TermDetail::Factor { factor } =>
             visit_factor(context, factor.clone()),
-        ast::TermDetail::InfixOp { left, op, right, operation } =>
+        ast::TermDetail::InfixOp { left, op, right, operation, instance: _ } =>
             visit_factor_infix_op(context, left.clone(), op, right.clone(), term.tmp_vars.clone(), operation.clone())
     }
 }

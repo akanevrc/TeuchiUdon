@@ -211,7 +211,7 @@ impl Ty {
         let key = value.to_key();
         let logical_key: TyLogicalKey = value.to_key();
         context.ty_store.add(key, value.clone())?;
-        context.ty_logical_store.add(logical_key.clone(), value.clone()).ok();
+        context.ty_logical_store.force_add(logical_key.clone(), value.clone());
         Ok(value)
     }
 
@@ -293,7 +293,8 @@ impl Ty {
         context: &Context<'input>,
         name: &str
     ) -> Result<Rc<Self>, ElementError> {
-        TyKey::from_name(name).get_value(context)
+        let key: TyLogicalKey = TyKey::from_name(name).get_value(context)?.to_key();
+        key.get_value(context)
     }
 
     pub fn get_from_logical_name<'input>(

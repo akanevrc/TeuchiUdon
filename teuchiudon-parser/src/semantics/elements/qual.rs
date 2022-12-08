@@ -8,6 +8,7 @@ use super::{
         ValueElement,
     },
     scope::Scope,
+    ty::Ty,
 };
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -92,6 +93,27 @@ impl Qual {
         Self::new_or_get(context, quals.into_iter().map(|x| Scope::Qual(x)).collect())
     }
 
+    pub fn new_or_get_from_ty<'input>(
+        context: &Context<'input>,
+        ty: Rc<Ty>,
+    ) -> Rc<Self> {
+        ty.base.qual.new_or_get_pushed_qual(context, ty.base.name.clone())
+    }
+
+    pub fn new_or_get_from_ty_parents<'input>(
+        context: &Context<'input>,
+        ty: Rc<Ty>,
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
+        [Ok(Self::new_or_get_from_ty(context, ty.clone()))].into_iter()
+        .chain(
+            ty.parents.iter().map(|x| {
+                let ty = x.get_value(context)?;
+                Ok(Self::new_or_get_from_ty(context, ty))
+            })
+        )
+        .collect()
+    }
+
     pub fn new_or_get_pushed<'input>(
         &self,
         context: &Context<'input>,
@@ -124,6 +146,27 @@ impl Qual {
         scopes: Vec<Scope>
     ) -> Result<Rc<Self>, ElementError> {
         QualKey::new(scopes).get_value(context)
+    }
+
+    pub fn get_from_ty<'input>(
+        context: &Context<'input>,
+        ty: Rc<Ty>,
+    ) -> Result<Rc<Self>, ElementError> {
+        ty.base.qual.get_pushed_qual(context, ty.base.name.clone())
+    }
+
+    pub fn get_from_ty_parents<'input>(
+        context: &Context<'input>,
+        ty: Rc<Ty>,
+    ) -> Result<Vec<Rc<Self>>, ElementError> {
+        [Self::get_from_ty(context, ty.clone())].into_iter()
+        .chain(
+            ty.parents.iter().map(|x| {
+                let ty = x.get_value(context)?;
+                Self::get_from_ty(context, ty)
+            })
+        )
+        .collect()
     }
 
     pub fn get_pushed<'input>(

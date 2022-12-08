@@ -137,6 +137,7 @@ impl<'input> Context<'input> {
             valued_var_store: Store::new(|x| format!("Specified variable `{}` not found", x.description())),
         };
         context.register_default_tys()?;
+        context.register_alias_tys()?;
         Ok(context)
     }
 

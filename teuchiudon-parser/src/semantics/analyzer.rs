@@ -34,6 +34,7 @@ use super::{
             Operation,
             OperationKind
         },
+        qual::Qual,
         scope::Scope,
         this_literal::ThisLiteral,
         top_stat::TopStat,
@@ -2056,7 +2057,7 @@ fn access_ty_infix_op<'input: 'context, 'context>(
     else if left.ty.base_eq_with_name("type") {
         let parent = left.ty.arg_as_type().get_value(context)
             .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
-        let qual = left.ty.base.qual.get_pushed_qual(context, parent.base.name.clone())
+        let qual = Qual::get_from_ty(context, parent)
             .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
         let ty = Ty::new_or_get_type(context, qual.to_key(), ident.name.clone(), Vec::new())
             .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?;
@@ -2168,6 +2169,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                     op: op.clone(),
                     right: right.clone(),
                     operation,
+                    instance: None,
                 }),
                 ty,
                 tmp_vars,
@@ -2178,7 +2180,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
     else if left.ty.base_eq_with_name("type") {
         let parent = left.ty.arg_as_type().get_value(context)
             .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
-        let qual = parent.base.qual.get_pushed_qual(context, parent.base.name.clone())
+        let qual = Qual::get_from_ty(context, parent)
             .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
         let v = Var::get(context, qual.to_key(), ident.name.clone()).ok();
         let ty = match &v {
@@ -2205,6 +2207,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                     op: op.clone(),
                     right: right.clone(),
                     operation,
+                    instance: None,
                 }),
                 ty,
                 tmp_vars,
@@ -2236,9 +2239,11 @@ fn access_infix_op<'input: 'context, 'context>(
         };
 
     if left.ty.is_dotnet_ty() {
-        let qual = left.ty.base.qual.get_pushed_qual(context, left.ty.base.name.clone())
+        let quals = Qual::get_from_ty_parents(context, left.ty.clone())
             .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
-        let v = Var::get(context, qual.to_key(), ident.name.clone()).ok();
+        let v = quals.iter().find_map(|x|
+            Var::get(context, x.to_key(), ident.name.clone()).ok()
+        );
         let ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
@@ -2261,6 +2266,7 @@ fn access_infix_op<'input: 'context, 'context>(
                     op: op.clone(),
                     right: right.clone(),
                     operation,
+                    instance: Some(left.ty.to_key()),
                 }),
                 ty,
                 tmp_vars,
@@ -2281,6 +2287,13 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
     right: Rc<ast::RetainedTerm<'input>>,
 ) -> Result<Rc<ast::RetainedTerm<'input>>, Vec<SemanticError<'input>>> {
     let left = left.release(context);
+    let instance = match left.detail.as_ref() {
+        ast::TermDetail::Factor { factor: _ } =>
+            None,
+        ast::TermDetail::InfixOp { left: _, op: _, right: _, operation: _, instance } =>
+            instance.clone(),
+    };
+
     let right = right.release(context);
     let ast::TermDetail::Factor { factor } = right.detail.as_ref()
         else {
@@ -2314,6 +2327,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                     op: op.clone(),
                     right: right.clone(),
                     operation,
+                    instance: Some(ret.ty.to_key()),
                 }),
                 ty: ret.ty.clone(),
                 tmp_vars,
@@ -2323,7 +2337,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
     }
     else if left.ty.base_eq_with_name("method") {
         let in_tys = args.iter().map(|x| x.ty.to_key()).collect();
-        let key = left.ty.most_compatible_method(context, in_tys)
+        let key = left.ty.most_compatible_method(context, instance, in_tys)
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let m = key.get_value(context)
             .map_err(|e| e.convert(None))?;
@@ -2332,6 +2346,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_method_tmp_vars(context, m.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
+        let data = tmp_vars.iter().map(|x| DataLabel::new(DataLabelKind::Var(x.clone()))).collect();
         let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2342,10 +2357,11 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
                     op: op.clone(),
                     right: right.clone(),
                     operation,
+                    instance: tmp_vars.last().map(|x| x.ty.borrow().to_key()),
                 }),
                 ty,
                 tmp_vars,
-                data: RefCell::new(None), // TODO
+                data: RefCell::new(Some(data)),
             })
         )))
     }

@@ -11,7 +11,7 @@ pub fn convert_semantic_error(input: &str, es: Vec<SemanticError>) -> Vec<String
     for (l_c_ls, slice, context) in infoes {
         if let Some((line, ch, line_slice)) = l_c_ls {
             let mes = format!(
-                "({}, {}): Parse error, expected {}{}{}{}{}",
+                "({}, {}): {}{}{}{}{}",
                 line,
                 ch,
                 context,

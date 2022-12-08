@@ -6,6 +6,7 @@ use std::{
 use crate::context::Context;
 use crate::lexer;
 use crate::parser;
+use super::elements::ty::TyLogicalKey;
 use super::{
     SemanticError,
     elements::{
@@ -293,6 +294,7 @@ pub enum TermDetail<'input> {
         op: FactorInfixOp,
         right: Rc<Term<'input>>,
         operation: Rc<Operation>,
+        instance: Option<TyLogicalKey>,
     },
 }
 
