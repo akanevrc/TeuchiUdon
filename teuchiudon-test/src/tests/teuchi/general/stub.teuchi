@@ -1,0 +1,3 @@
+// 255
+// SystemByte.__get_MaxValue__SystemByte, 255
+UnityEngine::Debug::Log(System::Byte::get_MaxValue());

@@ -14,6 +14,7 @@ struct TestCase {
     path: String,
     src: String,
     expected: Expected,
+    stubs: Vec<(String, String)>
 }
 
 #[derive(Debug)]
@@ -46,7 +47,7 @@ fn test_teuchi(#[case] path: &str) {
             continue;
         }
         else if compiled.errors.len() == 0 && !matches!(test_case.expected, Expected::Err) {
-            let mut vm = VM::new(compiled.output.clone(), compiled.default_values);
+            let mut vm = VM::new(compiled.output.clone(), compiled.default_values, test_case.stubs);
             vm.run("_start");
 
             if vm.logs.len() == 0 && matches!(test_case.expected, Expected::None) {
@@ -90,26 +91,38 @@ fn find_teuchi(mut test_cases: Vec<TestCase>, path: &Path) -> Vec<TestCase> {
         if file_type.is_file() {
             let path = entry.path();
             let src = fs::read_to_string(&path).unwrap();
-            let expected = get_expected(&src);
+            let (expected, stubs) = get_meta(&src);
             test_cases.push(TestCase {
                 path: path.to_str().unwrap().to_owned(),
                 src,
                 expected,
+                stubs,
             })
         }
     }
     test_cases
 }
 
-fn get_expected(src: &str) -> Expected {
-    let line = src.lines().next();
-    assert!(line.is_some());
-    let line = line.unwrap().trim();
+fn get_meta(src: &str) -> (Expected, Vec<(String, String)>) {
+    let mut lines = src.lines();
+    let line = lines.next();
+    let line = line.unwrap();
     assert!(line.starts_with("//"));
-    let line = line.chars().skip(2).collect::<String>().trim().to_owned();
-    match line.as_str() {
+    let meta = line.trim().chars().skip(2).collect::<String>().trim().to_owned();
+    let expected = match meta.as_str() {
         "!" => Expected::Err,
         "?" => Expected::None,
-        _ => Expected::Some(line),
-    }
+        _ => Expected::Some(meta),
+    };
+    
+    let stubs =
+        lines
+        .take_while(|x| x.starts_with("//"))
+        .map(|x| {
+            let meta = x.trim().chars().skip(2).collect::<String>().trim().to_owned();
+            let (k, v) = meta.split_once(",").unwrap();
+            (k.trim().to_owned(), v.trim().to_owned())
+        })
+        .collect();
+    (expected, stubs)
 }

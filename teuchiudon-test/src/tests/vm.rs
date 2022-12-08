@@ -16,13 +16,14 @@ pub struct VM {
     pub codes: HashMap<u32, (u32, String)>,
     pub stack: Vec<String>,
     pub logs: Vec<String>,
+    pub stubs: HashMap<String, String>,
 }
 
 impl VM {
     const INSTRUCTION_LIMIT: i32 = 10000;
     const VALUE_DELIMITER: char = ',';
 
-    pub fn new(asm: String, default_values: Vec<DefaultValue>) -> Self {
+    pub fn new(asm: String, default_values: Vec<DefaultValue>, stubs: Vec<(String, String)>) -> Self {
         let mut vm = Self {
             var_pubs: HashMap::new(),
             var_syncs: HashMap::new(),
@@ -33,12 +34,13 @@ impl VM {
             codes: HashMap::new(),
             stack: Vec::new(),
             logs: Vec::new(),
+            stubs: HashMap::new(),
         };
-        vm.load_asm(asm, default_values);
+        vm.load_asm(asm, default_values, stubs);
         vm
     }
 
-    fn load_asm(&mut self, asm: String, default_values: Vec<DefaultValue>) {
+    fn load_asm(&mut self, asm: String, default_values: Vec<DefaultValue>, stubs: Vec<(String, String)>) {
         let lines = asm.lines().map(|x| x.trim()).collect::<Vec<_>>().into_iter();
         let before = lines.clone().take_while(|x| *x != ".data_start");
         let data_part = lines.clone().skip_while(|x| *x != ".data_start").skip(1).take_while(|x| *x != ".data_end");
@@ -53,7 +55,8 @@ impl VM {
         self.load_data(data_part);
         self.load_code(code_part);
 
-        self.load_default_values(default_values);
+        self.set_default_values(default_values);
+        self.set_stubs(stubs);
     }
 
     fn load_blank<'a>(&mut self, iter: impl Iterator<Item = &'a str>) {
@@ -161,7 +164,7 @@ impl VM {
         }
     }
 
-    fn load_default_values(&mut self, default_values: Vec<DefaultValue>) {
+    fn set_default_values(&mut self, default_values: Vec<DefaultValue>) {
         for dv in default_values {
             if self.var_values.contains_key(&dv.name) {
                 self.var_values.insert(dv.name, dv.value);
@@ -169,6 +172,12 @@ impl VM {
             else {
                 panic!("Variable of default value not found");
             }
+        }
+    }
+
+    fn set_stubs(&mut self, stubs: Vec<(String, String)>) {
+        for (k, v) in stubs {
+            self.stubs.insert(k, v);
         }
     }
 
@@ -279,7 +288,10 @@ impl VM {
         let in_vars = (0..args.len()).map(|_| self.stack.pop().unwrap()).collect::<Vec<_>>();
 
         if let Some(out_var) = out_var {
-            if in_vars.len() == 0 {
+            if let Some(value) = self.stubs.get(symbol) {
+                *self.var_values.get_mut(&out_var).unwrap() = value.clone();
+            }
+            else if in_vars.len() == 0 {
                 *self.var_values.get_mut(&out_var).unwrap() = alias_name.unwrap_or(name).to_owned();
             }
             else {
@@ -289,13 +301,12 @@ impl VM {
                     .map(|x| self.var_values.get(x).unwrap().clone())
                     .collect::<Vec<_>>()
                     .join(Self::VALUE_DELIMITER.to_string().as_str());
-                *self.var_values.get_mut(&out_var).unwrap() =
-                    format!(
-                        "{}{}{}",
-                        joined,
-                        Self::VALUE_DELIMITER,
-                        alias_name.unwrap_or(name)
-                    );
+                *self.var_values.get_mut(&out_var).unwrap() = format!(
+                    "{}{}{}",
+                    joined,
+                    Self::VALUE_DELIMITER,
+                    alias_name.unwrap_or(name)
+                );
             }
         }
     }

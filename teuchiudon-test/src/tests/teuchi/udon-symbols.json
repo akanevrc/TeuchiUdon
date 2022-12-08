@@ -319,7 +319,6 @@
       ],
       "real_name": "SystemByte.__get_MaxValue__SystemByte",
       "param_real_names": [
-        "x"
       ]
     },
     {
@@ -336,7 +335,7 @@
       ],
       "real_name": "SystemInt32.__get_Length__SystemString__SystemInt32",
       "param_real_names": [
-        "x"
+        "instance"
       ]
     },
     {
