@@ -61,7 +61,7 @@ impl<'input: 'error, 'error> Iterator for ErrorTreeIter<'input, 'error> {
 pub fn line_infoes<'input: 'error, 'error, E>(
     input: &'input str,
     e: &'error E,
-) -> Vec<(usize, usize, &'input str, Option<&'input str>, &'error String)>
+) -> Vec<(Option<(usize, usize, &'input str)>, Option<&'input str>, &'error String)>
 where
     E: HasContextIter<'input, 'error>,
 {
@@ -73,13 +73,13 @@ where
     let input_bytes = input.as_bytes();
     let mut current_line = if input.len() > 0 && input_bytes[0] == b'\n' { 2 } else { 1 };
     let mut current_char = if input.len() > 0 && input_bytes[0] == b'\n' { 1 } else { 2 };
-    let mut line_char_slice = HashMap::<usize, (usize, usize, &str)>::new();
+    let mut line_char_slice = HashMap::<usize, Option<(usize, usize, &str)>>::new();
     let mut prev_offset = 1usize;
     for s in filtered {
         let ptr = option_str_ptr(s);
         let offset = s.map_or(0, |x| x.trim().as_ptr() as usize - input_ptr);
         if offset == 0 {
-            line_char_slice.insert(ptr, (1, 1, ""));
+            line_char_slice.insert(ptr, None);
             continue;
         }
         let iter_1 = input_bytes[prev_offset - 1..offset - 1].iter();
@@ -89,7 +89,7 @@ where
         current_line += line;
         current_char = ch.map_or(current_char + offset - prev_offset, |x| x + 1);
         let line_slice = input[offset + 1 - current_char..].lines().next().unwrap_or(&input[offset + 1 - current_char..]);
-        line_char_slice.insert(ptr, (current_line, current_char, line_slice));
+        line_char_slice.insert(ptr, Some((current_line, current_char, line_slice)));
         prev_offset = offset;
     }
     e.context_iter()
@@ -100,8 +100,12 @@ where
     .rev()
     .filter_map(|(s, context)| {
         let ptr = option_str_ptr(s);
-        if let Some((l, c, ls)) = line_char_slice.get(&ptr) {
-            Some((*l, *c, *ls, s, context))
+        let l_c_ls = line_char_slice.get(&ptr);
+        if let Some(Some((l, c, ls))) = l_c_ls {
+            Some((Some((*l, *c, *ls)), s, context))
+        }
+        else if let Some(None) = l_c_ls {
+            Some((None, s, context))
         }
         else {
             None

@@ -8,18 +8,23 @@ use super::{
 pub fn convert_semantic_error(input: &str, es: Vec<SemanticError>) -> Vec<String> {
     let infoes = line_infoes(input, &es);
     let mut messages = Vec::new();
-    for (line, ch, line_slice, slice, message) in infoes {
-        let mes = format!(
-            "({}, {}): {}{}{}{}{}",
-            line,
-            ch,
-            message,
-            NEWLINE,
-            line_slice,
-            NEWLINE,
-            char_caret(ch, line_slice, slice)
-        );
-        messages.push(mes);
+    for (l_c_ls, slice, context) in infoes {
+        if let Some((line, ch, line_slice)) = l_c_ls {
+            let mes = format!(
+                "({}, {}): Parse error, expected {}{}{}{}{}",
+                line,
+                ch,
+                context,
+                NEWLINE,
+                line_slice,
+                NEWLINE,
+                char_caret(ch, line_slice, slice)
+            );
+            messages.push(mes);
+        }
+        else {
+            messages.push(context.clone());
+        }
     }
     messages
 }
