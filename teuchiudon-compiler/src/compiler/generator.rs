@@ -253,7 +253,7 @@ fn visit_ty_access_op<'input: 'context, 'context>(
         else {
             return error("ty_access_op".to_owned());
         };
-    let ast::FactorDetail::EvalVar { ident: _, var } = factor.detail.as_ref()
+    let ast::FactorDetail::EvalVar { ident: _, var, getter } = factor.detail.as_ref()
         else {
             return error("ty_access_op".to_owned());
         };
@@ -263,7 +263,16 @@ fn visit_ty_access_op<'input: 'context, 'context>(
             return error("ty_access_op".to_owned());
         };
 
-    Box::new(routine::get(var_label(context, var.clone())))
+    
+
+    if let Some((tmp_var, getter)) = getter.borrow().as_ref() {
+        let data = var_label(context, tmp_var.clone());
+        let ext = method_label(context, getter.clone());
+        Box::new(routine::call_method(empty(), vec![data], ext))
+    }
+    else {
+        Box::new(routine::get(var_label(context, var.clone())))
+    }
 }
 
 fn visit_access_op<'input: 'context, 'context>(
@@ -275,7 +284,7 @@ fn visit_access_op<'input: 'context, 'context>(
         else {
             return error("access_op".to_owned());
         };
-    let ast::FactorDetail::EvalVar { ident: _, var } = factor.detail.as_ref()
+    let ast::FactorDetail::EvalVar { ident: _, var, getter } = factor.detail.as_ref()
         else {
             return error("access_op".to_owned());
         };
@@ -285,10 +294,20 @@ fn visit_access_op<'input: 'context, 'context>(
             return error("access_op".to_owned());
         };
 
-    Box::new(
-        visit_term(context, left)
-        .chain(routine::get(var_label(context, var.clone())))
-    )
+    if let Some((tmp_var, getter)) = getter.borrow().as_ref() {
+        let data = var_label(context, tmp_var.clone());
+        let ext = method_label(context, getter.clone());
+        Box::new(
+            visit_term(context, left)
+            .chain(routine::call_method(empty(), vec![data], ext))
+        )
+    }
+    else {
+        Box::new(
+            visit_term(context, left)
+            .chain(routine::get(var_label(context, var.clone())))
+        )
+    }
 }
 
 fn visit_eval_fn_op<'input: 'context, 'context>(
@@ -342,8 +361,8 @@ pub fn visit_factor<'input: 'context, 'context>(
             visit_block_factor(context, stats.clone()),
         ast::FactorDetail::Literal { literal } =>
             visit_literal_factor(context, literal.clone()),
-        ast::FactorDetail::EvalVar { ident: _, var } =>
-            visit_eval_var_factor(context, var),
+        ast::FactorDetail::EvalVar { ident: _, var, getter } =>
+            visit_eval_var_factor(context, var, getter),
         _ =>
             error("term".to_owned())
     }
@@ -366,9 +385,17 @@ fn visit_literal_factor<'input: 'context, 'context>(
 fn visit_eval_var_factor<'input: 'context, 'context>(
     context: &'context Context<'input>,
     var: &RefCell<Option<Rc<Var>>>,
+    getter: &RefCell<Option<(Rc<Var>, Rc<Method>)>>,
 ) -> Box<dyn Iterator<Item = Instruction> + 'context> {
     if let Some(var) = var.borrow().as_ref() {
-        Box::new(routine::get(var_label(context, var.clone())))
+        if let Some((tmp_var, getter)) = getter.borrow().as_ref() {
+            let data = var_label(context, tmp_var.clone());
+            let ext = method_label(context, getter.clone());
+            Box::new(routine::call_method(empty(), vec![data], ext))
+        }
+        else {
+            Box::new(routine::get(var_label(context, var.clone())))
+        }
     }
     else {
         error("eval_var_term".to_owned())

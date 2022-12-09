@@ -2,5 +2,5 @@
 fn F() {
     "hello"
 };
-let x = F().get_Length();
+let x = F().Length;
 UnityEngine::Debug::Log(x);

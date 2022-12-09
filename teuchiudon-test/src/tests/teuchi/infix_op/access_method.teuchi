@@ -1,3 +1,3 @@
 // "hello",get_Length
-let x = "hello".get_Length();
+let x = "hello".Length;
 UnityEngine::Debug::Log(x);

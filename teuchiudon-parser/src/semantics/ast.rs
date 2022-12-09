@@ -356,6 +356,7 @@ pub enum FactorDetail<'input> {
     EvalVar {
         ident: Rc<Ident<'input>>,
         var: RefCell<Option<Rc<Var>>>,
+        getter: RefCell<Option<(Rc<Var>, Rc<Method>)>>,
     },
     LetInBind {
         var_bind: Rc<VarBind<'input>>,

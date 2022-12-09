@@ -82,8 +82,14 @@ impl NamedMethods {
             value.ty.clone()
         };
         let pushed = Qual::new_or_get_from_ty(context, ty);
-        let method_ty = Ty::get_method_from_key(context, key)?;
-        Var::force_new(context, pushed, value.name.clone(), method_ty, false, None);
+        let (var_name, method_ty) =
+            if value.name.starts_with("get_") {
+                (value.name[4..].to_owned(), Ty::get_getter_from_key(context, key)?)
+            }
+            else {
+                (value.name.clone(), Ty::get_method_from_key(context, key)?)
+            };
+        Var::force_new(context, pushed, var_name, method_ty, false, None);
         Ok(value)
     }
 }

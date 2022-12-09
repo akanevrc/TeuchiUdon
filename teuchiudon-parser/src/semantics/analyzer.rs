@@ -1349,6 +1349,7 @@ fn eval_var_factor<'input: 'context, 'context>(
         detail: Rc::new(ast::FactorDetail::EvalVar {
             ident,
             var: RefCell::new(var.ok()),
+            getter: RefCell::new(None),
         }),
         ty,
         data: RefCell::new(data),
@@ -1369,6 +1370,7 @@ fn eval_var_ty_access_factor<'input: 'context, 'context>(
         detail: Rc::new(ast::FactorDetail::EvalVar {
             ident,
             var: RefCell::new(None),
+            getter: RefCell::new(None),
         }),
         ty,
         data: RefCell::new(None),
@@ -1389,6 +1391,7 @@ fn eval_var_access_factor<'input: 'context, 'context>(
         detail: Rc::new(ast::FactorDetail::EvalVar {
             ident,
             var: RefCell::new(None),
+            getter: RefCell::new(None),
         }),
         ty,
         data: RefCell::new(None),
@@ -2137,7 +2140,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         else {
             return Err(vec![SemanticError::new(None, "Right side of `::` is not a term".to_owned())]);
         };
-    let ast::FactorDetail::EvalVar { ident, var } = factor.detail.as_ref()
+    let ast::FactorDetail::EvalVar { ident, var, getter } = factor.detail.as_ref()
         else {
             return Err(vec![SemanticError::new(None, "Right side of `::` cannot be evaluated".to_owned())]);
         };
@@ -2183,7 +2186,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let qual = Qual::get_from_ty(context, parent)
             .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
         let v = Var::get(context, qual.to_key(), ident.name.clone()).ok();
-        let ty = match &v {
+        let mut ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
                 x.ty.borrow().clone()
@@ -2193,6 +2196,16 @@ fn ty_access_infix_op<'input: 'context, 'context>(
                 .or(Ty::new_or_get_qual_from_key(context, qual.to_key().pushed_qual(ident.name.clone())))
                 .map_err(|e| e.convert(right.parsed.clone().map(|x| x.slice)))?,
         };
+        if ty.base_eq_with_name("getter") {
+            let method =
+                ty.arg_as_getter().get_value(context)
+                .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
+            let tvs =
+                Var::retain_method_tmp_vars(context, method.clone())
+                .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
+            getter.replace(Some((tvs[0].clone(), method.clone())));
+            ty = method.out_tys[0].clone()
+        }
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
@@ -2233,7 +2246,7 @@ fn access_infix_op<'input: 'context, 'context>(
         else {
             return Err(vec![SemanticError::new(None, "Right side of `.` is not a term".to_owned())]);
         };
-    let ast::FactorDetail::EvalVar { ident, var } = factor.detail.as_ref()
+    let ast::FactorDetail::EvalVar { ident, var, getter } = factor.detail.as_ref()
         else {
             return Err(vec![SemanticError::new(None, "Right side of `.` cannot be evaluated".to_owned())]);
         };
@@ -2244,7 +2257,7 @@ fn access_infix_op<'input: 'context, 'context>(
         let v = quals.iter().find_map(|x|
             Var::get(context, x.to_key(), ident.name.clone()).ok()
         );
-        let ty = match &v {
+        let mut ty = match &v {
             Some(x) => {
                 var.replace(Some(x.clone()));
                 x.ty.borrow().clone()
@@ -2252,6 +2265,16 @@ fn access_infix_op<'input: 'context, 'context>(
             None =>
                 return Err(vec![SemanticError::new(None, "Right side of `.` cannot be evaluated as the element".to_owned())])
         };
+        if ty.base_eq_with_name("getter") {
+            let method =
+                ty.arg_as_getter().get_value(context)
+                .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
+            let tvs =
+                Var::retain_method_tmp_vars(context, method.clone())
+                .map_err(|e| e.convert(left.parsed.clone().map(|x| x.slice)))?;
+            getter.replace(Some((tvs[0].clone(), method.clone())));
+            ty = method.out_tys[0].clone()
+        }
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;

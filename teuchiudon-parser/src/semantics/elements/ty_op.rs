@@ -106,6 +106,15 @@ impl Ty {
         Self::new_or_get(context, base, args)
     }
 
+    pub fn get_getter_from_key<'input>(
+        context: &Context<'input>,
+        key: NamedMethodsKey
+    ) -> Result<Rc<Self>, ElementError> {
+        let base = BaseTyKey::from_name("getter").get_value(context)?;
+        let arg = key.get_value(context)?.methods[0].clone();
+        Self::new_or_get(context, base, vec![TyArg::Method(arg.to_key())])
+    }
+
     pub fn tys_to_ty<'input>(
         context: &Context<'input>,
         tys: &Vec<Rc<Self>>
