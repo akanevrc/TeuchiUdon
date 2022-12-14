@@ -261,6 +261,16 @@ impl VM {
                 self.call_method_from_symbol(symbol, Some("'-")),
             "SystemBoolean.__op_UnaryNegation__SystemBoolean__SystemBoolean" =>
                 self.call_method_from_symbol(symbol, Some("!")),
+            "SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("+")),
+            "SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("-")),
+            "SystemInt32.__op_Multiplication__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("*")),
+            "SystemInt32.__op_Division__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("/")),
+            "SystemInt32.__op_Modulus__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("%")),
             "SystemInt32.__op_LogicalXor__SystemInt32_SystemInt32__SystemInt32" =>
                 self.call_method_from_symbol(symbol, Some("^")),
             "UnityEngineDebug.__Log__SystemObject__SystemVoid" => {

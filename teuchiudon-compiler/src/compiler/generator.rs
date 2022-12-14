@@ -180,8 +180,8 @@ pub fn visit_expr<'input: 'context, 'context>(
             visit_term(context, term.clone()),
         ast::ExprDetail::PrefixOp { op, expr: sub_expr, operation } =>
             visit_term_prefix_op(context, op, sub_expr.clone(), expr.tmp_vars.clone(), operation.clone()),
-        _ =>
-            error("expr".to_owned()),
+        ast::ExprDetail::InfixOp { left, op, right, operation } =>
+            visit_term_infix_op(context, left.clone(), op, right.clone(), expr.tmp_vars.clone(), operation.clone()),
     }
 }
 
@@ -209,6 +209,30 @@ fn visit_term_prefix_op<'input: 'context, 'context>(
             let method = context.method_labels[&operation.op_methods["op"]].clone();
             routine::call_method(args, out_vars, method)
         },
+    }
+}
+
+fn visit_term_infix_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    left: Rc<ast::Expr<'input>>,
+    op: &ast::TermInfixOp,
+    right: Rc<ast::Expr<'input>>,
+    tmp_vars: Vec<Rc<Var>>,
+    operation: Rc<Operation>,
+) -> Box<dyn Iterator<Item = Instruction> + 'context> {
+    match op {
+        ast::TermInfixOp::Mul |
+        ast::TermInfixOp::Div |
+        ast::TermInfixOp::Mod |
+        ast::TermInfixOp::Add |
+        ast::TermInfixOp::Sub => {
+            let args = Box::new(visit_expr(context, left).chain(visit_expr(context, right)));
+            let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
+            let method = context.method_labels[&operation.op_methods["op"]].clone();
+            routine::call_method(args, out_vars, method)
+        },
+        _ =>
+            error("term_infix_op".to_owned())
     }
 }
 
@@ -240,7 +264,7 @@ pub fn visit_factor_infix_op<'input: 'context, 'context>(
         ast::FactorInfixOp::EvalFn =>
             visit_eval_fn_op(context, left, right, tmp_vars),
         _ =>
-            error("infix_op".to_owned()),
+            error("factor_infix_op".to_owned()),
     }
 }
 

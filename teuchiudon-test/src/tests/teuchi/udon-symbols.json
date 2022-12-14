@@ -344,12 +344,109 @@
     {
       "is_static": true,
       "ty": "SystemInt32",
-      "name": "op_LogicalXor",
+      "name": "op_Addition",
       "param_tys": [
+        "SystemInt32",
         "SystemInt32",
         "SystemInt32"
       ],
       "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_Addition__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
+      "name": "op_Subtraction",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_Subtraction__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
+      "name": "op_Multiplication",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_Multiplication__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
+      "name": "op_Division",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_Division__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
+      "name": "op_Modulus",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_Modulus__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
+      "name": "op_LogicalXor",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
         "IN",
         "OUT"
       ],

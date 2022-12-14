@@ -2087,17 +2087,52 @@ impl<'input: 'context, 'context>
     }
 
     fn infix_op(
-        _context: &'context Context<'input>,
-        _parsed: Rc<parser::ast::Expr<'input>>,
-        _left: Rc<Self>,
+        context: &'context Context<'input>,
+        parsed: Rc<parser::ast::Expr<'input>>,
+        left: Rc<Self>,
         op: &ast::TermInfixOp,
-        _right: Rc<Self>,
+        right: Rc<Self>,
     ) -> Result<Rc<Self>, Vec<SemanticError<'input>>> {
         match op {
+            ast::TermInfixOp::Mul |
+            ast::TermInfixOp::Div |
+            ast::TermInfixOp::Mod |
+            ast::TermInfixOp::Add |
+            ast::TermInfixOp::Sub =>
+                arithmetic_infix_op(context, parsed, left, op, right),
             _ =>
                 panic!("Not implemented")
         }
     }
+}
+
+fn arithmetic_infix_op<'input: 'context, 'context>(
+    context: &'context Context<'input>,
+    parsed: Rc<parser::ast::Expr<'input>>,
+    left: Rc<ast::RetainedExpr<'input>>,
+    op: &ast::TermInfixOp,
+    right: Rc<ast::RetainedExpr<'input>>,
+) -> Result<Rc<ast::RetainedExpr<'input>>, Vec<SemanticError<'input>>> {
+    let left = left.release(context);
+    let right = right.release(context);
+    let operation = term_infix_operation(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+    let tmp_vars =
+            Var::retain_term_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
+            .map_err(|e| e.convert(Some(parsed.slice)))?;
+    Ok(Rc::new(ast::RetainedExpr::new(
+        Rc::new(ast::Expr {
+            parsed: Some(parsed),
+            detail: Rc::new(ast::ExprDetail::InfixOp {
+                left: left.clone(),
+                op: op.clone(),
+                right: right.clone(),
+                operation,
+            }),
+            ty: left.ty.clone(),
+            tmp_vars,
+            data: RefCell::new(None), // TODO
+        })
+    )))
 }
 
 impl<'input: 'context, 'context>
@@ -2161,7 +2196,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+        let operation = factor_infix_operation(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2209,7 +2244,7 @@ fn ty_access_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+        let operation = factor_infix_operation(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2278,7 +2313,7 @@ fn access_infix_op<'input: 'context, 'context>(
         let tmp_vars =
             Var::retain_factor_infix_op_tmp_vars(context, &op, left.ty.clone(), right.ty.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
-        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+        let operation = factor_infix_operation(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         let data = v.map(|x| vec![DataLabel::new(DataLabelKind::Var(x))]);
         right.data.replace(data);
         Ok(Rc::new(ast::RetainedTerm::new(
@@ -2340,7 +2375,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             .collect::<Vec<_>>();
         let eval_fn = EvalFn::new_or_get(context, fn_stats.clone(), data);
         let tmp_vars = Vec::new();
-        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+        let operation = factor_infix_operation(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Fn(eval_fn.clone()))));
         Ok(Rc::new(ast::RetainedTerm::new(
             Rc::new(ast::Term {
@@ -2370,7 +2405,7 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
             Var::retain_method_tmp_vars(context, m.clone())
             .map_err(|e| e.convert(Some(parsed.slice)))?;
         let data = tmp_vars.iter().map(|x| DataLabel::new(DataLabelKind::Var(x.clone()))).collect();
-        let operation = factor_infix_op(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
+        let operation = factor_infix_operation(context, parsed.clone(), &op, left.ty.clone(), right.ty.clone())?;
         as_fn.replace(Some(Rc::new(ast::AsFn::Method(m))));
         Ok(Rc::new(ast::RetainedTerm::new(
             Rc::new(ast::Term {
@@ -2393,7 +2428,24 @@ fn eval_fn_infix_op<'input: 'context, 'context>(
     }
 }
 
-fn factor_infix_op<'input>(
+fn term_infix_operation<'input>(
+    context: &Context<'input>,
+    parsed: Rc<parser::ast::Expr<'input>>,
+    op: &ast::TermInfixOp,
+    left_ty: Rc<Ty>,
+    right_ty: Rc<Ty>,
+) -> Result<Rc<Operation>, Vec<SemanticError<'input>>> {
+    let op_methods =
+        Method::get_term_infix_op_methods(context, &op, left_ty.clone(), right_ty.clone())
+        .map_err(|e| e.convert(Some(parsed.slice)))?;
+    let op_literals =
+        Literal::get_term_infix_op_literals(context, &op, left_ty.clone(), right_ty.clone())
+        .map_err(|e| e.convert(Some(parsed.slice)))?;
+    let op_kind = OperationKind::TermInfixOp(op.clone());
+    Ok(Operation::new_or_get(context, left_ty, op_kind, op_methods, op_literals))
+}
+
+fn factor_infix_operation<'input>(
     context: &Context<'input>,
     parsed: Rc<parser::ast::Term<'input>>,
     op: &ast::FactorInfixOp,

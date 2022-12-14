@@ -229,6 +229,12 @@ impl Literal {
         _right_ty: Rc<Ty>
     ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
         match op {
+            ast::TermInfixOp::Mul |
+            ast::TermInfixOp::Div |
+            ast::TermInfixOp::Mod |
+            ast::TermInfixOp::Add |
+            ast::TermInfixOp::Sub =>
+                Ok(HashMap::new()),
             _ =>
                 panic!("Not implemented"),
         }
