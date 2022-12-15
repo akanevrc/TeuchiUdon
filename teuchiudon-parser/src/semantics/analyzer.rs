@@ -2098,7 +2098,9 @@ impl<'input: 'context, 'context>
             ast::TermInfixOp::Div |
             ast::TermInfixOp::Mod |
             ast::TermInfixOp::Add |
-            ast::TermInfixOp::Sub =>
+            ast::TermInfixOp::Sub |
+            ast::TermInfixOp::LeftShift |
+            ast::TermInfixOp::RightShift =>
                 arithmetic_infix_op(context, parsed, left, op, right),
             _ =>
                 panic!("Not implemented")

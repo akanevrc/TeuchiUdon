@@ -225,7 +225,9 @@ fn visit_term_infix_op<'input: 'context, 'context>(
         ast::TermInfixOp::Div |
         ast::TermInfixOp::Mod |
         ast::TermInfixOp::Add |
-        ast::TermInfixOp::Sub => {
+        ast::TermInfixOp::Sub |
+        ast::TermInfixOp::LeftShift |
+        ast::TermInfixOp::RightShift => {
             let args = Box::new(visit_expr(context, left).chain(visit_expr(context, right)));
             let out_vars = tmp_vars.into_iter().map(|x| context.var_labels[&x].clone()).collect();
             let method = context.method_labels[&operation.op_methods["op"]].clone();

@@ -233,7 +233,9 @@ impl Literal {
             ast::TermInfixOp::Div |
             ast::TermInfixOp::Mod |
             ast::TermInfixOp::Add |
-            ast::TermInfixOp::Sub =>
+            ast::TermInfixOp::Sub |
+            ast::TermInfixOp::LeftShift |
+            ast::TermInfixOp::RightShift =>
                 Ok(HashMap::new()),
             _ =>
                 panic!("Not implemented"),

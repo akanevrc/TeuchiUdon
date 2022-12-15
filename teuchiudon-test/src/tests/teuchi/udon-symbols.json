@@ -439,6 +439,44 @@
     {
       "is_static": true,
       "ty": "SystemInt32",
+      "name": "op_LeftShift",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_LeftShift__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
+      "name": "op_RightShift",
+      "param_tys": [
+        "SystemInt32",
+        "SystemInt32",
+        "SystemInt32"
+      ],
+      "param_in_outs": [
+        "IN",
+        "IN",
+        "OUT"
+      ],
+      "real_name": "SystemInt32.__op_RightShift__SystemInt32_SystemInt32__SystemInt32",
+      "param_real_names": [
+        "x"
+      ]
+    },
+    {
+      "is_static": true,
+      "ty": "SystemInt32",
       "name": "op_LogicalXor",
       "param_tys": [
         "SystemInt32",

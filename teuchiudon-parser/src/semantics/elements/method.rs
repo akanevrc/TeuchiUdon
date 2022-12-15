@@ -143,7 +143,7 @@ impl Method {
             ast::TermPrefixOp::Bang =>
                 Ok(vec![("op", Self::get_unary_op_method(context, ty, "op_UnaryNegation")?)].into_iter().collect()),
             ast::TermPrefixOp::Tilde =>
-                Ok(vec![("op", Self::get_binary_op_method(context, ty, "op_LogicalXor")?)].into_iter().collect()),
+                Ok(vec![("op", Self::get_binary_op_method(context, ty.clone(), ty, "op_LogicalXor")?)].into_iter().collect()),
         }
     }
 
@@ -151,19 +151,23 @@ impl Method {
         context: &Context<'input>,
         op: &ast::TermInfixOp,
         left_ty: Rc<Ty>,
-        _right_ty: Rc<Ty>
+        right_ty: Rc<Ty>
     ) -> Result<HashMap<&'static str, Rc<Self>>, ElementError> {
         match op {
             ast::TermInfixOp::Mul =>
-                Ok(vec![("op", Self::get_binary_op_method(context, left_ty.clone(), "op_Multiply").or(Self::get_binary_op_method(context, left_ty, "op_Multiplication"))?)].into_iter().collect()),
+                Ok(vec![("op", Self::get_binary_op_method(context, left_ty.clone(), right_ty.clone(), "op_Multiply").or(Self::get_binary_op_method(context, left_ty, right_ty, "op_Multiplication"))?)].into_iter().collect()),
             ast::TermInfixOp::Div =>
-                Ok(vec![("op", Self::get_binary_op_method(context, left_ty, "op_Division")?)].into_iter().collect()),
+                Ok(vec![("op", Self::get_binary_op_method(context, left_ty, right_ty, "op_Division")?)].into_iter().collect()),
             ast::TermInfixOp::Mod =>
-                Ok(vec![("op", Self::get_binary_op_method(context, left_ty.clone(), "op_Remainder").or(Self::get_binary_op_method(context, left_ty, "op_Modulus"))?)].into_iter().collect()),
+                Ok(vec![("op", Self::get_binary_op_method(context, left_ty.clone(), right_ty.clone(), "op_Remainder").or(Self::get_binary_op_method(context, left_ty, right_ty, "op_Modulus"))?)].into_iter().collect()),
             ast::TermInfixOp::Add =>
-                Ok(vec![("op", Self::get_binary_op_method(context, left_ty, "op_Addition")?)].into_iter().collect()),
+                Ok(vec![("op", Self::get_binary_op_method(context, left_ty, right_ty, "op_Addition")?)].into_iter().collect()),
             ast::TermInfixOp::Sub =>
-                Ok(vec![("op", Self::get_binary_op_method(context, left_ty, "op_Subtraction")?)].into_iter().collect()),
+                Ok(vec![("op", Self::get_binary_op_method(context, left_ty, right_ty, "op_Subtraction")?)].into_iter().collect()),
+            ast::TermInfixOp::LeftShift =>
+                Ok(vec![("op", Self::get_asymmetric_op_method(context, left_ty, right_ty, "op_LeftShift")?)].into_iter().collect()),
+            ast::TermInfixOp::RightShift =>
+                Ok(vec![("op", Self::get_asymmetric_op_method(context, left_ty, right_ty, "op_RightShift")?)].into_iter().collect()),
             _ =>
                 panic!("Not implemented"),
         }
@@ -191,10 +195,18 @@ impl Method {
         Method::get(context, type_key, name.to_owned(), vec![key])
     }
 
-    fn get_binary_op_method(context: &Context, ty: Rc<Ty>, name: &str) -> Result<Rc<Self>, ElementError> {
+    fn get_binary_op_method(context: &Context, left_ty: Rc<Ty>, right_ty: Rc<Ty>, name: &str) -> Result<Rc<Self>, ElementError> {
+        let ty = if left_ty.assignable_from(context, &right_ty) { left_ty } else { right_ty };
         let key: TyKey = ty.to_key();
         let type_key = Ty::new_or_get_type_from_key(context, ty.to_key())?.to_key();
         Method::get(context, type_key, name.to_owned(), vec![key.clone(), key])
+    }
+
+    fn get_asymmetric_op_method(context: &Context, left_ty: Rc<Ty>, right_ty: Rc<Ty>, name: &str) -> Result<Rc<Self>, ElementError> {
+        let left_key = left_ty.to_key();
+        let right_key = right_ty.to_key();
+        let type_key = Ty::new_or_get_type_from_key(context, left_ty.to_key())?.to_key();
+        Method::get(context, type_key, name.to_owned(), vec![left_key, right_key])
     }
 }
 

@@ -271,6 +271,10 @@ impl VM {
                 self.call_method_from_symbol(symbol, Some("/")),
             "SystemInt32.__op_Modulus__SystemInt32_SystemInt32__SystemInt32" =>
                 self.call_method_from_symbol(symbol, Some("%")),
+            "SystemInt32.__op_LeftShift__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some("<<")),
+            "SystemInt32.__op_RightShift__SystemInt32_SystemInt32__SystemInt32" =>
+                self.call_method_from_symbol(symbol, Some(">>")),
             "SystemInt32.__op_LogicalXor__SystemInt32_SystemInt32__SystemInt32" =>
                 self.call_method_from_symbol(symbol, Some("^")),
             "UnityEngineDebug.__Log__SystemObject__SystemVoid" => {

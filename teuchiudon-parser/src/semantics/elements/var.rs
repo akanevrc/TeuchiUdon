@@ -135,14 +135,19 @@ impl Var {
         context: &Context,
         op: &ast::TermInfixOp,
         left_ty: Rc<Ty>,
-        _right_ty: Rc<Ty>
+        right_ty: Rc<Ty>
     ) -> Result<Vec<Rc<Self>>, ElementError> {
         match op {
             ast::TermInfixOp::Mul |
             ast::TermInfixOp::Div |
             ast::TermInfixOp::Mod |
             ast::TermInfixOp::Add |
-            ast::TermInfixOp::Sub =>
+            ast::TermInfixOp::Sub => {
+                let ty = if left_ty.assignable_from(context, &right_ty) { left_ty } else { right_ty };
+                Ok(vec![context.retain_tmp_var(ty.to_key())?])
+            },
+            ast::TermInfixOp::LeftShift |
+            ast::TermInfixOp::RightShift =>
                 Ok(vec![context.retain_tmp_var(left_ty.to_key())?]),
             _ =>
                 panic!("Not implemented"),
